@@ -25,7 +25,7 @@ public class HomeController extends HttpServlet {
         int errorGenerators = 2; // Đang lỗi
 
         Users user = new Users();
-        user.setFullName("Vũ Ngọc Trang");
+        user.setFullName("Nguyễn Quang Huy");
         req.setAttribute("userInfo", user);
 
         // 2. Đẩy dữ liệu sang trang JSP để hiển thị

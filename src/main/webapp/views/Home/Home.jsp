@@ -31,7 +31,7 @@
                 <li class="nav-item"><a class="nav-link active" href="#">Trang chủ</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Danh sách máy</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Báo cáo</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Admin: <strong>${userInfo.fullName}</strong></a></li>
+                <li class="nav-item"><a class="nav-link" href="<c:url value='/profile'/>">Admin: <strong>${userInfo.fullName}</strong></a></li>
             </ul>
         </div>
     </div>
