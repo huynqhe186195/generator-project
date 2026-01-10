@@ -502,7 +502,7 @@
                     alert('Không thể kết nối đến server!');
                 });
         } else {
-            form.reportValidity();
+            form.reportValidity(); //oke
         }
     }
 </script>

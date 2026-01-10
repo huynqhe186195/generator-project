@@ -15,7 +15,7 @@ public class UserManagerController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // (Tùy chọn) Gọi DB lấy danh sách user
+        // (Tùy chọn) Gọi DB lấy danh sách use
         // List<User> list = dao.getAllUsers();
         // req.setAttribute("listUsers", list);
 
