@@ -20,23 +20,6 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#"><i class="fas fa-bolt text-warning"></i> Gen-CMS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link active" href="#">Trang chủ</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Danh sách máy</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Báo cáo</a></li>
-                <li class="nav-item"><a class="nav-link" href="<c:url value='/profile'/>">Admin: <strong>${userInfo.fullName}</strong></a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
 <div class="container mt-4">
     <h2 class="mb-4 text-secondary">${title}</h2>
 
@@ -148,12 +131,6 @@
         </div>
     </div>
 </div>
-
-<footer class="sticky-footer bg-white mt-5 py-3 text-center shadow-sm">
-    <div class="container my-auto">
-        <span class="text-muted">Copyright &copy; CMS Máy Phát Điện - Huy 2026</span>
-    </div>
-</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

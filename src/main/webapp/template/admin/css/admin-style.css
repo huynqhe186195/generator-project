@@ -1,0 +1,85 @@
+/* admin-style.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f3f4f6; /* Màu nền xám nhạt dịu mắt */
+}
+
+/* --- SIDEBAR --- */
+#sidebar-wrapper {
+    min-height: 100vh;
+    margin-left: -15rem;
+    transition: margin .25s ease-out;
+    background-color: #2c3e50; /* Màu xanh đen chuyên nghiệp */
+    color: white;
+}
+
+#sidebar-wrapper .sidebar-heading {
+    padding: 1.5rem 1.25rem; /* Logo area */
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #f1c40f; /* Màu vàng giống biểu tượng điện */
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+#sidebar-wrapper .list-group {
+    width: 15rem;
+}
+
+#sidebar-wrapper .list-group-item {
+    background-color: transparent;
+    color: #ecf0f1;
+    border: none;
+    padding: 1rem 1.25rem;
+}
+
+#sidebar-wrapper .list-group-item:hover {
+    background-color: #34495e;
+    color: #f1c40f; /* Hover ra màu vàng */
+    padding-left: 1.5rem; /* Hiệu ứng đẩy nhẹ sang phải */
+    transition: all 0.3s;
+}
+
+#sidebar-wrapper .list-group-item.active {
+    background-color: #f1c40f;
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+/* Layout Wrapper */
+#wrapper {
+    display: flex;
+    overflow-x: hidden;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: 0;
+}
+
+#page-content-wrapper {
+    min-width: 100vw;
+    flex: 1; /* Chiếm hết phần còn lại */
+}
+
+/* --- STATS CARDS --- */
+.card-stat {
+    border: none;
+    border-radius: 10px;
+    color: white;
+    transition: transform 0.3s;
+}
+.card-stat:hover {
+    transform: translateY(-5px); /* Hiệu ứng nhấc lên khi hover */
+}
+
+/* Các màu gradient đẹp */
+.bg-gradient-primary { background: linear-gradient(45deg, #4e73df, #224abe); }
+.bg-gradient-success { background: linear-gradient(45deg, #1cc88a, #13855c); }
+.bg-gradient-warning { background: linear-gradient(45deg, #f6c23e, #dda20a); }
+.bg-gradient-danger { background: linear-gradient(45deg, #e74a3b, #be2617); }
+
+/* --- RESPONSIVE --- */
+@media (min-width: 768px) {
+    #sidebar-wrapper { margin-left: 0; }
+    #page-content-wrapper { min-width: 0; width: 100%; }
+    #wrapper.toggled #sidebar-wrapper { margin-left: -15rem; }
+}

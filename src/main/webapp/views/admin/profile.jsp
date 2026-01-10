@@ -19,17 +19,6 @@
     </style>
 </head>
 <body>
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#"><i class="fas fa-bolt text-warning"></i> Gen-CMS</a>
-        <div class="d-flex">
-            <a href="<c:url value='/home'/>" class="btn btn-outline-light btn-sm me-2">Về trang chủ</a>
-            <a href="#" class="btn btn-danger btn-sm">Đăng xuất</a>
-        </div>
-    </div>
-</nav>
-
 <div class="container">
     <div class="row">
         <div class="col-lg-4 mb-4">
