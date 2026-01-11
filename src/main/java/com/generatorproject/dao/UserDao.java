@@ -130,4 +130,22 @@ public class UserDao extends DbContext {
         }
         return null; // Không tìm thấy user
     }
+    public boolean updatePassword(int userId, String newPassword) {
+        String sql = "UPDATE users SET password = ? WHERE id = ?";
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            // Lưu ý: newPassword nên được mã hóa (MD5/BCrypt) trước khi truyền vào đây
+            ps.setString(1, newPassword);
+            ps.setInt(2, userId);
+
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0; // Trả về true nếu cập nhật thành công ít nhất 1 dòng
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
