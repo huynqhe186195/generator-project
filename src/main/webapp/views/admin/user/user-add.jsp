@@ -11,6 +11,13 @@
         </a>
     </div>
 
+    <c:if test="${not empty error}">
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> <strong>Lỗi:</strong> ${error}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
+
     <form action="<c:url value='/admin/user-list/user-add'/>" method="post" enctype="multipart/form-data">
         <div class="row">
 
@@ -23,17 +30,17 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Họ và tên <span class="text-danger">*</span></label>
-                                <input type="text" name="fullName" class="form-control" required>
+                                <input type="text" name="fullName" class="form-control" value="${oldFullName}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Số điện thoại</label>
-                                <input type="text" name="phone" class="form-control">
+                                <input type="text" name="phone" class="form-control" value="${oldPhone}" placeholder="VD: 0901234567">
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="email" class="form-control" required>
+                            <input type="email" name="email" class="form-control" value="${oldEmail}" required>
                         </div>
 
                         <div class="mb-3">

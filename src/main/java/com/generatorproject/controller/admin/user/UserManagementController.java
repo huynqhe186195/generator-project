@@ -44,8 +44,22 @@ public class UserManagementController extends HttpServlet {
     }
 
     private void handleUserDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-detail.jsp");
-        rd.forward(req, resp);
+        try{
+            String idParam = req.getParameter("id");
+            if(idParam != null && !idParam.isEmpty()){
+                int id = Integer.parseInt(idParam);
+                Users user = userServices.findUserById(id);
+                if(user != null){
+                    req.setAttribute("user", user);
+                    RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-detail.jsp");
+                    rd.forward(req, resp);
+                }else {
+                    resp.sendRedirect(req.getContextPath() + "/admin/user-list");
+                }
+            }
+        }catch (Exception e){
+            resp.sendRedirect(req.getContextPath() + "/admin/user-list");
+        }
     }
 
     private void handleAddUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

@@ -3,6 +3,8 @@ package com.generatorproject.controller.admin.user;
 import com.generatorproject.model.Users;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.UserServices;
+import com.generatorproject.validation.UserValidate;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -24,11 +26,12 @@ import java.nio.file.Paths;
         maxRequestSize = 1024 * 1024 * 50    // 50MB
 )
 public class AddUserController extends HttpServlet {
-
     private final IUserServices userServices;
+    private final UserValidate userValidate;
 
     public AddUserController() {
         this.userServices = new UserServices();
+        this.userValidate = new UserValidate();
     }
 
     @Override
@@ -37,10 +40,10 @@ public class AddUserController extends HttpServlet {
 
         try {
             // 1. Nhận các trường Text bình thường
-            String fullName = req.getParameter("fullName");
-            String email = req.getParameter("email");
+            String fullName = req.getParameter("fullName").trim();
+            String email = req.getParameter("email").trim();
             String password = req.getParameter("password");
-            String phone = req.getParameter("phone");
+            String phone = req.getParameter("phone").trim();
             int roleId = Integer.parseInt(req.getParameter("roleId"));
             int status = Integer.parseInt(req.getParameter("status"));
 
@@ -68,17 +71,40 @@ public class AddUserController extends HttpServlet {
                 avatarUrl = "https://ui-avatars.com/api/?name=" + fullName.replaceAll(" ", "+");
             }
 
+            String errorMessage = "";
+
+            if(phone.isEmpty() && !phone.equals("^0\\d{9}$")){
+                errorMessage = "Phone number is invalid! Please enter again";
+            }
+
+            if(userValidate.checkEmailExist(email)){
+                errorMessage = "Email" + email + " already exists!";
+            }
+
+            if(!errorMessage.isEmpty()){
+                req.setAttribute("error", errorMessage);
+                // resend data user entered
+                req.setAttribute("oldFullName", fullName);
+                req.setAttribute("oldEmail", email);
+                req.setAttribute("oldPhone", phone);
+
+                RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-add.jsp");
+                rd.forward(req, resp);
+                return;
+            }
+
+            String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
+
             // 3. Tạo User và Lưu vào DB (Giống bài trước)
             Users newUser = new Users.Builder()
                     .setFullName(fullName)
                     .setEmail(email)
-                    .setPassword(password)
+                    .setPassword(hashedPassword)
                     .setPhone(phone)
                     .setRoleId(roleId)
                     .setStatus(status)
                     .setAvatarUrl(avatarUrl)
                     .build();
-
             userServices.createUser(newUser);
 
             resp.sendRedirect(req.getContextPath() + "/admin/user-list");

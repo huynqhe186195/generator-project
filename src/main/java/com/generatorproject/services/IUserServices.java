@@ -8,4 +8,6 @@ public interface IUserServices {
     List<Users> getAllUsers();
 
     Users createUser(Users user);
+
+    Users findUserById(int id);
 }
