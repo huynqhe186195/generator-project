@@ -1,47 +1,36 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
+<!DOCTYPE html>
 <html>
 <head>
     <title>Role Detail</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
 
-<h2>Role Detail</h2>
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            Role Detail
+        </div>
 
-<table>
-    <tr>
-        <th width="200">Field</th>
-        <th>Value</th>
-    </tr>
-    <tr>
-        <td>ID</td>
-        <td>${role.id}</td>
-    </tr>
-    <tr>
-        <td>Name</td>
-        <td>${role.name}</td>
-    </tr>
-    <tr>
-        <td>Status</td>
-        <td>
-            <span class="${role.active ? 'status-active' : 'status-inactive'}">
-                ${role.active ? 'Active' : 'Inactive'}
-            </span>
-        </td>
-    </tr>
-</table>
+        <div class="card-body">
+            <p><strong>ID:</strong> ${role.id}</p>
+            <p><strong>Name:</strong> ${role.name}</p>
+            <p><strong>Description:</strong> ${role.description}</p>
+            <p><strong>Status:</strong>
+                <span class="badge ${role.status == 1 ? 'bg-success' : 'bg-danger'}">
+                    ${role.status == 1 ? 'Active' : 'Inactive'}
+                </span>
+            </p>
+        </div>
 
-<h3 style="margin-top: 20px;">Permissions</h3>
-<ul style="margin-top: 10px;">
-    <c:forEach items="${permissions}" var="p">
-        <li>${p.code}</li>
-    </c:forEach>
-</ul>
-
-<br>
-<a href="role-list.jsp">← Back to Role List</a>
+        <div class="card-footer">
+            <a href="role-list" class="btn btn-secondary">Back</a>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
