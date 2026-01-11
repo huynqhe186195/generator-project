@@ -11,7 +11,7 @@
         </a>
     </div>
 
-    <form action="<c:url value='/admin/user-add'/>" method="post">
+    <form action="<c:url value='/admin/user-list/user-add'/>" method="post" enctype="multipart/form-data">
         <div class="row">
 
             <div class="col-md-8">
@@ -23,44 +23,38 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Họ và tên <span class="text-danger">*</span></label>
-                                <input type="text" name="fullName" class="form-control" placeholder="Nhập họ tên đầy đủ" required>
+                                <input type="text" name="fullName" class="form-control" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Số điện thoại</label>
-                                <input type="text" name="phone" class="form-control" placeholder="09xxxx...">
+                                <input type="text" name="phone" class="form-control">
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Email đăng nhập <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
-                                <input type="email" name="email" class="form-control" placeholder="example@gmail.com" required>
-                            </div>
+                            <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Mật khẩu khởi tạo <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-key text-muted"></i></span>
-                                <input type="password" name="password" class="form-control" placeholder="Nhập mật khẩu..." required>
-                            </div>
+                            <label class="form-label fw-bold">Mật khẩu <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control" required>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Vai trò (Role) <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Vai trò</label>
                                 <select class="form-select" name="roleId">
-                                    <option value="2">Nhân viên kỹ thuật (Staff)</option>
-                                    <option value="3">Khách hàng (Customer)</option>
-                                    <option value="1">Quản trị viên (Admin)</option>
+                                    <option value="2">Nhân viên kỹ thuật</option>
+                                    <option value="3">Khách hàng</option>
+                                    <option value="1">Admin</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Trạng thái</label>
                                 <select class="form-select" name="status">
-                                    <option value="1">Đang hoạt động (Active)</option>
-                                    <option value="0">Khóa (Locked)</option>
+                                    <option value="1">Active</option>
+                                    <option value="0">Locked</option>
                                 </select>
                             </div>
                         </div>
@@ -79,9 +73,9 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label text-start w-100 fw-bold">Đường dẫn ảnh (URL)</label>
-                            <input type="text" name="avatarUrl" id="avatarInput" class="form-control form-control-sm" placeholder="https://...">
-                            <small class="text-muted">Dán link ảnh vào để xem trước</small>
+                            <label class="form-label text-start w-100 fw-bold">Chọn ảnh từ máy</label>
+                            <input type="file" name="avatarFile" id="avatarInput" class="form-control" accept="image/*">
+                            <small class="text-muted">Chấp nhận: .jpg, .png, .jpeg</small>
                         </div>
                     </div>
                 </div>
@@ -103,12 +97,13 @@
 </div>
 
 <script>
-    document.getElementById('avatarInput').addEventListener('input', function() {
-        var url = this.value;
-        if(url) {
-            document.getElementById('avatarPreview').src = url;
-        } else {
-            document.getElementById('avatarPreview').src = 'https://via.placeholder.com/150';
+    document.getElementById('avatarInput').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarPreview').src = e.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
         }
     });
 </script>

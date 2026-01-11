@@ -1,5 +1,6 @@
-package com.generatorproject.controller.admin;
+package com.generatorproject.controller.admin.user;
 
+import com.generatorproject.model.Users;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.UserServices;
 
@@ -11,12 +12,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/admin/user-list", "/admin/user-list/user-detail", "/admin/user-list/user-add"})
-public class UserController extends HttpServlet {
+@WebServlet(urlPatterns = {"/admin/user-list", "/admin/user-list/user-detail", "/admin/user-list/addNewUser"})
+public class UserManagementController extends HttpServlet {
 
-    private IUserServices userServices;
+    private final IUserServices userServices;
 
-    public UserController() {
+    public UserManagementController() {
         userServices = new UserServices();
     }
 
@@ -30,7 +31,7 @@ public class UserController extends HttpServlet {
             case "/admin/user-list/user-detail":
                 handleUserDetail(req, resp);
                 break;
-            case "/admin/user-list/user-add":
+            case "/admin/user-list/addNewUser":
                 handleAddUser(req, resp);
                 break;
         }
@@ -52,8 +53,4 @@ public class UserController extends HttpServlet {
         rd.forward(req, resp);
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
-    }
 }

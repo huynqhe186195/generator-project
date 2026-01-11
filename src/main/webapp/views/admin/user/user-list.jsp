@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="text-secondary">Quản lý người dùng</h3>
-        <a href="<c:url value='/admin/user-list/user-add'/>" class="btn btn-primary">
+        <a href="<c:url value='/admin/user-list/addNewUser'/>" class="btn btn-primary">
             <i class="fas fa-plus-circle me-2"></i> Thêm nhân viên mới
         </a>
     </div>
@@ -50,7 +50,8 @@
                         <tr>
                             <th class="py-3 ps-4">#</th>
                             <th class="py-3">Thông tin cá nhân</th>
-                            <th class="py-3">SĐT</th> <th class="py-3">Vai trò</th>
+                            <th class="py-3">SĐT</th>
+                            <th class="py-3">Vai trò</th>
                             <th class="py-3">Trạng thái</th>
                             <th class="py-3 text-end pe-4">Hành động</th>
                         </tr>
@@ -62,14 +63,25 @@
 
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="${u.avatarUrl}" class="rounded-circle me-3" width="40" height="40" alt="Avatar">
+                                        <c:choose>
+                                            <c:when test="${u.avatarUrl != null && u.avatarUrl.startsWith('http')}">
+                                                <img src="${u.avatarUrl}" class="rounded-circle me-3" width="40" height="40" alt="Avatar" style="object-fit: cover;">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <img src="<c:url value='/${u.avatarUrl}'/>"
+                                                     class="rounded-circle me-3"
+                                                     width="40" height="40"
+                                                     alt="Avatar"
+                                                     style="object-fit: cover;"
+                                                     onerror="this.src='https://via.placeholder.com/40'"> </c:otherwise>
+                                        </c:choose>
+
                                         <div>
                                             <div class="fw-bold">${u.fullName}</div>
                                             <small class="text-muted">${u.email}</small>
                                         </div>
                                     </div>
                                 </td>
-
                                 <td><span class="text-secondary fw-bold">${u.phone}</span></td>
 
                                 <td>
@@ -108,6 +120,7 @@
                                 </td>
                             </tr>
                         </c:forEach>
+
                         <c:if test="${empty listUsers}">
                             <tr>
                                 <td colspan="6" class="text-center py-4 text-muted">
