@@ -1,0 +1,24 @@
+body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+.card-header h5 {
+    font-weight: 600;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.btn {
+    border-radius: 20px;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+}

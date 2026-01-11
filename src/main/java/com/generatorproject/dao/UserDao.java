@@ -99,5 +99,35 @@ public class UserDao extends DbContext {
             e.printStackTrace();
         }
         return null;
+    public Users findByEmail(String email) {
+        String sql = "SELECT * FROM users WHERE email = ? AND status = 1"; // Chỉ lấy user đang hoạt động (status=1)
+
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                // SỬ DỤNG BUILDER ĐỂ MAP DỮ LIỆU TỪ DB VÀO OBJECT
+                return new Users.Builder()
+                        .setId(rs.getInt("id"))
+                        .setRoleId(rs.getInt("role_id"))
+                        .setEmail(rs.getString("email"))
+                        .setPassword(rs.getString("password")) // Password này thường đã mã hóa
+                        .setFullName(rs.getString("full_name"))
+                        .setPhone(rs.getString("phone"))
+                        .setAvatarUrl(rs.getString("avatar_url"))
+                        .setStatus(rs.getInt("status"))
+                        .setCreatedAt(rs.getTimestamp("created_at"))
+                        .build();
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null; // Không tìm thấy user
     }
 }
