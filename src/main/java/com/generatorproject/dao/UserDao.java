@@ -95,11 +95,13 @@ public class UserDao extends DbContext {
                         .setAvatarUrl(rs.getString("avatar_url"))
                         .build();
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
-    public Users findByEmail(String email) {
+    }
+
+        public Users findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ? AND status = 1"; // Chỉ lấy user đang hoạt động (status=1)
 
 
