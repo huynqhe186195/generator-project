@@ -20,6 +20,11 @@ public class UserServices implements IUserServices{
 
     @Override
     public Users createUser(Users user) {
-        return null;
+        return userDao.createUser(user);
+    }
+
+    @Override
+    public Users findUserById(int id) {
+        return userDao.findUserById(id);
     }
 }

@@ -1,17 +1,15 @@
 package com.generatorproject.dao;
 
-import com.generatorproject.dao.DbContext;
 import com.generatorproject.model.Users;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.sql.DriverManager.getConnection;
 
 public class UserDao extends DbContext {
-
 
     public List<Users> getAllUsers() {
         List<Users> list = new ArrayList<>();
@@ -75,6 +73,32 @@ public class UserDao extends DbContext {
         return newUser;
     }
 
+    public Users findUserById(int id) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                // Dùng Builder để map dữ liệu
+                return new Users.Builder()
+                        .setId(rs.getInt("id"))
+                        .setFullName(rs.getString("full_name"))
+                        .setEmail(rs.getString("email"))
+                        .setPassword(rs.getString("password"))
+                        .setPhone(rs.getString("phone"))
+                        .setRoleId(rs.getInt("role_id"))
+                        .setStatus(rs.getInt("status"))
+                        .setCreatedAt(rs.getTimestamp("created_at"))
+                        .setAvatarUrl(rs.getString("avatar_url"))
+                        .build();
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     public Users findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ? AND status = 1"; // Chỉ lấy user đang hoạt động (status=1)
 
