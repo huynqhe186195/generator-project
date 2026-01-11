@@ -130,6 +130,29 @@ public class UserDao extends DbContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null; // Không tìm thấy user
+        return null;
+    }
+
+    public void updateUser(Users user) {
+        String sql = "UPDATE users SET full_name=?, phone=?, role_id=?, status=?, avatar_url=? WHERE id=?";
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, user.getFullName());
+            ps.setString(2, user.getPhone());
+            ps.setInt(3, user.getRoleId());
+            ps.setInt(4, user.getStatus());
+            ps.setString(5, user.getAvatarUrl());
+            ps.setInt(6, user.getId());
+
+            ps.executeUpdate();
+
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

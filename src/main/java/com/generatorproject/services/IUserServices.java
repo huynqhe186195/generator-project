@@ -10,4 +10,6 @@ public interface IUserServices {
     Users createUser(Users user);
 
     Users findUserById(int id);
+
+    void updateUser(Users user);
 }

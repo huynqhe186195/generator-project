@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/admin/user-list", "/admin/user-list/user-detail", "/admin/user-list/addNewUser"})
+@WebServlet(urlPatterns = {"/admin/user-list", "/admin/user-list/user-detail", "/admin/user-list/addNewUser", "/admin/user-list/updateUser"})
 public class UserManagementController extends HttpServlet {
 
     private final IUserServices userServices;
@@ -34,6 +34,28 @@ public class UserManagementController extends HttpServlet {
             case "/admin/user-list/addNewUser":
                 handleAddUser(req, resp);
                 break;
+            case "/admin/user-list/updateUser":
+                handleEditUser(req, resp);
+                break;
+        }
+    }
+
+    private void handleEditUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            String idParam = req.getParameter("id");
+            if (idParam != null && !idParam.isEmpty()) {
+                int id = Integer.parseInt(idParam);
+                Users user = userServices.findUserById(id);
+                if (user != null) {
+                    req.setAttribute("user", user);
+                    RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-edit.jsp");
+                    rd.forward(req, resp);
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/admin/user-list");
+                }
+            }
+        } catch (Exception e) {
+            resp.sendRedirect(req.getContextPath() + "/admin/user-list");
         }
     }
 
@@ -44,20 +66,20 @@ public class UserManagementController extends HttpServlet {
     }
 
     private void handleUserDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try{
+        try {
             String idParam = req.getParameter("id");
-            if(idParam != null && !idParam.isEmpty()){
+            if (idParam != null && !idParam.isEmpty()) {
                 int id = Integer.parseInt(idParam);
                 Users user = userServices.findUserById(id);
-                if(user != null){
+                if (user != null) {
                     req.setAttribute("user", user);
                     RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-detail.jsp");
                     rd.forward(req, resp);
-                }else {
+                } else {
                     resp.sendRedirect(req.getContextPath() + "/admin/user-list");
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             resp.sendRedirect(req.getContextPath() + "/admin/user-list");
         }
     }
