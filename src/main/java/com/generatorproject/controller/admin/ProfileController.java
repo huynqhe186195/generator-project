@@ -1,4 +1,4 @@
-package com.generatorproject.controller.web;
+package com.generatorproject.controller.admin;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/profile"})
+@WebServlet(urlPatterns = {"/admin/admin-profile"})
 public class ProfileController extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
@@ -23,7 +23,7 @@ public class ProfileController extends HttpServlet {
         req.setAttribute("department", "Kỹ thuật vận hành");
         req.setAttribute("joinDate", "01/01/2026");
 
-        RequestDispatcher rd = req.getRequestDispatcher("/views/Account/profile.jsp");
+        RequestDispatcher rd = req.getRequestDispatcher("/views/admin/profile.jsp");
         rd.forward(req, resp);
     }
 

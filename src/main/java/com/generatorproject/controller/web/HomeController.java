@@ -37,7 +37,7 @@ public class HomeController extends HttpServlet {
 
         // 3. Chuyển hướng về giao diện
         // Lưu ý: Đường dẫn này phải đúng với nơi bạn đặt file jsp
-        RequestDispatcher rd = req.getRequestDispatcher("/views/Home/Home.jsp");
+        RequestDispatcher rd = req.getRequestDispatcher("/views/home/home.jsp");
         rd.forward(req, resp);
     }
 
