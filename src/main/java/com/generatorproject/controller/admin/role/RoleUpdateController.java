@@ -1,4 +1,4 @@
-package com.generatorproject.controller.admin;
+package com.generatorproject.controller.admin.role;
 
 import com.generatorproject.dao.RoleDAO;
 import com.generatorproject.model.Role;
