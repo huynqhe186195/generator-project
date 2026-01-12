@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet("/role-update")
+@WebServlet("/admin/role-update")
 public class RoleUpdateController extends HttpServlet {
 
     @Override
@@ -24,7 +24,7 @@ public class RoleUpdateController extends HttpServlet {
 
         req.setAttribute("role", role);
 
-        req.getRequestDispatcher("views/admin/Role-update.jsp")
+        req.getRequestDispatcher("/views/admin/Role-update.jsp")
                 .forward(req, resp);
     }
 
@@ -43,7 +43,7 @@ public class RoleUpdateController extends HttpServlet {
         dao.update(id, name, description, status);
 
         // sau khi update xong → quay về list
-        resp.sendRedirect(req.getContextPath() + "/role-list");
+        resp.sendRedirect(req.getContextPath() + "/admin/role-list");
     }
 }
 

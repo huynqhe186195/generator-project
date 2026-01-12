@@ -1,39 +1,46 @@
-<%@ page contentType="text/html;charset=UTF-8" %>
-<html>
-<head>
-    <title>Create Role</title>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-</head>
-<body class="bg-light">
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+    <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
-<div class="container mt-5">
-    <div class="card shadow">
-        <div class="card-header bg-success text-white">
-            <h4>Create Role</h4>
-        </div>
+        <title>Create Role</title>
 
-        <div class="card-body">
-            <form method="post"
-                  action="${pageContext.request.contextPath}/role-create">
+        <div class="container-fluid px-4">
 
-                <div class="mb-3">
-                    <label class="form-label">Role Name</label>
-                    <input type="text" name="name" class="form-control" required>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-secondary">Create Role</h3>
+                <a href="<c:url value='/admin/role-list'/>" class="btn btn-outline-secondary">
+                    Back
+                </a>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Role Information</h5>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea name="description" class="form-control"></textarea>
+                <div class="card-body">
+                    <form method="post" action="<c:url value='/admin/role-create'/>">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Role Name</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Description</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success">
+                                Save
+                            </button>
+                            <a href="<c:url value='/admin/role-list'/>" class="btn btn-secondary">
+                                Cancel
+                            </a>
+                        </div>
+
+                    </form>
                 </div>
+            </div>
 
-                <button class="btn btn-success">Save</button>
-                <a href="${pageContext.request.contextPath}/role-list"
-                   class="btn btn-secondary">Back</a>
-            </form>
         </div>
-    </div>
-</div>
-
-</body>
-</html>

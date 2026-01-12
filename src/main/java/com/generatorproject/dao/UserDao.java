@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class UserDao extends DbContext {
 
     public List<Users> getAllUsers() {
@@ -35,8 +34,7 @@ public class UserDao extends DbContext {
                         .setAvatarUrl(
                                 (rs.getString("avatar_url") == null || rs.getString("avatar_url").isEmpty())
                                         ? "https://ui-avatars.com/api/?name=" + rs.getString("full_name")
-                                        : rs.getString("avatar_url")
-                        )
+                                        : rs.getString("avatar_url"))
                         .build();
 
                 list.add(u);
@@ -101,9 +99,8 @@ public class UserDao extends DbContext {
         return null;
     }
 
-        public Users findByEmail(String email) {
+    public Users findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ? AND status = 1"; // Chỉ lấy user đang hoạt động (status=1)
-
 
         try {
             Connection conn = getConnection();

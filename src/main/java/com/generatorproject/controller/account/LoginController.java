@@ -22,6 +22,8 @@ public class LoginController extends HttpServlet {
     }
     // 2. doPost: Dùng để xử lý dữ liệu Form gửi lên
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
         String emailForm = req.getParameter("username");
         String passForm = req.getParameter("password");
 
@@ -51,8 +53,7 @@ public class LoginController extends HttpServlet {
             // Đăng nhập thất bại
             req.setAttribute("message", "Email hoặc mật khẩu không đúng!");
             req.setAttribute("alert", "danger");
-            req.getRequestDispatcher("/login.jsp").forward(req, resp);
-        }
+            req.getRequestDispatcher("/views/account/login.jsp").forward(req, resp);        }
 
 
     }
