@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet("/role-create")
+@WebServlet("/admin/role-create")
 public class RoleCreateController extends HttpServlet {
 
     @Override
@@ -37,6 +37,6 @@ public class RoleCreateController extends HttpServlet {
         RoleDAO dao = new RoleDAO();
         dao.insert(r);
 
-        resp.sendRedirect(req.getContextPath() + "/role-list");
+        resp.sendRedirect(req.getContextPath() + "/admin/role-list");
     }
 }

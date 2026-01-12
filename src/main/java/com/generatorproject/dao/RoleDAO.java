@@ -70,6 +70,19 @@ public class RoleDAO extends DbContext {
         }
         return null;
     }
+    public void delete(int id) {
+        String sql = "DELETE FROM roles WHERE id=?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void update(int id, String name, String description, int status) {
         String sql = "UPDATE roles SET name=?, description=?, status=? WHERE id=?";
