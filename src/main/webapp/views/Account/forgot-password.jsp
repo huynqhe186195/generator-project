@@ -15,21 +15,17 @@
 <div class="main">
   <section class="sign-in">
     <div class="container">
-      <div class="signin-content">
-        <div class="signin-image">
-          <figure><img src="<c:url value='/template/account/images/signin-image.jpg'/>" alt="forgot password image"></figure>
-          <a href="<c:url value='/login'/>" class="signup-image-link">Quay lại Đăng nhập</a>
-        </div>
+      <div class="signin-content no-image">
 
         <div class="signin-form">
           <h2 class="form-title">Quên mật khẩu</h2>
 
-          <p style="margin-bottom: 20px; font-size: 14px; color: #666;">
+          <p class="text-center" style="margin-bottom: 20px; font-size: 14px; color: #666;">
             Nhập email của bạn để nhận liên kết đặt lại mật khẩu.
           </p>
 
           <c:if test="${not empty message}">
-            <div style="color: ${alert == 'success' ? 'green' : 'red'}; margin-bottom: 15px; font-size: 14px; font-weight: bold;">
+            <div class="text-center" style="color: ${alert == 'success' ? 'green' : 'red'}; margin-bottom: 15px; font-size: 14px; font-weight: bold;">
                 ${message}
             </div>
           </c:if>
@@ -40,10 +36,14 @@
               <input type="email" name="email" id="email" placeholder="Email của bạn" required/>
             </div>
 
-            <div class="form-group form-button">
+            <div class="form-group form-button text-center">
               <input type="submit" name="submit" id="submit" class="form-submit" value="Gửi yêu cầu"/>
             </div>
           </form>
+
+          <a href="<c:url value='/login'/>" class="back-link">
+            <i class="zmdi zmdi-arrow-left"></i> Quay lại Đăng nhập
+          </a>
         </div>
       </div>
     </div>

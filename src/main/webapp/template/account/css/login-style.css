@@ -590,3 +590,28 @@ label.valid {
     margin-bottom: 10px; } }
 
 /*# sourceMappingURL=login-style.css.map */
+.back-link {
+
+  display: block;
+
+  margin-top: 50px; /* Tăng khoảng cách lên gấp đôi (từ 25px lên 50px) */
+
+  color: #555;
+
+  font-size: 14px;
+
+}
+/* Áp dụng Poppins cho body và các thẻ văn bản */
+body, h1, h2, h3, h4, h5, h6, p, a, span, label {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Ép các thẻ form phải nhận font (vì chúng không tự kế thừa) */
+input, button, select, textarea {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* ĐẢM BẢO giữ nguyên font cho Icon */
+.zmdi, i[class^="zmdi-"], i[class*=" zmdi-"] {
+  font-family: 'Material-Design-Iconic-Font' !important;
+}
