@@ -2,6 +2,8 @@ package com.generatorproject.controller.account;
 
 import com.generatorproject.dao.TokenDao;
 import com.generatorproject.dao.UserDao;
+import com.generatorproject.services.IUserServices;
+import com.generatorproject.services.UserServices;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,32 +14,39 @@ import java.io.IOException;
 
 @WebServlet(urlPatterns = {"/reset-password"})
 public class ResetPasswordController extends HttpServlet {
+    private IUserServices userServices = new UserServices();
+
     // Hiển thị form nhập mật khẩu mới
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String token = req.getParameter("token");
-        if (new TokenDao().getUserIdByValidToken(token) != null) {
+
+        // Kiểm tra token qua Service
+        if (token != null && userServices.getUserIdByValidToken(token) != null) {
             req.setAttribute("token", token);
             req.getRequestDispatcher("/views/account/reset-password.jsp").forward(req, resp);
         } else {
-            resp.sendRedirect("login?message=token_invalid");
+            resp.sendRedirect(req.getContextPath() + "/login?message=token_invalid");
         }
     }
 
     // Xử lý lưu mật khẩu mới
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String token = req.getParameter("token");
         String newPass = req.getParameter("password");
-        TokenDao tokenDao = new TokenDao();
-        Integer userId = tokenDao.getUserIdByValidToken(token);
+
+        Integer userId = userServices.getUserIdByValidToken(token);
 
         if (userId != null) {
-            // 1. Cập nhật password trong bảng users (Cần viết thêm hàm updatePassword trong UserDao)
-            new UserDao().updatePassword(userId, newPass);
-            // 2. Hủy token
-            tokenDao.markAsUsed(token);
-            resp.sendRedirect("login?message=reset_success");
+            // 1. Cập nhật mật khẩu
+            userServices.updatePassword(userId, newPass);
+            // 2. Hủy token để không dùng lại được lần 2
+            userServices.markTokenAsUsed(token);
+
+            resp.sendRedirect(req.getContextPath() + "/login?message=reset_success");
         } else {
-            resp.sendRedirect("login?message=error");
+            resp.sendRedirect(req.getContextPath() + "/login?message=error");
         }
     }
 }
