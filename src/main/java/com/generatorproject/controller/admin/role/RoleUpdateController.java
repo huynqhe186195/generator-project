@@ -24,7 +24,7 @@ public class RoleUpdateController extends HttpServlet {
 
         req.setAttribute("role", role);
 
-        req.getRequestDispatcher("/views/admin/Role-update.jsp")
+        req.getRequestDispatcher("/views/admin/role/Role-update.jsp")
                 .forward(req, resp);
     }
 
