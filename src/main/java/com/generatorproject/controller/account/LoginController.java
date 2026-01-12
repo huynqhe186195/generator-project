@@ -2,6 +2,8 @@ package com.generatorproject.controller.account;
 
 import com.generatorproject.dao.UserDao;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.IUserServices;
+import com.generatorproject.services.UserServices;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -14,49 +16,65 @@ import java.io.IOException;
 
 @WebServlet(urlPatterns = {"/login"})
 public class LoginController extends HttpServlet {
+
+    private IUserServices userServices = new  UserServices();
+
     // 1. doGet: Dùng để hiển thị trang JSP
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        RequestDispatcher rd = req.getRequestDispatcher("/views/account/login.jsp");
-        rd.forward(req, resp);
+        req.getRequestDispatcher("/views/account/login.jsp").forward(req, resp);
     }
     // 2. doPost: Dùng để xử lý dữ liệu Form gửi lên
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8");
-        resp.setCharacterEncoding("UTF-8");
+
+
         String emailForm = req.getParameter("username");
         String passForm = req.getParameter("password");
 
-        UserDao userDAO = new UserDao();
-        Users userInDb = userDAO.findByEmail(emailForm);
+        // Gọi Service kiểm tra đăng nhập
+        Users userInDb = userServices.findByEmailAndPassword(emailForm, passForm);
 
-        boolean isLoginSuccess = false;
-
-        // Logic kiểm tra
-        if (userInDb != null && userInDb.getPassword().equals(passForm)) {
-            // 1. Lưu thông tin vào Session
+        if (userInDb != null) {
             HttpSession session = req.getSession();
             session.setAttribute("USERMODEL", userInDb);
 
-            // 2. KIỂM TRA ROLE ĐỂ CHUYỂN HƯỚNG
-            if (userInDb.getRoleId() == 1) {
-                // Nếu là ADMIN -> Chuyển sang trang quản trị
-                resp.sendRedirect(req.getContextPath() + "/home");
-            } else if (userInDb.getRoleId() == 2) {
-                // Nếu là USER -> Chuyển sang trang chủ bán hàng
-                resp.sendRedirect(req.getContextPath() + "/home");
-            } else {
-                // Role lạ -> Chuyển về trang mặc định hoặc báo lỗi
-                resp.sendRedirect(req.getContextPath() + "/login?message=role_invalid");
+            // Xử lý chuyển hướng cho 5 Roles
+            int roleId = userInDb.getRoleId();
+            String url = "";
+
+            switch (roleId) {
+                case 1: // ADMIN
+                    url = "/admin";
+                    break;
+                case 2: // MANAGER
+                    url = "/manager/dashboard";
+                    break;
+                case 3: // STAFF
+                    url = "/staff/tasks";
+                    break;
+                case 4: // CUSTOMER
+                    url = "/home";
+                    break;
+                case 5: // TECHNICIAN
+                    url = "/technician/products";
+                    break;
+                default:
+                    url = "/login?message=access_denied";
+                    break;
             }
+
+            resp.sendRedirect(req.getContextPath() + url);
+
         } else {
             // Đăng nhập thất bại
             req.setAttribute("message", "Email hoặc mật khẩu không đúng!");
             req.setAttribute("alert", "danger");
-            req.getRequestDispatcher("/views/account/login.jsp").forward(req, resp);        }
-
+            req.getRequestDispatcher("/views/account/login.jsp").forward(req, resp);
+        }
+    }
 
     }
 
 
-}
+

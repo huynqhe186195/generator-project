@@ -21,7 +21,7 @@
 					<figure>
 						<img src="<c:url value='/template/images/signin-image.jpg'/>" alt="sing up image">
 					</figure>
-<%--					<a href="registration.jsp" class="signup-image-link">Create an account</a>--%>
+
 				</div>
 
 				<div class="signin-form">
