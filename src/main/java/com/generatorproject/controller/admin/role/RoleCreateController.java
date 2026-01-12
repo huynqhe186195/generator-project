@@ -18,7 +18,7 @@ public class RoleCreateController extends HttpServlet {
             throws ServletException, IOException {
 
         // mở form tạo role
-        req.getRequestDispatcher("/views/admin/Role-create.jsp")
+        req.getRequestDispatcher("/views/admin/role/Role-create.jsp")
                 .forward(req, resp);
     }
 
