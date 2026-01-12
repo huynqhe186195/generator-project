@@ -109,7 +109,7 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
 
-                                    <a href="#" class="btn btn-sm btn-outline-primary me-1" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
+                                    <a href="<c:url value = '/admin/user-list/updateUser?id=${u.id}'/>" class="btn btn-sm btn-outline-primary me-1" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
 
                                     <c:if test="${u.status == 1}">
                                         <button class="btn btn-sm btn-outline-danger" title="Khóa tài khoản"><i class="fas fa-lock"></i></button>

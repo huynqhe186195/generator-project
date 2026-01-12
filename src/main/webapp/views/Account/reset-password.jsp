@@ -15,17 +15,13 @@
 <div class="main">
     <section class="sign-in">
         <div class="container">
-            <div class="signin-content">
-                <div class="signin-image">
-                    <figure><img src="<c:url value='/template/account/images/signin-image.jpg'/>" alt="reset password image"></figure>
-                    <a href="<c:url value='/login'/>" class="signup-image-link">Quay lại Đăng nhập</a>
-                </div>
+            <div class="signin-content no-image">
 
                 <div class="signin-form">
-                    <h2 class="form-title">Mật khẩu mới</h2>
+                    <h2 class="form-title text-center">Mật khẩu mới</h2>
 
                     <c:if test="${not empty message}">
-                        <div style="color: red; margin-bottom: 15px; font-size: 14px;">
+                        <div class="text-center" style="color: red; margin-bottom: 15px; font-size: 14px; font-weight: bold;">
                                 ${message}
                         </div>
                     </c:if>
@@ -43,10 +39,14 @@
                             <input type="password" name="re_password" id="re-password" placeholder="Nhập lại mật khẩu" required/>
                         </div>
 
-                        <div class="form-group form-button">
+                        <div class="form-group form-button text-center">
                             <input type="submit" name="reset" id="reset" class="form-submit" value="Cập nhật mật khẩu"/>
                         </div>
                     </form>
+
+                    <a href="<c:url value='/login'/>" class="back-link">
+                        <i class="zmdi zmdi-arrow-left"></i> Quay lại Đăng nhập
+                    </a>
                 </div>
             </div>
         </div>
@@ -55,7 +55,7 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    // Kiểm tra khớp mật khẩu đơn giản bằng JS
+    // Kiểm tra khớp mật khẩu bằng JS
     $('#reset-form').submit(function(e) {
         var pass = $('#password').val();
         var rePass = $('#re-password').val();
