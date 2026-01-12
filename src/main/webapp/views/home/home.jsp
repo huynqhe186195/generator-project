@@ -43,8 +43,8 @@
         .feature-icon { width: 60px; height: 60px; background-color: #eef2fd; color: #4e73df; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 20px; }
 
         .hero-image {
-            width: 300px;
-            height: 200px;
+            width: 400px;
+            height: 300px;
             background-image: url('${pageContext.request.contextPath}/template/images/img.png');
             background-size: cover;
             background-position: center;
