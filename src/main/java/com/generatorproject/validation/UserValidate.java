@@ -22,4 +22,13 @@ public class UserValidate extends DbContext{
         }
         return false;
     }
+
+    public boolean checkPhoneNumber(String phone) {
+        if(phone.isEmpty() || phone.length() != 10){
+            return false;
+        } else if (!phone.matches("^0\\d{9}$")) {
+            return false;
+        }
+        return true;
+    }
 }
