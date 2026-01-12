@@ -87,8 +87,11 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${u.roleId == 1}"><span class="badge bg-danger">ADMIN</span></c:when>
-                                        <c:when test="${u.roleId == 2}"><span class="badge bg-info text-dark">STAFF</span></c:when>
-                                        <c:when test="${u.roleId == 3}"><span class="badge bg-secondary">CUSTOMER</span></c:when>
+                                        <c:when test="${u.roleId == 2}"><span class="badge bg-info text-dark">MANAGER</span></c:when>
+                                        <c:when test="${u.roleId == 3}"><span class="badge bg-secondary">STAFF</span></c:when>
+                                        <c:when test="${u.roleId == 4}"><span class="badge bg-secondary">TECHNICAL</span></c:when>
+                                        <c:when test="${u.roleId == 5}"><span class="badge bg-secondary">CUSTOMER</span></c:when>
+
                                         <c:otherwise><span class="badge bg-light text-dark">UNKNOWN</span></c:otherwise>
                                     </c:choose>
                                 </td>
