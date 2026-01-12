@@ -36,6 +36,9 @@
              <a href="<c:url value='/admin/admin-profile'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                 <i class="fas fa-user me-2"></i> My Profile
             </a>
+            <a href="<c:url value='/admin/role-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <i class="fas fa-user me-2"></i> Role list
+            </a>
         </div>
     </div>
 
