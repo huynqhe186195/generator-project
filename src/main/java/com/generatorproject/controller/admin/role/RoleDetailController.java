@@ -21,7 +21,7 @@ public class RoleDetailController extends HttpServlet {
         RoleDAO dao = new RoleDAO();
         req.setAttribute("role", dao.getById(id));
 
-        req.getRequestDispatcher("/views/admin/role-detail.jsp")
+        req.getRequestDispatcher("/views/admin/role/role-detail.jsp")
                 .forward(req, resp);
     }
 }

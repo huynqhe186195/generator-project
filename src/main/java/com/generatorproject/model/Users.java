@@ -1,6 +1,7 @@
 package com.generatorproject.model;
 
 import java.sql.Timestamp;
+import java.util.List; // Nhớ import List
 
 public class Users {
     private int id;
@@ -12,6 +13,9 @@ public class Users {
     private String avatarUrl;
     private int status;
     private Timestamp createdAt;
+
+    private String roleName;
+    private List<String> permissions;
 
     public Users() {}
 
@@ -25,8 +29,13 @@ public class Users {
         this.avatarUrl = builder.avatarUrl;
         this.status = builder.status;
         this.createdAt = builder.createdAt;
+
+        // Gán các trường mới
+        this.roleName = builder.roleName;
+        this.permissions = builder.permissions;
     }
 
+    // --- GETTER ---
     public int getId() { return id; }
     public int getRoleId() { return roleId; }
     public String getEmail() { return email; }
@@ -36,6 +45,20 @@ public class Users {
     public String getAvatarUrl() { return avatarUrl; }
     public int getStatus() { return status; }
     public Timestamp getCreatedAt() { return createdAt; }
+
+    public String getRoleName() { return roleName; }
+    public List<String> getPermissions() { return permissions; }
+
+    public void setRoleName(String roleName) { this.roleName = roleName; }
+    public void setPermissions(List<String> permissions) { this.permissions = permissions; }
+
+    // Ví dụ dùng trên JSP: <c:if test="${USER_MODEL.hasPermission('USER_DELETE')}">
+    public boolean hasPermission(String permissionCode) {
+        if (this.permissions == null || this.permissions.isEmpty()) {
+            return false;
+        }
+        return this.permissions.contains(permissionCode);
+    }
 
     public static class Builder {
         private int id;
@@ -48,6 +71,9 @@ public class Users {
         private int status;
         private Timestamp createdAt;
 
+        private String roleName;
+        private List<String> permissions;
+
         public Builder setId(int id) { this.id = id; return this; }
         public Builder setRoleId(int roleId) { this.roleId = roleId; return this; }
         public Builder setEmail(String email) { this.email = email; return this; }
@@ -57,6 +83,9 @@ public class Users {
         public Builder setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; return this; }
         public Builder setStatus(int status) { this.status = status; return this; }
         public Builder setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
+
+        public Builder setRoleName(String roleName) { this.roleName = roleName; return this; }
+        public Builder setPermissions(List<String> permissions) { this.permissions = permissions; return this; }
 
         public Users build() {
             return new Users(this);
