@@ -21,6 +21,10 @@ public class Users {
     public Users() {
     }
 
+    public Users() {
+    }
+
+    // --- CONSTRUCTOR BUILDER (QUAN TRỌNG) ---
     private Users(Builder builder) {
         this.id = builder.id;
         this.roleId = builder.roleId;
@@ -38,6 +42,7 @@ public class Users {
         this.roleUrl = builder.roleUrl;
     }
 
+    // --- GETTER & SETTER ---
     public int getId() { return id; }
     public int getRoleId() { return roleId; }
     public String getEmail() { return email; }
