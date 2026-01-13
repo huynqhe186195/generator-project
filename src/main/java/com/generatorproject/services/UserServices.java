@@ -7,11 +7,11 @@ import com.generatorproject.model.Users;
 import java.util.Collections;
 import java.util.List;
 
-public class UserServices implements IUserServices{
+public class UserServices implements IUserServices {
     private final UserDao userDao;
     private final TokenDao tokenDao;
 
-    public UserServices(){
+    public UserServices() {
         this.userDao = new UserDao();
         this.tokenDao = new TokenDao();
     }
@@ -38,12 +38,7 @@ public class UserServices implements IUserServices{
 
     @Override
     public Users findByEmailAndPassword(String email, String password) {
-        Users user = userDao.findByEmail(email);
-        // Kiểm tra user tồn tại và mật khẩu khớp
-        if (user != null && user.getPassword().equals(password)) {
-            return user;
-        }
-        return null;
+        return userDao.checkLogin(email, password);
     }
 
     @Override

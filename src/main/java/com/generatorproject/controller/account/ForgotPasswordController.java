@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 
-@WebServlet(urlPatterns = {"/forgot-password"})
+@WebServlet(urlPatterns = { "/forgot-password" })
 public class ForgotPasswordController extends HttpServlet {
 
     // 1. Hiển thị trang nhập Email

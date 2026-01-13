@@ -43,11 +43,14 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Vai trò</label>
                                 <select class="form-select" name="roleId">
-                                    <option value="1" ${user.roleId == 1 ? 'selected' : ''}>Quản trị viên (Admin)</option>
-                                    <option value="2" ${user.roleId == 2 ? 'selected' : ''}>Nhân viên kỹ thuật</option>
-                                    <option value="3" ${user.roleId == 3 ? 'selected' : ''}>Khách hàng</option>
+                                    <c:forEach items="${listRoles}" var="role">
+                                        <option value="${role.id}" ${user.roleId == role.id ? 'selected' : ''}>
+                                            ${role.name}
+                                        </option>
+                                    </c:forEach>
                                 </select>
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Trạng thái</label>
                                 <select class="form-select" name="status">
@@ -56,7 +59,7 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
+                        </div>
                 </div>
             </div>
 
@@ -72,7 +75,11 @@
                                     <img id="avatarPreview" src="${user.avatarUrl}" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
                                 </c:when>
                                 <c:otherwise>
-                                    <img id="avatarPreview" src="<c:url value='/${user.avatarUrl}'/>" class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/150'">
+                                    <img id="avatarPreview"
+                                         src="<c:url value='/${user.avatarUrl}'/>"
+                                         class="rounded-circle img-thumbnail"
+                                         style="width: 150px; height: 150px; object-fit: cover;"
+                                         onerror="this.src='https://via.placeholder.com/150'">
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -93,6 +100,7 @@
 </div>
 
 <script>
+    // Script xem trước ảnh khi chọn file
     document.getElementById('avatarInput').addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
             var reader = new FileReader();

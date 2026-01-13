@@ -52,20 +52,23 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Vai trò</label>
                                 <select class="form-select" name="roleId">
-                                    <option value="2">Nhân viên kỹ thuật</option>
-                                    <option value="3">Khách hàng</option>
-                                    <option value="1">Admin</option>
+                                    <c:forEach items="${listRoles}" var="role">
+                                        <option value="${role.id}" ${role.id == oldRoleId ? 'selected' : ''}>
+                                            ${role.name}
+                                        </option>
+                                    </c:forEach>
                                 </select>
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Trạng thái</label>
                                 <select class="form-select" name="status">
-                                    <option value="1">Active</option>
-                                    <option value="0">Locked</option>
+                                    <option value="1" ${oldStatus == '1' ? 'selected' : ''}>Active (Hoạt động)</option>
+                                    <option value="0" ${oldStatus == '0' ? 'selected' : ''}>Locked (Khóa)</option>
                                 </select>
                             </div>
                         </div>
-                    </div>
+                        </div>
                 </div>
             </div>
 

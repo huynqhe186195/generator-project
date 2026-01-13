@@ -12,7 +12,7 @@ public class DbContext {
 
     /* SỬA LẠI USER/PASS CỦA MÁY HUY Ở ĐÂY */
     private final String userID = "root"; // Mặc định thường là root
-    private final String password = "123456";   // Nếu cài XAMPP thì để trống, nếu cài MySQL Workbench thì thường là 123456 hoặc root
+    private final String password = "123456789";   // Nếu cài XAMPP thì để trống, nếu cài MySQL Workbench thì thường là 123456 hoặc root
 
     public Connection getConnection() throws Exception {
         // 1. Khai báo Driver mới (MySQL 8.0+)

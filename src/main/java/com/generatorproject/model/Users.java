@@ -1,6 +1,7 @@
 package com.generatorproject.model;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 public class Users {
     private int id;
@@ -13,8 +14,15 @@ public class Users {
     private int status;
     private Timestamp createdAt;
 
-    public Users() {}
+    // Field mới
+    private String roleUrl;
+    private String roleName;
+    private List<String> permissions;
 
+    public Users() {
+    }
+
+    // --- CONSTRUCTOR BUILDER (QUAN TRỌNG) ---
     private Users(Builder builder) {
         this.id = builder.id;
         this.roleId = builder.roleId;
@@ -25,8 +33,16 @@ public class Users {
         this.avatarUrl = builder.avatarUrl;
         this.status = builder.status;
         this.createdAt = builder.createdAt;
+
+        // Gán các trường mới
+        this.roleName = builder.roleName;
+        this.permissions = builder.permissions;
+
+        // 🔥 ĐÃ FIX: Copy URL từ Builder sang User
+        this.roleUrl = builder.roleUrl;
     }
 
+    // --- GETTER & SETTER ---
     public int getId() { return id; }
     public int getRoleId() { return roleId; }
     public String getEmail() { return email; }
@@ -37,6 +53,24 @@ public class Users {
     public int getStatus() { return status; }
     public Timestamp getCreatedAt() { return createdAt; }
 
+    public String getRoleName() { return roleName; }
+    public void setRoleName(String roleName) { this.roleName = roleName; }
+
+    public List<String> getPermissions() { return permissions; }
+    public void setPermissions(List<String> permissions) { this.permissions = permissions; }
+
+    public String getRoleUrl() { return roleUrl; }
+    public void setRoleUrl(String roleUrl) { this.roleUrl = roleUrl; }
+
+    // Helper check quyền
+    public boolean hasPermission(String permissionCode) {
+        if (this.permissions == null || this.permissions.isEmpty()) {
+            return false;
+        }
+        return this.permissions.contains(permissionCode);
+    }
+
+    // --- BUILDER CLASS ---
     public static class Builder {
         private int id;
         private int roleId;
@@ -48,6 +82,10 @@ public class Users {
         private int status;
         private Timestamp createdAt;
 
+        private String roleUrl;
+        private String roleName;
+        private List<String> permissions;
+
         public Builder setId(int id) { this.id = id; return this; }
         public Builder setRoleId(int roleId) { this.roleId = roleId; return this; }
         public Builder setEmail(String email) { this.email = email; return this; }
@@ -57,6 +95,14 @@ public class Users {
         public Builder setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; return this; }
         public Builder setStatus(int status) { this.status = status; return this; }
         public Builder setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
+
+        public Builder setRoleName(String roleName) { this.roleName = roleName; return this; }
+        public Builder setPermissions(List<String> permissions) { this.permissions = permissions; return this; }
+
+        public Builder setRoleUrl(String roleUrl) {
+            this.roleUrl = roleUrl;
+            return this;
+        }
 
         public Users build() {
             return new Users(this);

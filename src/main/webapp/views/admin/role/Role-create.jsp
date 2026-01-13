@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <title>Create Role</title>
@@ -22,7 +22,14 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Role Name</label>
-                    <input type="text" name="name" class="form-control" required>
+                    <input type="text" name="name" class="form-control" required placeholder="Ví dụ: Admin, Staff, Shipper...">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Default Redirect URL</label>
+                    <input type="text" name="redirectUrl" class="form-control" required
+                           placeholder="Ví dụ: /admin, /home, /staff/tasks">
+                    <small class="text-muted">Đường dẫn người dùng sẽ được chuyển tới sau khi đăng nhập.</small>
                 </div>
 
                 <div class="mb-3">

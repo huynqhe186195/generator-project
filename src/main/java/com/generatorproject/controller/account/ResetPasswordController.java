@@ -2,6 +2,7 @@ package com.generatorproject.controller.account;
 
 import com.generatorproject.dao.TokenDao;
 import com.generatorproject.dao.UserDao;
+import com.generatorproject.services.AccountServices;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.UserServices;
 
@@ -12,9 +13,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/reset-password"})
+@WebServlet(urlPatterns = { "/reset-password" })
 public class ResetPasswordController extends HttpServlet {
-    private IUserServices userServices = new UserServices();
+    private IUserServices userServices;
+    private final AccountServices accountServices;
+    public ResetPasswordController() {
+        userServices = new UserServices();
+        accountServices = new AccountServices();
+    }
 
     // Hiển thị form nhập mật khẩu mới
     @Override
@@ -40,7 +46,7 @@ public class ResetPasswordController extends HttpServlet {
 
         if (userId != null) {
             // 1. Cập nhật mật khẩu
-            userServices.updatePassword(userId, newPass);
+            accountServices.changePassword(userId, newPass);
             // 2. Hủy token để không dùng lại được lần 2
             userServices.markTokenAsUsed(token);
 

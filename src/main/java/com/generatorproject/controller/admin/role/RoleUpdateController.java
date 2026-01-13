@@ -1,7 +1,8 @@
 package com.generatorproject.controller.admin.role;
 
-import com.generatorproject.dao.RoleDAO;
 import com.generatorproject.model.Role;
+import com.generatorproject.services.IRoleServices;
+import com.generatorproject.services.RoleServices;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,20 +13,39 @@ import java.io.IOException;
 
 @WebServlet("/admin/role-update")
 public class RoleUpdateController extends HttpServlet {
+    private final IRoleServices roleServices;
+
+    public RoleUpdateController() {
+        roleServices = new RoleServices();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        int id = Integer.parseInt(req.getParameter("id"));
+        resp.setContentType("text/html; charset=UTF-8");
+        req.setCharacterEncoding("UTF-8");
+        try {
+            String idStr = req.getParameter("id");
 
-        RoleDAO dao = new RoleDAO();
-        Role role = dao.getById(id);
+            if (idStr == null || idStr.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+                return;
+            }
 
-        req.setAttribute("role", role);
+            int id = Integer.parseInt(idStr);
 
-        req.getRequestDispatcher("/views/admin/role/Role-update.jsp")
-                .forward(req, resp);
+            Role role = roleServices.getRoleById(id);
+
+            req.setAttribute("role", role);
+
+            req.getRequestDispatcher("/views/admin/role/Role-update.jsp")
+                    .forward(req, resp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+        }
     }
 
     @Override
@@ -34,16 +54,33 @@ public class RoleUpdateController extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html; charset=UTF-8");
 
-        int id = Integer.parseInt(req.getParameter("id"));
-        String name = req.getParameter("name");
-        String description = req.getParameter("description");
-        int status = Integer.parseInt(req.getParameter("status"));
+        try {
+            int id = Integer.parseInt(req.getParameter("id"));
+            String name = req.getParameter("name");
+            String description = req.getParameter("description");
+            String redirectUrl = req.getParameter("redirectUrl");
+            int status = Integer.parseInt(req.getParameter("status"));
 
-        RoleDAO dao = new RoleDAO();
-        dao.update(id, name, description, status);
+            Role roleToUpdate = new Role.Builder()
+                    .id(id)
+                    .name(name)
+                    .description(description)
+                    .redirectUrl(redirectUrl)
+                    .status(status)
+                    .build();
 
-        // sau khi update xong → quay về list
-        resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+
+            boolean isSuccess = roleServices.updateRole(roleToUpdate);
+
+            if (isSuccess) {
+                resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/role-list?msg=error");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/admin/role-list?msg=exception");
+        }
     }
 }
-

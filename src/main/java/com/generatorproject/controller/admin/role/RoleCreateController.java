@@ -2,6 +2,8 @@ package com.generatorproject.controller.admin.role;
 
 import com.generatorproject.dao.RoleDAO;
 import com.generatorproject.model.Role;
+import com.generatorproject.services.IRoleServices;
+import com.generatorproject.services.RoleServices;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,11 +15,19 @@ import java.io.IOException;
 @WebServlet("/admin/role-create")
 public class RoleCreateController extends HttpServlet {
 
+    private final IRoleServices roleServices;
+
+    public RoleCreateController() {
+        roleServices = new RoleServices();
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // mở form tạo role
+        resp.setContentType("text/html; charset=UTF-8");
+        req.setCharacterEncoding("UTF-8");
+
         req.getRequestDispatcher("/views/admin/role/Role-create.jsp")
                 .forward(req, resp);
     }
@@ -26,17 +36,35 @@ public class RoleCreateController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String name = req.getParameter("name");
-        String description = req.getParameter("description");
+        req.setCharacterEncoding("UTF-8");
+        resp.setContentType("text/html; charset=UTF-8");
 
-        Role r = new Role();
-        r.setName(name);
-        r.setDescription(description);
-        r.setStatus(1);
+        try {
+            String name = req.getParameter("name");
+            String description = req.getParameter("description");
+            String redirectUrl = req.getParameter("redirectUrl");
 
-        RoleDAO dao = new RoleDAO();
-        dao.insert(r);
+            String statusStr = req.getParameter("status");
+            int status = (statusStr != null && !statusStr.isEmpty()) ? Integer.parseInt(statusStr) : 1;
 
-        resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+            Role newRole = new Role.Builder()
+                    .name(name)
+                    .description(description)
+                    .redirectUrl(redirectUrl)
+                    .status(status)
+                    .build();
+
+            boolean isSuccess = roleServices.createRole(newRole);
+
+            if (isSuccess) {
+                resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/role-create?msg=error");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/admin/role-create?msg=exception");
+        }
     }
 }

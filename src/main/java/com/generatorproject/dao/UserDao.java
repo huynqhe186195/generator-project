@@ -1,13 +1,13 @@
 package com.generatorproject.dao;
 
 import com.generatorproject.model.Users;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class UserDao extends DbContext {
 
@@ -35,8 +35,7 @@ public class UserDao extends DbContext {
                         .setAvatarUrl(
                                 (rs.getString("avatar_url") == null || rs.getString("avatar_url").isEmpty())
                                         ? "https://ui-avatars.com/api/?name=" + rs.getString("full_name")
-                                        : rs.getString("avatar_url")
-                        )
+                                        : rs.getString("avatar_url"))
                         .build();
 
                 list.add(u);
@@ -101,9 +100,77 @@ public class UserDao extends DbContext {
         return null;
     }
 
-        public Users findByEmail(String email) {
-        String sql = "SELECT * FROM users WHERE email = ? AND status = 1"; // Chỉ lấy user đang hoạt động (status=1)
+    public Users checkLogin(String email, String password) {
+        Users user = null;
 
+        // Bỏ 'AND u.password = ?' đi, chỉ tìm theo Email
+        String sql = "SELECT u.*, r.name as role_name, r.redirect_url " +
+                "FROM users u " +
+                "JOIN roles r ON u.role_id = r.id " +
+                "WHERE u.email = ? AND u.status = 1";
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, email);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String storedHash = rs.getString("password");
+
+//                String hash = BCrypt.hashpw("123456", BCrypt.gensalt(10));
+//                System.out.println(hash);
+                if (BCrypt.checkpw(password, storedHash)) {
+                    // Nếu khớp thì mới tạo đối tượng User
+                    user = new Users.Builder()
+                            .setId(rs.getInt("id"))
+                            .setFullName(rs.getString("full_name"))
+                            .setEmail(rs.getString("email"))
+                            .setPassword(storedHash) // Lưu ý: Set password là hash để tí nữa đổi pass còn check lại
+                            .setRoleId(rs.getInt("role_id"))
+                            .setPhone(rs.getString("phone"))
+                            .setStatus(rs.getInt("status"))
+                            .setCreatedAt(rs.getTimestamp("created_at"))
+                            .setAvatarUrl(rs.getString("avatar_url"))
+                            .setRoleName(rs.getString("role_name"))
+                            .setRoleUrl(rs.getString("redirect_url"))
+                            .build();
+
+                    user.setPermissions(getPermissionsByRoleId(user.getRoleId()));
+                }
+            }
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
+    public List<String> getPermissionsByRoleId(int roleId) {
+        List<String> list = new ArrayList<>();
+        // Query đi từ Permissions -> Role_Permissions -> Roles
+        String sql = "SELECT p.code FROM permissions p " +
+                "JOIN role_permissions rp ON p.id = rp.permission_id " +
+                "WHERE rp.role_id = ?";
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, roleId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(rs.getString("code")); // VD: "USER_VIEW", "ASSET_MANAGE"
+            }
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public Users findByEmail(String email) {
+        String sql = "SELECT * FROM users WHERE email = ? AND status = 1"; // Chỉ lấy user đang hoạt động (status=1)
 
         try {
             Connection conn = getConnection();
@@ -155,6 +222,7 @@ public class UserDao extends DbContext {
             e.printStackTrace();
         }
     }
+
     public boolean updatePassword(int userId, String newPassword) {
         String sql = "UPDATE users SET password = ? WHERE id = ?";
 
