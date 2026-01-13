@@ -2,6 +2,7 @@ package com.generatorproject.controller.admin.user;
 
 import com.generatorproject.model.Users;
 import com.generatorproject.services.IUserServices;
+import com.generatorproject.services.RoleServices;
 import com.generatorproject.services.UserServices;
 import com.generatorproject.validation.UserValidate;
 import org.mindrot.jbcrypt.BCrypt;

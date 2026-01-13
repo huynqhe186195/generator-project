@@ -1,5 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:set var="user" value="${sessionScope.USERMODEL}" />
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -51,6 +54,16 @@
             border-radius: 12px;
         }
 
+        /* CSS cho Dropdown User */
+        .user-dropdown-toggle {
+            background: rgba(255,255,255,0.2);
+            color: white !important;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .user-dropdown-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
         footer { background-color: #333; color: #aaa; padding: 40px 0; }
     </style>
 </head>
@@ -63,13 +76,52 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item"><a class="nav-link" href="#features">Tính năng</a></li>
                 <li class="nav-item"><a class="nav-link" href="#about">Về chúng tôi</a></li>
-                <li class="nav-item ms-3">
-                    <!-- ✅ THAY ĐỔI: Gọi qua servlet thay vì JSP trực tiếp -->
-                    <a href="<c:url value='/login'/>" class="btn btn-sm btn-light fw-bold text-primary px-3 rounded-pill">Đăng nhập</a>
-                </li>
+
+                <c:choose>
+                    <%-- TRƯỜNG HỢP 1: CHƯA ĐĂNG NHẬP --%>
+                    <c:when test="${empty user}">
+                        <li class="nav-item ms-3">
+                            <a href="<c:url value='/login'/>" class="btn btn-sm btn-light fw-bold text-primary px-3 rounded-pill">
+                                Đăng nhập
+                            </a>
+                        </li>
+                    </c:when>
+
+                    <%-- TRƯỜNG HỢP 2: ĐÃ ĐĂNG NHẬP --%>
+                    <c:otherwise>
+                        <li class="nav-item dropdown ms-3">
+                            <a class="nav-link dropdown-toggle btn btn-sm user-dropdown-toggle px-3 rounded-pill"
+                               href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>
+                                Welcome, <strong>${user.fullName}</strong>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item py-2" href="<c:url value='/user-profile'/>">
+                                        <i class="fas fa-id-card me-2 text-secondary"></i> Hồ sơ cá nhân
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item py-2" href="<c:url value='/change-password'/>">
+                                        <i class="fas fa-key me-2 text-secondary"></i> Đổi mật khẩu
+                                    </a>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/logout'/>">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </c:otherwise>
+                </c:choose>
             </ul>
         </div>
     </div>
@@ -79,22 +131,29 @@
     <div class="container">
         <div class="row align-items-center">
 
-            <!-- BÊN TRÁI -->
             <div class="col-lg-6">
                 <h1 class="hero-title">Quản lý hệ thống máy phát điện thông minh</h1>
                 <p class="hero-desc">
                     Quản lý giám sát, cảnh báo sự cố và tối ưu hóa quy trình bảo trì cho máy phát điện của bạn.
                 </p>
                 <div class="d-flex gap-3">
-                    <!-- ✅ THAY ĐỔI: Gọi qua servlet -->
-                    <a href="<c:url value='/login'/>" class="btn btn-white shadow-lg">
-                        <i class="fas fa-sign-in-alt me-2"></i> Truy cập hệ thống
-                    </a>
+                    <c:choose>
+                        <c:when test="${empty user}">
+                            <a href="<c:url value='/login'/>" class="btn btn-white shadow-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i> Truy cập hệ thống
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                             <a href="<c:url value='/login'/>" class="btn btn-white shadow-lg">
+                                <i class="fas fa-arrow-right me-2"></i> Vào Dashboard
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+
                     <a href="#features" class="btn btn-outline-light-custom">Tìm hiểu thêm</a>
                 </div>
             </div>
 
-            <!-- BÊN PHẢI -->
             <div class="col-lg-6 d-flex justify-content-center">
                 <div class="hero-image"></div>
             </div>
@@ -151,10 +210,11 @@
 
 <section class="py-5 bg-white text-center">
     <div class="container">
-        <!-- ✅ THAY ĐỔI: Gọi qua servlet -->
-        <a href="<c:url value='/login'/>" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
-            Đăng nhập ngay
-        </a>
+        <c:if test="${empty user}">
+             <a href="<c:url value='/login'/>" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
+                Đăng nhập ngay
+            </a>
+        </c:if>
     </div>
 </section>
 
@@ -169,4 +229,4 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> //oke
+</html>

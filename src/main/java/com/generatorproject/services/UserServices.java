@@ -38,12 +38,7 @@ public class UserServices implements IUserServices {
 
     @Override
     public Users findByEmailAndPassword(String email, String password) {
-        Users user = userDao.findByEmail(email);
-        // Kiểm tra user tồn tại và mật khẩu khớp
-        if (user != null && user.getPassword().equals(password)) {
-            return user;
-        }
-        return null;
+        return userDao.checkLogin(email, password);
     }
 
     @Override

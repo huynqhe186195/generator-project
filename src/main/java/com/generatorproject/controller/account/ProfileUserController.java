@@ -1,7 +1,8 @@
-package com.generatorproject.controller.admin.user;
+package com.generatorproject.controller.account;
 
-import com.generatorproject.dao.UserDao; // Chú ý tên class DAO của bạn là UserDao hay UserDAO
+import com.generatorproject.dao.UserDao;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.UserServices;
 
 import javax.servlet.ServletException;
@@ -12,39 +13,38 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/admin/admin-profile"})
-public class ProfileController extends HttpServlet {
+@WebServlet(urlPatterns = {"/user-profile"})
+public class ProfileUserController extends HttpServlet {
 
-    private final UserServices userServices;
+    private final IUserServices userServices;
 
-    public ProfileController() {
+    public ProfileUserController() {
         userServices = new UserServices();
     }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        resp.setContentType("text/html; charset=UTF-8");
+        req.setCharacterEncoding("UTF-8");
+
         HttpSession session = req.getSession();
 
-        // 1. Lấy User từ session (để lấy ID)
         Users sessionUser = (Users) session.getAttribute("USERMODEL");
 
         if (sessionUser == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
+            resp.sendRedirect(req.getContextPath() + "/login?message=login_required");
             return;
         }
 
-        // 2. Query lại DB để lấy thông tin mới nhất (tránh trường hợp session cũ)
-        // Lưu ý: Hàm findUserById cần trả về đầy đủ cả roleName nhé (nếu chưa có thì dùng sessionUser tạm)
         Users currentUser = userServices.findUserById(sessionUser.getId());
 
-        // Nếu hàm findUserById của bạn chưa join bảng Role để lấy tên Role,
-        // bạn có thể set tạm roleName từ session vào để hiển thị
+
         if (currentUser.getRoleName() == null) {
             currentUser.setRoleName(sessionUser.getRoleName());
         }
 
-        // 3. Đẩy sang JSP
         req.setAttribute("myProfile", currentUser);
 
-        req.getRequestDispatcher("/views/admin/profile.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/account/profile.jsp").forward(req, resp);
     }
 }

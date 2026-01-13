@@ -1,7 +1,7 @@
 package com.generatorproject.model;
 
 import java.sql.Timestamp;
-import java.util.List; // Nhớ import List
+import java.util.List;
 
 public class Users {
     private int id;
@@ -14,11 +14,15 @@ public class Users {
     private int status;
     private Timestamp createdAt;
 
+    // Field mới
+    private String roleUrl;
     private String roleName;
     private List<String> permissions;
 
-    public Users() {}
+    public Users() {
+    }
 
+    // --- CONSTRUCTOR BUILDER (QUAN TRỌNG) ---
     private Users(Builder builder) {
         this.id = builder.id;
         this.roleId = builder.roleId;
@@ -33,9 +37,12 @@ public class Users {
         // Gán các trường mới
         this.roleName = builder.roleName;
         this.permissions = builder.permissions;
+
+        // 🔥 ĐÃ FIX: Copy URL từ Builder sang User
+        this.roleUrl = builder.roleUrl;
     }
 
-    // --- GETTER ---
+    // --- GETTER & SETTER ---
     public int getId() { return id; }
     public int getRoleId() { return roleId; }
     public String getEmail() { return email; }
@@ -47,12 +54,15 @@ public class Users {
     public Timestamp getCreatedAt() { return createdAt; }
 
     public String getRoleName() { return roleName; }
-    public List<String> getPermissions() { return permissions; }
-
     public void setRoleName(String roleName) { this.roleName = roleName; }
+
+    public List<String> getPermissions() { return permissions; }
     public void setPermissions(List<String> permissions) { this.permissions = permissions; }
 
-    // Ví dụ dùng trên JSP: <c:if test="${USER_MODEL.hasPermission('USER_DELETE')}">
+    public String getRoleUrl() { return roleUrl; }
+    public void setRoleUrl(String roleUrl) { this.roleUrl = roleUrl; }
+
+    // Helper check quyền
     public boolean hasPermission(String permissionCode) {
         if (this.permissions == null || this.permissions.isEmpty()) {
             return false;
@@ -60,6 +70,7 @@ public class Users {
         return this.permissions.contains(permissionCode);
     }
 
+    // --- BUILDER CLASS ---
     public static class Builder {
         private int id;
         private int roleId;
@@ -71,6 +82,7 @@ public class Users {
         private int status;
         private Timestamp createdAt;
 
+        private String roleUrl;
         private String roleName;
         private List<String> permissions;
 
@@ -86,6 +98,11 @@ public class Users {
 
         public Builder setRoleName(String roleName) { this.roleName = roleName; return this; }
         public Builder setPermissions(List<String> permissions) { this.permissions = permissions; return this; }
+
+        public Builder setRoleUrl(String roleUrl) {
+            this.roleUrl = roleUrl;
+            return this;
+        }
 
         public Users build() {
             return new Users(this);
