@@ -18,7 +18,7 @@ public class RoleDeleteController extends HttpServlet {
         int id = Integer.parseInt(req.getParameter("id"));
 
         RoleDAO dao = new RoleDAO();
-        dao.delete(id); // hoặc updateStatus(id,0)
+        dao.delete(id);
 
         resp.sendRedirect(req.getContextPath() + "/admin/role-list");
     }

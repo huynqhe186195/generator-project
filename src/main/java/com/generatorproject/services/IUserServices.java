@@ -24,4 +24,6 @@ public interface IUserServices {
     void updatePassword(int userId, String newPassword);
 
     void markTokenAsUsed(String token);
+
+    boolean changeStatus(int userId, int newStatus);
 }

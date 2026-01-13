@@ -8,67 +8,90 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-// Dấu /* nghĩa là chặn tất cả file con bên trong
-@WebFilter(urlPatterns = { "/admin/*", "/manager/*", "/staff/*", "/technician/*", "/views/admin/*" })
+// Chặn tất cả request vào thư mục /admin/
+@WebFilter(urlPatterns = {"/admin/*"})
 public class AuthorizationFilter implements Filter {
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {}
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // Khởi tạo nếu cần (thường để trống)
+    }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
         HttpSession session = req.getSession();
 
-        // 1. Lấy User từ Session
-        // Lưu ý: Key "USERMODEL" phải khớp với bên LoginController
+        // -----------------------------------------------------------
+        // BƯỚC 1: KIỂM TRA ĐĂNG NHẬP
+        // -----------------------------------------------------------
         Users user = (Users) session.getAttribute("USERMODEL");
 
-        // 2. Kiểm tra Đăng nhập: Chưa đăng nhập -> Đuổi về Login
         if (user == null) {
             resp.sendRedirect(req.getContextPath() + "/login?message=not_login");
             return;
         }
 
-        // 3. Phân quyền (Logic cốt lõi)
-        String url = req.getRequestURI();
-        String contextPath = req.getContextPath(); // /GeneratorCMS
+        //check admin
+        if (user.getRoleId() == 1) {
+            chain.doFilter(request, response);
+            return;
+        }
 
-        // --- RULE 1: CHẶN TRANG ADMIN ---
-        if (url.startsWith(contextPath + "/admin")) {
-            // Admin (Role ID 1) HOẶC có quyền truy cập Admin
-            if (user.getRoleId() != 1 && !user.hasPermission("ADMIN_ACCESS")) {
-                resp.sendRedirect(contextPath + "/login?message=no_permission");
-                return;
+        // permission detail
+        String path = req.getServletPath();
+        boolean isAllowed = false; // Mặc định là CHẶN
+
+        if (path.equals("/admin/dashboard") || path.equals("/admin/home")) {
+            isAllowed = true;
+        }
+
+        // --- NHÓM 2: QUẢN LÝ USER ---
+
+        // 1. ƯU TIÊN CAO NHẤT: Check hành động Thêm/Sửa/Xóa trước
+        // (Phải đặt lên đầu để chặn ngay nếu URL chứa các từ khóa này)
+        if (path.contains("/addNewUser") || path.contains("/updateUser") || path.contains("/user-delete")) {
+
+            // Nếu user CÓ quyền MANAGE -> Thì CHO PHÉP (isAllowed = true)
+            // Code cũ của bạn đang để là false (sai logic)
+            if (user.hasPermission("USER_MANAGE")) {
+                isAllowed = true;
             }
         }
 
-        // --- RULE 2: CHẶN TRANG MANAGER ---
-        if (url.startsWith(contextPath + "/manager")) {
-            // Phải là Manager (Role 2) hoặc Admin (Role 1)
-            // Hoặc kiểm tra quyền cụ thể: REPORT_VIEW
-            if (user.getRoleId() != 2 && user.getRoleId() != 1 && !user.hasPermission("REPORT_VIEW")) {
-                resp.sendRedirect(contextPath + "/login?message=no_permission");
-                return;
+        else if (path.contains("/user-list") || path.contains("/user-view")) {
+
+            if (user.hasPermission("USER_VIEW")) {
+                isAllowed = true;
             }
         }
 
-        // --- RULE 3: CHẶN TRANG TECHNICIAN ---
-        if (url.startsWith(contextPath + "/technician")) {
-            // Phải có quyền Sửa chữa hoặc Quản lý kho
-            if (!user.hasPermission("ASSET_MAINTAIN") && !user.hasPermission("INVENTORY_MANAGE")) {
-                resp.sendRedirect(contextPath + "/login?message=no_permission");
-                return;
-            }
+        else if (path.contains("/role-")) {
+            if (user.hasPermission("ROLE_MANAGE")) isAllowed = true;
         }
 
-        // Nếu qua được hết các chốt chặn -> Cho đi tiếp
-        chain.doFilter(request, response);
+        else if (path.contains("/asset-list")) {
+            if (user.hasPermission("ASSET_VIEW")) isAllowed = true;
+        } else if (path.contains("/asset-create") || path.contains("/asset-update") || path.contains("/asset-delete")) {
+            if (user.hasPermission("ASSET_MANAGE")) isAllowed = true;
+        }
+
+        else if (path.contains("/report")) {
+            if (user.hasPermission("REPORT_VIEW")) isAllowed = true;
+        }
+
+        if (isAllowed) {
+            // Có quyền thì cho đi tiếp
+            chain.doFilter(request, response);
+        } else {
+            // Không có quyền cook  về trang thông báo lỗi 403
+            resp.sendRedirect(req.getContextPath() + "/views/error/403.jsp");
+        }
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 }

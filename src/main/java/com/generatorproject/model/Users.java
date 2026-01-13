@@ -14,10 +14,12 @@ public class Users {
     private int status;
     private Timestamp createdAt;
 
-    // Field mới
     private String roleUrl;
     private String roleName;
     private List<String> permissions;
+
+    public Users() {
+    }
 
     public Users() {
     }
@@ -34,11 +36,9 @@ public class Users {
         this.status = builder.status;
         this.createdAt = builder.createdAt;
 
-        // Gán các trường mới
         this.roleName = builder.roleName;
         this.permissions = builder.permissions;
 
-        // 🔥 ĐÃ FIX: Copy URL từ Builder sang User
         this.roleUrl = builder.roleUrl;
     }
 
@@ -70,7 +70,6 @@ public class Users {
         return this.permissions.contains(permissionCode);
     }
 
-    // --- BUILDER CLASS ---
     public static class Builder {
         private int id;
         private int roleId;
