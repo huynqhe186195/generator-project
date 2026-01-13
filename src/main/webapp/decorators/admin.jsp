@@ -41,9 +41,13 @@
         </div>
 
         <div class="list-group list-group-flush">
-            <a href="<c:url value='/admin/dashboard'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
-                <i class="fas fa-tachometer-alt me-2" style="width: 20px;"></i> Dashboard
-            </a>
+
+
+            <c:if test="${currentUser.roleId == 2}">
+                <a href="<c:url value='/admin/dashboard'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-tachometer-alt me-2" style="width: 20px;"></i> Dashboard
+                </a>
+            </c:if>
 
             <c:if test="${currentUser.roleId == 1 || currentUser.hasPermission('USER_VIEW')}">
                 <a href="<c:url value='/admin/user-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">

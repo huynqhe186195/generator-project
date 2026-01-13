@@ -21,8 +21,6 @@ public class Users {
     public Users() {
     }
 
-    public Users() {
-    }
 
     // --- CONSTRUCTOR BUILDER (QUAN TRỌNG) ---
     private Users(Builder builder) {

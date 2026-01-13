@@ -98,5 +98,4 @@ public class UserManagementController extends HttpServlet {
         RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-add.jsp");
         rd.forward(req, resp);
     }
-
 }
