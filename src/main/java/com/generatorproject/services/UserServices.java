@@ -71,4 +71,9 @@ public class UserServices implements IUserServices {
     public void markTokenAsUsed(String token) {
         tokenDao.markAsUsed(token);
     }
+
+    @Override
+    public boolean changeStatus(int userId, int newStatus) {
+        return userDao.changeStatus(userId, newStatus);
+    }
 }

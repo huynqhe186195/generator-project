@@ -17,12 +17,10 @@ public class RolePermissionDAO extends DbContext {
             conn = getConnection();
             conn.setAutoCommit(false);
 
-            // Xóa quyền cũ
             del = conn.prepareStatement(deleteSql);
             del.setInt(1, roleId);
             del.executeUpdate();
 
-            // Thêm quyền mới
             if (permissionIds != null && permissionIds.length > 0) {
                 ins = conn.prepareStatement(insertSql);
                 for (String pid : permissionIds) {
