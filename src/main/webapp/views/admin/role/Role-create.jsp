@@ -18,7 +18,7 @@
         </div>
 
         <div class="card-body">
-            <form method="post" action="<c:url value='/admin/role-create'/>">
+            <form method="post" action="<c:url value='/admin/hanldeCreateRole'/>">
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Role Name</label>

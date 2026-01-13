@@ -105,7 +105,7 @@
                                             <span class="badge bg-success rounded-pill"><i class="fas fa-check-circle me-1"></i> Active</span>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="badge bg-secondary rounded-pill"><i class="fas fa-ban me-1"></i> Locked</span>
+                                            <span class="badge bg-secondary rounded-pill"><i class="fas fa-ban me-1"></i> Deactive</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
@@ -126,14 +126,12 @@
                                             </a>
 
                                             <c:choose>
-                                                <%-- Nếu đang Active (1) -> Hiện nút Đỏ để KHÓA --%>
                                                 <c:when test="${u.status == 1}">
                                                     <a href="javascript:void(0)" onclick="confirmLock(${u.id}, 1)" class="btn btn-sm btn-danger" title="Khóa tài khoản">
                                                         <i class="fas fa-lock"></i>
                                                     </a>
                                                 </c:when>
 
-                                                <%-- Nếu đang Locked (0) -> Hiện nút Xanh để MỞ --%>
                                                 <c:otherwise>
                                                     <a href="javascript:void(0)" onclick="confirmLock(${u.id}, 0)" class="btn btn-sm btn-success" title="Mở khóa">
                                                         <i class="fas fa-unlock"></i>

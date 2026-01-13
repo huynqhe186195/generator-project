@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/change-password"})
+@WebServlet(urlPatterns = {"/hanldeChangePassword"})
 public class ChangePasswordController extends HttpServlet {
 
     private final AccountDao accountDao;
@@ -25,19 +25,8 @@ public class ChangePasswordController extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Kiểm tra session (giữ nguyên)
-        HttpSession session = req.getSession();
-        if (session.getAttribute("USERMODEL") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
-            return;
-        }
-        req.getRequestDispatcher("/views/account/change-password.jsp").forward(req, resp);
-    }
-
-    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setCharacterEncoding("UTF-8"); // Xử lý tiếng Việt nếu có
+        req.setCharacterEncoding("UTF-8");
         HttpSession session = req.getSession();
         Users sessionUser = (Users) session.getAttribute("USERMODEL");
 
@@ -50,10 +39,8 @@ public class ChangePasswordController extends HttpServlet {
         String newPass = req.getParameter("newPassword");
         String confirmPass = req.getParameter("confirmPassword");
 
-        // Lấy thông tin User mới nhất từ DB (chứa mật khẩu đã mã hóa)
         Users currentUser = userDao.findUserById(sessionUser.getId());
 
-        // Không dùng: currentUser.getPassword().equals(oldPass) -> SAI
         if (!BCrypt.checkpw(oldPass, currentUser.getPassword())) {
             req.setAttribute("mess", "Mật khẩu cũ không đúng!");
             req.setAttribute("alert", "danger");
@@ -61,7 +48,6 @@ public class ChangePasswordController extends HttpServlet {
             return;
         }
 
-        // 3. Kiểm tra xác nhận mật khẩu (Cái này so sánh chuỗi bình thường OK)
         if (!newPass.equals(confirmPass)) {
             req.setAttribute("mess", "Mật khẩu xác nhận không khớp!");
             req.setAttribute("alert", "danger");
@@ -69,14 +55,12 @@ public class ChangePasswordController extends HttpServlet {
             return;
         }
 
-        // 4. Gọi DAO để đổi mật khẩu
         boolean isSuccess = accountDao.changePassword(currentUser.getId(), newPass);
 
         if (isSuccess) {
             req.setAttribute("mess", "Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
             req.setAttribute("alert", "success");
 
-            // Optional: Xóa session bắt đăng nhập lại cho an toàn
             session.invalidate();
         } else {
             req.setAttribute("mess", "Có lỗi xảy ra, vui lòng thử lại!");

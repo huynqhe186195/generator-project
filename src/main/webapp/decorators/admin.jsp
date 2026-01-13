@@ -22,14 +22,12 @@
         #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
         #page-content-wrapper { width: 100%; transition: all 0.3s; }
 
-        /* Khi màn hình to (Desktop) thì hiện sidebar mặc định */
         @media (min-width: 768px) {
             #sidebar-wrapper { margin-left: 0; }
             #page-content-wrapper { min-width: 0; width: 100%; }
             #wrapper.toggled #sidebar-wrapper { margin-left: -15rem; }
         }
     </style>
-
     <dec:head />
 </head>
 <body>
@@ -87,7 +85,6 @@
                             ${currentUser.fullName != null ? currentUser.fullName : 'Admin'}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><hr class="dropdown-divider"></li>
                             <li>
                                 <a class="dropdown-item text-danger" href="<c:url value='/logout'/>">
                                     <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
