@@ -71,7 +71,6 @@ public class RoleDAO extends DbContext {
         String sql = "DELETE FROM roles WHERE id=?";
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-
             ps.setInt(1, id);
             ps.executeUpdate();
 

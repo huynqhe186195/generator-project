@@ -44,7 +44,6 @@
                 </div>
 
                 <div class="mt-4 d-grid gap-2">
-                    <button class="btn btn-primary"><i class="fas fa-edit me-2"></i> Chỉnh sửa thông tin</button>
                     <c:if test="${user.roleId != 1}">
                         <button class="btn btn-outline-danger"><i class="fas fa-trash-alt me-2"></i> Xóa tài khoản</button>
                     </c:if>

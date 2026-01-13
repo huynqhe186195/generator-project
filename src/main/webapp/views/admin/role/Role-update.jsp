@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<form method="post" action="<c:url value='/admin/role-update'/>">
+<form method="post" action="<c:url value='/admin/hanldeUpdateRole'/>">
 
     <input type="hidden" name="id" value="${role.id}" />
 

@@ -11,41 +11,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet("/admin/role-update")
+@WebServlet("/admin/hanldeUpdateRole")
 public class RoleUpdateController extends HttpServlet {
     private final IRoleServices roleServices;
 
     public RoleUpdateController() {
         roleServices = new RoleServices();
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        resp.setContentType("text/html; charset=UTF-8");
-        req.setCharacterEncoding("UTF-8");
-        try {
-            String idStr = req.getParameter("id");
-
-            if (idStr == null || idStr.isEmpty()) {
-                resp.sendRedirect(req.getContextPath() + "/admin/role-list");
-                return;
-            }
-
-            int id = Integer.parseInt(idStr);
-
-            Role role = roleServices.getRoleById(id);
-
-            req.setAttribute("role", role);
-
-            req.getRequestDispatcher("/views/admin/role/Role-update.jsp")
-                    .forward(req, resp);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/role-list");
-        }
     }
 
     @Override
