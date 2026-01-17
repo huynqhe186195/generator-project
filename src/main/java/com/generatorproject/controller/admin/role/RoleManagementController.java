@@ -82,7 +82,7 @@ public class RoleManagementController extends HttpServlet {
             String idStr = req.getParameter("id");
 
             if (idStr == null || idStr.isEmpty()) {
-                resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+                resp.sendRedirect(req.getContextPath() + "/admin/role/role-list");
                 return;
             }
 
@@ -97,7 +97,7 @@ public class RoleManagementController extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+            resp.sendRedirect(req.getContextPath() + "/admin/role/role-list");
         }
     }
 
