@@ -86,7 +86,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li>
-                                <a class="dropdown-item text-danger" href="<c:url value='/logout'/>">
+                                <a class="dropdown-item text-danger" href="<c:url value='/account/logout'/>">
                                     <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
                                 </a>
                             </li>

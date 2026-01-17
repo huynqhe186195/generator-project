@@ -26,7 +26,7 @@
                         </div>
                     </c:if>
 
-                    <form method="POST" action="<c:url value='/reset-password'/>" class="register-form" id="reset-form">
+                    <form method="POST" action="<c:url value='/account/reset-password'/>" class="register-form" id="reset-form">
                         <input type="hidden" name="token" value="${token}">
 
                         <div class="form-group">
