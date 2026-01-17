@@ -1,4 +1,4 @@
-package com.generatorproject.controller.admin;
+package com.generatorproject.controller.admin.user;
 
 import com.generatorproject.services.UserServices;
 import com.generatorproject.utils.EmailUtil;
@@ -12,20 +12,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(urlPatterns = { "/admin/approve-reset" })
+@WebServlet(urlPatterns = { "/admin/user-list/approve-reset" })
 public class AdminResetPasswordController extends HttpServlet {
 
     private UserServices userServices;
 
     public AdminResetPasswordController() {
         userServices = new UserServices();
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
-        List<Map<String, Object>> list = userServices.getPendingRequests();
-        req.setAttribute("list", list);
-        req.getRequestDispatcher("/views/admin/user/user-reset-password.jsp").forward(req, resp);
     }
 
     @Override
@@ -46,7 +39,7 @@ public class AdminResetPasswordController extends HttpServlet {
                     // 2. Tạo đường dẫn đến trang NHẬP MÃ (Không kèm token trên URL nữa)
                     // Ví dụ: http://localhost:8080/project/reset-password
                     String baseUrl = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort() + req.getContextPath();
-                    String resetPageUrl = baseUrl + "/reset-password";
+                    String resetPageUrl = baseUrl + "/account/reset-password";
 
                     // 3. Soạn nội dung email: Hiển thị mã Token rõ ràng để user copy
                     String subject = "Mã xác nhận đặt lại mật khẩu";

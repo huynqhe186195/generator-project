@@ -101,13 +101,13 @@
 
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown">
                                 <li>
-                                    <a class="dropdown-item py-2" href="<c:url value='/user-profile'/>">
+                                    <a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>">
                                         <i class="fas fa-id-card me-2 text-secondary"></i> Hồ sơ cá nhân
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a class="dropdown-item py-2" href="<c:url value='/change-password'/>">
+                                    <a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>">
                                         <i class="fas fa-key me-2 text-secondary"></i> Đổi mật khẩu
                                     </a>
                                 </li>

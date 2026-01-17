@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/admin/*"})
+@WebServlet(urlPatterns = {"/admin/role/*"})
 public class RoleManagementController extends HttpServlet {
 
     private final IRoleServices roleServices;
@@ -24,30 +24,28 @@ public class RoleManagementController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String requestURI = req.getRequestURI();
-        String contextPath = req.getContextPath();
-
-        String path = requestURI.substring(contextPath.length());
+        req.setCharacterEncoding("UTF-8");
+        String path = req.getPathInfo();
         switch (path) {
-            case "/admin/role-list":
+            case "/role-list":
                 handleRoleList(req, resp);
                 break;
-            case "/admin/role-create":
+            case "/role-create":
                 handleRoleAdd(req, resp);
                 break;
-            case "/admin/role-update":
+            case "/role-update":
                 hanldEditRole(req, resp);
                 break;
-            case "/admin/role-delete":
+            case "/role-delete":
                 handleDeleteRole(req, resp);
                 break;
-            case "/admin/role-toggle":
+            case "/role-toggle":
                 handleToggleRole(req, resp);
                 break;
-            case "/admin/role-permission":
+            case "/role-permission":
                 handlePermissonRole(req, resp);
                 break;
-            case "/admin/role-detail":
+            case "/role-detail":
                 handleRoleDetail(req, resp);
                 break;
         }
@@ -107,7 +105,7 @@ public class RoleManagementController extends HttpServlet {
         int id = Integer.parseInt(req.getParameter("id"));
 
         roleServices.deleteRoleById(id);
-        resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+        resp.sendRedirect(req.getContextPath() + "/admin/role/role-list");
     }
 
     private void handleToggleRole(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -115,7 +113,7 @@ public class RoleManagementController extends HttpServlet {
 
         roleServices.toggleStatus(id);
 
-        resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+        resp.sendRedirect(req.getContextPath() + "/admin/role/role-list");
     }
 
     private void handlePermissonRole(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

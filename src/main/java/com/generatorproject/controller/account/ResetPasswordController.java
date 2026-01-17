@@ -60,7 +60,7 @@ public class ResetPasswordController extends HttpServlet {
                 userServices.markTokenAsUsed(token);
 
                 // Redirect về Login kèm thông báo
-                resp.sendRedirect(req.getContextPath() + "/login?message=reset_success");
+                resp.sendRedirect(req.getContextPath() + "/account/login?message=reset_success");
             } else {
                 req.setAttribute("message", "Lỗi khi cập nhật mật khẩu, vui lòng thử lại.");
                 req.setAttribute("alert", "danger");

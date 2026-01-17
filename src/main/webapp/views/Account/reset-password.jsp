@@ -48,7 +48,7 @@
 
                     </form>
 
-                    <a href="<c:url value='/login'/>" class="back-link">
+                    <a href="<c:url value='/account/login'/>" class="back-link">
                         <i class="zmdi zmdi-arrow-left"></i> Quay lại Đăng nhập
                     </a>
                 </div>

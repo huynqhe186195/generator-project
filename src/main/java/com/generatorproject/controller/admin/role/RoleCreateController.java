@@ -46,14 +46,14 @@ public class RoleCreateController extends HttpServlet {
             boolean isSuccess = roleServices.createRole(newRole);
 
             if (isSuccess) {
-                resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+                resp.sendRedirect(req.getContextPath() + "/admin/role/role-list");
             } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/role-create?msg=error");
+                resp.sendRedirect(req.getContextPath() + "/admin/role/role-create?msg=error");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/role-create?msg=exception");
+            resp.sendRedirect(req.getContextPath() + "/admin/role/role-create?msg=exception");
         }
     }
 }

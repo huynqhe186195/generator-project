@@ -11,7 +11,7 @@
         <h3 class="text-secondary">Role List</h3>
 
         <c:if test="${currentUser.hasPermission('ROLE_CREATE') || currentUser.roleId == 1}">
-            <a href="<c:url value='/admin/role-create'/>" class="btn btn-success">
+            <a href="<c:url value='/admin/role/role-create'/>" class="btn btn-success">
                 <i class="fa-solid fa-plus"></i> Add Role
             </a>
         </c:if>
@@ -56,18 +56,18 @@
 
                                 <c:if test="${currentUser.hasPermission('ROLE_UPDATE') || currentUser.roleId == 1}">
 
-                                    <a href="<c:url value='/admin/role-permission?id=${r.id}'/>"
+                                    <a href="<c:url value='/admin/role/role-permission?id=${r.id}'/>"
                                        class="btn btn-dark btn-sm me-1"
                                        title="Phân quyền chức năng">
                                        <i class="fa-solid fa-shield-halved"></i> Perms
                                     </a>
 
-                                    <a href="<c:url value='/admin/role-update?id=${r.id}'/>"
+                                    <a href="<c:url value='/admin/role/role-update?id=${r.id}'/>"
                                        class="btn btn-warning btn-sm me-1" title="Sửa thông tin">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
 
-                                    <a href="<c:url value='/admin/role-toggle?id=${r.id}'/>"
+                                    <a href="<c:url value='/admin/role/role-toggle?id=${r.id}'/>"
                                        class="btn btn-outline-secondary btn-sm me-1"
                                        title="${r.status == 1 ? 'Khóa Role' : 'Mở khóa'}">
                                        <i class="fa-solid ${r.status == 1 ? 'fa-lock' : 'fa-lock-open'}"></i>
@@ -75,7 +75,7 @@
                                 </c:if>
 
                                 <c:if test="${currentUser.hasPermission('ROLE_DELETE') || currentUser.roleId == 1}">
-                                    <a href="<c:url value='/admin/role-delete?id=${r.id}'/>"
+                                    <a href="<c:url value='/admin/role/role-delete?id=${r.id}'/>"
                                        class="btn btn-danger btn-sm"
                                        onclick="return confirm('CẢNH BÁO: Xóa role này sẽ ảnh hưởng đến tất cả User đang giữ role đó. Bạn chắc chắn chứ?');"
                                        title="Xóa Role">

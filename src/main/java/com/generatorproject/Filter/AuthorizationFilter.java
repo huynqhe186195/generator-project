@@ -35,7 +35,7 @@ public class AuthorizationFilter implements Filter {
         String url = req.getRequestURI();
         String contextPath = req.getContextPath();
 
-        if (url.startsWith(contextPath + "/admin")) {
+        if (url.startsWith(contextPath + "/admin/user")) {
             if (user.getRoleId() != 1 && !user.hasPermission("ADMIN_ACCESS")) {
                 resp.sendRedirect(contextPath + "/login?message=no_permission");
                 return;

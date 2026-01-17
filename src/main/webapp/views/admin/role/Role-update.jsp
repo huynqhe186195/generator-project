@@ -35,7 +35,7 @@
 
     <div class="d-flex gap-2">
         <button class="btn btn-warning">Update</button>
-        <a href="<c:url value='/admin/role-list'/>" class="btn btn-secondary">
+        <a href="<c:url value='/admin/role/role-list'/>" class="btn btn-secondary">
             Cancel
         </a>
     </div>

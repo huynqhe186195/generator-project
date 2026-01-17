@@ -41,7 +41,7 @@
                     <button class="btn btn-success">
                         Save
                     </button>
-                    <a href="<c:url value='/admin/role-list'/>" class="btn btn-secondary">
+                    <a href="<c:url value='/admin/role/role-list'/>" class="btn btn-secondary">
                         Cancel
                     </a>
                 </div>
