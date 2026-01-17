@@ -53,7 +53,7 @@
 					</div>
 					<div class="form-group">
 						<input type="checkbox" name="remember-me" id="remember-me" class="agree-term" />
-						<a href="<c:url value='/forgot-password'/>" class="signup-image-link">Forgot password!</a>
+						<a href="<c:url value='/account/forgot-password'/>" class="signup-image-link">Forgot password!</a>
 					</div>
 					<div class="form-group form-button">
 						<input type="submit" name="signin" id="signin" class="form-submit" value="Log in" />

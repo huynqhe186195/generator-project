@@ -41,7 +41,7 @@
                 <li class="nav-item"><a class="nav-link" href="<c:url value='/home'/>">Trang chủ</a></li>
                 <li class="nav-item ms-3">
                     <span class="text-white fw-bold"><i class="fas fa-user-circle me-1"></i> ${u.fullName}</span>
-                    <a href="<c:url value='/logout'/>" class="btn btn-sm btn-light text-danger fw-bold ms-2 rounded-pill px-3">Thoát</a>
+                    <a href="<c:url value='/account/logout'/>" class="btn btn-sm btn-light text-danger fw-bold ms-2 rounded-pill px-3">Thoát</a>
                 </li>
             </ul>
         </div>

@@ -14,20 +14,24 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/login", "/logout", "/user-profile", "/change-password", "/forgot-password", "/reset-password"})
+@WebServlet(urlPatterns = {"/account/*"})
 public class AccountManagementController extends HttpServlet {
-    private final IAccountServices accountServices;
 
     private final IUserServices userServices;
 
     public AccountManagementController() {
-        accountServices = new AccountServices();
         userServices = new UserServices();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String path = req.getServletPath();
+        String path = req.getPathInfo();
+
+        if (path == null || path.equals("/")) {
+            resp.sendRedirect(req.getContextPath() + "/account/login");
+            return;
+        }
+
         switch (path) {
             case "/login":
                 hanldeLogic(req, resp);
@@ -61,7 +65,7 @@ public class AccountManagementController extends HttpServlet {
     private void handleChangePassword(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
         if (session.getAttribute("USERMODEL") == null) {
-            resp.sendRedirect(req.getContextPath() + "/login");
+            resp.sendRedirect(req.getContextPath() + "/account/login");
             return;
         }
         req.getRequestDispatcher("/views/account/change-password.jsp").forward(req, resp);
@@ -78,7 +82,7 @@ public class AccountManagementController extends HttpServlet {
 
         session.invalidate();
 
-        resp.sendRedirect(req.getContextPath() + "/login");
+        resp.sendRedirect(req.getContextPath() + "/account/login");
     }
 
     private void hanldeUserProfile(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
@@ -90,7 +94,7 @@ public class AccountManagementController extends HttpServlet {
         Users sessionUser = (Users) session.getAttribute("USERMODEL");
 
         if (sessionUser == null) {
-            resp.sendRedirect(req.getContextPath() + "/login?message=login_required");
+            resp.sendRedirect(req.getContextPath() + "/account/login?message=login_required");
             return;
         }
 
