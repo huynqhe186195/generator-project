@@ -51,14 +51,7 @@ public class AccountManagementController extends HttpServlet {
     }
 
     private void hanldeResetPassword(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-        String token = req.getParameter("token");
-
-        if (token != null && userServices.getUserIdByValidToken(token) != null) {
-            req.setAttribute("token", token);
-            req.getRequestDispatcher("/views/account/reset-password.jsp").forward(req, resp);
-        } else {
-            resp.sendRedirect(req.getContextPath() + "/login?message=token_invalid");
-        }
+        req.getRequestDispatcher("/views/account/reset-password.jsp").forward(req, resp);
     }
 
     private void hanldeForgotPassword(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
