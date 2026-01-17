@@ -27,6 +27,11 @@ public class AccountManagementController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String path = req.getPathInfo();
 
+        if (path == null || path.equals("/")) {
+            resp.sendRedirect(req.getContextPath() + "/account/login");
+            return;
+        }
+
         switch (path) {
             case "/login":
                 hanldeLogic(req, resp);
