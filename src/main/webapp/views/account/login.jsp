@@ -42,7 +42,7 @@
 							</c:choose>
 						</div>
 					</c:if>
-					<form method="POST" action="<c:url value='/login'/>" class="register-form" id="login-form">
+					<form method="POST" action="<c:url value='/hanldeLogin'/>" class="register-form" id="login-form">
 					<div class="form-group">
 						<label for="username"><i class="zmdi zmdi-account material-icons-name"></i></label>
 						<input type="text" name="username" id="username" placeholder="Your Name" />
@@ -53,7 +53,7 @@
 					</div>
 					<div class="form-group">
 						<input type="checkbox" name="remember-me" id="remember-me" class="agree-term" />
-						<a href="<c:url value='/forgot-password'/>" class="signup-image-link">Forgot password!</a>
+						<a href="<c:url value='/account/forgot-password'/>" class="signup-image-link">Forgot password!</a>
 					</div>
 					<div class="form-group form-button">
 						<input type="submit" name="signin" id="signin" class="form-submit" value="Log in" />

@@ -6,7 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đặt lại mật khẩu - Generator CMS</title>
-
     <link rel="stylesheet" href="<c:url value='/template/account/fonts/material-icon/css/material-design-iconic-font.min.css'/>">
     <link rel="stylesheet" href="<c:url value='/template/account/css/login-style.css'/>">
 </head>
@@ -26,8 +25,12 @@
                         </div>
                     </c:if>
 
-                    <form method="POST" action="<c:url value='/reset-password'/>" class="register-form" id="reset-form">
-                        <input type="hidden" name="token" value="${token}">
+                    <form method="POST" action="<c:url value='/handleResetPassword'/>" class="register-form" id="reset-form">
+
+                        <div class="form-group">
+                            <label for="token"><i class="zmdi zmdi-key"></i></label>
+                            <input type="text" name="token" id="token" placeholder="Nhập mã xác nhận (Token)" value="${token}" required/>
+                        </div>
 
                         <div class="form-group">
                             <label for="password"><i class="zmdi zmdi-lock"></i></label>
@@ -42,6 +45,7 @@
                         <div class="form-group form-button text-center">
                             <input type="submit" name="reset" id="reset" class="form-submit" value="Cập nhật mật khẩu"/>
                         </div>
+
                     </form>
 
                     <a href="<c:url value='/login'/>" class="back-link">
@@ -55,7 +59,6 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    // Kiểm tra khớp mật khẩu bằng JS
     $('#reset-form').submit(function(e) {
         var pass = $('#password').val();
         var rePass = $('#re-password').val();

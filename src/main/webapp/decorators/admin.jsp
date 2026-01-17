@@ -22,14 +22,12 @@
         #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
         #page-content-wrapper { width: 100%; transition: all 0.3s; }
 
-        /* Khi màn hình to (Desktop) thì hiện sidebar mặc định */
         @media (min-width: 768px) {
             #sidebar-wrapper { margin-left: 0; }
             #page-content-wrapper { min-width: 0; width: 100%; }
             #wrapper.toggled #sidebar-wrapper { margin-left: -15rem; }
         }
     </style>
-
     <dec:head />
 </head>
 <body>
@@ -41,9 +39,13 @@
         </div>
 
         <div class="list-group list-group-flush">
-            <a href="<c:url value='/admin/dashboard'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
-                <i class="fas fa-tachometer-alt me-2" style="width: 20px;"></i> Dashboard
-            </a>
+
+
+            <c:if test="${currentUser.roleId == 2}">
+                <a href="<c:url value='/admin/dashboard'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-tachometer-alt me-2" style="width: 20px;"></i> Dashboard
+                </a>
+            </c:if>
 
             <c:if test="${currentUser.roleId == 1 || currentUser.hasPermission('USER_VIEW')}">
                 <a href="<c:url value='/admin/user-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
@@ -57,7 +59,13 @@
                 </a>
             </c:if>
 
-            <c:if test="${currentUser.roleId == 1 || currentUser.roleId == 2 || currentUser.hasPermission('ASSET_VIEW')}">
+            <c:if test="${currentUser.roleId == 1 || currentUser.hasPermission('ROLE_VIEW')}">
+                <a href="<c:url value='/admin/approve-reset'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Forgot password account
+                </a>
+            </c:if>
+
+            <c:if test="${currentUser.roleId == 2}">
                 <a href="<c:url value='/admin/generator-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                     <i class="fas fa-server me-2" style="width: 20px;"></i> Máy phát điện
                 </a>
@@ -83,9 +91,8 @@
                             ${currentUser.fullName != null ? currentUser.fullName : 'Admin'}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="<c:url value='/logout'/>">
+                                <a class="dropdown-item text-danger" href="<c:url value='/account/logout'/>">
                                     <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
                                 </a>
                             </li>

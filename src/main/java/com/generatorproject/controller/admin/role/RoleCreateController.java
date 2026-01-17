@@ -12,24 +12,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet("/admin/role-create")
+@WebServlet("/admin/hanldeCreateRole")
 public class RoleCreateController extends HttpServlet {
 
     private final IRoleServices roleServices;
 
     public RoleCreateController() {
         roleServices = new RoleServices();
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        resp.setContentType("text/html; charset=UTF-8");
-        req.setCharacterEncoding("UTF-8");
-
-        req.getRequestDispatcher("/views/admin/role/Role-create.jsp")
-                .forward(req, resp);
     }
 
     @Override

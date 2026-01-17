@@ -1,14 +1,19 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<c:set var="me" value="${sessionScope.USERMODEL}" />
+
 <title>Danh sách người dùng</title>
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="text-secondary">Quản lý người dùng</h3>
-        <a href="<c:url value='/admin/user-list/addNewUser'/>" class="btn btn-primary">
-            <i class="fas fa-plus-circle me-2"></i> Thêm nhân viên mới
-        </a>
+
+        <c:if test="${me.hasPermission('USER_MANAGE')}">
+            <a href="<c:url value='/admin/user-list/addNewUser'/>" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i> Thêm nhân viên mới
+            </a>
+        </c:if>
     </div>
 
     <div class="card shadow mb-4 border-0">
@@ -69,11 +74,10 @@
                                             </c:when>
                                             <c:otherwise>
                                                 <img src="<c:url value='/${u.avatarUrl}'/>"
-                                                     class="rounded-circle me-3"
-                                                     width="40" height="40"
-                                                     alt="Avatar"
-                                                     style="object-fit: cover;"
-                                                     onerror="this.src='https://via.placeholder.com/40'"> </c:otherwise>
+                                                     class="rounded-circle me-3" width="40" height="40"
+                                                     alt="Avatar" style="object-fit: cover;"
+                                                     onerror="this.src='https://ui-avatars.com/api/?name=${u.fullName}&background=random'">
+                                            </c:otherwise>
                                         </c:choose>
 
                                         <div>
@@ -91,7 +95,6 @@
                                         <c:when test="${u.roleId == 3}"><span class="badge bg-secondary">STAFF</span></c:when>
                                         <c:when test="${u.roleId == 4}"><span class="badge bg-secondary">TECHNICAL</span></c:when>
                                         <c:when test="${u.roleId == 5}"><span class="badge bg-secondary">CUSTOMER</span></c:when>
-
                                         <c:otherwise><span class="badge bg-light text-dark">UNKNOWN</span></c:otherwise>
                                     </c:choose>
                                 </td>
@@ -102,24 +105,42 @@
                                             <span class="badge bg-success rounded-pill"><i class="fas fa-check-circle me-1"></i> Active</span>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="badge bg-secondary rounded-pill"><i class="fas fa-ban me-1"></i> Locked</span>
+                                            <span class="badge bg-secondary rounded-pill"><i class="fas fa-ban me-1"></i> Deactive</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
 
                                 <td class="text-end pe-4">
-                                    <a href="<c:url value='/admin/user-list/user-detail?id=${u.id}'/>" class="btn btn-sm btn-info text-white me-1" title="Xem chi tiết">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
+                                    <div class="d-flex gap-1 justify-content-end">
 
-                                    <a href="<c:url value = '/admin/user-list/updateUser?id=${u.id}'/>" class="btn btn-sm btn-outline-primary me-1" title="Chỉnh sửa"><i class="fas fa-edit"></i></a>
+                                        <c:if test="${me.hasPermission('USER_VIEW')}">
+                                            <a href="<c:url value='/admin/user-list/user-detail?id=${u.id}'/>" class="btn btn-sm btn-info text-white" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </c:if>
 
-                                    <c:if test="${u.status == 1}">
-                                        <button class="btn btn-sm btn-outline-danger" title="Khóa tài khoản"><i class="fas fa-lock"></i></button>
-                                    </c:if>
-                                    <c:if test="${u.status != 1}">
-                                        <button class="btn btn-sm btn-outline-success" title="Mở khóa"><i class="fas fa-unlock"></i></button>
-                                    </c:if>
+                                        <c:if test="${me.hasPermission('USER_MANAGE')}">
+
+                                            <a href="<c:url value='/admin/user-list/updateUser?id=${u.id}'/>" class="btn btn-sm btn-warning text-white" title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+
+                                            <c:choose>
+                                                <c:when test="${u.status == 1}">
+                                                    <a href="javascript:void(0)" onclick="confirmLock(${u.id}, 1)" class="btn btn-sm btn-danger" title="Khóa tài khoản">
+                                                        <i class="fas fa-lock"></i>
+                                                    </a>
+                                                </c:when>
+
+                                                <c:otherwise>
+                                                    <a href="javascript:void(0)" onclick="confirmLock(${u.id}, 0)" class="btn btn-sm btn-success" title="Mở khóa">
+                                                        <i class="fas fa-unlock"></i>
+                                                    </a>
+                                                </c:otherwise>
+                                            </c:choose>
+
+                                        </c:if>
+                                    </div>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -150,3 +171,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    function confirmLock(id, currentStatus) {
+        let action = (currentStatus == 1) ? "Deactive" : "Active";
+        let confirmMsg = "Bạn có chắc chắn muốn " + action + " tài khoản này không?";
+
+        if (confirm(confirmMsg)) {
+            // Chuyển hướng đến Controller xử lý Status
+            // Lưu ý: Controller này chúng ta đã tạo ở bước trước
+            window.location.href = "${pageContext.request.contextPath}/admin/user-status?id=" + id + "&status=" + currentStatus;
+        }
+    }
+</script>

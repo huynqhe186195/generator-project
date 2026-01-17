@@ -10,7 +10,7 @@
         </div>
 
         <div class="card-body">
-            <form action="<c:url value='/admin/role-permission'/>" method="POST">
+            <form action="<c:url value='/admin/hanldePermissonRole'/>" method="POST">
 
                 <input type="hidden" name="roleId" value="${role.id}">
 

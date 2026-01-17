@@ -8,11 +8,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(urlPatterns = { "/admin/*", "/manager/*", "/staff/*", "/technician/*", "/views/admin/*" })
+// Chặn tất cả request vào thư mục /admin/
+@WebFilter(urlPatterns = { "/admin/*" })
 public class AuthorizationFilter implements Filter {
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {}
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // Khởi tạo nếu cần (thường để trống)
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -57,5 +60,6 @@ public class AuthorizationFilter implements Filter {
     }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 }
