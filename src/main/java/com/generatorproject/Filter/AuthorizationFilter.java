@@ -9,7 +9,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 // Chặn tất cả request vào thư mục /admin/
-@WebFilter(urlPatterns = {"/admin/*"})
+@WebFilter(urlPatterns = { "/admin/*" })
 public class AuthorizationFilter implements Filter {
 
     @Override
@@ -18,15 +18,13 @@ public class AuthorizationFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
         HttpSession session = req.getSession();
 
-        // -----------------------------------------------------------
-        // BƯỚC 1: KIỂM TRA ĐĂNG NHẬP
-        // -----------------------------------------------------------
         Users user = (Users) session.getAttribute("USERMODEL");
 
         if (user == null) {
@@ -34,7 +32,7 @@ public class AuthorizationFilter implements Filter {
             return;
         }
 
-        //check admin
+        // check admin
         if (user.getRoleId() == 1) {
             chain.doFilter(request, response);
             return;
@@ -69,24 +67,28 @@ public class AuthorizationFilter implements Filter {
         }
 
         else if (path.contains("/role-")) {
-            if (user.hasPermission("ROLE_MANAGE")) isAllowed = true;
+            if (user.hasPermission("ROLE_MANAGE"))
+                isAllowed = true;
         }
 
         else if (path.contains("/asset-list")) {
-            if (user.hasPermission("ASSET_VIEW")) isAllowed = true;
+            if (user.hasPermission("ASSET_VIEW"))
+                isAllowed = true;
         } else if (path.contains("/asset-create") || path.contains("/asset-update") || path.contains("/asset-delete")) {
-            if (user.hasPermission("ASSET_MANAGE")) isAllowed = true;
+            if (user.hasPermission("ASSET_MANAGE"))
+                isAllowed = true;
         }
 
         else if (path.contains("/report")) {
-            if (user.hasPermission("REPORT_VIEW")) isAllowed = true;
+            if (user.hasPermission("REPORT_VIEW"))
+                isAllowed = true;
         }
 
         if (isAllowed) {
             // Có quyền thì cho đi tiếp
             chain.doFilter(request, response);
         } else {
-            // Không có quyền cook  về trang thông báo lỗi 403
+            // Không có quyền cook về trang thông báo lỗi 403
             resp.sendRedirect(req.getContextPath() + "/views/error/403.jsp");
         }
     }
