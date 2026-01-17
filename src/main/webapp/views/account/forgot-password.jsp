@@ -30,7 +30,7 @@
             </div>
           </c:if>
 
-          <form method="POST" action="<c:url value='/account/forgot-password'/>" class="register-form" id="forgot-form">
+          <form method="POST" action="<c:url value='/handleForgotPassword'/>" class="register-form" id="forgot-form">
             <div class="form-group">
               <label for="email"><i class="zmdi zmdi-email"></i></label>
               <input type="email" name="email" id="email" placeholder="Email của bạn" required/>

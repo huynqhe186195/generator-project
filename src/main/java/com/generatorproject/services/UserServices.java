@@ -6,6 +6,7 @@ import com.generatorproject.model.Users;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class UserServices implements IUserServices {
     private final UserDao userDao;
@@ -75,5 +76,20 @@ public class UserServices implements IUserServices {
     @Override
     public boolean changeStatus(int userId, int newStatus) {
         return userDao.changeStatus(userId, newStatus);
+    }
+
+    @Override
+    public List<Map<String, Object>> getPendingRequests(){
+        return tokenDao.getPendingRequests();
+    }
+
+    @Override
+    public void activateToken(String token){
+        tokenDao.activateToken(token);
+    }
+
+    @Override
+    public void deleteToken(String token){
+        tokenDao.deleteRequest(token);
     }
 }
