@@ -14,20 +14,24 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/login", "/logout", "/user-profile", "/change-password", "/forgot-password", "/reset-password"})
+@WebServlet(urlPatterns = {"/account/*"})
 public class AccountManagementController extends HttpServlet {
-    private final IAccountServices accountServices;
 
     private final IUserServices userServices;
 
     public AccountManagementController() {
-        accountServices = new AccountServices();
         userServices = new UserServices();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String path = req.getServletPath();
+        String path = req.getPathInfo();
+
+        if (path == null || path.equals("/")) {
+            resp.sendRedirect(req.getContextPath() + "/account/login");
+            return;
+        }
+
         switch (path) {
             case "/login":
                 hanldeLogic(req, resp);

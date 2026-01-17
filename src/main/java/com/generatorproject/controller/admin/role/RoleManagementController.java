@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/admin/role-list", "/admin/role-create", "/admin/role-update", "/admin/role-delete", "/admin/role-toggle", "/admin/role-permission", "/admin/role-detail"})
+@WebServlet(urlPatterns = {"/admin/*"})
 public class RoleManagementController extends HttpServlet {
 
     private final IRoleServices roleServices;
@@ -24,7 +24,10 @@ public class RoleManagementController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String path = req.getServletPath();
+        String requestURI = req.getRequestURI();
+        String contextPath = req.getContextPath();
+
+        String path = requestURI.substring(contextPath.length());
         switch (path) {
             case "/admin/role-list":
                 handleRoleList(req, resp);

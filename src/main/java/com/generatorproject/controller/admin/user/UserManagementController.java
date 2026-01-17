@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/admin/user-list", "/admin/user-list/user-detail", "/admin/user-list/addNewUser", "/admin/user-list/updateUser"})
+@WebServlet(urlPatterns = {"/admin/user-list/*"})
 public class UserManagementController extends HttpServlet {
 
     private final IUserServices userServices;
@@ -29,7 +29,10 @@ public class UserManagementController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String path = req.getServletPath();
+        String requestURI = req.getRequestURI();
+        String contextPath = req.getContextPath();
+
+        String path = requestURI.substring(contextPath.length());
         switch (path) {
             case "/admin/user-list":
                 handleUserList(resp, req);

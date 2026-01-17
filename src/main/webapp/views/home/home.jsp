@@ -84,7 +84,7 @@
                     <%-- TRƯỜNG HỢP 1: CHƯA ĐĂNG NHẬP --%>
                     <c:when test="${empty user}">
                         <li class="nav-item ms-3">
-                            <a href="<c:url value='/login'/>" class="btn btn-sm btn-light fw-bold text-primary px-3 rounded-pill">
+                            <a href="<c:url value='/account/login'/>" class="btn btn-sm btn-light fw-bold text-primary px-3 rounded-pill">
                                 Đăng nhập
                             </a>
                         </li>
@@ -114,7 +114,7 @@
 
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/logout'/>">
+                                    <a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>">
                                         <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
                                     </a>
                                 </li>
@@ -211,7 +211,7 @@
 <section class="py-5 bg-white text-center">
     <div class="container">
         <c:if test="${empty user}">
-             <a href="<c:url value='/login'/>" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
+             <a href="<c:url value='/account/login'/>" class="btn btn-primary btn-lg rounded-pill px-5 shadow">
                 Đăng nhập ngay
             </a>
         </c:if>

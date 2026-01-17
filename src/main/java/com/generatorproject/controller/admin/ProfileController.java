@@ -1,4 +1,4 @@
-package com.generatorproject.controller.admin.user;
+package com.generatorproject.controller.admin;
 
 import com.generatorproject.dao.UserDao; // Chú ý tên class DAO của bạn là UserDao hay UserDAO
 import com.generatorproject.model.Users;
