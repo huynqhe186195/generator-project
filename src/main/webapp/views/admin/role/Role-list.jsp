@@ -47,7 +47,7 @@
                         </td>
 
                         <td>
-                            <a href="<c:url value='/admin/role-detail?id=${r.id}'/>"
+                            <a href="<c:url value='/admin/role/role-detail?id=${r.id}'/>"
                                class="btn btn-info btn-sm me-1 text-white" title="Chi tiết">
                                 <i class="fa-solid fa-eye"></i>
                             </a>

@@ -7,7 +7,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="text-secondary">Create Role</h3>
-        <a href="<c:url value='/admin/role-list'/>" class="btn btn-outline-secondary">
+        <a href="<c:url value='/admin/role/role-list'/>" class="btn btn-outline-secondary">
             Back
         </a>
     </div>
