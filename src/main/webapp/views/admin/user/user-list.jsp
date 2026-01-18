@@ -10,7 +10,7 @@
         <h3 class="text-secondary">Quản lý người dùng</h3>
 
         <c:if test="${me.hasPermission('USER_MANAGE')}">
-            <a href="<c:url value='/admin/user-list/addNewUser'/>" class="btn btn-primary">
+            <a href="<c:url value='/admin/user/addNewUser'/>" class="btn btn-primary">
                 <i class="fas fa-plus-circle me-2"></i> Thêm nhân viên mới
             </a>
         </c:if>
@@ -18,7 +18,7 @@
 
     <div class="card shadow mb-4 border-0">
         <div class="card-body bg-light rounded">
-            <form action="<c:url value='/admin/user-list'/>" method="get" class="row g-3">
+            <form action="<c:url value='/admin/user/user-list'/>" method="get" class="row g-3">
                 <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
@@ -114,7 +114,7 @@
                                     <div class="d-flex gap-1 justify-content-end">
 
                                         <c:if test="${me.hasPermission('USER_VIEW')}">
-                                            <a href="<c:url value='/admin/user-list/user-detail?id=${u.id}'/>" class="btn btn-sm btn-info text-white" title="Xem chi tiết">
+                                            <a href="<c:url value='/admin/user/user-detail?id=${u.id}'/>" class="btn btn-sm btn-info text-white" title="Xem chi tiết">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </c:if>

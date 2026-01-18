@@ -42,25 +42,31 @@
 
 
             <c:if test="${currentUser.roleId == 2}">
-                <a href="<c:url value='/admin/dashboard'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <a href="<c:url value='/admin/user/dashboard'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                     <i class="fas fa-tachometer-alt me-2" style="width: 20px;"></i> Dashboard
                 </a>
             </c:if>
 
             <c:if test="${currentUser.roleId == 1 || currentUser.hasPermission('USER_VIEW')}">
-                <a href="<c:url value='/admin/user-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <a href="<c:url value='/admin/user/user-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                      <i class="fas fa-users me-2" style="width: 20px;"></i> Quản lý User
                 </a>
             </c:if>
 
             <c:if test="${currentUser.roleId == 1 || currentUser.hasPermission('ROLE_VIEW')}">
-                <a href="<c:url value='/admin/role-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <a href="<c:url value='/admin/role/role-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                     <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Phân quyền (Role)
                 </a>
             </c:if>
 
+            <c:if test="${currentUser.roleId == 1 || currentUser.hasPermission('ROLE_VIEW')}">
+                <a href="<c:url value='/admin/user/approve-reset'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Forgot password account
+                </a>
+            </c:if>
+
             <c:if test="${currentUser.roleId == 2}">
-                <a href="<c:url value='/admin/generator-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <a href="<c:url value='/admin/user/generator-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                     <i class="fas fa-server me-2" style="width: 20px;"></i> Máy phát điện
                 </a>
             </c:if>

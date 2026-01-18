@@ -3,6 +3,7 @@ package com.generatorproject.services;
 import com.generatorproject.model.Users;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IUserServices {
     List<Users> getAllUsers();
@@ -26,4 +27,10 @@ public interface IUserServices {
     void markTokenAsUsed(String token);
 
     boolean changeStatus(int userId, int newStatus);
+
+    List<Map<String, Object>> getPendingRequests();
+
+    void activateToken(String token);
+
+    void deleteToken(String token);
 }

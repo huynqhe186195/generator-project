@@ -34,11 +34,11 @@ public class RolePermissionController extends HttpServlet {
 
             roleServices.updateRolePermissions(roleId, selectedPermIds);
 
-            resp.sendRedirect(req.getContextPath() + "/admin/role-list?mess=update_success");
+            resp.sendRedirect(req.getContextPath() + "/admin/role/role-list?mess=update_success");
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/role-list?mess=error");
+            resp.sendRedirect(req.getContextPath() + "/admin/role/role-list?mess=error");
         }
     }
 }
