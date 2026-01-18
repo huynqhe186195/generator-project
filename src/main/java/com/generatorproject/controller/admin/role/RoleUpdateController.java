@@ -44,14 +44,14 @@ public class RoleUpdateController extends HttpServlet {
             boolean isSuccess = roleServices.updateRole(roleToUpdate);
 
             if (isSuccess) {
-                resp.sendRedirect(req.getContextPath() + "/admin/role-list");
+                resp.sendRedirect(req.getContextPath() + "/admin/role/role-list");
             } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/role-list?msg=error");
+                resp.sendRedirect(req.getContextPath() + "/admin/role/role-list?msg=error");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/role-list?msg=exception");
+            resp.sendRedirect(req.getContextPath() + "/admin/role/role-list?msg=exception");
         }
     }
 }

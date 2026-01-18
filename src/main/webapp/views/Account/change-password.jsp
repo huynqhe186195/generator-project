@@ -51,7 +51,7 @@
                         </div>
                     </c:if>
 
-                    <form action="<c:url value='/account/change-password'/>" method="POST">
+                    <form action="<c:url value='/hanldeChangePassword'/>" method="POST">
 
                         <div class="mb-3">
                             <label class="form-label fw-bold text-secondary">Mật khẩu hiện tại</label>

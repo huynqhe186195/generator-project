@@ -47,7 +47,7 @@
                 </div>
 
                 <div class="mt-4 pt-3 border-top text-end">
-                    <a href="<c:url value='/admin/role-list'/>" class="btn btn-secondary me-2">Hủy bỏ</a>
+                    <a href="<c:url value='/admin/role/role-list'/>" class="btn btn-secondary me-2">Hủy bỏ</a>
                     <button type="submit" class="btn btn-primary px-4">
                         <i class="fa-solid fa-save"></i> Lưu thay đổi
                     </button>
