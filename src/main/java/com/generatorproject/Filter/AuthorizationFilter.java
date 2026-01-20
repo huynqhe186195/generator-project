@@ -28,7 +28,7 @@ public class AuthorizationFilter implements Filter {
         Users user = (Users) session.getAttribute("USERMODEL");
 
         if (user == null) {
-            resp.sendRedirect(req.getContextPath() + "/login?message=not_login");
+            resp.sendRedirect(req.getContextPath() + "/account/login?message=not_login");
             return;
         }
 

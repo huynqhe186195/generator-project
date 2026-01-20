@@ -108,7 +108,7 @@ public class AddUserController extends HttpServlet {
                     .build();
             userServices.createUser(newUser);
 
-            resp.sendRedirect(req.getContextPath() + "/admin/user-list");
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list");
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="text-secondary">Chỉnh sửa người dùng: #${user.id}</h3>
-        <a href="<c:url value='/admin/user-list'/>" class="btn btn-outline-secondary">
+        <a href="<c:url value='/admin/user/user-list'/>" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i> Quay lại
         </a>
     </div>

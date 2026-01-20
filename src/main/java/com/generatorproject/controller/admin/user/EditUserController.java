@@ -76,7 +76,6 @@ public class EditUserController extends HttpServlet {
                 return;
             }
 
-            // Dùng Builder tạo object (Không set Password vì không đổi)
             Users userToUpdate = new Users.Builder()
                     .setId(id)
                     .setFullName(fullName)
@@ -88,11 +87,11 @@ public class EditUserController extends HttpServlet {
 
             userServices.updateUser(userToUpdate);
 
-            resp.sendRedirect(req.getContextPath() + "/admin/user-list");
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list");
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/user-list?error=update_failed");
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?error=update_failed");
         }
     }
 }
