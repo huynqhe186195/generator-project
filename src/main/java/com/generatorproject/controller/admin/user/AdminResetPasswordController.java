@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(urlPatterns = { "/admin/user-list/approve-reset" })
+@WebServlet(urlPatterns = { "/admin/user/handleApproveReset" })
 public class AdminResetPasswordController extends HttpServlet {
 
     private UserServices userServices;
@@ -83,6 +83,6 @@ public class AdminResetPasswordController extends HttpServlet {
             req.getSession().setAttribute("alertType", "danger");
         }
 
-        resp.sendRedirect(req.getContextPath() + "/admin/approve-reset");
+        resp.sendRedirect(req.getContextPath() + "/admin/user/approve-reset");
     }
 }

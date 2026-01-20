@@ -55,7 +55,7 @@
                         </td>
 
                         <td>
-                            <form action="<c:url value='/admin/approve-reset'/>" method="post" style="display:inline;">
+                            <form action="<c:url value='/admin/user/handleApproveReset'/>" method="post" style="display:inline;">
                                 <input type="hidden" name="token" value="${req.token}">
                                 <input type="hidden" name="email" value="${req.email}">
 

@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="text-secondary">Thêm người dùng mới</h3>
-        <a href="<c:url value='/admin/user-list'/>" class="btn btn-outline-secondary">
+        <a href="<c:url value='/admin/user/user-list'/>" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-2"></i> Quay lại danh sách
         </a>
     </div>
@@ -96,7 +96,7 @@
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-save me-2"></i> Lưu người dùng
                             </button>
-                            <a href="<c:url value='/admin/user-list'/>" class="btn btn-secondary">Hủy bỏ</a>
+                            <a href="<c:url value='/admin/user/user-list'/>" class="btn btn-secondary">Hủy bỏ</a>
                         </div>
                     </div>
                 </div>

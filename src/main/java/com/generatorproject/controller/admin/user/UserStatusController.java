@@ -32,11 +32,11 @@ public class UserStatusController extends HttpServlet {
             userServices.changeStatus(id, newStatus);
             // 4. Redirect về danh sách kèm thông báo
             String msg = (newStatus == 1) ? "unlocked" : "locked";
-            resp.sendRedirect(req.getContextPath() + "/admin/user-list?message=" + msg);
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=" + msg);
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/user-list?message=error");
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=error");
         }
     }
 }

@@ -119,9 +119,9 @@
                                             </a>
                                         </c:if>
 
-                                        <c:if test="${me.hasPermission('USER_MANAGE')}">
+                                        <c:if test="${me.hasPermission('USER_MANAGE') && u.role.name != 'ADMIN'}">
 
-                                            <a href="<c:url value='/admin/user-list/updateUser?id=${u.id}'/>" class="btn btn-sm btn-warning text-white" title="Chỉnh sửa">
+                                            <a href="<c:url value='/admin/user/updateUser?id=${u.id}'/>" class="btn btn-sm btn-warning text-white" title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
