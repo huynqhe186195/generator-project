@@ -125,9 +125,7 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item">
-                    <a class="nav-link px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a>
-                </li>
+                <li class="nav-item"><a class="nav-link px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a></li>
                 <li class="nav-item"><a class="nav-link px-3" href="#">Sản phẩm</a></li>
                 <li class="nav-item"><a class="nav-link px-3" href="#features">Tính năng</a></li>
                 <li class="nav-item"><a class="nav-link px-3" href="#brands">Thương hiệu</a></li>
@@ -215,22 +213,22 @@
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="feature-card text-center">
                     <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                    <h4 class="fw-bold mb-3">Giám sát 24/7</h4>
-                    <p class="text-muted">Theo dõi thông số điện áp, tần số và mức nhiên liệu theo thời gian thực từ bất cứ đâu.</p>
+                    <h4 class="fw-bold mb-3">Giám sát thời gian thực</h4>
+                    <p class="text-muted">Theo dõi trạng thái hoạt động của từng máy 24/7.</p>
                 </div>
             </div>
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="feature-card text-center">
                     <div class="feature-icon"><i class="fas fa-exclamation-triangle"></i></div>
                     <h4 class="fw-bold mb-3">Cảnh báo tức thì</h4>
-                    <p class="text-muted">Tự động gửi cảnh báo qua Email/SMS khi có sự cố áp suất dầu hoặc nhiệt độ quá cao.</p>
+                    <p class="text-muted">Nhận thông báo tức thời qua Email/SMS khi có sự cố phát sinh.</p>
                 </div>
             </div>
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="feature-card text-center">
                     <div class="feature-icon"><i class="fas fa-tasks"></i></div>
-                    <h4 class="fw-bold mb-3">Lịch bảo trì</h4>
-                    <p class="text-muted">Nhắc lịch thay dầu, lọc gió định kỳ dựa trên số giờ chạy thực tế của máy.</p>
+                    <h4 class="fw-bold mb-3">Quản lý bảo trì</h4>
+                    <p class="text-muted">Lên lịch bảo trì, lưu trữ lịch sử sửa chữa và quản lý đội ngũ kỹ thuật hiệu quả.</p>
                 </div>
             </div>
         </div>

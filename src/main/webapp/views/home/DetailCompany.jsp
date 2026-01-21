@@ -59,6 +59,7 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item"><a class="nav-link active" href="#">Sơ lược công ty</a></li>
+        <li class="nav-item"><a class="nav-link px-3" href="#">Sản phẩm</a></li>
         <li class="nav-item"><a class="nav-link" href="<c:url value='/home#features'/>">Tính năng</a></li>
         <li class="nav-item"><a class="nav-link" href="<c:url value='/home#brands'/>">Thương hiệu</a></li>
         <li class="nav-item"><a class="nav-link" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách hàng</a></li>

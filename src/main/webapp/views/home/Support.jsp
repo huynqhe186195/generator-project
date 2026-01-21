@@ -61,8 +61,11 @@
     <a class="navbar-brand" href="<c:url value='/'/>"><i class="fas fa-bolt me-2"></i>Gen-CMS</a>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center">
-        <li class="nav-item"><a class="nav-link" href="<c:url value='/'/>">Trang chủ</a></li>
-        <li class="nav-item"><a class="nav-link active fw-bold" href="#">Hỗ trợ</a></li>
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item"><a class="nav-link active" href="#">Sơ lược công ty</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="#">Sản phẩm</a></li>
+          <li class="nav-item"><a class="nav-link" href="<c:url value='/home#features'/>">Tính năng</a></li>
+          <li class="nav-item"><a class="nav-link" href="<c:url value='/home#brands'/>">Thương hiệu</a></li>
         <c:if test="${not empty user}">
           <li class="nav-item ms-lg-3">
             <span class="badge bg-light text-primary p-2 px-3 rounded-pill">Chào, ${user.fullName}</span>
