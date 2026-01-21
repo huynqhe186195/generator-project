@@ -53,7 +53,6 @@
         .brand-item { padding: 20px; background: white; border-radius: 10px; text-align: center; border: 1px solid #eee; transition: 0.3s; }
         .brand-item:hover { border-color: #4e73df; color: #4e73df; }
 
-        /* Sửa lỗi hiển thị dropdown */
         .user-dropdown-toggle { background: rgba(255,255,255,0.2); color: white !important; border: 1px solid rgba(255,255,255,0.4); }
         .dropdown-menu { z-index: 2000; }
         footer { background-color: #333; color: #aaa; padding: 40px 0; }
@@ -71,11 +70,13 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link" href="#">Sơ lược công ty</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">sản phâm</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="#">Sản phẩm</a></li>
                 <li class="nav-item"><a class="nav-link" href="#features">Tính năng</a></li>
                 <li class="nav-item"><a class="nav-link" href="#brands">Thương hiệu</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Chăm sóc khách hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách hàng</a></li>
                 <c:choose>
                     <c:when test="${empty user}">
                         <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
@@ -141,7 +142,6 @@
                 </div>
             </div>
             <div class="col-lg-5 text-center d-none d-lg-block">
-                <%-- Sửa đường dẫn ảnh để đảm bảo luôn load được --%>
                 <img src="<c:url value='/template/images/img.png'/>" class="img-fluid rounded-4 shadow-lg" alt="Gen-CMS" onerror="this.src='https://via.placeholder.com/500x400?text=Generator+System'">
             </div>
         </div>
