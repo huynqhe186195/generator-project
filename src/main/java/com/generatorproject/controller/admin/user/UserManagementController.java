@@ -70,7 +70,7 @@ public class UserManagementController extends HttpServlet {
                     RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-edit.jsp");
                     rd.forward(req, resp);
                 } else {
-                    resp.sendRedirect(req.getContextPath() + "/admin/user-list");
+                    resp.sendRedirect(req.getContextPath() + "/admin/user/user-list");
                 }
             }
         } catch (Exception e) {

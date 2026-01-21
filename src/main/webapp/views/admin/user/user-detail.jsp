@@ -5,7 +5,7 @@
 
 <div class="container-fluid">
     <div class="mb-3">
-        <a href="<c:url value='/admin/user-list'/>" class="text-decoration-none text-secondary">
+        <a href="<c:url value='/admin/user/user-list'/>" class="text-decoration-none text-secondary">
             <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
         </a>
     </div>
