@@ -23,8 +23,8 @@ public class UserServices implements IUserServices {
     }
 
     @Override
-    public Users createUser(Users user) {
-        return userDao.createUser(user);
+    public void createUser(Users user) {
+         userDao.createUser(user);
     }
 
     @Override
@@ -64,11 +64,6 @@ public class UserServices implements IUserServices {
     }
 
     @Override
-    public void updatePassword(int userId, String newPassword) {
-        userDao.updatePassword(userId, newPassword);
-    }
-
-    @Override
     public void markTokenAsUsed(String token) {
         tokenDao.markAsUsed(token);
     }
@@ -92,4 +87,7 @@ public class UserServices implements IUserServices {
     public void deleteToken(String token){
         tokenDao.deleteRequest(token);
     }
+
+    @Override
+    public void deleteUser(int id){ userDao.deleteUser(id);}
 }

@@ -60,14 +60,17 @@ public class EditUserController extends HttpServlet {
             }
             String errorMessage ="";
 
-            if(!userValidate.checkPhoneNumber(phone)){
+            if(!userValidate.checkPhoneFormat(phone)){
                 errorMessage = "Phone number is invalid! Please enter again";
+            }
+
+            if (userValidate.checkPhoneExistForUpdate(phone, id)) {
+                errorMessage = "Phone number already exist for the user!";
             }
 
 
             if(!errorMessage.isEmpty()){
                 req.setAttribute("error", errorMessage);
-                // resend data user entered
                 req.setAttribute("oldFullName", fullName);
                 req.setAttribute("oldPhone", phone);
 

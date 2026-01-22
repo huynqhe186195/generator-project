@@ -48,13 +48,33 @@ public class UserManagementController extends HttpServlet {
             case "/approve-reset":
                 handldeApproveReset(req, resp);
                 break;
+            case "/deleteUser":
+                handleDeleteUser(req, resp);
+                break;
+        }
+    }
+
+    private void handleDeleteUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            String idParam = req.getParameter("id");
+
+            if (idParam != null && !idParam.isEmpty()) {
+                int id = Integer.parseInt(idParam);
+                userServices.deleteUser(id);
+            }
+
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=delete_success");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=error");
         }
     }
 
     private void handldeApproveReset(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            List<Map<String, Object>> list = userServices.getPendingRequests();
-            req.setAttribute("list", list);
-            req.getRequestDispatcher("/views/admin/user/user-reset-password.jsp").forward(req, resp);
+        List<Map<String, Object>> list = userServices.getPendingRequests();
+        req.setAttribute("list", list);
+        req.getRequestDispatcher("/views/admin/user/user-reset-password.jsp").forward(req, resp);
     }
 
     private void handleEditUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

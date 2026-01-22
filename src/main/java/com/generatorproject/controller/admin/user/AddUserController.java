@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 @WebServlet(urlPatterns = {"/admin/user-list/user-add"})
-// Cấu hình để nhận file (Max size khoảng 10MB)
+// Cấu hình để nhận file
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10,      // 10MB
@@ -29,10 +29,12 @@ import java.nio.file.Paths;
 public class AddUserController extends HttpServlet {
     private final IUserServices userServices;
     private final UserValidate userValidate;
+    private final RoleServices roleServices;
 
     public AddUserController() {
         this.userServices = new UserServices();
         this.userValidate = new UserValidate();
+        this.roleServices = new RoleServices();
     }
 
     @Override
@@ -40,7 +42,6 @@ public class AddUserController extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
 
         try {
-            // 1. Nhận các trường Text bình thường
             String fullName = req.getParameter("fullName").trim();
             String email = req.getParameter("email").trim();
             String password = req.getParameter("password");
@@ -48,15 +49,12 @@ public class AddUserController extends HttpServlet {
             int roleId = Integer.parseInt(req.getParameter("roleId"));
             int status = Integer.parseInt(req.getParameter("status"));
 
-            // 2. Xử lý FILE ẢNH
             Part filePart = req.getPart("avatarFile"); // Lấy file từ input name="avatarFile"
             String avatarUrl = "";
 
-            // Kiểm tra xem người dùng có chọn file không
             if (filePart != null && filePart.getSize() > 0) {
                 String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
 
-                // --- ĐỊNH NGHĨA NƠI LƯU FILE ---
                 // Lưu vào thư mục 'uploads' trong dự án
                 String uploadPath = getServletContext().getRealPath("") + File.separator + "uploads";
                 File uploadDir = new File(uploadPath);
@@ -65,8 +63,7 @@ public class AddUserController extends HttpServlet {
                 // Ghi file vào ổ cứng server
                 filePart.write(uploadPath + File.separator + fileName);
 
-                // Lưu đường dẫn tương đối vào DB (để sau này hiển thị trên web)
-                // Ví dụ: "uploads/anh-cua-huy.jpg"
+                // Lưu đường dẫn tương đối vào DB
                 avatarUrl = "uploads/" + fileName;
             } else {
                 avatarUrl = "https://ui-avatars.com/api/?name=" + fullName.replaceAll(" ", "+");
@@ -74,7 +71,7 @@ public class AddUserController extends HttpServlet {
 
             String errorMessage = "";
 
-            if(!userValidate.checkPhoneNumber(phone)){
+            if(!userValidate.checkPhoneFormat(phone)){
                 errorMessage = "Phone number is invalid! Please enter again";
             }
 
@@ -82,12 +79,16 @@ public class AddUserController extends HttpServlet {
                 errorMessage = "Email" + email + " already exists!";
             }
 
+            if(userValidate.checkPhoneExist(phone)){
+                errorMessage = "Phone number " + phone + " already exists!";
+            }
+
             if(!errorMessage.isEmpty()){
                 req.setAttribute("error", errorMessage);
-                // resend data user entered
                 req.setAttribute("oldFullName", fullName);
                 req.setAttribute("oldEmail", email);
                 req.setAttribute("oldPhone", phone);
+                req.setAttribute("listRoles", roleServices.getAllRoles());
 
                 RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-add.jsp");
                 rd.forward(req, resp);
@@ -96,7 +97,6 @@ public class AddUserController extends HttpServlet {
 
             String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
 
-            // 3. Tạo User và Lưu vào DB (Giống bài trước)
             Users newUser = new Users.Builder()
                     .setFullName(fullName)
                     .setEmail(email)
