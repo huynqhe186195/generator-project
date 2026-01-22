@@ -108,4 +108,13 @@ public class UserDao extends GenericDAO<Users> {
         update(sql, newStatus, userId);
         return true;
     }
+    public int countUsers() {
+        String sql = "SELECT COUNT(*) FROM users";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
 }
