@@ -45,7 +45,14 @@
 
                 <div class="mt-4 d-grid gap-2">
                     <c:if test="${user.roleId != 1}">
-                        <button class="btn btn-outline-danger"><i class="fas fa-trash-alt me-2"></i> Xóa tài khoản</button>
+                        <a href="<c:url value='/admin/user/deleteUser?id=${user.id}'/>"
+                           class="text-decoration-none"
+                           onclick="return confirm('CẢNH BÁO: Hành động này không thể hoàn tác!\nBạn có chắc chắn muốn xóa người dùng ${user.fullName} không?');">
+
+                           <button class="btn btn-outline-danger w-100">
+                              <i class="fas fa-trash-alt me-2"></i> Xóa tài khoản
+                           </button>
+                        </a>
                     </c:if>
                 </div>
             </div>
