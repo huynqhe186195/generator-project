@@ -44,7 +44,7 @@
                 </div>
 
                 <div class="mt-4 d-grid gap-2">
-                    <c:if test="${user.roleId != 1}">
+                    <c:if test="${canDelete}">
                         <a href="<c:url value='/admin/user/deleteUser?id=${user.id}'/>"
                            class="text-decoration-none"
                            onclick="return confirm('CẢNH BÁO: Hành động này không thể hoàn tác!\nBạn có chắc chắn muốn xóa người dùng ${user.fullName} không?');">

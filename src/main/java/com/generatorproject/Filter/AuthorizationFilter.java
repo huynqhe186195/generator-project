@@ -13,9 +13,7 @@ import java.io.IOException;
 public class AuthorizationFilter implements Filter {
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // Khởi tạo nếu cần (thường để trống)
-    }
+    public void init(FilterConfig filterConfig) throws ServletException {}
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -36,22 +34,27 @@ public class AuthorizationFilter implements Filter {
         String contextPath = req.getContextPath();
 
         if (url.startsWith(contextPath + "/admin/user")) {
-            if (user.getRoleId() != 1 && !user.hasPermission("ADMIN_ACCESS")) {
-                resp.sendRedirect(contextPath + "/login?message=no_permission");
+
+            boolean isGlobalAdmin = (user.getRoleId() == 1);
+            boolean hasViewRight = user.hasPermission("USER_VIEW");
+            boolean hasManageRight = user.hasPermission("USER_MANAGE");
+
+            if (!isGlobalAdmin && !hasViewRight && !hasManageRight) {
+                req.getRequestDispatcher("/views/error/403.jsp").forward(req, resp);
                 return;
             }
         }
 
         if (url.startsWith(contextPath + "/manager")) {
             if (user.getRoleId() != 2 && user.getRoleId() != 1 && !user.hasPermission("REPORT_VIEW")) {
-                resp.sendRedirect(contextPath + "/login?message=no_permission");
+                req.getRequestDispatcher("/views/error/403.jsp").forward(req, resp);
                 return;
             }
         }
 
         if (url.startsWith(contextPath + "/technician")) {
             if (!user.hasPermission("ASSET_MAINTAIN") && !user.hasPermission("INVENTORY_MANAGE")) {
-                resp.sendRedirect(contextPath + "/login?message=no_permission");
+                req.getRequestDispatcher("/views/error/403.jsp").forward(req, resp);
                 return;
             }
         }

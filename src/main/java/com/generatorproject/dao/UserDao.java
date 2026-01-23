@@ -4,6 +4,9 @@ import com.generatorproject.mapper.RowMapper;
 import com.generatorproject.mapper.UserMapper;
 import com.generatorproject.model.Users;
 import org.mindrot.jbcrypt.BCrypt;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
