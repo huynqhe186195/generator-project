@@ -117,4 +117,12 @@ public class UserDao extends GenericDAO<Users> {
         } catch (Exception e) { e.printStackTrace(); }
         return 0;
     }
+
+    public List<Users> getUsersPaging(int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+
+        String sql = "SELECT * FROM users LIMIT ? OFFSET ?";
+
+        return query(sql, new UserMapper(), pageSize, offset);
+    }
 }
