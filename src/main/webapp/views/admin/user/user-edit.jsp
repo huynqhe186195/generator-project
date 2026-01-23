@@ -11,6 +11,12 @@
         </a>
     </div>
 
+    <c:if test="${not empty error}">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> <strong>Lỗi:</strong> ${error}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
     <form action="<c:url value='/admin/user-list/handleEditUser'/>" method="post" enctype="multipart/form-data">
 
         <input type="hidden" name="id" value="${user.id}">
@@ -31,7 +37,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Email (Không thể sửa)</label>
-                                <input type="email" class="form-control bg-light" value="${user.email}" readonly>
+                                <input type="email" name="email" class="form-control bg-light" value="${user.email}" readonly>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Số điện thoại</label>
@@ -59,7 +65,7 @@
                                 </select>
                             </div>
                         </div>
-                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -100,7 +106,6 @@
 </div>
 
 <script>
-    // Script xem trước ảnh khi chọn file
     document.getElementById('avatarInput').addEventListener('change', function(e) {
         if (e.target.files && e.target.files[0]) {
             var reader = new FileReader();

@@ -2,6 +2,7 @@ package com.generatorproject.controller.admin.user;
 
 import com.generatorproject.model.Users;
 import com.generatorproject.services.IUserServices;
+import com.generatorproject.services.RoleServices;
 import com.generatorproject.services.UserServices;
 import com.generatorproject.validation.UserValidate;
 
@@ -26,10 +27,12 @@ import java.nio.file.Paths;
 public class EditUserController extends HttpServlet {
     private IUserServices userServices;
     private UserValidate userValidate;
+    private RoleServices roleServices;
 
     public EditUserController() {
         userServices = new UserServices();
         userValidate = new UserValidate();
+        roleServices = new RoleServices();
     }
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
@@ -60,18 +63,30 @@ public class EditUserController extends HttpServlet {
             }
             String errorMessage ="";
 
-            if(!userValidate.checkPhoneNumber(phone)){
+            if(!userValidate.checkPhoneFormat(phone)){
                 errorMessage = "Phone number is invalid! Please enter again";
+            }
+
+            if (userValidate.checkPhoneExistForUpdate(phone, id)) {
+                errorMessage = "Phone number already exist for the user!";
             }
 
 
             if(!errorMessage.isEmpty()){
-                req.setAttribute("error", errorMessage);
-                // resend data user entered
-                req.setAttribute("oldFullName", fullName);
-                req.setAttribute("oldPhone", phone);
+                Users userOldData = new Users.Builder()
+                        .setId(id)
+                        .setFullName(fullName)
+                        .setPhone(phone)
+                        .setEmail(req.getParameter("email"))
+                        .setRoleId(roleId)
+                        .setStatus(status)
+                        .setAvatarUrl(avatarUrl)
+                        .build();
 
-                RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-add.jsp");
+                req.setAttribute("user", userOldData);
+                req.setAttribute("listRoles", roleServices.getAllRoles());
+                req.setAttribute("error", errorMessage);
+                RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-edit.jsp");
                 rd.forward(req, resp);
                 return;
             }

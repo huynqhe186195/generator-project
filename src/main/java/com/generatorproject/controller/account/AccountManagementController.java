@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(urlPatterns = {"/account/*"})
+@WebServlet(urlPatterns = { "/account/*" })
 public class AccountManagementController extends HttpServlet {
 
     private final IUserServices userServices;
@@ -54,15 +54,18 @@ public class AccountManagementController extends HttpServlet {
         }
     }
 
-    private void hanldeResetPassword(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+    private void hanldeResetPassword(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, ServletException {
         req.getRequestDispatcher("/views/account/reset-password.jsp").forward(req, resp);
     }
 
-    private void hanldeForgotPassword(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+    private void hanldeForgotPassword(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, ServletException {
         req.getRequestDispatcher("/views/account/forgot-password.jsp").forward(req, resp);
     }
 
-    private void handleChangePassword(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleChangePassword(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         HttpSession session = req.getSession();
         if (session.getAttribute("USERMODEL") == null) {
             resp.sendRedirect(req.getContextPath() + "/account/login");
@@ -85,7 +88,8 @@ public class AccountManagementController extends HttpServlet {
         resp.sendRedirect(req.getContextPath() + "/account/login");
     }
 
-    private void hanldeUserProfile(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+    private void hanldeUserProfile(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, ServletException {
         resp.setContentType("text/html; charset=UTF-8");
         req.setCharacterEncoding("UTF-8");
 
@@ -99,7 +103,6 @@ public class AccountManagementController extends HttpServlet {
         }
 
         Users currentUser = userServices.findUserById(sessionUser.getId());
-
 
         if (currentUser.getRoleName() == null) {
             currentUser.setRoleName(sessionUser.getRoleName());

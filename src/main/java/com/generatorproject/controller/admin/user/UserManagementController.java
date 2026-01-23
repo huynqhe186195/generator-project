@@ -13,6 +13,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -48,13 +49,33 @@ public class UserManagementController extends HttpServlet {
             case "/approve-reset":
                 handldeApproveReset(req, resp);
                 break;
+            case "/deleteUser":
+                handleDeleteUser(req, resp);
+                break;
+        }
+    }
+
+    private void handleDeleteUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String idParam = req.getParameter("id");
+
+        try {
+            if (idParam != null && !idParam.isEmpty()) {
+                int id = Integer.parseInt(idParam);
+                userServices.deleteUser(id);
+            }
+
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=delete_success");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=error");
         }
     }
 
     private void handldeApproveReset(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            List<Map<String, Object>> list = userServices.getPendingRequests();
-            req.setAttribute("list", list);
-            req.getRequestDispatcher("/views/admin/user/user-reset-password.jsp").forward(req, resp);
+        List<Map<String, Object>> list = userServices.getPendingRequests();
+        req.setAttribute("list", list);
+        req.getRequestDispatcher("/views/admin/user/user-reset-password.jsp").forward(req, resp);
     }
 
     private void handleEditUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -74,7 +95,7 @@ public class UserManagementController extends HttpServlet {
                 }
             }
         } catch (Exception e) {
-            resp.sendRedirect(req.getContextPath() + "/admin/user-list");
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list");
         }
     }
 
@@ -85,6 +106,17 @@ public class UserManagementController extends HttpServlet {
     }
 
     private void handleUserDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        HttpSession session = req.getSession();
+        Users currentUser = (Users) session.getAttribute("USERMODEL");
+
+        boolean canDelete = false;
+        if (currentUser != null) {
+            if (currentUser.getRoleId() == 1 || currentUser.hasPermission("USER_MANAGE")) {
+                canDelete = true;
+            }
+        }
+
+        req.setAttribute("canDelete", canDelete);
         try {
             String idParam = req.getParameter("id");
             if (idParam != null && !idParam.isEmpty()) {
@@ -99,7 +131,8 @@ public class UserManagementController extends HttpServlet {
                 }
             }
         } catch (Exception e) {
-            resp.sendRedirect(req.getContextPath() + "/admin/user-list");
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list");
         }
     }
 

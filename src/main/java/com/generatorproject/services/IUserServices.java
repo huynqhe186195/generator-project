@@ -8,7 +8,7 @@ import java.util.Map;
 public interface IUserServices {
     List<Users> getAllUsers();
 
-    Users createUser(Users user);
+    void createUser(Users user);
 
     Users findUserById(int id);
 
@@ -22,8 +22,6 @@ public interface IUserServices {
 
     Integer getUserIdByValidToken(String token);
 
-    void updatePassword(int userId, String newPassword);
-
     void markTokenAsUsed(String token);
 
     boolean changeStatus(int userId, int newStatus);
@@ -33,4 +31,6 @@ public interface IUserServices {
     void activateToken(String token);
 
     void deleteToken(String token);
+
+    void deleteUser(int id);
 }
