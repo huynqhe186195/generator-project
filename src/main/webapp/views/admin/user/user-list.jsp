@@ -22,22 +22,22 @@
                 <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên hoặc email...">
+                        <input type="text" name="keyword" value="${param.keyword}" class="form-control" placeholder="Tìm theo tên hoặc email...">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <select class="form-select" name="role">
                         <option value="">-- Tất cả vai trò --</option>
-                        <option value="1">Quản trị viên (Admin)</option>
-                        <option value="2">Nhân viên kỹ thuật</option>
-                        <option value="3">Khách hàng</option>
+                        <option value="1" ${param.role == '1' ? 'selected' : ''}>Quản trị viên (Admin)</option>
+                        <option value="2" ${param.role == '2' ? 'selected' : ''}>Nhân viên kỹ thuật</option>
+                        <option value="3" ${param.role == '3' ? 'selected' : ''}>Khách hàng</option>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <select class="form-select" name="status">
                         <option value="">-- Trạng thái --</option>
-                        <option value="1">Đang hoạt động</option>
-                        <option value="0">Đã khóa</option>
+                        <option value="1" ${param.status == '1' ? 'selected' : ''}>Đang hoạt động</option>
+                        <option value="0" ${param.status == '0' ? 'selected' : ''}>Đã khóa</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -64,7 +64,7 @@
                     <tbody>
                         <c:forEach items="${listUsers}" var="u" varStatus="loop">
                             <tr>
-                                <td class="ps-4">${loop.index + 1}</td>
+                                <td class="ps-4">${(currentPage - 1) * 5 + loop.index + 1}</td>
 
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -112,33 +112,28 @@
 
                                 <td class="text-end pe-4">
                                     <div class="d-flex gap-1 justify-content-end">
-
                                         <c:if test="${me.hasPermission('USER_VIEW')}">
                                             <a href="<c:url value='/admin/user/user-detail?id=${u.id}'/>" class="btn btn-sm btn-info text-white" title="Xem chi tiết">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </c:if>
 
-                                        <c:if test="${me.hasPermission('USER_MANAGE') && u.roleId != '1'}">
-
+                                        <c:if test="${me.hasPermission('USER_MANAGE') && u.roleId != 1}">
                                             <a href="<c:url value='/admin/user/updateUser?id=${u.id}'/>" class="btn btn-sm btn-warning text-white" title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-
                                             <c:choose>
                                                 <c:when test="${u.status == 1}">
                                                     <a href="javascript:void(0)" onclick="confirmLock(${u.id}, 1)" class="btn btn-sm btn-danger" title="Khóa tài khoản">
                                                         <i class="fas fa-lock"></i>
                                                     </a>
                                                 </c:when>
-
                                                 <c:otherwise>
                                                     <a href="javascript:void(0)" onclick="confirmLock(${u.id}, 0)" class="btn btn-sm btn-success" title="Mở khóa">
                                                         <i class="fas fa-unlock"></i>
                                                     </a>
                                                 </c:otherwise>
                                             </c:choose>
-
                                         </c:if>
                                     </div>
                                 </td>
@@ -147,9 +142,9 @@
 
                         <c:if test="${empty listUsers}">
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">
-                                    <i class="fas fa-box-open fa-2x mb-2"></i><br>
-                                    Không tìm thấy dữ liệu nào.
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fas fa-box-open fa-3x mb-3 text-gray-300"></i><br>
+                                    Không tìm thấy dữ liệu nào phù hợp.
                                 </td>
                             </tr>
                         </c:if>
@@ -159,28 +154,46 @@
         </div>
 
         <div class="card-footer bg-white py-3">
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-end mb-0">
-                    <li class="page-item disabled"><a class="page-link" href="#">Trước</a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Sau</a></li>
-                </ul>
-            </nav>
+            <c:if test="${totalPages > 0}">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-end mb-0">
+
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="<c:url value='/admin/user/user-list?page=${currentPage - 1}&keyword=${param.keyword}&role=${param.role}&status=${param.status}'/>">
+                                <i class="fas fa-chevron-left"></i> Trước
+                            </a>
+                        </li>
+
+                        <c:forEach begin="1" end="${totalPages}" var="i">
+                            <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                <a class="page-link" href="<c:url value='/admin/user/user-list?page=${i}&keyword=${param.keyword}&role=${param.role}&status=${param.status}'/>">
+                                    ${i}
+                                </a>
+                            </li>
+                        </c:forEach>
+
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link" href="<c:url value='/admin/user/user-list?page=${currentPage + 1}&keyword=${param.keyword}&role=${param.role}&status=${param.status}'/>">
+                                Sau <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </c:if>
         </div>
     </div>
 </div>
 
 <script>
     function confirmLock(id, currentStatus) {
-        let action = (currentStatus == 1) ? "Deactive" : "Active";
+        let action = (currentStatus == 1) ? "KHÓA" : "MỞ KHÓA";
+        // Sử dụng tiếng Việt có dấu cho thân thiện
         let confirmMsg = "Bạn có chắc chắn muốn " + action + " tài khoản này không?";
 
         if (confirm(confirmMsg)) {
-            // Chuyển hướng đến Controller xử lý Status
-            // Lưu ý: Controller này chúng ta đã tạo ở bước trước
-            window.location.href = "${pageContext.request.contextPath}/admin/user-status?id=" + id + "&status=" + currentStatus;
+            // Cập nhật đường dẫn cho đúng với cấu trúc /admin/user/*
+            // Ví dụ: /admin/user/toggle-status?id=...
+            window.location.href = "<c:url value='/admin/user/toggle-status'/>?id=" + id + "&status=" + currentStatus;
         }
     }
 </script>

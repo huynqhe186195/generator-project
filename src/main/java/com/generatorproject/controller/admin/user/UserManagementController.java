@@ -101,6 +101,27 @@ public class UserManagementController extends HttpServlet {
 
     private void handleUserList(HttpServletResponse resp, HttpServletRequest req) throws ServletException, IOException {
         req.setAttribute("listUsers", userServices.getAllUsers());
+        int page = 1;
+        int pageSize = 5;
+
+        if (req.getParameter("page") != null) {
+            try {
+                page = Integer.parseInt(req.getParameter("page"));
+            } catch (NumberFormatException e) {
+                page = 1;// nếu nhập bậy bạ cook về trang 1
+            }
+        }
+
+        int totalUsers = userServices.getTotalUsers();
+        // 11 user / 5 = 2.2 -> Lên thành 3 trang
+        int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
+
+        List<Users> listUsers = userServices.getUsersPaging(page, pageSize);
+
+        req.setAttribute("listUsers", listUsers);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("currentPage", page);
+
         RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-list.jsp");
         rd.forward(req, resp);
     }

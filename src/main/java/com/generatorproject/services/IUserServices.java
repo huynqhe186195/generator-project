@@ -33,4 +33,8 @@ public interface IUserServices {
     void deleteToken(String token);
 
     void deleteUser(int id);
+
+    int getTotalUsers();
+
+    List<Users> getUsersPaging(int page, int pageSize);
 }
