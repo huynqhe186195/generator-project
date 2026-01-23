@@ -90,4 +90,14 @@ public class UserServices implements IUserServices {
 
     @Override
     public void deleteUser(int id){ userDao.deleteUser(id);}
+
+    @Override
+    public int getTotalUsers() {
+        return userDao.countUsers();
+    }
+
+    @Override
+    public List<Users> getUsersPaging(int page, int pageSize) {
+        return userDao.getUsersPaging(page, pageSize);
+    }
 }
