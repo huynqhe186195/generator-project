@@ -4,8 +4,12 @@ import com.generatorproject.mapper.RowMapper;
 import com.generatorproject.mapper.UserMapper;
 import com.generatorproject.model.Users;
 import org.mindrot.jbcrypt.BCrypt;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserDao extends GenericDAO<Users> {
@@ -118,11 +122,57 @@ public class UserDao extends GenericDAO<Users> {
         return 0;
     }
 
-    public List<Users> getUsersPaging(int page, int pageSize) {
+    public int countUsersByFilter(String keyword, Integer roleId, Integer status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ?)");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+
+        if (roleId != null) {
+            sql.append(" AND role_id = ?");
+            params.add(roleId);
+        }
+
+        if (status != null) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+
+        return count(sql.toString(), params.toArray());
+    }
+
+    public List<Users> getUsersByFilter(String keyword, Integer roleId, Integer status, int page, int pageSize) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ?)");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+
+        if (roleId != null) {
+            sql.append(" AND role_id = ?");
+            params.add(roleId);
+        }
+
+        if (status != null) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+
+        sql.append(" ORDER BY id DESC LIMIT ? OFFSET ?");
+
         int offset = (page - 1) * pageSize;
+        params.add(pageSize);
+        params.add(offset);
 
-        String sql = "SELECT * FROM users LIMIT ? OFFSET ?";
-
-        return query(sql, new UserMapper(), pageSize, offset);
+        return query(sql.toString(), new UserMapper(), params.toArray());
     }
 }
