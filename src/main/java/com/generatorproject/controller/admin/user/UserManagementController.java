@@ -100,7 +100,13 @@ public class UserManagementController extends HttpServlet {
     }
 
     private void handleUserList(HttpServletResponse resp, HttpServletRequest req) throws ServletException, IOException {
-        req.setAttribute("listUsers", userServices.getAllUsers());
+        String keyword = req.getParameter("keyword");
+        String roleParam = req.getParameter("role");
+        String statusParam = req.getParameter("status");
+
+        Integer roleId = (roleParam != null && !roleParam.isEmpty()) ? Integer.parseInt(roleParam) : null;
+        Integer status = (statusParam != null && !statusParam.isEmpty()) ? Integer.parseInt(statusParam) : null;
+
         int page = 1;
         int pageSize = 5;
 
@@ -108,15 +114,16 @@ public class UserManagementController extends HttpServlet {
             try {
                 page = Integer.parseInt(req.getParameter("page"));
             } catch (NumberFormatException e) {
-                page = 1;// nếu nhập bậy bạ cook về trang 1
+                page = 1; // Nếu nhập bậy bạ thì về trang 1
             }
         }
 
-        int totalUsers = userServices.getTotalUsers();
-        // 11 user / 5 = 2.2 -> Lên thành 3 trang
+
+        int totalUsers = userServices.countUsersByFilter(keyword, roleId, status);
+
         int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
 
-        List<Users> listUsers = userServices.getUsersPaging(page, pageSize);
+        List<Users> listUsers = userServices.getUsersByFilter(keyword, roleId, status, page, pageSize);
 
         req.setAttribute("listUsers", listUsers);
         req.setAttribute("totalPages", totalPages);

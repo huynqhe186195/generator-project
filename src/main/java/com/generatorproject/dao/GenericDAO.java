@@ -120,4 +120,30 @@ public class GenericDAO<T> extends DbContext{
             e.printStackTrace();
         }
     }
+
+    public int count(String sql, Object... parameters) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            setParameter(ps, parameters);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1); // Trả về ngay con số đếm được
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return 0;
+    }
 }
