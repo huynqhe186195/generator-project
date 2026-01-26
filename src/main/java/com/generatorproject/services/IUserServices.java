@@ -34,7 +34,7 @@ public interface IUserServices {
 
     void deleteUser(int id);
 
-    int getTotalUsers();
+    int countUsersByFilter(String keyword, Integer roleId, Integer status);
 
-    List<Users> getUsersPaging(int page, int pageSize);
+    List<Users> getUsersByFilter(String keyword, Integer roleId, Integer status, int page, int pageSize);
 }

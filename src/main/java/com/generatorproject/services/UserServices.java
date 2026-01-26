@@ -92,12 +92,12 @@ public class UserServices implements IUserServices {
     public void deleteUser(int id){ userDao.deleteUser(id);}
 
     @Override
-    public int getTotalUsers() {
-        return userDao.countUsers();
+    public int countUsersByFilter(String keyword, Integer roleId, Integer status) {
+        return  userDao.countUsersByFilter(keyword, roleId, status);
     }
 
     @Override
-    public List<Users> getUsersPaging(int page, int pageSize) {
-        return userDao.getUsersPaging(page, pageSize);
+    public List<Users> getUsersByFilter(String keyword, Integer roleId, Integer status, int page, int pageSize) {
+        return userDao.getUsersByFilter(keyword, roleId, status, page, pageSize);
     }
 }
