@@ -126,7 +126,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item"><a class="nav-link px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a></li>
-                <li class="nav-item"><a class="nav-link px-3" href="#">Sản phẩm</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="<c:url value='product-list'/>">Sản phẩm</a></li>
                 <li class="nav-item"><a class="nav-link px-3" href="#features">Tính năng</a></li>
                 <li class="nav-item"><a class="nav-link px-3" href="#brands">Thương hiệu</a></li>
                 <li class="nav-item">
@@ -146,7 +146,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
                                 <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2" href="<c:url value='/account/hanldeChangePassword'/>"><i class="fas fa-id-card me-2"></i>Đổi mật khẩu</a></li>
                                 <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
                             </ul>
                         </li>
