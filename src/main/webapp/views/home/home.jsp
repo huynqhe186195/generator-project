@@ -111,6 +111,16 @@
         .brand-item:hover { border-color: var(--primary); color: var(--primary); transform: scale(1.05); }
 
         footer { background: #1a1a1a; color: #888; padding: 60px 0 30px; }
+
+        /* ===================== CHỈNH ẢNH (THÊM MỚI) ===================== */
+        .hero-img-col {
+            padding-left: 64px; /* tách ảnh ra xa text */
+        }
+        .hero-img {
+            transform: scale(1.15) translateX(12px); /* ảnh to hơn + lệch phải nhẹ */
+            transform-origin: center right;
+        }
+        /* ================================================================= */
     </style>
 </head>
 <body>
@@ -160,7 +170,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
                                 <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
-                                <li><a class="dropdown-item py-2" href="<c:url value='/account/hanldeChangePassword'/>"><i class="fas fa-id-card me-2"></i>Đổi mật khẩu</a></li>
+                                <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i class="fas fa-key me-2"></i> Đổi mật khẩu</a></li>
                                 <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
                             </ul>
                         </li>
@@ -210,8 +220,13 @@
                     </c:choose>
                 </div>
             </div>
-            <div class="col-lg-5 d-none d-lg-block" data-aos="zoom-in">
-                <img src="<c:url value='/template/images/img.png'/>" class="img-fluid rounded-4 shadow-2xl" alt="Gen-CMS" onerror="this.src='https://via.placeholder.com/500x400?text=Gen-CMS+System'">
+
+            <!-- CHỈ SỬA ĐÚNG PHẦN ẢNH: thêm class hero-img-col + hero-img -->
+            <div class="col-lg-5 d-none d-lg-block hero-img-col" data-aos="zoom-in">
+                <img src="<c:url value='/template/images/img.png'/>"
+                     class="img-fluid rounded-4 shadow-2xl hero-img"
+                     alt="Gen-CMS"
+                     onerror="this.src='https://via.placeholder.com/500x400?text=Gen-CMS+System'">
             </div>
         </div>
     </div>
