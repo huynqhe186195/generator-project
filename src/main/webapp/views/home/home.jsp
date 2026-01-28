@@ -126,13 +126,27 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item"><a class="nav-link px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a></li>
-                <li class="nav-item"><a class="nav-link px-3" href="<c:url value='product-list'/>">Sản phẩm</a></li>
+                <c:choose>
+                    <c:when test="${empty user}">
+                        <li class="nav-item">
+                            <a class="nav-link px-3" href="#/>">Tin tức</a>
+                        </li>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="nav-item">
+                            <a class="nav-link px-3" href="<c:url value='product-list'/>">Sản phẩm</a>
+                        </li>
+                    </c:otherwise>
+                </c:choose>
                 <li class="nav-item"><a class="nav-link px-3" href="#features">Tính năng</a></li>
                 <li class="nav-item"><a class="nav-link px-3" href="#brands">Thương hiệu</a></li>
-                <li class="nav-item">
-                    <a class="nav-link px-3" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách hàng</a>
-                </li>
-
+                <c:if test="${not empty user}">
+                    <li class="nav-item">
+                        <a class="nav-link px-3" href="<c:url value='/views/home/Support.jsp'/>">
+                            Chăm sóc khách hàng
+                        </a>
+                    </li>
+                </c:if>
                 <c:choose>
                     <c:when test="${empty user}">
                         <li class="nav-item ms-lg-3">
