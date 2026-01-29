@@ -7,6 +7,11 @@ public class Brand {
     private String name;
     private String slug;
     private String logoUrl;
+    private String brand;
+
+    public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
+
 
     // constructor
     public Brand() {}
