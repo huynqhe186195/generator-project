@@ -112,6 +112,8 @@ public class GenericDAO<T> extends DbContext{
                     ps.setInt(index, (Integer) parameter);
                 } else if (parameter instanceof Timestamp) {
                     ps.setTimestamp(index, (Timestamp) parameter);
+                }else if(parameter instanceof Date){
+                    ps.setDate(index,(Date) parameter);
                 } else {
                     ps.setObject(index, parameter);
                 }
