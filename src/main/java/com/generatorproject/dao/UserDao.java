@@ -38,6 +38,12 @@ public class UserDao extends GenericDAO<Users> {
         return users.isEmpty() ? null : users.get(0);
     }
 
+    public List<Users> findUserByRoleId(int id) {
+        String sql = "SELECT * FROM users WHERE role_id = ?";
+        List<Users> users = query(sql, new UserMapper(), id);
+        return users.isEmpty() ? null : users;
+    }
+
     public Users checkLogin(String email, String password) {
         String sql = "SELECT u.*, r.name as role_name, r.redirect_url " +
                 "FROM users u " +
