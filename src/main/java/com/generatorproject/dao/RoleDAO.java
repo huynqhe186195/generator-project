@@ -81,7 +81,7 @@ public class RoleDAO extends DbContext {
 
 
     public boolean update(Role r) {
-        // Nhớ thêm redirect_url = ? vào câu lệnh SQL
+
         String sql = "UPDATE roles SET name = ?, description = ?, status = ?, redirect_url = ? WHERE id = ?";
 
         try (Connection conn = getConnection();

@@ -8,9 +8,12 @@
     <!-- apply Sitemesh default template -->
     <decorator name="admin" page="admin.jsp">
         <pattern>/admin*</pattern>
+        <pattern>/staff*</pattern>
     </decorator>
 <!--    <decorator name="home" page="home.jsp">-->
 <!--        <pattern>/*</pattern>-->
 <!--    </decorator>-->
-
+    <decorator name="technical" page="technical-layout.jsp">
+        <pattern>/technical*</pattern>
+    </decorator>
 </decorators>

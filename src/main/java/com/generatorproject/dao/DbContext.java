@@ -10,7 +10,7 @@ public class DbContext {
     private final String portNumber = "3306";
 
     private final String userID = "root";
-    private final String password = "123456789";
+    private final String password = "123456";
 
     public Connection getConnection() throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
