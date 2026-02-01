@@ -92,8 +92,11 @@
                         <th class="py-3">Origin</th>
                         <th class="py-3">Brand</th>
                         <th class="py-3 text-end">Power Prime (kVA)</th>
-                        <th class="py-3" style="width:110px;">Image</th>
                         <th class="py-3">Customer</th>
+
+                        <!-- ✅ NEW: Status -->
+                        <th class="py-3" style="width:140px;">Trạng thái</th>
+
                         <th class="py-3 text-end pe-4" style="width:140px;">Hành động</th>
                     </tr>
                     </thead>
@@ -116,8 +119,13 @@
                                     <td class="fw-bold">${p.name}</td>
                                     <td>${p.model}</td>
 
-                                    <!-- Product hiện không có origin -->
-                                    <td><span class="text-muted">N/A</span></td>
+                                    <!-- ✅ FIX: Origin -->
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${not empty p.origin}">${p.origin}</c:when>
+                                            <c:otherwise><span class="text-muted">N/A</span></c:otherwise>
+                                        </c:choose>
+                                    </td>
 
                                     <td>
                                         <c:choose>
@@ -130,35 +138,57 @@
 
                                     <td>
                                         <c:choose>
-                                            <c:when test="${not empty p.imageUrl}">
-                                                <img src="<c:url value='${p.imageUrl}'/>"
-                                                     alt="img-${p.id}"
-                                                     class="rounded border"
-                                                     style="width:90px;height:60px;object-fit:cover;" />
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="text-muted">N/A</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-
-                                    <td>
-                                        <c:choose>
                                             <c:when test="${not empty p.customerName}">${p.customerName}</c:when>
                                             <c:otherwise><span class="text-muted">N/A</span></c:otherwise>
                                         </c:choose>
                                     </td>
 
+                                    <!-- ✅ NEW: Status pill giống ảnh -->
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${p.status == 'READY'}">
+                                                <span class="badge rounded-pill bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i> Active
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${p.status == 'RUNNING'}">
+                                                <span class="badge rounded-pill bg-primary">
+                                                    <i class="fas fa-bolt me-1"></i> Running
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${p.status == 'MAINTENANCE'}">
+                                                <span class="badge rounded-pill bg-warning text-dark">
+                                                    <i class="fas fa-tools me-1"></i> Maintenance
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${p.status == 'BROKEN'}">
+                                                <span class="badge rounded-pill bg-danger">
+                                                    <i class="fas fa-times-circle me-1"></i> Broken
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge rounded-pill bg-secondary">N/A</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+
                                     <td class="text-end pe-4">
                                         <div class="d-flex gap-1 justify-content-end">
+                                            <!-- view (nếu bạn có detail) -->
                                             <a class="btn btn-sm btn-info text-white"
-                                               href="<c:url value='/admin/product/edit?id=${p.id}'/>"
+                                               href="<c:url value='/admin/product/detail?id=${p.id}'/>"
+                                               title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+
+                                            <a class="btn btn-sm btn-warning text-white"
+                                               href="<c:url value='/admin/product-update?id=${p.id}'/>"
                                                title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
                                             <a class="btn btn-sm btn-danger"
-                                               href="<c:url value='/admin/product/delete?id=${p.id}'/>"
+                                               href="<c:url value='/admin/product-delete?id=${p.id}'/>"
                                                onclick="return confirm('Xoá product #${p.id}?');"
                                                title="Xoá">
                                                 <i class="fas fa-trash"></i>

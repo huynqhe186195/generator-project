@@ -18,7 +18,8 @@ import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
+import java.time.Year;
+import java.util.*;
 
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024,      // 1MB
@@ -33,23 +34,14 @@ public class ProductCreateController extends HttpServlet {
     private final CategoryDAO categoryDAO = new CategoryDAO();
     private final UserDao userDAO = new UserDao();
 
+    private static final Set<String> ALLOWED_FUEL = new HashSet<>(Arrays.asList("DIESEL", "GASOLINE"));
+    private static final Set<String> ALLOWED_STATUS = new HashSet<>(Arrays.asList("READY", "RUNNING", "MAINTENANCE", "BROKEN"));
+    private static final Set<String> ALLOWED_EXT = new HashSet<>(Arrays.asList(".png", ".jpg", ".jpeg", ".webp", ".gif"));
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
-        List<Brand> brands = brandDAO.getAllBrands();
-        List<Category> categories = categoryDAO.getAllCategories();
-
-        req.setAttribute("brands", brands);
-        req.setAttribute("categories", categories);
-
-        // customer dropdown
-        req.setAttribute("customers", userDAO.getAllCustomers());
-
-        // enum options (Java 8)
-        req.setAttribute("fuelTypes", new String[]{"DIESEL", "GASOLINE"});
-        req.setAttribute("statuses", new String[]{"READY", "RUNNING", "MAINTENANCE", "BROKEN"});
-
+        loadDropdowns(req);
         req.getRequestDispatcher("/views/admin/Product/product-create.jsp").forward(req, resp);
     }
 
@@ -59,6 +51,7 @@ public class ProductCreateController extends HttpServlet {
 
         req.setCharacterEncoding("UTF-8");
 
+        // ===== Read form =====
         String serialNumber = trim(req.getParameter("serialNumber"));
         String name = trim(req.getParameter("name"));
         String model = trim(req.getParameter("model"));
@@ -79,36 +72,82 @@ public class ProductCreateController extends HttpServlet {
         String status = trim(req.getParameter("status"));
 
         Double totalRunningHours = parseDoubleNullable(req.getParameter("totalRunningHours"));
-
-        // ✅ customer chọn từ dropdown (có thể null)
         Integer customerId = parseIntNullable(req.getParameter("customerId"));
 
-        // ✅ upload image từ ổ cứng
-        String imageUrl = saveUploadedImage(req);
+        // ===== Validate =====
+        Map<String, String> errors = new LinkedHashMap<>();
 
-        // validate tối thiểu
-        String error = null;
-        if (name == null || name.trim().isEmpty()) error = "Tên sản phẩm không được để trống.";
-        else if (brandId == null) error = "Vui lòng chọn Brand.";
-        else if (categoryId == null) error = "Vui lòng chọn Category.";
-        else if (fuelType == null || fuelType.trim().isEmpty()) error = "Vui lòng chọn Fuel type.";
-        else if (status == null || status.trim().isEmpty()) error = "Vui lòng chọn Status.";
+        // name
+        if (isBlank(name)) errors.put("name", "Tên sản phẩm không được để trống.");
+        else if (name.length() > 200) errors.put("name", "Tên sản phẩm tối đa 200 ký tự.");
 
-        if (error != null) {
-            req.setAttribute("error", error);
+        // serial
+        if (!isBlank(serialNumber) && serialNumber.length() > 100)
+            errors.put("serialNumber", "Số serial tối đa 100 ký tự.");
 
-            // load lại dropdown
-            req.setAttribute("brands", brandDAO.getAllBrands());
-            req.setAttribute("categories", categoryDAO.getAllCategories());
-            req.setAttribute("customers", userDAO.getAllCustomers());
-            req.setAttribute("fuelTypes", new String[]{"DIESEL", "GASOLINE"});
-            req.setAttribute("statuses", new String[]{"READY", "RUNNING", "MAINTENANCE", "BROKEN"});
+        // model/origin
+        if (!isBlank(model) && model.length() > 100)
+            errors.put("model", "Model tối đa 100 ký tự.");
+        if (!isBlank(origin) && origin.length() > 100)
+            errors.put("origin", "Xuất xứ tối đa 100 ký tự.");
 
+        // year
+        if (manufactureYear != null) {
+            int currentYear = Year.now().getValue();
+            if (manufactureYear < 1900 || manufactureYear > currentYear + 1)
+                errors.put("manufactureYear", "Năm sản xuất không hợp lệ.");
+        }
+
+        // required ids
+        if (brandId == null) errors.put("brandId", "Vui lòng chọn Hãng (Brand).");
+        if (categoryId == null) errors.put("categoryId", "Vui lòng chọn Danh mục.");
+
+        // enum fuel/status
+        if (isBlank(fuelType)) errors.put("fuelType", "Vui lòng chọn Loại nhiên liệu.");
+        else if (!ALLOWED_FUEL.contains(fuelType)) errors.put("fuelType", "Loại nhiên liệu không hợp lệ.");
+
+        if (isBlank(status)) errors.put("status", "Vui lòng chọn Trạng thái.");
+        else if (!ALLOWED_STATUS.contains(status)) errors.put("status", "Trạng thái không hợp lệ.");
+
+        // numbers non-negative
+        if (powerPrime != null && powerPrime < 0) errors.put("powerPrime", "Công suất Prime không được âm.");
+        if (powerStandby != null && powerStandby < 0) errors.put("powerStandby", "Công suất Standby không được âm.");
+        if (fuelTankCapacity != null && fuelTankCapacity < 0) errors.put("fuelTankCapacity", "Dung tích bình nhiên liệu không được âm.");
+        if (totalRunningHours != null && totalRunningHours < 0) errors.put("totalRunningHours", "Tổng giờ vận hành không được âm.");
+
+        // optional: standby >= prime (nếu cả 2 có)
+        if (powerPrime != null && powerStandby != null && powerStandby < powerPrime) {
+            errors.put("powerStandby", "Công suất Standby phải lớn hơn hoặc bằng Prime.");
+        }
+
+        // voltage length
+        if (!isBlank(voltage) && voltage.length() > 50)
+            errors.put("voltage", "Điện áp tối đa 50 ký tự.");
+
+        // location length
+        if (!isBlank(currentLocation) && currentLocation.length() > 255)
+            errors.put("currentLocation", "Vị trí hiện tại tối đa 255 ký tự.");
+
+        // customerId if provided must be >0
+        if (customerId != null && customerId <= 0)
+            errors.put("customerId", "Khách hàng không hợp lệ.");
+
+        // ===== Upload image (validate file) =====
+        UploadResult upload = saveUploadedImage(req);
+        if (upload.error != null) {
+            errors.put("imageFile", upload.error);
+        }
+        String imageUrl = upload.path; // có thể null
+
+        if (!errors.isEmpty()) {
+            req.setAttribute("errors", errors);
+            req.setAttribute("error", "Vui lòng kiểm tra lại dữ liệu.");
+            loadDropdowns(req);
             req.getRequestDispatcher("/views/admin/Product/product-create.jsp").forward(req, resp);
             return;
         }
 
-        // build product
+        // ===== Build product =====
         Product p = new Product();
         p.setSerialNumber(serialNumber);
         p.setName(name);
@@ -130,10 +169,7 @@ public class ProductCreateController extends HttpServlet {
         p.setStatus(status);
 
         p.setTotalRunningHours(totalRunningHours);
-
-        // ✅ imageUrl từ upload
         p.setImageUrl(imageUrl);
-
         p.setCustomerId(customerId);
 
         int newId = productDAO.insert(p);
@@ -142,49 +178,80 @@ public class ProductCreateController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/admin/product/product-list");
         } else {
             req.setAttribute("error", "Không thể thêm sản phẩm. Vui lòng thử lại!");
-
-            req.setAttribute("brands", brandDAO.getAllBrands());
-            req.setAttribute("categories", categoryDAO.getAllCategories());
-            req.setAttribute("customers", userDAO.getAllCustomers());
-            req.setAttribute("fuelTypes", new String[]{"DIESEL", "GASOLINE"});
-            req.setAttribute("statuses", new String[]{"READY", "RUNNING", "MAINTENANCE", "BROKEN"});
-
+            loadDropdowns(req);
             req.getRequestDispatcher("/views/admin/Product/product-create.jsp").forward(req, resp);
         }
     }
 
     // ======================
-    // ✅ Upload helper
+    // Dropdown loader
     // ======================
-    private String saveUploadedImage(HttpServletRequest req) {
+    private void loadDropdowns(HttpServletRequest req) {
+        List<Brand> brands = brandDAO.getAllBrands();
+        List<Category> categories = categoryDAO.getAllCategories();
+
+        req.setAttribute("brands", brands);
+        req.setAttribute("categories", categories);
+        req.setAttribute("customers", userDAO.getAllCustomers());
+
+        req.setAttribute("fuelTypes", new String[]{"DIESEL", "GASOLINE"});
+        req.setAttribute("statuses", new String[]{"READY", "RUNNING", "MAINTENANCE", "BROKEN"});
+    }
+
+    // ======================
+    // Upload helper (save to /uploads/products)
+    // ======================
+    private UploadResult saveUploadedImage(HttpServletRequest req) {
         try {
             Part imagePart = req.getPart("imageFile");
-            if (imagePart == null || imagePart.getSize() <= 0) return null;
+            if (imagePart == null || imagePart.getSize() <= 0) return UploadResult.ok(null);
 
             String fileName = Paths.get(imagePart.getSubmittedFileName()).getFileName().toString();
-            if (fileName == null || fileName.trim().isEmpty()) return null;
+            if (isBlank(fileName)) return UploadResult.ok(null);
 
-            // folder /uploads trong webapp
-            String uploadDirPath = getServletContext().getRealPath("/uploads");
+            String ext = "";
+            int dot = fileName.lastIndexOf('.');
+            if (dot >= 0) ext = fileName.substring(dot).toLowerCase();
+
+            if (!ALLOWED_EXT.contains(ext)) {
+                return UploadResult.fail("File ảnh không hợp lệ (chỉ png/jpg/jpeg/webp/gif).");
+            }
+
+            // folder /uploads/products trong webapp
+            String uploadDirPath = getServletContext().getRealPath("/uploads/products");
             File uploadDir = new File(uploadDirPath);
             if (!uploadDir.exists()) uploadDir.mkdirs();
 
-            // tránh trùng tên
-            String savedName = System.currentTimeMillis() + "_" + fileName;
+            String savedName = "p_new_" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ext;
+            File saved = new File(uploadDir, savedName);
 
-            imagePart.write(uploadDirPath + File.separator + savedName);
+            imagePart.write(saved.getAbsolutePath());
 
-            // return path relative để lưu DB
-            return "/uploads/" + savedName;
+            // lưu DB dạng relative path (khuyên dùng)
+            return UploadResult.ok("/uploads/products/" + savedName);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return UploadResult.fail("Tải ảnh lên thất bại. Vui lòng thử lại.");
         }
     }
 
-    // ===== helpers Java 8 =====
+    private static class UploadResult {
+        final String path;
+        final String error;
+
+        private UploadResult(String path, String error) {
+            this.path = path;
+            this.error = error;
+        }
+
+        static UploadResult ok(String path) { return new UploadResult(path, null); }
+        static UploadResult fail(String error) { return new UploadResult(null, error); }
+    }
+
+    // ===== helpers =====
     private String trim(String s) { return s == null ? null : s.trim(); }
+    private boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
 
     private Integer parseIntNullable(String v) {
         try {

@@ -14,6 +14,8 @@
     <div class="alert alert-danger">${error}</div>
   </c:if>
 
+  <c:set var="errs" value="${errors}" />
+
   <div class="card shadow border-0">
     <div class="card-body">
 
@@ -33,26 +35,41 @@
         <div class="col-md-4">
           <label class="form-label">Số serial</label>
           <input class="form-control" name="serialNumber" value="${param.serialNumber}" />
+          <c:if test="${not empty errs.serialNumber}">
+            <div class="text-danger small mt-1">${errs.serialNumber}</div>
+          </c:if>
         </div>
 
         <div class="col-md-8">
           <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
           <input class="form-control" name="name" value="${param.name}" required />
+          <c:if test="${not empty errs.name}">
+            <div class="text-danger small mt-1">${errs.name}</div>
+          </c:if>
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Model</label>
           <input class="form-control" name="model" value="${param.model}" />
+          <c:if test="${not empty errs.model}">
+            <div class="text-danger small mt-1">${errs.model}</div>
+          </c:if>
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Xuất xứ</label>
           <input class="form-control" name="origin" value="${param.origin}" />
+          <c:if test="${not empty errs.origin}">
+            <div class="text-danger small mt-1">${errs.origin}</div>
+          </c:if>
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Năm sản xuất</label>
           <input type="number" class="form-control" name="manufactureYear" value="${param.manufactureYear}" />
+          <c:if test="${not empty errs.manufactureYear}">
+            <div class="text-danger small mt-1">${errs.manufactureYear}</div>
+          </c:if>
         </div>
 
         <!-- ================= -->
@@ -82,6 +99,9 @@
               </option>
             </c:forEach>
           </select>
+          <c:if test="${not empty errs.brandId}">
+            <div class="text-danger small mt-1">${errs.brandId}</div>
+          </c:if>
         </div>
 
         <div class="col-md-6">
@@ -94,18 +114,28 @@
               </option>
             </c:forEach>
           </select>
+          <c:if test="${not empty errs.categoryId}">
+            <div class="text-danger small mt-1">${errs.categoryId}</div>
+          </c:if>
         </div>
 
         <div class="col-md-4">
-          <label class="form-label">Loại nhiên liệu  <span class="text-danger">*</span></label>
+          <label class="form-label">Loại nhiên liệu <span class="text-danger">*</span></label>
           <select class="form-select" name="fuelType" required>
             <option value="">-- Chọn nhiên liệu --</option>
             <c:forEach items="${fuelTypes}" var="f">
               <option value="${f}" <c:if test="${param.fuelType == f}">selected</c:if>>
-                  ${f}
+                <c:choose>
+                  <c:when test="${f == 'DIESEL'}">Dầu Diesel</c:when>
+                  <c:when test="${f == 'GASOLINE'}">Xăng</c:when>
+                  <c:otherwise>${f}</c:otherwise>
+                </c:choose>
               </option>
             </c:forEach>
           </select>
+          <c:if test="${not empty errs.fuelType}">
+            <div class="text-danger small mt-1">${errs.fuelType}</div>
+          </c:if>
         </div>
 
         <div class="col-md-4">
@@ -114,15 +144,27 @@
             <option value="">-- Chọn trạng thái --</option>
             <c:forEach items="${statuses}" var="s">
               <option value="${s}" <c:if test="${param.status == s}">selected</c:if>>
-                  ${s}
+                <c:choose>
+                  <c:when test="${s == 'READY'}">Sẵn sàng</c:when>
+                  <c:when test="${s == 'RUNNING'}">Đang chạy</c:when>
+                  <c:when test="${s == 'MAINTENANCE'}">Bảo trì</c:when>
+                  <c:when test="${s == 'BROKEN'}">Hỏng</c:when>
+                  <c:otherwise>${s}</c:otherwise>
+                </c:choose>
               </option>
             </c:forEach>
           </select>
+          <c:if test="${not empty errs.status}">
+            <div class="text-danger small mt-1">${errs.status}</div>
+          </c:if>
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Vị trí hiện tại</label>
           <input class="form-control" name="currentLocation" value="${param.currentLocation}" />
+          <c:if test="${not empty errs.currentLocation}">
+            <div class="text-danger small mt-1">${errs.currentLocation}</div>
+          </c:if>
         </div>
 
         <!-- ================= -->
@@ -136,21 +178,33 @@
         <div class="col-md-3">
           <label class="form-label">Công suất Prime (kVA)</label>
           <input type="number" step="0.01" class="form-control" name="powerPrime" value="${param.powerPrime}" />
+          <c:if test="${not empty errs.powerPrime}">
+            <div class="text-danger small mt-1">${errs.powerPrime}</div>
+          </c:if>
         </div>
 
         <div class="col-md-3">
           <label class="form-label">Công suất Standby (kVA)</label>
           <input type="number" step="0.01" class="form-control" name="powerStandby" value="${param.powerStandby}" />
+          <c:if test="${not empty errs.powerStandby}">
+            <div class="text-danger small mt-1">${errs.powerStandby}</div>
+          </c:if>
         </div>
 
         <div class="col-md-3">
           <label class="form-label">Điện áp</label>
           <input class="form-control" name="voltage" placeholder="220V / 380V" value="${param.voltage}" />
+          <c:if test="${not empty errs.voltage}">
+            <div class="text-danger small mt-1">${errs.voltage}</div>
+          </c:if>
         </div>
 
         <div class="col-md-3">
           <label class="form-label">Dung tích bình nhiên liệu</label>
           <input type="number" step="0.01" class="form-control" name="fuelTankCapacity" value="${param.fuelTankCapacity}" />
+          <c:if test="${not empty errs.fuelTankCapacity}">
+            <div class="text-danger small mt-1">${errs.fuelTankCapacity}</div>
+          </c:if>
         </div>
 
         <!-- ================= -->
@@ -164,6 +218,9 @@
         <div class="col-md-4">
           <label class="form-label">Tổng giờ đã vận hành</label>
           <input type="number" step="0.1" class="form-control" name="totalRunningHours" value="${param.totalRunningHours}" />
+          <c:if test="${not empty errs.totalRunningHours}">
+            <div class="text-danger small mt-1">${errs.totalRunningHours}</div>
+          </c:if>
         </div>
 
         <!-- ================= -->
@@ -177,6 +234,9 @@
         <div class="col-md-6">
           <label class="form-label">Hình ảnh</label>
           <input type="file" class="form-control" name="imageFile" accept="image/*" />
+          <c:if test="${not empty errs.imageFile}">
+            <div class="text-danger small mt-1">${errs.imageFile}</div>
+          </c:if>
         </div>
 
         <div class="col-md-6">
@@ -189,6 +249,9 @@
               </option>
             </c:forEach>
           </select>
+          <c:if test="${not empty errs.customerId}">
+            <div class="text-danger small mt-1">${errs.customerId}</div>
+          </c:if>
         </div>
 
         <!-- ACTION -->

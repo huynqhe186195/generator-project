@@ -56,14 +56,13 @@ public class ProductDAO extends DbContext {
 
         String sql =
                 "SELECT " +
-                        "  p.id, p.serial_number, p.name, p.model, p.power_prime, p.status, p.image_url, p.fuel_type, " +
+                        "  p.id, p.serial_number, p.name, p.model, p.origin, p.power_prime, p.status, p.image_url, p.fuel_type, " +
                         "  b.id AS brand_id, b.name AS brand_name, b.slug, b.logo_url, " +
                         "  u.full_name AS customer_name " +
                         "FROM products p " +
                         "JOIN brands b ON p.brand_id = b.id " +
                         "LEFT JOIN users u ON p.customer_id = u.id " +
                         "ORDER BY p.id DESC";
-
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -148,13 +147,14 @@ public class ProductDAO extends DbContext {
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT ")
-                .append("  p.id, p.serial_number, p.name, p.model, p.power_prime, p.status, p.image_url, p.fuel_type, ")
+                .append("  p.id, p.serial_number, p.name, p.model, p.origin, p.power_prime, p.status, p.image_url, p.fuel_type, ")
                 .append("  b.id AS brand_id, b.name AS brand_name, b.slug, b.logo_url, ")
                 .append("  u.full_name AS customer_name ")
                 .append("FROM products p ")
                 .append("JOIN brands b ON p.brand_id = b.id ")
                 .append("LEFT JOIN users u ON p.customer_id = u.id ")
                 .append("WHERE 1=1 ");
+
 
         List<Object> params = new ArrayList<>();
 
@@ -206,37 +206,8 @@ public class ProductDAO extends DbContext {
     }
 
     // =========================
-    // ✅ Helpers
+    // CUSTOMER - COUNT (filter + paging)
     // =========================
-    private void bindParams(PreparedStatement ps, List<Object> params) throws Exception {
-        for (int i = 0; i < params.size(); i++) {
-            ps.setObject(i + 1, params.get(i));
-        }
-    }
-
-    private Product mapRow(ResultSet rs) throws Exception {
-        Product p = new Product();
-        p.setId(rs.getInt("id"));
-        p.setSerialNumber(rs.getString("serial_number"));
-        p.setName(rs.getString("name"));
-        p.setModel(rs.getString("model"));
-        p.setStatus(rs.getString("status"));
-        p.setImageUrl(rs.getString("image_url"));
-        p.setPowerPrime(rs.getDouble("power_prime"));
-        p.setFuelType(rs.getString("fuel_type"));
-
-        Brand brand = new Brand();
-        brand.setId(rs.getInt("brand_id"));
-        brand.setName(rs.getString("brand_name"));
-        brand.setSlug(rs.getString("slug"));
-        brand.setLogoUrl(rs.getString("logo_url"));
-        p.setBrand(brand);
-
-        // ✅ customer name from users
-        p.setCustomerName(rs.getString("customer_name"));
-
-        return p;
-    }
     public int countFilteredProducts(int customerId,
                                      Integer brandId,
                                      Double minPower,
@@ -351,6 +322,7 @@ public class ProductDAO extends DbContext {
 
         return list;
     }
+
     public int insert(Product p) {
         String sql =
                 "INSERT INTO products " +
@@ -369,15 +341,12 @@ public class ProductDAO extends DbContext {
             ps.setString(i++, p.getModel());
             ps.setString(i++, p.getOrigin());
 
-            // manufacture_year (Integer)
             if (p.getManufactureYear() != null) ps.setInt(i++, p.getManufactureYear());
             else ps.setNull(i++, java.sql.Types.INTEGER);
 
-            // brand_id, category_id (bắt buộc nên setInt)
             ps.setInt(i++, p.getBrandId());
             ps.setInt(i++, p.getCategoryId());
 
-            // power_prime, power_standby (Double/BigDecimal đều ok nếu dùng setObject)
             if (p.getPowerPrime() != null) ps.setObject(i++, p.getPowerPrime());
             else ps.setNull(i++, java.sql.Types.DECIMAL);
 
@@ -389,9 +358,9 @@ public class ProductDAO extends DbContext {
             if (p.getFuelTankCapacity() != null) ps.setObject(i++, p.getFuelTankCapacity());
             else ps.setNull(i++, java.sql.Types.DECIMAL);
 
-            ps.setString(i++, p.getFuelType()); // "DIESEL" / "GASOLINE"
+            ps.setString(i++, p.getFuelType());
             ps.setString(i++, p.getCurrentLocation());
-            ps.setString(i++, p.getStatus());   // "READY" / "RUNNING" / ...
+            ps.setString(i++, p.getStatus());
 
             if (p.getTotalRunningHours() != null) ps.setObject(i++, p.getTotalRunningHours());
             else ps.setNull(i++, java.sql.Types.DECIMAL);
@@ -414,6 +383,194 @@ public class ProductDAO extends DbContext {
         return -1;
     }
 
+    // ✅ dùng cho detail + edit (lấy đủ field + created_at/updated_at)
+    public Product findByIdAdmin(int id) {
+        String sql =
+                "SELECT " +
+                        " p.id, p.serial_number, p.name, p.model, p.origin, p.manufacture_year, " +
+                        " p.brand_id, p.category_id, " +
+                        " p.power_prime, p.power_standby, p.voltage, p.fuel_tank_capacity, p.fuel_type, " +
+                        " p.current_location, p.status, p.total_running_hours, p.image_url, " +
+                        " p.customer_id, p.created_at, p.updated_at, " +
+                        " b.id AS brand_id2, b.name AS brand_name, b.slug, b.logo_url, " +
+                        " u.full_name AS customer_name " +
+                        "FROM products p " +
+                        "JOIN brands b ON p.brand_id = b.id " +
+                        "LEFT JOIN users u ON p.customer_id = u.id " +
+                        "WHERE p.id = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Product p = new Product();
+
+                    p.setId(rs.getInt("id"));
+                    p.setSerialNumber(rs.getString("serial_number"));
+                    p.setName(rs.getString("name"));
+                    p.setModel(rs.getString("model"));
+                    p.setOrigin(rs.getString("origin"));
+
+                    int year = rs.getInt("manufacture_year");
+                    p.setManufactureYear(rs.wasNull() ? null : year);
+
+                    p.setBrandId(rs.getInt("brand_id"));
+                    p.setCategoryId(rs.getInt("category_id"));
+
+                    p.setPowerPrime(rs.getDouble("power_prime"));
+                    p.setPowerStandby(rs.getDouble("power_standby"));
+                    p.setVoltage(rs.getString("voltage"));
+                    p.setFuelTankCapacity(rs.getDouble("fuel_tank_capacity"));
+                    p.setFuelType(rs.getString("fuel_type"));
+                    p.setCurrentLocation(rs.getString("current_location"));
+                    p.setStatus(rs.getString("status"));
+                    p.setTotalRunningHours(rs.getDouble("total_running_hours"));
+                    p.setImageUrl(rs.getString("image_url"));
+
+                    int customerId = rs.getInt("customer_id");
+                    p.setCustomerId(rs.wasNull() ? null : customerId);
+
+                    p.setCreatedAt(rs.getTimestamp("created_at"));
+                    p.setUpdatedAt(rs.getTimestamp("updated_at"));
+
+                    Brand brand = new Brand();
+                    brand.setId(rs.getInt("brand_id2"));
+                    brand.setName(rs.getString("brand_name"));
+                    brand.setSlug(rs.getString("slug"));
+                    brand.setLogoUrl(rs.getString("logo_url"));
+                    p.setBrand(brand);
+
+                    p.setCustomerName(rs.getString("customer_name"));
+
+                    return p;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // ✅ UPDATE (CHỈ CÒN 1 HÀM - hết trùng)
+    public boolean update(Product p) {
+        String sql =
+                "UPDATE products SET " +
+                        " serial_number = ?, name = ?, model = ?, origin = ?, manufacture_year = ?, " +
+                        " brand_id = ?, category_id = ?, " +
+                        " power_prime = ?, power_standby = ?, voltage = ?, " +
+                        " fuel_tank_capacity = ?, fuel_type = ?, current_location = ?, status = ?, " +
+                        " total_running_hours = ?, image_url = ?, customer_id = ?, " +
+                        " updated_at = NOW() " +
+                        "WHERE id = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int i = 1;
+
+            ps.setString(i++, p.getSerialNumber());
+            ps.setString(i++, p.getName());
+            ps.setString(i++, p.getModel());
+            ps.setString(i++, p.getOrigin());
+
+            if (p.getManufactureYear() != null) ps.setInt(i++, p.getManufactureYear());
+            else ps.setNull(i++, java.sql.Types.INTEGER);
+
+            ps.setInt(i++, p.getBrandId());
+            ps.setInt(i++, p.getCategoryId());
+
+            if (p.getPowerPrime() != null) ps.setObject(i++, p.getPowerPrime());
+            else ps.setNull(i++, java.sql.Types.DECIMAL);
+
+            if (p.getPowerStandby() != null) ps.setObject(i++, p.getPowerStandby());
+            else ps.setNull(i++, java.sql.Types.DECIMAL);
+
+            ps.setString(i++, p.getVoltage());
+
+            if (p.getFuelTankCapacity() != null) ps.setObject(i++, p.getFuelTankCapacity());
+            else ps.setNull(i++, java.sql.Types.DECIMAL);
+
+            ps.setString(i++, p.getFuelType());
+            ps.setString(i++, p.getCurrentLocation());
+            ps.setString(i++, p.getStatus());
+
+            if (p.getTotalRunningHours() != null) ps.setObject(i++, p.getTotalRunningHours());
+            else ps.setNull(i++, java.sql.Types.DECIMAL);
+
+            ps.setString(i++, p.getImageUrl());
+
+            if (p.getCustomerId() != null) ps.setInt(i++, p.getCustomerId());
+            else ps.setNull(i++, java.sql.Types.INTEGER);
+
+            ps.setInt(i++, p.getId());
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // =========================
+    // ✅ Helpers
+    // =========================
+    private void bindParams(PreparedStatement ps, List<Object> params) throws Exception {
+        for (int i = 0; i < params.size(); i++) {
+            ps.setObject(i + 1, params.get(i));
+        }
+    }
+
+    // mapRow phục vụ list (đang select những field nào thì map field đó)
+    private Product mapRow(ResultSet rs) throws Exception {
+        Product p = new Product();
+        p.setId(rs.getInt("id"));
+        p.setSerialNumber(rs.getString("serial_number"));
+        p.setName(rs.getString("name"));
+        p.setModel(rs.getString("model"));
+
+        // ✅ FIX: lấy origin từ DB
+        try {
+            p.setOrigin(rs.getString("origin"));
+        } catch (Exception ignored) {
+            // nếu query nào chưa select origin thì bỏ qua (nhưng mình đã sửa các query bên dưới)
+        }
+
+        p.setStatus(rs.getString("status"));
+        p.setImageUrl(rs.getString("image_url"));
+        p.setPowerPrime(rs.getDouble("power_prime"));
+        p.setFuelType(rs.getString("fuel_type"));
+
+        Brand brand = new Brand();
+        brand.setId(rs.getInt("brand_id"));
+        brand.setName(rs.getString("brand_name"));
+        brand.setSlug(rs.getString("slug"));
+        brand.setLogoUrl(rs.getString("logo_url"));
+        p.setBrand(brand);
+
+        // ✅ customer name from users
+        try {
+            p.setCustomerName(rs.getString("customer_name"));
+        } catch (Exception ignored) {}
+
+        return p;
+    }
+
+    public boolean deleteById(int id) {
+        String sql = "DELETE FROM products WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }
-
-

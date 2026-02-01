@@ -22,25 +22,24 @@ public class ProductController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String path = req.getPathInfo(); // /product-list
+        String path = req.getPathInfo(); // /product-list | /detail
 
+        // =======================
+        // LIST + FILTER
+        // =======================
         if (path == null || "/".equals(path) || "/product-list".equals(path)) {
 
-            // ===== FILTER PARAMS =====
             String q = trim(req.getParameter("q"));
             String fuel = trim(req.getParameter("fuel"));
             Integer brandId = parseIntNullable(req.getParameter("brandId"));
             Double minKva = parseDoubleNullable(req.getParameter("minKva"));
             Double maxKva = parseDoubleNullable(req.getParameter("maxKva"));
 
-            // ===== PAGINATION =====
             int page = parseInt(req.getParameter("page"), 1);
             int pageSize = 10;
             if (page < 1) page = 1;
-
             int offset = (page - 1) * pageSize;
 
-            // ===== COUNT =====
             int totalItems = productDAO.countFilteredProductsAdmin(
                     brandId, minKva, maxKva, fuel, q
             );
@@ -51,21 +50,40 @@ public class ProductController extends HttpServlet {
                 offset = (page - 1) * pageSize;
             }
 
-            // ===== LIST =====
             List<Product> products = productDAO.filterProductsPagedAdmin(
                     brandId, minKva, maxKva, fuel, q, pageSize, offset
             );
 
-            // ===== DROPDOWN DATA =====
             req.setAttribute("brands", brandDAO.getAllBrands());
             req.setAttribute("fuels", productDAO.getAllFuelTypes());
 
-            // ===== JSP ATTR =====
             req.setAttribute("products", products);
             req.setAttribute("page", page);
             req.setAttribute("totalPages", totalPages);
 
             req.getRequestDispatcher("/views/admin/Product/product-list.jsp")
+                    .forward(req, resp);
+            return;
+        }
+
+        // =======================
+        // DETAIL
+        // =======================
+        if ("/detail".equals(path)) {
+            Integer id = parseIntNullable(req.getParameter("id"));
+            if (id == null) {
+                resp.sendRedirect(req.getContextPath() + "/admin/product/product-list");
+                return;
+            }
+
+            Product product = productDAO.findByIdAdmin(id);
+            if (product == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            req.setAttribute("p", product);
+            req.getRequestDispatcher("/views/admin/Product/product-detail.jsp")
                     .forward(req, resp);
             return;
         }
