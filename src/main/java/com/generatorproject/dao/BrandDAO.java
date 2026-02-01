@@ -52,5 +52,29 @@ public class BrandDAO extends DbContext {
         }
         return list;
     }
+<<<<<<< HEAD
+=======
+    public int insert(Brand b) {
+        String sql = "INSERT INTO brands(name, slug, logo_url) VALUES(?,?,?)";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, b.getName());
+            ps.setString(2, b.getSlug());
+            ps.setString(3, b.getLogoUrl());
+
+            int affected = ps.executeUpdate();
+            if (affected > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+>>>>>>> Hung1
 
 }

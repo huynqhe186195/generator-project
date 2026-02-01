@@ -14,6 +14,9 @@ import java.util.List;
 
 public class UserDao extends GenericDAO<Users> {
 
+    // ✅ CHỈNH THEO DB CỦA BẠN (role customer id là mấy thì set vào đây)
+    private static final int CUSTOMER_ROLE_ID = 2;
+
     public List<Users> getAllUsers() {
         String sql = "select * from users";
         return query(sql, new UserMapper());
@@ -118,6 +121,7 @@ public class UserDao extends GenericDAO<Users> {
         update(sql, newStatus, userId);
         return true;
     }
+
     public int countUsers() {
         String sql = "SELECT COUNT(*) FROM users";
         try (Connection conn = getConnection();
@@ -180,5 +184,19 @@ public class UserDao extends GenericDAO<Users> {
         params.add(offset);
 
         return query(sql.toString(), new UserMapper(), params.toArray());
+    }
+
+    // =========================
+    // ✅ FIX: lấy customer cho dropdown (KHÔNG PHỤ THUỘC roles.name)
+    // =========================
+    public List<Users> getAllCustomers() {
+        String sql = "SELECT * FROM users WHERE status = 1 ORDER BY full_name";
+        return query(sql, new UserMapper(), CUSTOMER_ROLE_ID);
+    }
+
+    // Nếu muốn cho chọn tất cả user active (fallback)
+    public List<Users> getAllUsersActive() {
+        String sql = "SELECT * FROM users WHERE status = 1 ORDER BY full_name";
+        return query(sql, new UserMapper());
     }
 }
