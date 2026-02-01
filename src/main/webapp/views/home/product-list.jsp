@@ -237,7 +237,7 @@
             <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
                 <div>
                     <h5 class="fw-bold text-primary m-0">
-                        <i class="fas fa-list me-2"></i>Danh sách thiết bị
+                        <i class="fas fa-list me-2"></i>Danh sách thiết bị của bạn
                     </h5>
                     
                 </div>
@@ -262,7 +262,7 @@
                     <!-- Brand -->
                     <div class="col-auto">
                         <select class="form-select" name="brandId">
-                            <option value="">-- Brand --</option>
+                            <option value="">-- Thương hiệu --</option>
                             <c:forEach items="${brands}" var="b">
                                 <option value="${b.id}" ${brandId != null && brandId == b.id ? 'selected' : ''}>
                                         ${b.name}
@@ -274,7 +274,7 @@
                     <!-- Fuel type -->
                     <div class="col-auto">
                         <select class="form-select" name="fuelType">
-                            <option value="">-- Fuel --</option>
+                            <option value="">-- Nhiên liêụ --</option>
                             <option value="DIESEL" ${fuelType == 'DIESEL' ? 'selected' : ''}>Diesel</option>
                             <option value="GASOLINE" ${fuelType == 'GASOLINE' ? 'selected' : ''}>Gasoline</option>
                         </select>
@@ -315,7 +315,7 @@
                         <th class="ps-3">Hình ảnh</th>
                         <th>Thông tin máy</th>
                         <th>Công suất</th>
-                        <th>Fuel type</th>
+                        <th>Nhiên Liệu</th>
                         <th class="text-end pe-3">Báo lỗi</th>
                     </tr>
                     </thead>

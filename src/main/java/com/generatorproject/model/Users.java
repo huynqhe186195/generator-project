@@ -18,9 +18,7 @@ public class Users {
     private String roleName;
     private List<String> permissions;
 
-    public Users() {
-    }
-
+    public Users() {}
 
     // --- CONSTRUCTOR BUILDER (QUAN TRỌNG) ---
     private Users(Builder builder) {
@@ -40,7 +38,7 @@ public class Users {
         this.roleUrl = builder.roleUrl;
     }
 
-    // --- GETTER & SETTER ---
+    // --- GETTER ---
     public int getId() { return id; }
     public int getRoleId() { return roleId; }
     public String getEmail() { return email; }
@@ -52,12 +50,22 @@ public class Users {
     public Timestamp getCreatedAt() { return createdAt; }
 
     public String getRoleName() { return roleName; }
-    public void setRoleName(String roleName) { this.roleName = roleName; }
-
     public List<String> getPermissions() { return permissions; }
-    public void setPermissions(List<String> permissions) { this.permissions = permissions; }
-
     public String getRoleUrl() { return roleUrl; }
+
+    // --- SETTER (✅ bổ sung đầy đủ) ---
+    public void setId(int id) { this.id = id; }
+    public void setRoleId(int roleId) { this.roleId = roleId; }
+    public void setEmail(String email) { this.email = email; }
+    public void setPassword(String password) { this.password = password; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public void setStatus(int status) { this.status = status; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public void setRoleName(String roleName) { this.roleName = roleName; }
+    public void setPermissions(List<String> permissions) { this.permissions = permissions; }
     public void setRoleUrl(String roleUrl) { this.roleUrl = roleUrl; }
 
     // Helper check quyền

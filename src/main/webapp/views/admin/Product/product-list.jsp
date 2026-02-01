@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    <!-- FILTER (giữ nguyên name/action, chỉ đổi UI theo template) -->
+    <!-- FILTER -->
     <div class="card shadow mb-4 border-0">
         <div class="card-body bg-light rounded">
             <form action="<c:url value='/admin/product/product-list'/>" method="get" class="row g-3 align-items-end">
@@ -33,7 +33,7 @@
                     <select name="brandId" class="form-select">
                         <option value="">-- Tất cả --</option>
                         <c:forEach items="${brands}" var="b">
-                            <option value="${b.id}" <c:if test="${param.brandId == (b.id)}">selected</c:if>>
+                            <option value="${b.id}" <c:if test="${param.brandId == b.id}">selected</c:if>>
                                     ${b.name}
                             </option>
                         </c:forEach>
@@ -115,14 +115,23 @@
                                     <td class="ps-4">${p.id}</td>
                                     <td class="fw-bold">${p.name}</td>
                                     <td>${p.model}</td>
-                                    <td>${p.origin}</td>
-                                    <td>${p.brandName}</td>
+
+                                    <!-- Product hiện không có origin -->
+                                    <td><span class="text-muted">N/A</span></td>
+
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${not empty p.brand}">${p.brand.name}</c:when>
+                                            <c:otherwise><span class="text-muted">N/A</span></c:otherwise>
+                                        </c:choose>
+                                    </td>
+
                                     <td class="text-end"><c:out value="${p.powerPrime}" /></td>
 
                                     <td>
                                         <c:choose>
-                                            <c:when test="${not empty p.image}">
-                                                <img src="<c:url value='${p.image}'/>"
+                                            <c:when test="${not empty p.imageUrl}">
+                                                <img src="<c:url value='${p.imageUrl}'/>"
                                                      alt="img-${p.id}"
                                                      class="rounded border"
                                                      style="width:90px;height:60px;object-fit:cover;" />
@@ -133,7 +142,12 @@
                                         </c:choose>
                                     </td>
 
-                                    <td>${p.customer}</td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${not empty p.customerName}">${p.customerName}</c:when>
+                                            <c:otherwise><span class="text-muted">N/A</span></c:otherwise>
+                                        </c:choose>
+                                    </td>
 
                                     <td class="text-end pe-4">
                                         <div class="d-flex gap-1 justify-content-end">
@@ -160,7 +174,7 @@
             </div>
         </div>
 
-        <!-- Pagination (giữ nguyên logic totalPages/page; chỉ đổi style giống template) -->
+        <!-- Pagination -->
         <div class="card-footer bg-white py-3">
             <c:if test="${not empty totalPages && totalPages > 1}">
                 <nav aria-label="Page navigation">
