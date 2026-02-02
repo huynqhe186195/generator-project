@@ -51,4 +51,7 @@ public class ContractServices implements IContractServices{
     public Long importContractFromDocx(InputStream fileContent, Users manager) throws Exception {
         return contractDAO.importContractFromDocx(fileContent, manager);
     }
+
+    @Override
+    public void deleteContract(Long id) {contractDAO.delete(id);}
 }

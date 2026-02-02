@@ -11,7 +11,7 @@ public class ProductMapper implements RowMapper<Product> {
         try {
             Product.Builder builder = Product.builder();
 
-            builder.id(rs.getLong("id"))
+            builder.id(rs.getInt("id"))
                     .serialNumber(rs.getString("serial_number"))
                     .manufactureYear(rs.getObject("manufacture_year") != null ? rs.getInt("manufacture_year") : null)
                     .currentLocation(rs.getString("current_location"))

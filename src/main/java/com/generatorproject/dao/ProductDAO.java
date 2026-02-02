@@ -1,5 +1,7 @@
 package com.generatorproject.dao;
 
+import com.generatorproject.mapper.ProductMapper;
+import com.generatorproject.mapper.RowMapper;
 import com.generatorproject.model.Brand;
 import com.generatorproject.model.Product;
 
@@ -12,15 +14,38 @@ import java.util.List;
 public class ProductDAO extends GenericDAO<Product> {
 
     public Product findBySerial(String serialNumber) {
-        // Câu lệnh SQL tìm máy theo cột serial_number
         String sql = "SELECT * FROM products WHERE serial_number = ?";
 
-        // Gọi hàm query của GenericDAO (kế thừa từ cha)
-        // Lưu ý: Phải dùng đúng ProductMapper để map dữ liệu
-        List<Product> results = query(sql, new com.generatorproject.mapper.ProductMapper(), serialNumber);
+        List<Product> results = query(sql, new ProductMapper(), serialNumber);
 
-        // Nếu list rỗng (không tìm thấy) -> trả về null
-        // Nếu có -> trả về phần tử đầu tiên
         return results.isEmpty() ? null : results.get(0);
+    }
+
+    public int countProducts() {
+        String sql = "SELECT COUNT(*) FROM products";
+
+        return count(sql, null);
+    }
+
+    public double sumRunningHours() {
+        String sql = "SELECT SUM(total_running_hours) FROM products";
+
+        return count(sql, null);
+    }
+
+    public void update(Product product) {
+        String sql = "UPDATE products SET customer_id = ?, status = ?, current_location = ?, updated_at = NOW() WHERE id = ?";
+
+        update(sql,
+                product.getCustomerId(),
+                product.getStatus(),
+                product.getCurrentLocation(),
+                product.getId()
+        );
+    }
+
+    public List<Product> findAll() {
+        String sql = "SELECT * FROM products";
+        return query(sql, new ProductMapper());
     }
 }

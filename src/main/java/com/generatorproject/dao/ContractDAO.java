@@ -195,7 +195,10 @@ public class ContractDAO extends GenericDAO<Contract> {
         if (product == null) {
             throw new Exception("Máy có Serial '" + serialNummber + "' chưa được nhập vào hệ thống. Vui lòng nhập Product trước.");
         }
-
+        product.setCustomerId((long)customer.getId());
+        product.setStatus("RUNNING");
+        product.setCurrentLocation("Tại địa chỉ khách hàng: " + customer.getFullName());
+        productDAO.update(product);
         // 4. TÍNH TOÁN NGÀY
         Date startDate = new java.sql.Date(System.currentTimeMillis()); // Ngày hiện tại
 
@@ -217,5 +220,10 @@ public class ContractDAO extends GenericDAO<Contract> {
                 .build();
 
         return save(newContract);
+    }
+
+    public void delete(Long id) {
+        String sql = "DELETE FROM contracts WHERE id = ?";
+        update(sql, id); // Sử dụng hàm update() của GenericDAO
     }
 }
