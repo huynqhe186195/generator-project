@@ -298,4 +298,22 @@ public class ProductDAO extends GenericDAO<Product> {
         String sql = "SELECT * FROM products";
         return query(sql, new ProductMapper());
     }
+
+    public Long save(Product product) {
+        StringBuilder sql = new StringBuilder("INSERT INTO products (");
+        sql.append("serial_number, customer_id, status, total_running_hours, ");
+        sql.append("manufacture_year, purchase_date, current_location, model_id, created_at");
+        sql.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+
+        return insert(sql.toString(),
+                product.getSerialNumber(),
+                product.getCustomerId(),
+                product.getStatus(),
+                product.getTotalRunningHours(),
+                product.getManufactureYear(),
+                product.getPurchaseDate(),
+                product.getCurrentLocation(),
+                product.getModelId()
+        );
+    }
 }
