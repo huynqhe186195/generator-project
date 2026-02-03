@@ -14,6 +14,9 @@ import java.util.List;
 
 public class UserDao extends GenericDAO<Users> {
 
+    // ✅ CHỈNH THEO DB CỦA BẠN (role customer id là mấy thì set vào đây)
+    private static final int CUSTOMER_ROLE_ID = 2;
+
     public List<Users> getAllUsers() {
         String sql = "select * from users";
         return query(sql, new UserMapper());
@@ -28,8 +31,7 @@ public class UserDao extends GenericDAO<Users> {
                 user.getPhone(),
                 user.getRoleId(),
                 user.getStatus(),
-                user.getAvatarUrl()
-        );
+                user.getAvatarUrl());
     }
 
     public Users findUserById(int id) {
@@ -61,7 +63,8 @@ public class UserDao extends GenericDAO<Users> {
                     e.printStackTrace();
                 }
                 return u;
-            }}, email);
+            }
+        }, email);
 
         if (users == null || users.isEmpty()) {
             return null;
@@ -79,7 +82,7 @@ public class UserDao extends GenericDAO<Users> {
         return null;
     }
 
-    public void deleteUser(int id){
+    public void deleteUser(int id) {
         String sql = "DELETE FROM users WHERE id = ?";
         update(sql, id);
     }
@@ -110,7 +113,8 @@ public class UserDao extends GenericDAO<Users> {
 
     public void updateUser(Users user) {
         String sql = "UPDATE users SET full_name=?, phone=?, role_id=?, status=?, avatar_url=? WHERE id=?";
-        update(sql, user.getFullName(), user.getPhone(), user.getRoleId(), user.getStatus(), user.getAvatarUrl(), user.getId());
+        update(sql, user.getFullName(), user.getPhone(), user.getRoleId(), user.getStatus(), user.getAvatarUrl(),
+                user.getId());
     }
 
     public boolean changeStatus(int userId, int newStatus) {
@@ -118,13 +122,17 @@ public class UserDao extends GenericDAO<Users> {
         update(sql, newStatus, userId);
         return true;
     }
+
     public int countUsers() {
         String sql = "SELECT COUNT(*) FROM users";
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            if (rs.next())
+                return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -151,6 +159,7 @@ public class UserDao extends GenericDAO<Users> {
 
         return count(sql.toString(), params.toArray());
     }
+
     public int countCustomerByFilter(String keyword) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE role_id = 5");
         List<Object> params = new ArrayList<>();
@@ -161,8 +170,6 @@ public class UserDao extends GenericDAO<Users> {
             params.add(searchPattern);
             params.add(searchPattern);
         }
-
-
 
         return count(sql.toString(), params.toArray());
     }
@@ -196,6 +203,7 @@ public class UserDao extends GenericDAO<Users> {
 
         return query(sql.toString(), new UserMapper(), params.toArray());
     }
+
     public List<Users> getCustomerByFilter(String keyword, int page, int pageSize) {
         StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE role_id = 5");
         List<Object> params = new ArrayList<>();
@@ -207,8 +215,6 @@ public class UserDao extends GenericDAO<Users> {
             params.add(searchPattern);
         }
 
-
-
         sql.append(" ORDER BY id DESC LIMIT ? OFFSET ?");
 
         int offset = (page - 1) * pageSize;
@@ -216,5 +222,19 @@ public class UserDao extends GenericDAO<Users> {
         params.add(offset);
 
         return query(sql.toString(), new UserMapper(), params.toArray());
+    }
+
+    // =========================
+    // ✅ FIX: lấy customer cho dropdown (KHÔNG PHỤ THUỘC roles.name)
+    // =========================
+    public List<Users> getAllCustomers() {
+        String sql = "SELECT * FROM users WHERE status = 1 ORDER BY full_name";
+        return query(sql, new UserMapper(), CUSTOMER_ROLE_ID);
+    }
+
+    // Nếu muốn cho chọn tất cả user active (fallback)
+    public List<Users> getAllUsersActive() {
+        String sql = "SELECT * FROM users WHERE status = 1 ORDER BY full_name";
+        return query(sql, new UserMapper());
     }
 }

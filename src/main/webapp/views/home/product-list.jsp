@@ -27,7 +27,10 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+<<<<<<< HEAD
 
+=======
+>>>>>>> Hung1
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow-x: hidden;
             background-color: #fdfdfd;
@@ -35,6 +38,7 @@
 
         main {
             flex: 1;
+<<<<<<< HEAD
             /* Chừa đáy để bảng không bị “dính/che” bởi footer */
             padding-bottom: 120px;
         }
@@ -52,6 +56,22 @@
             backdrop-filter: blur(10px);
             padding: 10px 0;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+=======
+            padding-bottom: 120px; /* tránh dính footer */
+        }
+
+        /* NAVBAR (TÁCH HẲN, KHÔNG CHE NỘI DUNG) */
+        .navbar-landing {
+            /* Không fixed-top nữa */
+            position: sticky; /* nếu không muốn sticky thì đổi thành: position: relative; */
+            top: 0;
+            z-index: 1050;
+
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 14px 0;
+            transition: all 0.25s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+>>>>>>> Hung1
         }
 
         .navbar-brand {
@@ -60,11 +80,21 @@
             color: #fff !important;
             transition: 0.3s;
         }
+<<<<<<< HEAD
         .navbar-scrolled .navbar-brand { color: var(--primary) !important; }
 
         .nav-link { color: rgba(255,255,255,0.9) !important; font-weight: 500; transition: 0.3s; }
         .navbar-scrolled .nav-link { color: #444 !important; }
         .navbar-scrolled .nav-link:hover { color: var(--primary) !important; }
+=======
+
+        .nav-link {
+            color: rgba(255,255,255,0.92) !important;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .nav-link:hover { opacity: .9; }
+>>>>>>> Hung1
 
         .btn-white {
             background: white;
@@ -78,12 +108,18 @@
             display: inline-block;
         }
         .btn-white:hover {
+<<<<<<< HEAD
             transform: scale(1.05);
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+=======
+            transform: scale(1.03);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+>>>>>>> Hung1
             color: var(--secondary);
         }
 
         .user-dropdown-toggle {
+<<<<<<< HEAD
             background: rgba(255,255,255,0.2);
             color: white !important;
             border: 1px solid rgba(255,255,255,0.4);
@@ -93,12 +129,23 @@
             color: var(--primary) !important;
             border-color: var(--primary);
         }
+=======
+            background: rgba(255,255,255,0.18);
+            color: white !important;
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 50px;
+        }
+>>>>>>> Hung1
 
         /* HERO */
         .hero-section {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
+<<<<<<< HEAD
             padding: 150px 0 90px;
+=======
+            padding: 70px 0 70px; /* giảm vì navbar đã chiếm chỗ thật */
+>>>>>>> Hung1
             clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
             position: relative;
         }
@@ -130,20 +177,38 @@
             color: #5a5c69;
         }
 
+<<<<<<< HEAD
         /* FOOTER (GIỐNG HOME) */
+=======
+        /* FOOTER */
+>>>>>>> Hung1
         footer {
             margin-top: auto;
             background: #1a1a1a;
             color: #888;
+<<<<<<< HEAD
             padding: 60px 0 30px;
+=======
+            padding: 30px 0 15px;
+        }
+
+        /* Mobile: tránh bị sát quá */
+        @media (max-width: 576px) {
+            .hero-title { font-size: 2rem; }
+>>>>>>> Hung1
         }
     </style>
 </head>
 
 <body>
 
+<<<<<<< HEAD
 <!-- NAVBAR (GIỐNG HOME) -->
 <nav class="navbar navbar-expand-lg navbar-landing fixed-top" id="mainNav">
+=======
+<!-- NAVBAR (KHÔNG FIXED-TOP) -->
+<nav class="navbar navbar-expand-lg navbar-landing" id="mainNav">
+>>>>>>> Hung1
     <div class="container">
         <a class="navbar-brand" href="<c:url value='/'/>">
             <i class="fas fa-bolt me-2 text-warning"></i>Gen-CMS
@@ -223,7 +288,11 @@
         <div class="row align-items-center">
             <div class="col-lg-8" data-aos="fade-right">
                 <h1 class="hero-title">Danh sách Máy phát điện</h1>
+<<<<<<< HEAD
                 <p class="hero-desc">Lọc theo Brand / Công suất / Fuel type hoặc tìm theo tên máy để thao tác nhanh.</p>
+=======
+                <p class="hero-desc">Quản lý, theo dõi và tra cứu thông tin các máy phát điện của bạn</p>
+>>>>>>> Hung1
             </div>
         </div>
     </div>
@@ -231,19 +300,29 @@
 
 <!-- MAIN -->
 <main>
+<<<<<<< HEAD
     <!-- để card hơi chui vào hero (nhưng không ảnh hưởng footer) -->
     <div class="container" style="margin-top:-55px;" data-aos="fade-up">
+=======
+    <div class="container mt-4" data-aos="fade-up">
+>>>>>>> Hung1
         <div class="main-card p-4">
 
             <!-- HEADER + FILTER -->
             <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
                 <div>
                     <h5 class="fw-bold text-primary m-0">
+<<<<<<< HEAD
                         <i class="fas fa-list me-2"></i>Danh sách thiết bị
                     </h5>
                     <div class="text-muted small mt-1">
                         Lọc theo Brand / Công suất / Fuel type hoặc tìm theo tên máy
                     </div>
+=======
+                        <i class="fas fa-list me-2"></i>Danh sách thiết bị của bạn
+                    </h5>
+                    
+>>>>>>> Hung1
                 </div>
 
                 <!-- FILTER FORM -->
@@ -266,7 +345,11 @@
                     <!-- Brand -->
                     <div class="col-auto">
                         <select class="form-select" name="brandId">
+<<<<<<< HEAD
                             <option value="">-- Brand --</option>
+=======
+                            <option value="">-- Thương hiệu --</option>
+>>>>>>> Hung1
                             <c:forEach items="${brands}" var="b">
                                 <option value="${b.id}" ${brandId != null && brandId == b.id ? 'selected' : ''}>
                                         ${b.name}
@@ -278,7 +361,11 @@
                     <!-- Fuel type -->
                     <div class="col-auto">
                         <select class="form-select" name="fuelType">
+<<<<<<< HEAD
                             <option value="">-- Fuel --</option>
+=======
+                            <option value="">-- Nhiên liêụ --</option>
+>>>>>>> Hung1
                             <option value="DIESEL" ${fuelType == 'DIESEL' ? 'selected' : ''}>Diesel</option>
                             <option value="GASOLINE" ${fuelType == 'GASOLINE' ? 'selected' : ''}>Gasoline</option>
                         </select>
@@ -319,7 +406,11 @@
                         <th class="ps-3">Hình ảnh</th>
                         <th>Thông tin máy</th>
                         <th>Công suất</th>
+<<<<<<< HEAD
                         <th>Fuel type</th>
+=======
+                        <th>Nhiên Liệu</th>
+>>>>>>> Hung1
                         <th class="text-end pe-3">Báo lỗi</th>
                     </tr>
                     </thead>
@@ -429,6 +520,7 @@
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 <script>
     AOS.init({ duration: 800, once: true });
+<<<<<<< HEAD
 
     // Navbar scroll effect (GIỐNG HOME)
     const mainNav = document.getElementById('mainNav');
@@ -436,6 +528,8 @@
         if (window.scrollY > 50) mainNav.classList.add('navbar-scrolled');
         else mainNav.classList.remove('navbar-scrolled');
     });
+=======
+>>>>>>> Hung1
 </script>
 
 </body>

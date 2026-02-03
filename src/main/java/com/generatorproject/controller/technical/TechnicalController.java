@@ -1,7 +1,9 @@
 package com.generatorproject.controller.technical;
 
 import com.generatorproject.dao.MaintenanceDAO;
+import com.generatorproject.dao.SparePartDAO;
 import com.generatorproject.model.Maintenance;
+import com.generatorproject.model.SparePart;
 import com.generatorproject.model.Users;
 
 import javax.servlet.ServletException;
@@ -29,8 +31,12 @@ public class TechnicalController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setContentType("text/html; charset=UTF-8");
         String path = req.getServletPath();
         Users currentUser = (Users) req.getSession().getAttribute("USERMODEL");
+
 
         // ===== CHECK LOGIN =====
         if (currentUser == null) {
@@ -99,6 +105,29 @@ public class TechnicalController extends HttpServlet {
                 break;
             }
 
+            // =========================
+// Kho vật tư
+// =========================
+            case "/technical/materials": {
+                final SparePartDAO sparePartDAO = new SparePartDAO();
+
+
+                String keyword = req.getParameter("keyword");
+
+                List<SparePart> parts;
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    parts = sparePartDAO.search(keyword);
+                } else {
+                    parts = sparePartDAO.getAll();
+                }
+
+                req.setAttribute("parts", parts);
+                req.getRequestDispatcher("/views/Technical/materials.jsp")
+                        .forward(req, resp);
+                break;
+            }
+
+
 
 
 
@@ -112,6 +141,10 @@ public class TechnicalController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        req.setCharacterEncoding("UTF-8");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setContentType("text/html; charset=UTF-8");
+
         Users currentUser = (Users) req.getSession().getAttribute("USERMODEL");
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -121,6 +154,35 @@ public class TechnicalController extends HttpServlet {
         String path = req.getServletPath();
 
         // =========================
+        // GHI BÁO CÁO
+        // =========================
+        if ("/technical/task-report".equals(path)) {
+
+            String idRaw = req.getParameter("id");
+            if (idRaw == null) {
+                resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
+                return;
+            }
+
+            int id = Integer.parseInt(idRaw);
+            String report = req.getParameter("description");
+
+            Maintenance task = maintenanceDAO.getById(id);
+
+            // bảo vệ
+            if (task == null || task.getTechnicianId() != currentUser.getId()) {
+                resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
+                return;
+            }
+
+            maintenanceDAO.updateReport(id, report);
+
+            resp.sendRedirect(req.getContextPath()
+                    + "/technical/task-detail?id=" + id);
+            return;
+        }
+
+        // =========================
         // ĐỔI TRẠNG THÁI TASK
         // =========================
         if ("/technical/task-status".equals(path)) {
@@ -128,10 +190,10 @@ public class TechnicalController extends HttpServlet {
             int id = Integer.parseInt(req.getParameter("id"));
             String status = req.getParameter("status");
 
-            // CHỐT ENUM – CHỐNG NGHỊCH
+            // CHỈ 3 TRẠNG THÁI NHƯ MÀY NÓI
             if (!"SCHEDULED".equals(status)
-                    && !"COMPLETED".equals(status)
-                    && !"CANCELLED".equals(status)) {
+                    && !"IN_PROGRESS".equals(status)
+                    && !"COMPLETED".equals(status)) {
 
                 resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
                 return;
@@ -139,7 +201,6 @@ public class TechnicalController extends HttpServlet {
 
             Maintenance task = maintenanceDAO.getById(id);
 
-            // bảo vệ task của đúng kỹ thuật viên
             if (task == null || task.getTechnicianId() != currentUser.getId()) {
                 resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
                 return;
@@ -147,18 +208,9 @@ public class TechnicalController extends HttpServlet {
 
             maintenanceDAO.updateStatus(id, status);
             resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
-            return;
         }
-
-        // =========================
-        // GHI BÁO CÁO
-        // =========================
-        int id = Integer.parseInt(req.getParameter("id"));
-        String report = req.getParameter("description");
-
-        maintenanceDAO.updateReport(id, report);
-        resp.sendRedirect(req.getContextPath()
-                + "/technical/task-detail?id=" + id);
     }
+
+
 
 }

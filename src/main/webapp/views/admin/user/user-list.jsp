@@ -193,7 +193,7 @@
         if (confirm(confirmMsg)) {
             // Cập nhật đường dẫn cho đúng với cấu trúc /admin/user/*
             // Ví dụ: /admin/user/toggle-status?id=...
-            window.location.href = "<c:url value='/admin/user/toggle-status'/>?id=" + id + "&status=" + currentStatus;
+            window.location.href = "<c:url value='/admin/user-status'/>?id=" + id + "&status=" + currentStatus;
         }
     }
 </script>
