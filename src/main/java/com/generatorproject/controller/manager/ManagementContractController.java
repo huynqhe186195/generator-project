@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.Date;
 
@@ -57,7 +58,7 @@ public class ManagementContractController extends HttpServlet {
 
         switch (action) {
             case "import":
-                // ... (Logic import đã làm ở bước trước) ...
+                handleImportFile(req, resp);
                 break;
             case "create":
                 handleCreateManual(req, resp);
@@ -99,6 +100,40 @@ public class ManagementContractController extends HttpServlet {
     }
 
     // --- CÁC HÀM XỬ LÝ (HANDLE) ---
+
+    private void handleImportFile(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            // Lấy User đang đăng nhập (Manager)
+            Users manager = (Users) req.getSession().getAttribute("USERMODEL");
+            if (manager == null) {
+                resp.sendRedirect(req.getContextPath() + "/account/login"); // Đá về login nếu hết phiên
+                return;
+            }
+
+            // Lấy file từ form (name="contractFile" phải khớp với file JSP)
+            Part filePart = req.getPart("contractFile");
+            if (filePart == null || filePart.getSize() == 0) {
+                throw new Exception("Vui lòng chọn file hợp đồng (.docx)!");
+            }
+
+            // GỌI SERVICE XỬ LÝ
+            // Service sẽ ném Exception nếu file lỗi, thiếu serial, sai email...
+            Long newContractId = contractService.importContractFromDocx(filePart.getInputStream(), manager);
+
+            // Thành công -> Redirect về trang list kèm thông báo
+            resp.sendRedirect("contracts?msg=success&id=" + newContractId);
+
+        } catch (Throwable e) {
+            // Bắt lỗi Throwable để bắt cả các lỗi thiếu thư viện (NoClassDefFoundError)
+            e.printStackTrace();
+
+            // Set thông báo lỗi để hiển thị ra màn hình
+            req.setAttribute("errorMessage", "Lỗi Import: " + e.getMessage());
+
+            // Forward lại trang danh sách để người dùng thấy lỗi (Không redirect)
+            showList(req, resp);
+        }
+    }
 
     private void handleCreateManual(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
