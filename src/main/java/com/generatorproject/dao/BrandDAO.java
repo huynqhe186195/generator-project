@@ -73,5 +73,4 @@ public class BrandDAO extends DbContext {
         }
         return -1;
     }
-
 }
