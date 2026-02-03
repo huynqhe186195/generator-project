@@ -303,8 +303,7 @@ public class ProductDAO extends GenericDAO<Product> {
         StringBuilder sql = new StringBuilder("INSERT INTO products (");
         sql.append("serial_number, customer_id, status, total_running_hours, ");
         sql.append("manufacture_year, purchase_date, current_location, model_id, created_at");
-        sql.append(") VALUES (?, ?," +
-                " ?, ?, ?, ?, ?, ?, NOW())");
+        sql.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 
         return insert(sql.toString(),
                 product.getSerialNumber(),
