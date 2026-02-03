@@ -52,8 +52,6 @@ public class BrandDAO extends DbContext {
         }
         return list;
     }
-<<<<<<< HEAD
-=======
     public int insert(Brand b) {
         String sql = "INSERT INTO brands(name, slug, logo_url) VALUES(?,?,?)";
 
@@ -75,6 +73,5 @@ public class BrandDAO extends DbContext {
         }
         return -1;
     }
->>>>>>> Hung1
 
 }

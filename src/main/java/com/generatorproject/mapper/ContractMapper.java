@@ -32,6 +32,10 @@ public class ContractMapper implements RowMapper<Contract> {
             } catch (SQLException e) {
             }
 
+            try {
+                builder.productSerial(rs.getString("product_serial"));
+            } catch (SQLException e) { /* ignore */ }
+
             return builder.build();
 
         } catch (SQLException e) {

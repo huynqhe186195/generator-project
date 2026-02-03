@@ -1,6 +1,7 @@
 package com.generatorproject.controller.manager;
 
 import com.generatorproject.model.Contract;
+import com.generatorproject.model.Product;
 import com.generatorproject.model.Users;
 import com.generatorproject.services.*;
 
@@ -83,7 +84,7 @@ public class ManagementContractController extends HttpServlet {
 
     private void showCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // Load danh sách khách hàng & Máy để chọn
-        req.setAttribute("customers", userServices.getAllUsers()); // Bạn cần đảm bảo UserDAO có hàm findAll()
+        req.setAttribute("customers", userServices.getUsersByRole(5)); // Bạn cần đảm bảo UserDAO có hàm findAll()
         req.setAttribute("products", productServices.findAll()); // Bạn cần đảm bảo ProductDAO có hàm findAll()
         req.getRequestDispatcher("/views/manager/contract/contract-form.jsp").forward(req, resp);
     }
@@ -93,7 +94,7 @@ public class ManagementContractController extends HttpServlet {
         Contract c = contractService.findContractById(id);
 
         req.setAttribute("contract", c);
-        req.setAttribute("customers", userServices.getAllUsers());
+        req.setAttribute("customers", userServices.getUsersByRole(5));
         req.setAttribute("products", productServices.findAll());
 
         req.getRequestDispatcher("/views/manager/contract/contract-form.jsp").forward(req, resp);
@@ -103,55 +104,109 @@ public class ManagementContractController extends HttpServlet {
 
     private void handleImportFile(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            // Lấy User đang đăng nhập (Manager)
             Users manager = (Users) req.getSession().getAttribute("USERMODEL");
             if (manager == null) {
                 resp.sendRedirect(req.getContextPath() + "/account/login"); // Đá về login nếu hết phiên
                 return;
             }
 
-            // Lấy file từ form (name="contractFile" phải khớp với file JSP)
             Part filePart = req.getPart("contractFile");
             if (filePart == null || filePart.getSize() == 0) {
                 throw new Exception("Vui lòng chọn file hợp đồng (.docx)!");
             }
 
-            // GỌI SERVICE XỬ LÝ
-            // Service sẽ ném Exception nếu file lỗi, thiếu serial, sai email...
             Long newContractId = contractService.importContractFromDocx(filePart.getInputStream(), manager);
 
-            // Thành công -> Redirect về trang list kèm thông báo
             resp.sendRedirect("contracts?msg=success&id=" + newContractId);
 
         } catch (Throwable e) {
-            // Bắt lỗi Throwable để bắt cả các lỗi thiếu thư viện (NoClassDefFoundError)
             e.printStackTrace();
 
-            // Set thông báo lỗi để hiển thị ra màn hình
             req.setAttribute("errorMessage", "Lỗi Import: " + e.getMessage());
 
-            // Forward lại trang danh sách để người dùng thấy lỗi (Không redirect)
             showList(req, resp);
         }
     }
 
     private void handleCreateManual(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
-            // Lấy dữ liệu từ Form
+            // 1. Lấy dữ liệu từ Form
+            String contractNumber = req.getParameter("contractNumber");
+            String serialNumber = req.getParameter("serialNumber").trim();
+            // Lưu ý: Nên check null hoặc empty cho serialNumber ở đây
+            if (serialNumber.isEmpty()) {
+                throw new Exception("Serial Number không được để trống");
+            }
+
+            Long customerId = Long.parseLong(req.getParameter("customerId"));
+            Date startDate = Date.valueOf(req.getParameter("startDate"));
+            Date endDate = Date.valueOf(req.getParameter("endDate"));
+            String status = req.getParameter("status");
+
+            // 2. XỬ LÝ PRODUCT
+            Product product = productServices.findProductBySerial(serialNumber);
+
+            if (product == null) {
+                // A. MÁY MỚI TINH -> Tự động tạo và điền dữ liệu mặc định
+                product = new Product();
+                product.setSerialNumber(serialNumber);
+                product.setCustomerId(customerId);
+                product.setStatus("RUNNING");
+                product.setModelName("Chưa cập nhật");
+
+                // --- BỔ SUNG CÁC TRƯỜNG CÒN THIẾU ---
+                product.setTotalRunningHours(0.0); // Mặc định máy mới là 0 giờ
+                product.setPurchaseDate(startDate); // Lấy tạm ngày HĐ làm ngày mua
+
+                // Lấy địa chỉ khách để set vị trí (Optional)
+                Users customer = userServices.findUserById(Math.toIntExact(customerId));
+                if (customer != null) {
+                    product.setCurrentLocation(customer.getFullName());
+                }
+
+                // Lưu và lấy ID
+                Long newProductId = productServices.save(product);
+                product.setId(Math.toIntExact(newProductId)); // Ép kiểu Long -> Int (Cẩn thận chỗ này)
+
+            } else {
+                // B. MÁY ĐÃ CÓ TRONG KHO
+
+                // --- KIỂM TRA QUYỀN SỞ HỮU (CHỐNG GHI ĐÈ) ---
+                // Nếu máy đã có chủ (ID > 0) VÀ chủ đó KHÔNG PHẢI là khách hàng hiện tại
+                if (product.getCustomerId() != null && product.getCustomerId() > 0
+                        && product.getCustomerId() != customerId) {
+
+                    // Báo lỗi ngay: Không được bán máy của người này cho người kia
+                    req.setAttribute("errorMessage", "Lỗi: Máy có Serial " + serialNumber + " đang thuộc về khách hàng khác! Vui lòng kiểm tra lại.");
+                    showCreateForm(req, resp); // Quay lại form
+                    return; // Dừng xử lý
+                }
+
+                // Nếu hợp lệ (Máy chưa ai sở hữu HOẶC Của chính khách này gia hạn) -> Update
+                product.setCustomerId(customerId);
+                product.setStatus("RUNNING"); // Đảm bảo trạng thái được kích hoạt
+                productServices.update(product);
+            }
+
+            // 3. LƯU HỢP ĐỒNG
             Contract c = Contract.builder()
-                    .contractNumber(req.getParameter("contractNumber"))
-                    .customerId((int) Long.parseLong(req.getParameter("customerId")))
-                    .productId((int) Long.parseLong(req.getParameter("productId")))
-                    .startDate(Date.valueOf(req.getParameter("startDate")))
-                    .endDate(Date.valueOf(req.getParameter("endDate")))
-                    .status(req.getParameter("status"))
+                    .contractNumber(contractNumber)
+                    .customerId(Math.toIntExact(customerId))
+                    .productId(product.getId())
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .status(status)
                     .managerId(((Users) req.getSession().getAttribute("USERMODEL")).getId())
                     .build();
 
             contractService.saveContract(c);
+
+            // Redirect kèm thông báo thành công
             resp.sendRedirect("contracts?msg=create_success");
+
         } catch (Exception e) {
             e.printStackTrace();
+            // Redirect kèm thông báo lỗi
             resp.sendRedirect("contracts?msg=error");
         }
     }

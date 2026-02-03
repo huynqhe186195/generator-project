@@ -39,4 +39,6 @@ public interface IUserServices {
     List<Users> getUsersByFilter(String keyword, Integer roleId, Integer status, int page, int pageSize);
 
     List<Users> findUserByRoleId(int id);
+
+    List<Users> getUsersByRole(int roleId);
 }

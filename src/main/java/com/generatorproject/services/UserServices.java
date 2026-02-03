@@ -105,4 +105,9 @@ public class UserServices implements IUserServices {
     public List<Users> findUserByRoleId(int id) {
         return userDao.findUserByRoleId(id);
     }
+
+    @Override
+    public List<Users> getUsersByRole(int roleId) {
+        return userDao.getUsersByRole(roleId);
+    }
 }

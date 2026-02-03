@@ -156,6 +156,12 @@ public class UserDao extends GenericDAO<Users> {
         return count(sql.toString(), params.toArray());
     }
 
+    public List<Users> getUsersByRole(int roleId) {
+        String sql = "SELECT * FROM users WHERE role_id = ?";
+        List<Users> users = query(sql, new UserMapper(), roleId);
+        return users.isEmpty() ? null : users;
+    }
+
     public List<Users> getUsersByFilter(String keyword, Integer roleId, Integer status, int page, int pageSize) {
         StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1");
         List<Object> params = new ArrayList<>();
