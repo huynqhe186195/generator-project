@@ -43,4 +43,6 @@ public interface IUserServices {
     List<Users> getCustomerByFilter(String keyword, int page, int pageSize);
 
     List<Users> findUserByRoleId(int id);
+
+    List<Users> getUsersByRole(int roleId);
 }

@@ -51,16 +51,20 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Sản phẩm / Máy</label>
-                            <select name="productId" class="form-select" required>
-                                <option value="">-- Chọn máy --</option>
-                                <c:forEach var="p" items="${products}">
-                                    <option value="${p.id}" ${contract.productId == p.id ? 'selected' : ''}>
-                                        ${p.serialNumber} - ${p.modelName}
-                                    </option>
-                                </c:forEach>
-                            </select>
+                            <label class="form-label fw-bold">Số Serial Máy (*)</label>
+                            <input type="text" name="serialNumber" class="form-control" required
+                                   placeholder="Nhập chính xác số Serial trên hợp đồng (VD: SN-2026-8888)"
+                                   value="${contract.productSerial}"> <small class="text-muted">
+                                <i class="fa fa-info-circle"></i> Nếu máy mới, hệ thống sẽ tự động tạo hồ sơ máy.
+                            </small>
                         </div>
+
+                        <div class="col-md-6">
+                                <label class="form-label fw-bold">Năm sản xuất (Của máy)</label>
+                                <input type="number" name="manufactureYear" class="form-control"
+                                       placeholder="VD: 2025" min="1990" max="2100">
+                                <small class="text-muted">Nếu máy mới, hệ thống sẽ lưu năm này vào hồ sơ.</small>
+                            </div>
                     </div>
 
                     <div class="row mb-3">
