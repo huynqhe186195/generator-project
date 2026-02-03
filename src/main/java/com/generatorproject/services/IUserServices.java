@@ -36,7 +36,11 @@ public interface IUserServices {
 
     int countUsersByFilter(String keyword, Integer roleId, Integer status);
 
+    int countCustomerByFilter(String keyword);
+
     List<Users> getUsersByFilter(String keyword, Integer roleId, Integer status, int page, int pageSize);
+
+    List<Users> getCustomerByFilter(String keyword, int page, int pageSize);
 
     List<Users> findUserByRoleId(int id);
 
