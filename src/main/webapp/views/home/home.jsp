@@ -112,15 +112,9 @@
 
         footer { background: #1a1a1a; color: #888; padding: 60px 0 30px; }
 
-        /* ===================== CHỈNH ẢNH (THÊM MỚI) ===================== */
-        .hero-img-col {
-            padding-left: 64px; /* tách ảnh ra xa text */
-        }
-        .hero-img {
-            transform: scale(1.15) translateX(12px); /* ảnh to hơn + lệch phải nhẹ */
-            transform-origin: center right;
-        }
-        /* ================================================================= */
+        /* CHỈNH ẢNH */
+        .hero-img-col { padding-left: 64px; }
+        .hero-img { transform: scale(1.15) translateX(12px); transform-origin: center right; }
     </style>
 </head>
 <body>
@@ -135,28 +129,32 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a></li>
+                <li class="nav-item">
+                    <a class="nav-link px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a>
+                </li>
+
                 <c:choose>
                     <c:when test="${empty user}">
                         <li class="nav-item">
-                            <a class="nav-link px-3" href="#/>">Tin tức</a>
+                            <a class="nav-link px-3" href="#news">Tin tức</a>
                         </li>
                     </c:when>
                     <c:otherwise>
                         <li class="nav-item">
-                            <a class="nav-link px-3" href="<c:url value='product-list'/>">Sản phẩm</a>
+                            <a class="nav-link px-3" href="<c:url value='/product-list'/>">Sản phẩm</a>
                         </li>
                     </c:otherwise>
                 </c:choose>
+
                 <li class="nav-item"><a class="nav-link px-3" href="#features">Tính năng</a></li>
                 <li class="nav-item"><a class="nav-link px-3" href="#brands">Thương hiệu</a></li>
+
                 <c:if test="${not empty user}">
                     <li class="nav-item">
-                        <a class="nav-link px-3" href="<c:url value='/views/home/Support.jsp'/>">
-                            Chăm sóc khách hàng
-                        </a>
+                        <a class="nav-link px-3" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách hàng</a>
                     </li>
                 </c:if>
+
                 <c:choose>
                     <c:when test="${empty user}">
                         <li class="nav-item ms-lg-3">
@@ -170,7 +168,7 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
                                 <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
-                                <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i class="fas fa-key me-2"></i> Đổi mật khẩu</a></li>
+                                <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
                                 <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
                             </ul>
                         </li>
@@ -212,7 +210,7 @@
                 <div class="d-flex gap-3">
                     <c:choose>
                         <c:when test="${empty user}">
-                            <a href="<c:url value='/account/login'/>" class="btn btn-white py-3 px-5 shadow-lg">Bắt đầu ngay</a>
+                            <a href="<c:url value='/login'/>" class="btn btn-white py-3 px-5 shadow-lg">Bắt đầu ngay</a>
                         </c:when>
                         <c:otherwise>
                             <a href="<c:url value='/admin/dashboard'/>" class="btn btn-white py-3 px-5 shadow-lg">Vào Dashboard</a>
@@ -221,7 +219,6 @@
                 </div>
             </div>
 
-            <!-- CHỈ SỬA ĐÚNG PHẦN ẢNH: thêm class hero-img-col + hero-img -->
             <div class="col-lg-5 d-none d-lg-block hero-img-col" data-aos="zoom-in">
                 <img src="<c:url value='/template/images/img.png'/>"
                      class="img-fluid rounded-4 shadow-2xl hero-img"
@@ -297,7 +294,9 @@
     <div class="container">
         <div class="row gy-4">
             <div class="col-lg-6 text-center text-lg-start">
-                <a href="#" class="text-white text-decoration-none fw-bold fs-4"><i class="fas fa-bolt me-2"></i>Gen-CMS</a>
+                <a href="<c:url value='/'/>" class="text-white text-decoration-none fw-bold fs-4">
+                    <i class="fas fa-bolt me-2"></i>Gen-CMS
+                </a>
                 <p class="mt-3">Giải pháp số hóa hệ thống năng lượng dự phòng hàng đầu.</p>
             </div>
             <div class="col-lg-6 text-center text-lg-end">
@@ -315,17 +314,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 <script>
-    // Khởi tạo hiệu ứng hiện dần khi cuộn
     AOS.init({ duration: 800, once: true });
 
-    // Đổi màu Navbar khi cuộn chuột
     const mainNav = document.getElementById('mainNav');
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            mainNav.classList.add('navbar-scrolled');
-        } else {
-            mainNav.classList.remove('navbar-scrolled');
-        }
+        if (window.scrollY > 50) mainNav.classList.add('navbar-scrolled');
+        else mainNav.classList.remove('navbar-scrolled');
     });
 </script>
 </body>
