@@ -151,6 +151,21 @@ public class UserDao extends GenericDAO<Users> {
 
         return count(sql.toString(), params.toArray());
     }
+    public int countCustomerByFilter(String keyword) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE role_id = 5");
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ?)");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+
+
+
+        return count(sql.toString(), params.toArray());
+    }
 
     public List<Users> getUsersByFilter(String keyword, Integer roleId, Integer status, int page, int pageSize) {
         StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1");
@@ -172,6 +187,27 @@ public class UserDao extends GenericDAO<Users> {
             sql.append(" AND status = ?");
             params.add(status);
         }
+
+        sql.append(" ORDER BY id DESC LIMIT ? OFFSET ?");
+
+        int offset = (page - 1) * pageSize;
+        params.add(pageSize);
+        params.add(offset);
+
+        return query(sql.toString(), new UserMapper(), params.toArray());
+    }
+    public List<Users> getCustomerByFilter(String keyword, int page, int pageSize) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE role_id = 5");
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ?)");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+
+
 
         sql.append(" ORDER BY id DESC LIMIT ? OFFSET ?");
 

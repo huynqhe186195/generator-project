@@ -105,4 +105,14 @@ public class UserServices implements IUserServices {
     public List<Users> findUserByRoleId(int id) {
         return userDao.findUserByRoleId(id);
     }
+
+    @Override
+    public int countCustomerByFilter(String keyword) {
+        return  userDao.countCustomerByFilter(keyword);
+    }
+
+    @Override
+    public List<Users> getCustomerByFilter(String keyword, int page, int pageSize) {
+        return userDao.getCustomerByFilter(keyword, page, pageSize);
+    }
 }

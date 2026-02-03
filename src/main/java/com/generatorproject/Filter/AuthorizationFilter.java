@@ -9,7 +9,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 // Chặn tất cả request vào thư mục /admin/
-@WebFilter(urlPatterns = { "/admin/*","/technical/*" })
+@WebFilter(urlPatterns = { "/admin/*","/technical/*","/staff/*" })
 public class AuthorizationFilter implements Filter {
 
     @Override
@@ -54,6 +54,12 @@ public class AuthorizationFilter implements Filter {
 
         if (url.startsWith(contextPath + "/technical")) {
             if (user.getRoleId() != 4) {
+                req.getRequestDispatcher("/views/error/403.jsp").forward(req, resp);
+                return;
+            }
+        }
+        if (url.startsWith(contextPath + "/staff")) {
+            if (user.getRoleId() != 3) {
                 req.getRequestDispatcher("/views/error/403.jsp").forward(req, resp);
                 return;
             }

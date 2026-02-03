@@ -46,14 +46,14 @@ public class IncidentDAO extends GenericDAO<Incident> {
         // 1. Sử dụng JOIN để lấy thêm tên Product, Reporter, Technician cho Model
         StringBuilder sql = new StringBuilder(
                 "SELECT i.*, " +
-                        "p.name AS product_name, " +
+                        "p.serial_number AS product_name, " +  // <-- SỬA TẠI ĐÂY
                         "u1.full_name AS reporter_name, " +
                         "u2.full_name AS technician_name " +
                         "FROM incidents i " +
-                        "JOIN products p ON i.product_id = p.id " +
-                        "JOIN users u1 ON i.reported_by = u1.id " +
+                        "LEFT JOIN products p ON i.product_id = p.id " +
+                        "LEFT JOIN users u1 ON i.reported_by = u1.id " +
                         "LEFT JOIN users u2 ON i.technician_id = u2.id " +
-                        "WHERE 1=1");
+                        "WHERE 1=1 ");
 
         List<Object> params = new ArrayList<>();
 

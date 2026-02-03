@@ -225,7 +225,23 @@ public class MaintenanceDAO extends DbContext {
         return m;
     }
 
-
+//    public void assignTechnician(Maintenance maintenance){
+//        String sql = "INSERT INTO maintenances(product_id, technician_id, incident_id, type, description,create_at,create_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
+//
+//        try (Connection conn = getConnection();
+//             PreparedStatement ps = conn.prepareStatement(sql)) {
+//
+//            ps.setInt();
+//
+//            int rowsAffected = ps.executeUpdate();
+//
+//            return rowsAffected > 0;
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
 
 
 }
