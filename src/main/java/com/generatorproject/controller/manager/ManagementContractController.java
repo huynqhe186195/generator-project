@@ -2,8 +2,10 @@ package com.generatorproject.controller.manager;
 
 import com.generatorproject.model.Contract;
 import com.generatorproject.model.Product;
+import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
 import com.generatorproject.services.*;
+import com.google.gson.Gson;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -14,6 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @WebServlet(urlPatterns = {"/manager/contracts"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
@@ -22,11 +26,13 @@ public class ManagementContractController extends HttpServlet {
     private IContractServices contractService;
     private IUserServices userServices;
     private ProductServices productServices;
+    private IRequestServices requestServices;
 
     public ManagementContractController() {
         contractService = new ContractServices();
         userServices = new UserServices();
         productServices = new ProductServices();
+        requestServices = new RequestServices();
     }
 
     @Override
@@ -45,6 +51,7 @@ public class ManagementContractController extends HttpServlet {
                 handleDelete(req, resp);
                 break;
             case "list":
+                showList(req, resp);
             default:
                 showList(req, resp);
                 break;
@@ -67,13 +74,14 @@ public class ManagementContractController extends HttpServlet {
             case "update":
                 handleUpdate(req, resp);
                 break;
+            case "request_account":
+                handleRequestAccount(req, resp);
+                break;
             default:
                 showList(req, resp);
                 break;
         }
     }
-
-    // --- CÁC HÀM HIỂN THỊ (VIEW) ---
 
     private void showList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String keyword = req.getParameter("keyword");
@@ -83,9 +91,8 @@ public class ManagementContractController extends HttpServlet {
     }
 
     private void showCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Load danh sách khách hàng & Máy để chọn
-        req.setAttribute("customers", userServices.getUsersByRole(5)); // Bạn cần đảm bảo UserDAO có hàm findAll()
-        req.setAttribute("products", productServices.findAll()); // Bạn cần đảm bảo ProductDAO có hàm findAll()
+        req.setAttribute("customers", userServices.getUsersByRole(5));
+        req.setAttribute("products", productServices.findAll());
         req.getRequestDispatcher("/views/manager/contract/contract-form.jsp").forward(req, resp);
     }
 
@@ -102,11 +109,57 @@ public class ManagementContractController extends HttpServlet {
 
     // --- CÁC HÀM XỬ LÝ (HANDLE) ---
 
+    private void handleRequestAccount(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            String email = req.getParameter("email");
+            String fullName = req.getParameter("fullName");
+            String phone  = req.getParameter("phone");
+
+            Users manager = (Users) req.getSession().getAttribute("USERMODEL");
+
+
+            if (requestServices.isRequestPending(email)) {
+                resp.sendRedirect("contracts?msg=request_duplicate");
+                return;
+            }
+
+            // 1. Tạo một Map để chứa dữ liệu (Thay vì nối chuỗi)
+            Map<String, String> dataPayload = new HashMap<>();
+            dataPayload.put("email", email);
+            dataPayload.put("fullName", fullName);
+            dataPayload.put("phone", phone);
+
+            // Sau này muốn thêm field gì cứ put vào đây, ví dụ:
+            // dataPayload.put("phone", "09123...");
+
+            // 2. Biến Map thành chuỗi JSON
+            Gson gson = new Gson();
+            String jsonData = gson.toJson(dataPayload);
+            // Kết quả tự động sinh ra: {"email":"abc@gmail.com","fullName":"Nguyen Van A"}
+
+            // 3. Tạo Object Request (Dùng Builder)
+            SystemRequest request = SystemRequest.builder()
+                    .senderId((long) manager.getId())
+                    .receiverRole("ADMIN")
+                    .requestType("CREATE_USER")
+                    .requestData(jsonData) // <--- Truyền chuỗi JSON sạch đẹp vào đây
+                    .status("PENDING")
+                    .build();
+
+            requestServices.save(request);
+            resp.sendRedirect("contracts?msg=request_success");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect("contracts?msg=error");
+        }
+    }
+
     private void handleImportFile(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             Users manager = (Users) req.getSession().getAttribute("USERMODEL");
             if (manager == null) {
-                resp.sendRedirect(req.getContextPath() + "/account/login"); // Đá về login nếu hết phiên
+                resp.sendRedirect(req.getContextPath() + "/account/login");
                 return;
             }
 
@@ -119,10 +172,25 @@ public class ManagementContractController extends HttpServlet {
 
             resp.sendRedirect("contracts?msg=success&id=" + newContractId);
 
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace(); // In lỗi ra console để debug
 
-            req.setAttribute("errorMessage", "Lỗi Import: " + e.getMessage());
+            String errorMsg = e.getMessage();
+
+            if (errorMsg != null && errorMsg.contains("chưa có tài khoản")) {
+                try {
+                    int start = errorMsg.indexOf("'");
+                    int end = errorMsg.lastIndexOf("'");
+
+                    if (start != -1 && end > start) {
+                        String extractedEmail = errorMsg.substring(start + 1, end);
+                        req.setAttribute("missingEmail", extractedEmail);
+                    }
+                } catch (Exception ex) {
+                }
+            }
+
+            req.setAttribute("errorMessage", errorMsg);
 
             showList(req, resp);
         }
