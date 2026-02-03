@@ -10,13 +10,18 @@ public class Incident {
     private String title;
     private String description;
     private String imageEvidence;
-    private String priority; // ENUM trong DB mapping sang String
-    private String status;   // ENUM trong DB mapping sang String
+    private String priority; // ENUM: LOW, MEDIUM, HIGH, CRITICAL
+    private String status;   // ENUM: NEW, VERIFYING, WAITING_MANAGER, APPROVED...
     private int technicianId;
     private Timestamp createdAt;
     private Timestamp resolvedAt;
 
-    // --- EXTRA FIELDS (Dùng để hiển thị tên thay vì ID trên giao diện - Giống roleName) ---
+    // --- NEW FIELDS (Bổ sung theo ảnh DB) ---
+    private String inputContractNumber; // varchar(50)
+    private String inputSerialNumber;   // varchar(100)
+    private int contractId;             // int
+
+    // --- EXTRA FIELDS (Dùng để hiển thị UI, không có trong bảng incidents) ---
     private String productName;
     private String reporterName;
     private String technicianName;
@@ -25,7 +30,7 @@ public class Incident {
     public Incident() {
     }
 
-    // --- CONSTRUCTOR BUILDER (QUAN TRỌNG) ---
+    // --- CONSTRUCTOR BUILDER ---
     private Incident(Builder builder) {
         this.id = builder.id;
         this.productId = builder.productId;
@@ -39,13 +44,18 @@ public class Incident {
         this.createdAt = builder.createdAt;
         this.resolvedAt = builder.resolvedAt;
 
+        // Gán giá trị cho 3 trường mới
+        this.inputContractNumber = builder.inputContractNumber;
+        this.inputSerialNumber = builder.inputSerialNumber;
+        this.contractId = builder.contractId;
+
         // Extra fields
         this.productName = builder.productName;
         this.reporterName = builder.reporterName;
         this.technicianName = builder.technicianName;
     }
 
-    // --- GETTER & SETTER ---
+    // --- GETTER & SETTER (Đã bổ sung 3 trường mới) ---
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -79,7 +89,17 @@ public class Incident {
     public Timestamp getResolvedAt() { return resolvedAt; }
     public void setResolvedAt(Timestamp resolvedAt) { this.resolvedAt = resolvedAt; }
 
-    // Getter & Setter cho Extra fields
+    // --- Getters/Setters cho 3 trường mới ---
+    public String getInputContractNumber() { return inputContractNumber; }
+    public void setInputContractNumber(String inputContractNumber) { this.inputContractNumber = inputContractNumber; }
+
+    public String getInputSerialNumber() { return inputSerialNumber; }
+    public void setInputSerialNumber(String inputSerialNumber) { this.inputSerialNumber = inputSerialNumber; }
+
+    public int getContractId() { return contractId; }
+    public void setContractId(int contractId) { this.contractId = contractId; }
+
+    // --- Getters/Setters cho Extra fields ---
     public String getProductName() { return productName; }
     public void setProductName(String productName) { this.productName = productName; }
 
@@ -104,6 +124,11 @@ public class Incident {
         private Timestamp createdAt;
         private Timestamp resolvedAt;
 
+        // New Fields in Builder
+        private String inputContractNumber;
+        private String inputSerialNumber;
+        private int contractId;
+
         // Extra fields
         private String productName;
         private String reporterName;
@@ -121,7 +146,12 @@ public class Incident {
         public Builder setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
         public Builder setResolvedAt(Timestamp resolvedAt) { this.resolvedAt = resolvedAt; return this; }
 
-        // Builder cho Extra fields
+        // Builder methods cho 3 trường mới
+        public Builder setInputContractNumber(String inputContractNumber) { this.inputContractNumber = inputContractNumber; return this; }
+        public Builder setInputSerialNumber(String inputSerialNumber) { this.inputSerialNumber = inputSerialNumber; return this; }
+        public Builder setContractId(int contractId) { this.contractId = contractId; return this; }
+
+        // Builder methods cho Extra fields
         public Builder setProductName(String productName) { this.productName = productName; return this; }
         public Builder setReporterName(String reporterName) { this.reporterName = reporterName; return this; }
         public Builder setTechnicianName(String technicianName) { this.technicianName = technicianName; return this; }
