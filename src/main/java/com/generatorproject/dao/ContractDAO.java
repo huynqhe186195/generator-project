@@ -1,6 +1,7 @@
 package com.generatorproject.dao;
 
 import com.generatorproject.mapper.ContractMapper;
+import com.generatorproject.mapper.ProductMapper;
 import com.generatorproject.model.Contract;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.Users;
@@ -9,6 +10,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
 import java.io.InputStream;
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -123,25 +125,22 @@ public class ContractDAO extends GenericDAO<Contract> {
 
     public Long importContractFromDocx(InputStream fileContent, Users manager) throws Exception {
 
-        // 1. Khởi tạo biến (Để null để dễ kiểm tra xem đã tìm thấy chưa)
         String contractNum = null;
         String emailCustomer = null;
         String serialNumber = null;
         int warrantyMonths = 12; // Mặc định 12 tháng
 
-        // Mở file Word
+        Integer manufactureYear = null;
+        java.sql.Date purchaseDate = null;
+
         XWPFDocument document = new XWPFDocument(fileContent);
         List<XWPFParagraph> paragraphs = document.getParagraphs();
 
-        // 2. Quét từng dòng trong file
         for (XWPFParagraph para : paragraphs) {
             String text = para.getText();
 
-            // Bỏ qua dòng trống để tăng tốc độ
             if (text == null || text.trim().isEmpty()) continue;
 
-            // --- A. BẮT SỐ HỢP ĐỒNG ---
-            // Logic: Tìm chữ "Số" ... "/HĐMB"
             if (contractNum == null && text.contains("HĐMB")) {
                 Pattern pContract = Pattern.compile("Số\\s*[:.]?\\s*(.*?)\\s*/HĐMB", Pattern.CASE_INSENSITIVE);
                 Matcher mContract = pContract.matcher(text);
@@ -150,10 +149,31 @@ public class ContractDAO extends GenericDAO<Contract> {
                 }
             }
 
-            // --- B. BẮT EMAIL KHÁCH HÀNG ---
-            // Logic: Tìm dòng có chữ "Email" và chứa ký tự @
+            // Regex: Tìm số có 4 chữ số sau cụm "Năm sản xuất"
+            if (text.contains("Năm sản xuất")) {
+                Pattern pYear = Pattern.compile("Năm sản xuất\\s*[:.]?\\s*(\\d{4})");
+                Matcher mYear = pYear.matcher(text);
+                if (mYear.find()) {
+                    manufactureYear = Integer.parseInt(mYear.group(1));
+                }
+            }
+
+            // Regex: dd-MM-yyyy
+            if (text.contains("Ngày mua")) {
+                Pattern pDate = Pattern.compile("Ngày mua\\s*[:.]?\\s*([0-9]{1,2}-[0-9]{1,2}-[0-9]{4})");
+                Matcher mDate = pDate.matcher(text);
+                if (mDate.find()) {
+                    try {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+                        java.util.Date parsed = sdf.parse(mDate.group(1));
+                        purchaseDate = new java.sql.Date(parsed.getTime());
+                    } catch (Exception e) {
+                        System.out.println("Lỗi parse ngày mua: " + e.getMessage());
+                    }
+                }
+            }
+
             if (emailCustomer == null && (text.contains("Email") || text.contains("email"))) {
-                // Regex này tìm một chuỗi email chuẩn (vd: abc@gmail.com) trong dòng text
                 Pattern pEmail = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6})");
                 Matcher mEmail = pEmail.matcher(text);
                 if (mEmail.find()) {
@@ -161,94 +181,107 @@ public class ContractDAO extends GenericDAO<Contract> {
                 }
             }
 
-            // --- C. BẮT SERIAL MÁY (Đã fix theo file mẫu của bạn) ---
             if (serialNumber == null) {
-                // Cập nhật Regex: Thêm "Số Serial máy" vào đầu danh sách tìm kiếm
-                // Regex này chấp nhận: "Số Serial máy:", "Serial:", "Số máy:", "S/N:"
                 Pattern pSerial = Pattern.compile("(Số Serial máy|Serial|Số máy|Số khung|S/N)\\s*[:.]?\\s*([A-Za-z0-9-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher mSerial = pSerial.matcher(text);
 
                 if (mSerial.find()) {
                     String potentialSerial = mSerial.group(2).trim();
-
-                    // Xử lý phụ: Trong file của bạn dòng 18 có dấu gạch ngang ở cuối "SN-2026-8888-"
-                    // Nếu bắt dính dấu gạch ngang ở cuối thì cắt bỏ đi
+                    // Cắt dấu gạch ngang thừa ở cuối nếu có (Do lỗi nhập liệu file word)
                     if (potentialSerial.endsWith("-")) {
                         potentialSerial = potentialSerial.substring(0, potentialSerial.length() - 1);
                     }
-
-                    // Kiểm tra độ dài >= 3 để tránh bắt nhầm rác
+                    // Check độ dài để tránh rác
                     if (potentialSerial.length() >= 3) {
                         serialNumber = potentialSerial;
-                        System.out.println("DEBUG FOUND SERIAL: " + serialNumber);
                     }
                 }
             }
 
-            // --- D. BẮT THỜI GIAN BẢO HÀNH ---
             if (text.contains("Thời gian bảo hành") && text.contains("tháng")) {
                 Pattern pWarranty = Pattern.compile("(\\d+)\\s*tháng");
                 Matcher mWarranty = pWarranty.matcher(text);
                 if (mWarranty.find()) {
                     try {
                         warrantyMonths = Integer.parseInt(mWarranty.group(1));
-                    } catch (NumberFormatException e) {
-                        warrantyMonths = 12;
-                    }
+                    } catch (NumberFormatException e) { warrantyMonths = 12; }
                 }
             }
 
-            // Tối ưu: Nếu tìm đủ 3 thông tin chính rồi thì dừng vòng lặp luôn
             if (contractNum != null && emailCustomer != null && serialNumber != null) {
                 break;
             }
         }
 
-        // 3. VALIDATE DỮ LIỆU (Kiểm tra null thay vì isEmpty để an toàn hơn)
         if (contractNum == null || emailCustomer == null || serialNumber == null) {
-            // In ra console để debug xem thiếu cái gì
-            System.out.println("DEBUG ERROR: Thiếu thông tin -> Contract: " + contractNum + ", Email: " + emailCustomer + ", Serial: " + serialNumber);
-            throw new Exception("File thiếu thông tin! Vui lòng kiểm tra lại file Word (Cần có: Số HĐ, Email, Serial/Số máy).");
+            throw new Exception("File thiếu thông tin! Cần có: Số HĐ, Email, và Serial/Số máy.");
         }
 
-        // 4. KIỂM TRA NGHIỆP VỤ DATABASE
-        // Check trùng số HĐ
-        if (findByContractNumber(contractNum) != null) { // Giả sử bạn có hàm này, hoặc dùng hàm check exist cũ
+
+        if (findByContractNumber(contractNum) != null) {
             throw new Exception("Số hợp đồng '" + contractNum + "' đã tồn tại trong hệ thống!");
         }
 
-        // Check User (Khách hàng)
         Users customer = userDao.findByEmail(emailCustomer);
         if (customer == null) {
-            throw new Exception("Email khách hàng '" + emailCustomer + "' chưa có tài khoản. Vui lòng tạo User trước.");
+            throw new Exception("Email '" + emailCustomer + "' chưa có tài khoản. Vui lòng tạo User trước.");
         }
 
-        // Check Máy (Product)
         Product product = productDAO.findBySerial(serialNumber);
+
         if (product == null) {
-            throw new Exception("Máy có Serial '" + serialNumber + "' chưa có trong kho. Vui lòng nhập Product trước.");
+            // Máy mới tinh -> Tự động tạo mới
+            product = new Product();
+            product.setSerialNumber(serialNumber);
+            product.setTotalRunningHours(0.0);
+            product.setModelName("Máy in mã vạch công nghiệp"); // Set tạm hoặc lấy từ file nếu có logic
+        }else {
+            if (product.getCustomerId() != null && product.getCustomerId() > 0) {
+                if (product.getCustomerId() != customer.getId()) {
+                    throw new Exception("XUNG ĐỘT: Máy '" + serialNumber + "' đang thuộc về khách hàng khác!");
+                }
+            }
+
+            // Kiểm tra xem máy này ĐÃ CÓ hợp đồng nào trong hệ thống chưa?
+            List<Contract> existingContracts = findByProductId((long) product.getId());
+
+            if (existingContracts != null && !existingContracts.isEmpty()) {
+                String oldContractNum = existingContracts.get(0).getContractNumber();
+                throw new Exception("TRÙNG SERIAL: Máy '" + serialNumber + "' đã có Hợp đồng (" + oldContractNum + ") trong hệ thống. Một máy chỉ được bán 1 lần!");
+            }
         }
 
-        // 5. CẬP NHẬT TRẠNG THÁI MÁY (Logic After-Sales)
-        // Chuyển máy sang cho khách hàng sở hữu
         product.setCustomerId((long) customer.getId());
-        product.setStatus("RUNNING"); // Hoặc trạng thái khác tùy quy ước
-        product.setCurrentLocation("Khách hàng: " + customer.getFullName()); // Cập nhật vị trí
-        productDAO.update(product); // Lưu vào DB
+        product.setStatus("RUNNING");
+        product.setCurrentLocation(customer.getFullName());
 
-        // 6. TÍNH TOÁN NGÀY BẢO HÀNH
-        Date startDate = new java.sql.Date(System.currentTimeMillis()); // Ngày ký = Hôm nay
+        if (manufactureYear != null) {
+            product.setManufactureYear(manufactureYear);
+        }
+        if (purchaseDate != null) {
+            product.setPurchaseDate(purchaseDate);
+        }
+
+        if (product.getId() == 0 || product.getId() == 0) {
+            // Máy mới -> Insert
+            Long newId = productDAO.save(product);
+            product.setId(Math.toIntExact(newId));
+        } else {
+            // Máy cũ -> Update
+            productDAO.update(product);
+        }
+
+        Date startDate = new java.sql.Date(System.currentTimeMillis());
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(startDate);
         cal.add(Calendar.MONTH, warrantyMonths);
         java.sql.Date endDate = new java.sql.Date(cal.getTimeInMillis());
 
-        // 7. LƯU HỢP ĐỒNG
         Contract newContract = Contract.builder()
                 .contractNumber(contractNum)
                 .customerId(customer.getId())
-                .productId(product.getId())
+                .productId(product.getId()) // Liên kết với ID máy vừa xử lý
                 .startDate(startDate)
                 .endDate(endDate)
                 .status("ACTIVE")
@@ -261,5 +294,10 @@ public class ContractDAO extends GenericDAO<Contract> {
     public void delete(Long id) {
         String sql = "DELETE FROM contracts WHERE id = ?";
         update(sql, id); // Sử dụng hàm update() của GenericDAO
+    }
+
+    public List<Contract> findByProductId(Long productId) {
+        String sql = "SELECT * FROM contracts WHERE product_id = ?";
+        return query(sql, new ContractMapper(), productId);
     }
 }

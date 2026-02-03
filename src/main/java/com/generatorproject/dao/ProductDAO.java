@@ -13,6 +13,24 @@ import java.util.List;
 
 public class ProductDAO extends GenericDAO<Product> {
 
+    public Long save(Product product) {
+        StringBuilder sql = new StringBuilder("INSERT INTO products (");
+        sql.append("serial_number, customer_id, status, total_running_hours, ");
+        sql.append("manufacture_year, purchase_date, current_location, model_id, created_at");
+        sql.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+
+        return insert(sql.toString(),
+                product.getSerialNumber(),
+                product.getCustomerId(),      // Có thể null nếu chưa gán khách
+                product.getStatus(),          // VD: "RUNNING", "READY"
+                product.getTotalRunningHours(), // Mặc định 0.0
+                product.getManufactureYear(), // Lấy từ file docx hoặc form nhập tay
+                product.getPurchaseDate(),    // Lấy từ file docx hoặc form nhập tay
+                product.getCurrentLocation(),
+                product.getModelId()          // Có thể null
+        );
+    }
+
     public Product findBySerial(String serialNumber) {
         String sql = "SELECT * FROM products WHERE serial_number = ?";
 

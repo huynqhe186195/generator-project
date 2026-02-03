@@ -39,8 +39,13 @@
         </div>
 
         <div class="list-group list-group-flush">
-
-
+            <c:if test="${currentUser.roleId == 1 || currentUser.hasPermission('PRODUCT_VIEW')}">
+                <a href="<c:url value='/admin/product/product-list'/>"
+                   class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-box-open me-2" style="width: 20px;"></i>
+                    Quản lý Product
+                </a>
+            </c:if>
             <c:if test="${currentUser.roleId == 2}">
                 <a href="<c:url value='/admin/user/dashboard'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                     <i class="fas fa-tachometer-alt me-2" style="width: 20px;"></i> Dashboard
@@ -73,13 +78,19 @@
 
             <c:if test="${currentUser.roleId == 3 || currentUser.hasPermission('QUOTE_MANAGE')}">
                 <a href="<c:url value='/staff/incident-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
-                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Incident request
+                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Yêu cầu sự cố
                 </a>
             </c:if>
 
+            <c:if test="${currentUser.roleId == 3 }">
+                <a href="<c:url value='/staff/customer-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Xem danh sách khách hàng
+                </a>
+            </c:if>
              <a href="<c:url value='/admin/admin-profile'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                 <i class="fas fa-id-card me-2" style="width: 20px;"></i> Hồ sơ cá nhân
             </a>
+
         </div>
     </div>
     <div id="page-content-wrapper">

@@ -32,4 +32,9 @@ public class ProductServices implements IProductServices {
     public List<Product> findAll() {
         return  productDAO.findAll();
     }
+
+    @Override
+    public Long save(Product product) {
+        return  productDAO.save(product);
+    }
 }

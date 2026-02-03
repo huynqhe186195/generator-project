@@ -9,4 +9,5 @@ public interface IProductServices {
     int countProducts();
     void update(Product product);
     List<Product> findAll();
+    Long save(Product product);
 }

@@ -24,7 +24,7 @@ public class UserServices implements IUserServices {
 
     @Override
     public void createUser(Users user) {
-         userDao.createUser(user);
+        userDao.createUser(user);
     }
 
     @Override
@@ -74,26 +74,28 @@ public class UserServices implements IUserServices {
     }
 
     @Override
-    public List<Map<String, Object>> getPendingRequests(){
+    public List<Map<String, Object>> getPendingRequests() {
         return tokenDao.getPendingRequests();
     }
 
     @Override
-    public void activateToken(String token){
+    public void activateToken(String token) {
         tokenDao.activateToken(token);
     }
 
     @Override
-    public void deleteToken(String token){
+    public void deleteToken(String token) {
         tokenDao.deleteRequest(token);
     }
 
     @Override
-    public void deleteUser(int id){ userDao.deleteUser(id);}
+    public void deleteUser(int id) {
+        userDao.deleteUser(id);
+    }
 
     @Override
     public int countUsersByFilter(String keyword, Integer roleId, Integer status) {
-        return  userDao.countUsersByFilter(keyword, roleId, status);
+        return userDao.countUsersByFilter(keyword, roleId, status);
     }
 
     @Override
@@ -104,5 +106,15 @@ public class UserServices implements IUserServices {
     @Override
     public List<Users> findUserByRoleId(int id) {
         return userDao.findUserByRoleId(id);
+    }
+
+    @Override
+    public int countCustomerByFilter(String keyword) {
+        return userDao.countCustomerByFilter(keyword);
+    }
+
+    @Override
+    public List<Users> getCustomerByFilter(String keyword, int page, int pageSize) {
+        return userDao.getCustomerByFilter(keyword, page, pageSize);
     }
 }
