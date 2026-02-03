@@ -16,4 +16,8 @@
     <decorator name="technical" page="technical-layout.jsp">
         <pattern>/technical*</pattern>
     </decorator>
+
+    <decorator name="manager-layout" page="manager.jsp">
+        <pattern>/manager*</pattern>
+    </decorator>
 </decorators>
