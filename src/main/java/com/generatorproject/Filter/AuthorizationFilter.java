@@ -33,8 +33,7 @@ public class AuthorizationFilter implements Filter {
         // 2. CHECK ĐĂNG NHẬP
         Users user = (Users) session.getAttribute("USERMODEL");
         if (user == null) {
-            // Lưu lại trang user đang định vào để redirect lại sau khi login xong
-            // (Optional)
+            // Lưu lại trang user đang định vào để redirect lại sau khi login xong (Optional)
             resp.sendRedirect(req.getContextPath() + "/login?message=not_login");
             return;
         }
@@ -86,12 +85,6 @@ public class AuthorizationFilter implements Filter {
                 return;
             }
         }
-        if (url.startsWith(contextPath + "/staff")) {
-            if (user.getRoleId() != 3) {
-                req.getRequestDispatcher("/views/error/403.jsp").forward(req, resp);
-                return;
-            }
-        }
 
         // D. KHU VỰC STAFF (CSKH, Máy của khách)
         else if (url.startsWith(contextPath + "/staff")) {
@@ -115,6 +108,5 @@ public class AuthorizationFilter implements Filter {
     }
 
     @Override
-    public void destroy() {
-    }
+    public void destroy() {}
 }
