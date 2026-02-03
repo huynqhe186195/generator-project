@@ -31,8 +31,7 @@ public class UserDao extends GenericDAO<Users> {
                 user.getPhone(),
                 user.getRoleId(),
                 user.getStatus(),
-                user.getAvatarUrl()
-        );
+                user.getAvatarUrl());
     }
 
     public Users findUserById(int id) {
@@ -64,7 +63,8 @@ public class UserDao extends GenericDAO<Users> {
                     e.printStackTrace();
                 }
                 return u;
-            }}, email);
+            }
+        }, email);
 
         if (users == null || users.isEmpty()) {
             return null;
@@ -82,7 +82,7 @@ public class UserDao extends GenericDAO<Users> {
         return null;
     }
 
-    public void deleteUser(int id){
+    public void deleteUser(int id) {
         String sql = "DELETE FROM users WHERE id = ?";
         update(sql, id);
     }
@@ -113,7 +113,8 @@ public class UserDao extends GenericDAO<Users> {
 
     public void updateUser(Users user) {
         String sql = "UPDATE users SET full_name=?, phone=?, role_id=?, status=?, avatar_url=? WHERE id=?";
-        update(sql, user.getFullName(), user.getPhone(), user.getRoleId(), user.getStatus(), user.getAvatarUrl(), user.getId());
+        update(sql, user.getFullName(), user.getPhone(), user.getRoleId(), user.getStatus(), user.getAvatarUrl(),
+                user.getId());
     }
 
     public boolean changeStatus(int userId, int newStatus) {
@@ -125,10 +126,13 @@ public class UserDao extends GenericDAO<Users> {
     public int countUsers() {
         String sql = "SELECT COUNT(*) FROM users";
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            if (rs.next())
+                return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -156,6 +160,20 @@ public class UserDao extends GenericDAO<Users> {
         return count(sql.toString(), params.toArray());
     }
 
+    public int countCustomerByFilter(String keyword) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM users WHERE role_id = 5");
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ?)");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+
+        return count(sql.toString(), params.toArray());
+    }
+
     public List<Users> getUsersByFilter(String keyword, Integer roleId, Integer status, int page, int pageSize) {
         StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1");
         List<Object> params = new ArrayList<>();
@@ -175,6 +193,26 @@ public class UserDao extends GenericDAO<Users> {
         if (status != null) {
             sql.append(" AND status = ?");
             params.add(status);
+        }
+
+        sql.append(" ORDER BY id DESC LIMIT ? OFFSET ?");
+
+        int offset = (page - 1) * pageSize;
+        params.add(pageSize);
+        params.add(offset);
+
+        return query(sql.toString(), new UserMapper(), params.toArray());
+    }
+
+    public List<Users> getCustomerByFilter(String keyword, int page, int pageSize) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE role_id = 5");
+        List<Object> params = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (full_name LIKE ? OR email LIKE ?)");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
         }
 
         sql.append(" ORDER BY id DESC LIMIT ? OFFSET ?");

@@ -29,6 +29,9 @@ public class StaffManagementController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         String path = req.getPathInfo();
+        if (path == null || path.equals("/")) {
+            path = "/incident-list";
+        }
         switch (path) {
             case "/incident-list":
                 handleIncidentList(req, resp);
@@ -36,7 +39,41 @@ public class StaffManagementController extends HttpServlet {
             case "/user-information":
                 handleUserInformation(req,resp);
                 break;
+            case "/customer-list":
+                handleCustomerList(req,resp);
+                break;
+
         }
+    }
+    private void handleCustomerList(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException{
+        String keyword = req.getParameter("keyword");
+
+
+
+        int page = 1;
+        int pageSize = 5;
+
+        if (req.getParameter("page") != null) {
+            try {
+                page = Integer.parseInt(req.getParameter("page"));
+            } catch (NumberFormatException e) {
+                page = 1; // Nếu nhập bậy bạ thì về trang 1
+            }
+        }
+
+
+        int totalUsers = userServices.countCustomerByFilter(keyword);
+
+        int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
+
+        List<Users> listUsers = userServices.getCustomerByFilter(keyword, page, pageSize);
+
+        req.setAttribute("listUsers", listUsers);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("currentPage", page);
+
+        RequestDispatcher rd = req.getRequestDispatcher("/views/staff/customer-list.jsp");
+        rd.forward(req, resp);
     }
     private void handleUserInformation(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException{
         String idParam = req.getParameter("id");
