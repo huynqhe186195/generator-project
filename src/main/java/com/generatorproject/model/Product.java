@@ -16,6 +16,7 @@ public class Product {
     private Date purchaseDate;        // Ngày mua
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private String brandName;
 
     // --- TRƯỜNG PHỤ (Transient - Không lưu trong bảng products) ---
     // Dùng để hiển thị khi JOIN với bảng product_models hoặc users
@@ -40,6 +41,7 @@ public class Product {
         this.updatedAt = builder.updatedAt;
         this.modelName = builder.modelName;
         this.customerName = builder.customerName;
+        this.brandName = builder.brandName;
     }
 
     // --- GETTERS & SETTERS ---
@@ -82,6 +84,9 @@ public class Product {
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String customerName) { this.customerName = customerName; }
 
+    public String getBrandName() { return brandName; }
+    public void setBrandName(String brandName) { this.brandName = brandName; }
+
     // --- BUILDER PATTERN ---
     public static Builder builder() {
         return new Builder();
@@ -101,6 +106,8 @@ public class Product {
         private Timestamp updatedAt;
         private String modelName;
         private String customerName;
+        private String brandName;
+
 
         public Builder id(int id) { this.id = id; return this; }
         public Builder serialNumber(String serialNumber) { this.serialNumber = serialNumber; return this; }
@@ -115,6 +122,8 @@ public class Product {
         public Builder updatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; return this; }
         public Builder modelName(String modelName) { this.modelName = modelName; return this; }
         public Builder customerName(String customerName) { this.customerName = customerName; return this; }
+        public Builder brandName(String brandName) { this.brandName = brandName; return this; }
+
 
         public Product build() {
             return new Product(this);

@@ -1,4 +1,4 @@
-//package com.generatorproject.controller.admin.product;
+//package com.generatorproject.controller.admin.brand;
 //
 //import com.generatorproject.dao.BrandDAO;
 //import com.generatorproject.model.Brand;
