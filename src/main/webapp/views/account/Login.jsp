@@ -17,7 +17,6 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			/* Định nghĩa font chữ ưu tiên */
 			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 		}
 

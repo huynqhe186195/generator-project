@@ -35,4 +35,9 @@ public class RequestServices implements IRequestServices{
     public boolean isRequestPending(String email) {
         return requestDAO.isRequestPending(email);
     }
+
+    @Override
+    public List<SystemRequest> findBySenderId(Long senderId) {
+        return  requestDAO.findBySenderId(senderId);
+    }
 }

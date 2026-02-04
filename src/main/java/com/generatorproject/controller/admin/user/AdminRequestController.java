@@ -20,7 +20,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(urlPatterns = {"/admin/requests"}) // Định nghĩa URL cho controller
+@WebServlet(urlPatterns = { "/admin/requests" })
 public class AdminRequestController extends HttpServlet {
 
     private IUserServices userServices;
@@ -82,7 +82,8 @@ public class AdminRequestController extends HttpServlet {
 
             // LẤY THÔNG TIN TỪ CHUỖI JSON
             Gson gson = new Gson();
-            Type type = new TypeToken<Map<String, String>>() {}.getType();
+            Type type = new TypeToken<Map<String, String>>() {
+            }.getType();
             Map<String, String> data = gson.fromJson(request.getRequestData(), type);
 
             String email = data.get("email");

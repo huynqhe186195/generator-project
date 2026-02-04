@@ -14,7 +14,6 @@ import java.util.List;
 
 public class UserDao extends GenericDAO<Users> {
 
-    // ✅ CHỈNH THEO DB CỦA BẠN (role customer id là mấy thì set vào đây)
     private static final int CUSTOMER_ROLE_ID = 2;
 
     public List<Users> getAllUsers() {
@@ -22,7 +21,19 @@ public class UserDao extends GenericDAO<Users> {
         return query(sql, new UserMapper());
     }
 
-    public void createUser(Users user) {
+    public Users findByPhone(String phone) {
+        String sql = "SELECT * FROM users WHERE phone = ?";
+        List<Users> users = query(sql, new UserMapper(), phone);
+        return users.isEmpty() ? null : users.get(0);
+    }
+
+    public void createUser(Users user) throws Exception {
+        if (user.getPhone() != null && !user.getPhone().isEmpty()) {
+            Users existingUser = findByPhone(user.getPhone());
+            if (existingUser != null) {
+                throw new Exception("Số điện thoại " + user.getPhone() + " đã được sử dụng!");
+            }
+        }
         String sql = "INSERT INTO users (full_name, email, password, phone, role_id, status, avatar_url) VALUES (?, ?, ?, ?, ?, ?, ?)";
         update(sql,
                 user.getFullName(),
@@ -111,7 +122,14 @@ public class UserDao extends GenericDAO<Users> {
         return users.isEmpty() ? null : users.get(0);
     }
 
-    public void updateUser(Users user) {
+    public void updateUser(Users user) throws Exception {
+        if (user.getPhone() != null && !user.getPhone().isEmpty()) {
+            Users owner = findByPhone(user.getPhone());
+
+            if (owner != null && owner.getId() != user.getId()) {
+                throw new Exception("Số điện thoại này đã thuộc về tài khoản khác!");
+            }
+        }
         String sql = "UPDATE users SET full_name=?, phone=?, role_id=?, status=?, avatar_url=? WHERE id=?";
         update(sql, user.getFullName(), user.getPhone(), user.getRoleId(), user.getStatus(), user.getAvatarUrl(),
                 user.getId());
