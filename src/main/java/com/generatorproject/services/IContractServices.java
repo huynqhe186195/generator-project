@@ -15,4 +15,5 @@ public interface IContractServices {
     List<Contract> findAllContracts();
     Long importContractFromDocx(InputStream fileContent, Users manager) throws Exception;
     void deleteContract(Long id);
+    List<Contract> getContractByCustomerId(int id);
 }
