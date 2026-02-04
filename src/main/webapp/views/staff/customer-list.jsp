@@ -79,7 +79,12 @@
                                     <c:when test="${u.roleId == 5}"><span class="badge bg-secondary">CUSTOMER</span></c:when>
                                 </c:choose>
                             </td>
-
+                            <td class="text-end pe-4">
+                                <a href="<c:url value='/staff/user-information?id=${u.id}'/>"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-info-circle me-1"></i> Chi tiết
+                                </a>
+                            </td>
                         </tr>
                     </c:forEach>
 

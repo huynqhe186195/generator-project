@@ -17,6 +17,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			/* Định nghĩa font chữ ưu tiên */
 			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 		}
 
@@ -25,7 +26,7 @@
 			border-radius: 20px;
 			box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 			background: white;
-			width: 100%; /* Đảm bảo card chiếm hết không gian cột */
+			width: 100%;
 		}
 
 		.form-side {
@@ -38,12 +39,21 @@
 			margin-bottom: 30px;
 		}
 
+		/* --- SỬA LỖI FONT ALERT TẠI ĐÂY --- */
+		.alert {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important; /* Buộc dùng font đẹp */
+			font-size: 0.95rem;
+			border-radius: 15px; /* Bo tròn alert cho hợp với giao diện */
+			box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+		}
+
 		.form-control {
 			height: 50px;
 			padding-left: 20px;
 			border-radius: 30px;
 			background: #f7f7f7;
 			border: none;
+			font-family: inherit; /* Kế thừa font từ body */
 		}
 
 		.form-control:focus {
@@ -60,6 +70,7 @@
 			border: none;
 			color: white;
 			transition: all 0.3s ease;
+			font-family: inherit;
 		}
 
 		.btn-login:hover {
@@ -86,6 +97,7 @@
 			color: #666;
 			text-decoration: none;
 			font-size: 0.9rem;
+			font-family: inherit;
 		}
 
 		.forgot-link:hover {
@@ -106,19 +118,25 @@
 					</div>
 
 					<c:if test="${not empty message}">
-						<div class="alert ${alert == 'success' ? 'alert-success' : 'alert-danger'} alert-dismissible fade show" role="alert">
-								${message}
+						<div class="alert ${alert == 'success' ? 'alert-success' : 'alert-danger'} alert-dismissible fade show d-flex align-items-center" role="alert">
+							<i class="${alert == 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'} me-2"></i>
+							<div>
+									${message}
+							</div>
 							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 						</div>
 					</c:if>
 
 					<c:if test="${not empty param.message}">
-						<div class="alert alert-success alert-dismissible fade show" role="alert">
-							<c:choose>
-								<c:when test="${param.message == 'reset_success'}">Cập nhật mật khẩu thành công!</c:when>
-								<c:when test="${param.message == 'token_invalid'}">Link đã hết hạn hoặc không hợp lệ!</c:when>
-								<c:otherwise>${param.message}</c:otherwise>
-							</c:choose>
+						<div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+							<i class="fas fa-check-circle me-2"></i>
+							<div>
+								<c:choose>
+									<c:when test="${param.message == 'reset_success'}">Cập nhật mật khẩu thành công!</c:when>
+									<c:when test="${param.message == 'token_invalid'}">Link đã hết hạn hoặc không hợp lệ!</c:when>
+									<c:otherwise>${param.message}</c:otherwise>
+								</c:choose>
+							</div>
 							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 						</div>
 					</c:if>
