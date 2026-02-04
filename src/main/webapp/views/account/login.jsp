@@ -1,73 +1,160 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>Sign Up</title>
+	<title>Đăng nhập hệ thống</title>
 
-	<link rel="stylesheet" href="<c:url value='/template/account/fonts/material-icon/css/material-design-iconic-font.min.css'/>">
-	<link rel="stylesheet" href="<c:url value='/template/account/css/login-style.css'/>">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+	<style>
+		body {
+			background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+
+		.login-card {
+			border: none;
+			border-radius: 20px;
+			box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+			background: white;
+			width: 100%; /* Đảm bảo card chiếm hết không gian cột */
+		}
+
+		.form-side {
+			padding: 40px 40px;
+		}
+
+		.form-title {
+			font-weight: 700;
+			color: #333;
+			margin-bottom: 30px;
+		}
+
+		.form-control {
+			height: 50px;
+			padding-left: 20px;
+			border-radius: 30px;
+			background: #f7f7f7;
+			border: none;
+		}
+
+		.form-control:focus {
+			background: #fff;
+			box-shadow: 0 0 0 2px #84fab0;
+			outline: none;
+		}
+
+		.btn-login {
+			border-radius: 30px;
+			padding: 12px;
+			font-weight: bold;
+			background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+			border: none;
+			color: white;
+			transition: all 0.3s ease;
+		}
+
+		.btn-login:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+			color: white;
+		}
+
+		.input-icon-wrapper {
+			position: relative;
+			margin-bottom: 20px;
+		}
+
+		.input-icon-wrapper i {
+			position: absolute;
+			right: 20px;
+			top: 50%;
+			transform: translateY(-50%);
+			color: #aaa;
+			pointer-events: none;
+		}
+
+		.forgot-link {
+			color: #666;
+			text-decoration: none;
+			font-size: 0.9rem;
+		}
+
+		.forgot-link:hover {
+			color: #4facfe;
+		}
+	</style>
+
 </head>
 <body>
 
-<div class="main">
-	<section class="sign-in">
-		<div class="container">
-			<div class="signin-content">
-				<div class="signin-image">
-					<figure>
-						<img src="<c:url value='/template/images/signin-image.jpg'/>" alt="sing up image">
-					</figure>
-
-				</div>
-
-				<div class="signin-form">
-					<h2 class="form-title">Sign In</h2>
+<div class="container">
+	<div class="row justify-content-center">
+		<div class="col-xl-4 col-lg-5 col-md-7 col-sm-10">
+			<div class="card login-card">
+				<div class="form-side">
+					<div class="text-center">
+						<h2 class="form-title">Welcome Back!</h2>
+					</div>
 
 					<c:if test="${not empty message}">
-						<div style="color: ${alert == 'success' ? '#28a745' : '#dc3545'};
-								margin-bottom: 15px; font-size: 14px; font-weight: bold;">
+						<div class="alert ${alert == 'success' ? 'alert-success' : 'alert-danger'} alert-dismissible fade show" role="alert">
 								${message}
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 						</div>
 					</c:if>
 
 					<c:if test="${not empty param.message}">
-						<div style="color: #28a745; margin-bottom: 15px; font-size: 14px; font-weight: bold;">
+						<div class="alert alert-success alert-dismissible fade show" role="alert">
 							<c:choose>
 								<c:when test="${param.message == 'reset_success'}">Cập nhật mật khẩu thành công!</c:when>
 								<c:when test="${param.message == 'token_invalid'}">Link đã hết hạn hoặc không hợp lệ!</c:when>
+								<c:otherwise>${param.message}</c:otherwise>
 							</c:choose>
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 						</div>
 					</c:if>
-					<form method="POST" action="<c:url value='/hanldeLogin'/>" class="register-form" id="login-form">
-					<div class="form-group">
-						<label for="username"><i class="zmdi zmdi-account material-icons-name"></i></label>
-						<input type="text" name="username" id="username" placeholder="Your Name" />
-					</div>
-					<div class="form-group">
-						<label for="password"><i class="zmdi zmdi-lock"></i></label>
-						<input type="password" name="password" id="password" placeholder="Password" />
-					</div>
-					<div class="form-group">
-						<input type="checkbox" name="remember-me" id="remember-me" class="agree-term" />
-						<a href="<c:url value='/account/forgot-password'/>" class="signup-image-link">Forgot password!</a>
-					</div>
-					<div class="form-group form-button">
-						<input type="submit" name="signin" id="signin" class="form-submit" value="Log in" />
-					</div>
-				</form>
 
+					<form method="POST" action="<c:url value='/hanldeLogin'/>" id="login-form">
 
+						<div class="input-icon-wrapper">
+							<input type="text" name="username" class="form-control" placeholder="Tên đăng nhập" required />
+							<i class="fas fa-user"></i>
+						</div>
+
+						<div class="input-icon-wrapper">
+							<input type="password" name="password" class="form-control" placeholder="Mật khẩu" required />
+							<i class="fas fa-lock"></i>
+						</div>
+
+						<div class="d-flex justify-content-between align-items-center mb-4">
+							<div class="form-check">
+								<input type="checkbox" name="remember-me" class="form-check-input" id="remember-me">
+								<label class="form-check-label text-muted" for="remember-me" style="font-size: 0.9rem;">Ghi nhớ đăng nhập</label>
+							</div>
+							<a href="<c:url value='/account/forgot-password'/>" class="forgot-link">Quên mật khẩu?</a>
+						</div>
+
+						<div class="d-grid">
+							<button type="submit" name="signin" class="btn btn-login btn-block">Đăng Nhập</button>
+						</div>
+
+					</form>
 				</div>
 			</div>
 		</div>
-	</section>
+	</div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="<c:url value='/template/account/js/main.js'/>"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
