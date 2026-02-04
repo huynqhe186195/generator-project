@@ -8,7 +8,8 @@ import java.util.List;
 public class RequestDAO extends GenericDAO<SystemRequest> {
 
     public Long save(SystemRequest request) {
-        String sql = "INSERT INTO system_requests (sender_id, receiver_role, request_type, request_data, status, created_at) " +
+        String sql = "INSERT INTO system_requests (sender_id, receiver_role, request_type, request_data, status, created_at) "
+                +
                 "VALUES (?, ?, ?, ?, ?, NOW())";
 
         return insert(sql,
@@ -16,8 +17,7 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
                 request.getReceiverRole(),
                 request.getRequestType(),
                 request.getRequestData(),
-                request.getStatus() != null ? request.getStatus() : "PENDING"
-        );
+                request.getStatus() != null ? request.getStatus() : "PENDING");
     }
 
     public void update(SystemRequest request) {
@@ -25,7 +25,8 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
         update(sql, request.getStatus(), request.getResponseMessage(), request.getId());
     }
 
-    // Hàm tìm tất cả request gửi cho một Role cụ thể (Ví dụ: Admin vào xem danh sách cần duyệt)
+    // Hàm tìm tất cả request gửi cho một Role cụ thể (Ví dụ: Admin vào xem danh
+    // sách cần duyệt)
     public List<SystemRequest> findByReceiverRole(String role, String status) {
         String sql = "SELECT * FROM system_requests WHERE receiver_role = ? AND status = ? ORDER BY created_at DESC";
         return query(sql, new SystemRequestMapper(), role, status);
@@ -50,5 +51,10 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
 
         List<SystemRequest> list = query(sql, new SystemRequestMapper(), "%" + email + "%");
         return list != null && !list.isEmpty();
+    }
+    // Tìm các request do chính người dùng này gửi đi (để hiện lịch sử)
+    public List<SystemRequest> findBySenderId(Long senderId) {
+        String sql = "SELECT * FROM system_requests WHERE sender_id = ? ORDER BY created_at DESC";
+        return query(sql, new SystemRequestMapper(), senderId);
     }
 }

@@ -10,4 +10,5 @@ public interface IRequestServices {
     List<SystemRequest> findByReceiverRole(String role, String status);
     SystemRequest findById(Long id);
     boolean isRequestPending(String email);
+    List<SystemRequest> findBySenderId(Long senderId);
 }
