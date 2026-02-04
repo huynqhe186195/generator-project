@@ -51,4 +51,10 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
         List<SystemRequest> list = query(sql, new SystemRequestMapper(), "%" + email + "%");
         return list != null && !list.isEmpty();
     }
+
+    // Tìm các request do chính người dùng này gửi đi (để hiện lịch sử)
+    public List<SystemRequest> findBySenderId(Long senderId) {
+        String sql = "SELECT * FROM system_requests WHERE sender_id = ? ORDER BY created_at DESC";
+        return query(sql, new SystemRequestMapper(), senderId);
+    }
 }

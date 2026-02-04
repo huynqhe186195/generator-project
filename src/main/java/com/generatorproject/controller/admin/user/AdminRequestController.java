@@ -20,7 +20,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(urlPatterns = {"/admin/requests"}) // Định nghĩa URL cho controller
+@WebServlet(urlPatterns = {"/admin/requests"})
 public class AdminRequestController extends HttpServlet {
 
     private IUserServices userServices;

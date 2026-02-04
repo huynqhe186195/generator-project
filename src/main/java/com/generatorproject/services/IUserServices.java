@@ -8,11 +8,11 @@ import java.util.Map;
 public interface IUserServices {
     List<Users> getAllUsers();
 
-    void createUser(Users user);
+    void createUser(Users user) throws Exception;
 
     Users findUserById(int id);
 
-    void updateUser(Users user);
+    void updateUser(Users user) throws Exception;
 
     Users findByEmailAndPassword(String email, String password);
 

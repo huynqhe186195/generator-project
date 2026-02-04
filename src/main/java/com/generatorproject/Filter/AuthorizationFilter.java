@@ -30,6 +30,7 @@ public class AuthorizationFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) response;
         HttpSession session = req.getSession();
 
+
         // 2. CHECK ĐĂNG NHẬP
         Users user = (Users) session.getAttribute("USERMODEL");
         if (user == null) {
@@ -39,6 +40,10 @@ public class AuthorizationFilter implements Filter {
         }
 
         String url = req.getRequestURI();
+        if (url.contains("/uploads/") || url.endsWith(".css") || url.endsWith(".js") || url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".webp")) {
+            chain.doFilter(request, response);
+            return; // <--- Bắt buộc phải có return để dừng hàm ngay
+        }
         String contextPath = req.getContextPath();
         int roleId = user.getRoleId();
 

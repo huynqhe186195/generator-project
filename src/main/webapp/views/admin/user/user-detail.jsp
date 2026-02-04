@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-<title>Chi tiết người dùng</title>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> <title>Chi tiết người dùng</title>
 
 <div class="container-fluid">
     <div class="mb-3">
@@ -15,11 +14,24 @@
             <div class="card shadow border-0 text-center p-4 h-100">
                 <div class="mb-3">
                     <c:choose>
-                        <c:when test="${user.avatarUrl != null && user.avatarUrl.startsWith('http')}">
-                            <img src="${user.avatarUrl}" class="rounded-circle img-thumbnail" width="150" height="150" style="object-fit: cover;">
+                        <%-- Trường hợp 1: Link online (http...) --%>
+                        <c:when test="${user.avatarUrl != null && fn:startsWith(user.avatarUrl, 'http')}">
+                            <img src="${user.avatarUrl}"
+                                 class="rounded-circle img-thumbnail"
+                                 width="150" height="150"
+                                 style="object-fit: cover;"
+                                 alt="${user.fullName}">
                         </c:when>
+
+                        <%-- Trường hợp 2: Ảnh Upload (local) --%>
                         <c:otherwise>
-                            <img src="<c:url value='/${user.avatarUrl}'/>" class="rounded-circle img-thumbnail" width="150" height="150" style="object-fit: cover;" onerror="this.src='https://via.placeholder.com/150'">
+                            <img src="${pageContext.request.contextPath}/${user.avatarUrl}"
+                                 class="rounded-circle img-thumbnail"
+                                 width="150" height="150"
+                                 style="object-fit: cover;"
+                                 alt="${user.fullName}"
+                                 onerror="this.src='https://ui-avatars.com/api/?name=${user.fullName}&background=random&size=150'">
+                            <%-- onerror: Nếu ảnh lỗi -> Tự tạo avatar theo tên --%>
                         </c:otherwise>
                     </c:choose>
                 </div>
@@ -28,9 +40,13 @@
 
                 <p class="mb-3">
                     <c:choose>
-                        <c:when test="${user.roleId == 1}"><span class="badge bg-danger">Quản trị viên (Admin)</span></c:when>
-                        <c:when test="${user.roleId == 2}"><span class="badge bg-info text-dark">Nhân viên kỹ thuật</span></c:when>
-                        <c:when test="${user.roleId == 3}"><span class="badge bg-secondary">Khách hàng</span></c:when>
+                        <c:when test="${user.roleId == 1}"><span class="badge bg-danger">Quản trị viên</span></c:when>
+                        <c:when test="${user.roleId == 2}"><span class="badge bg-info text-dark">Quản lý</span></c:when>
+                        <c:when test="${user.roleId == 3}"><span class="badge bg-secondary">Nhân viên</span></c:when>
+                        <c:when test="${user.roleId == 4}"><span class="badge bg-secondary">Nhân viên kỹ thuật</span></c:when>
+                        <c:when test="${user.roleId == 5}"><span class="badge bg-secondary">Khách hàng</span></c:when>
+                        <c:when test="${user.roleId == 6}"><span class="badge bg-secondary">IT</span></c:when>
+                        <c:otherwise><span class="badge bg-light text-dark">Chưa phân quyền</span></c:otherwise>
                     </c:choose>
                 </p>
 

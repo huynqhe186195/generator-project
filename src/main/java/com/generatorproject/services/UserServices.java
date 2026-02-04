@@ -23,7 +23,7 @@ public class UserServices implements IUserServices {
     }
 
     @Override
-    public void createUser(Users user) {
+    public void createUser(Users user) throws Exception {
         userDao.createUser(user);
     }
 
@@ -33,7 +33,7 @@ public class UserServices implements IUserServices {
     }
 
     @Override
-    public void updateUser(Users user) {
+    public void updateUser(Users user) throws Exception {
         userDao.updateUser(user);
     }
 
