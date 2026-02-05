@@ -3,6 +3,8 @@ package com.generatorproject.dao;
 import com.generatorproject.mapper.SystemRequestMapper;
 import com.generatorproject.model.SystemRequest;
 
+import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RequestDAO extends GenericDAO<SystemRequest> {
@@ -21,8 +23,26 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
     }
 
     public void update(SystemRequest request) {
-        String sql = "UPDATE system_requests SET status = ?, response_message = ?, updated_at = NOW() WHERE id = ?";
-        update(sql, request.getStatus(), request.getResponseMessage(), request.getId());
+        // Cập nhật tất cả các trường có thể thay đổi
+        String sql = "UPDATE system_requests SET " +
+                "sender_id = ?, " +
+                "receiver_role = ?, " +
+                "request_type = ?, " +
+                "request_data = ?, " +
+                "status = ?, " +
+                "response_message = ?, " +
+                "updated_at = NOW() " + // Tự động cập nhật thời gian
+                "WHERE id = ?";
+
+        // Truyền tham số theo đúng thứ tự trong câu SQL
+        update(sql,
+                request.getSenderId(),      // 1. sender_id
+                request.getReceiverRole(),  // 2. receiver_role
+                request.getRequestType(),   // 3. request_type
+                request.getRequestData(),   // 4. request_data
+                request.getStatus(),        // 5. status
+                request.getResponseMessage(), // 6. response_message
+                request.getId());           // 7. WHERE id
     }
 
     // Hàm tìm tất cả request gửi cho một Role cụ thể (Ví dụ: Admin vào xem danh
@@ -56,5 +76,65 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
     public List<SystemRequest> findBySenderId(Long senderId) {
         String sql = "SELECT * FROM system_requests WHERE sender_id = ? ORDER BY created_at DESC";
         return query(sql, new SystemRequestMapper(), senderId);
+    }
+    public int countByFilter(Date fromDate, Date toDate, String status, String requestType) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM system_requests WHERE request_type = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(requestType);
+
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+        if (fromDate != null) {
+            sql.append(" AND DATE(created_at) >= ?");
+            params.add(fromDate);
+        }
+        if (toDate != null) {
+            sql.append(" AND DATE(created_at) <= ?");
+            params.add(toDate);
+        }
+
+        // Gọi hàm count của GenericDAO (trả về int hoặc long)
+        return count(sql.toString(), params.toArray());
+    }
+
+    /**
+     * Hàm lấy danh sách request có phân trang
+     */
+    public List<SystemRequest> findByFilter(Date fromDate, Date toDate, String status, String requestType, int page, int pageSize) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM system_requests WHERE request_type = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(requestType);
+
+        // 1. Xây dựng câu SQL động dựa trên tham số
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+        if (fromDate != null) {
+            sql.append(" AND DATE(created_at) >= ?");
+            params.add(fromDate);
+        }
+        if (toDate != null) {
+            sql.append(" AND DATE(created_at) <= ?");
+            params.add(toDate);
+        }
+
+        // 2. Thêm sắp xếp và phân trang (LIMIT, OFFSET)
+        sql.append(" ORDER BY created_at DESC LIMIT ? OFFSET ?");
+
+        // Tính vị trí bắt đầu (offset)
+        int offset = (page - 1) * pageSize;
+
+        params.add(pageSize);
+        params.add(offset);
+
+        return query(sql.toString(), new SystemRequestMapper(), params.toArray());
+    }
+
+    public void updateStatus(int id, String status){
+        String sql = "UPDATE system_requests SET status = ?, updated_at = NOW() WHERE id = ?";
+        update(sql, status, id);
     }
 }

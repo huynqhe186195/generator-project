@@ -3,6 +3,7 @@ package com.generatorproject.services;
 import com.generatorproject.dao.RequestDAO;
 import com.generatorproject.model.SystemRequest;
 
+import java.sql.Date;
 import java.util.List;
 
 public class RequestServices implements IRequestServices{
@@ -39,5 +40,20 @@ public class RequestServices implements IRequestServices{
     @Override
     public List<SystemRequest> findBySenderId(Long senderId) {
         return  requestDAO.findBySenderId(senderId);
+    }
+
+    @Override
+    public int countByFilter(Date fromDate, Date toDate, String status, String requestType) {
+        return requestDAO.countByFilter(fromDate,toDate,status,requestType);
+    }
+
+    @Override
+    public List<SystemRequest> getByFilter(Date fromDate, Date toDate, String status, String requestType, int page, int pageSize) {
+        return requestDAO.findByFilter(fromDate,toDate,status,requestType,page,pageSize);
+    }
+
+    @Override
+    public void updateStatus(int id, String status) {
+        requestDAO.updateStatus(id,status);
     }
 }

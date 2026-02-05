@@ -1,8 +1,6 @@
 package com.generatorproject.controller.staff;
 
-import com.generatorproject.model.Contract;
-import com.generatorproject.model.Incident;
-import com.generatorproject.model.Users;
+import com.generatorproject.model.*;
 import com.generatorproject.services.*;
 
 import javax.servlet.RequestDispatcher;
@@ -13,17 +11,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(urlPatterns = {"/staff/*"})
 public class StaffManagementController extends HttpServlet {
-    private final IIncidentServices incidentServices;
+    private final IRequestServices requestServices;
     private final IUserServices userServices;
     private final IContractServices contractServices;
+    private final IProductServices productServices;
     public StaffManagementController(){
-        incidentServices = new IncidentServices();
+
         userServices = new UserServices();
         contractServices = new ContractServices();
+        requestServices = new RequestServices();
+        productServices = new ProductServices();
     }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -42,7 +45,12 @@ public class StaffManagementController extends HttpServlet {
             case "/customer-list":
                 handleCustomerList(req,resp);
                 break;
-
+            case "/incident/verify":
+                handleIncidentVerify(req, resp);
+                break;
+            case "/incident/escalate":
+                handleIncidentEscalate(req, resp);
+                break;
         }
     }
     private void handleCustomerList(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException{
@@ -102,25 +110,25 @@ public class StaffManagementController extends HttpServlet {
         }
     }
 
-    private void handleIncidentList(HttpServletRequest req, HttpServletResponse resp)  throws IOException, ServletException{
-
+    private void handleIncidentList(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        // 1. Lấy tham số từ URL
         String fromDateParam = req.getParameter("fromDate");
         String toDateParam = req.getParameter("toDate");
         String status = req.getParameter("status");
 
-
+        // 2. Xử lý Date
         Date fromDate = null;
         Date toDate = null;
         try {
             if (fromDateParam != null && !fromDateParam.isEmpty()) fromDate = Date.valueOf(fromDateParam);
             if (toDateParam != null && !toDateParam.isEmpty()) toDate = Date.valueOf(toDateParam);
-        } catch (IllegalArgumentException e) { e.printStackTrace(); }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
 
-
-
+        // 3. Xử lý Phân trang
         int page = 1;
-        int pageSize = 5;
-
+        int pageSize = 5; // Số dòng trên 1 trang
         if (req.getParameter("page") != null) {
             try {
                 page = Integer.parseInt(req.getParameter("page"));
@@ -130,32 +138,127 @@ public class StaffManagementController extends HttpServlet {
             }
         }
 
+        // 4. GỌI SERVICE MỚI (SystemRequestServices)
+        // Quan trọng: Định nghĩa loại request ta muốn lấy là "INCIDENT_REPORT"
+        String requestType = "INCIDENT_REPORT";
+        int totalRequests = requestServices.countByFilter(fromDate, toDate, status, requestType);
+        int totalPages = (int) Math.ceil((double) totalRequests / pageSize);
+        List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
 
-        int totalIncidents = incidentServices.countIncidentByFilter(fromDate, toDate, status);
+        // --- ĐOẠN ĐÃ TỐI ƯU ---
+        Map<Long, Product> relatedProducts = new HashMap<>();
 
-        // Tính tổng số trang: Ví dụ có 12 bản ghi. 12 / 5 = 2.4 -> Làm tròn lên là 3 trang.
-        int totalPages = (int) Math.ceil((double) totalIncidents / pageSize);
+        for (SystemRequest sysReq : listRequests) {
+            // Tận dụng hàm phụ trợ getProductFromRequest thay vì viết lại logic parse JSON
+            Product p = getProductFromRequest(sysReq);
+            if (p != null) {
+                relatedProducts.put(sysReq.getId(), p);
+            }
+        }
+        // ----------------------
 
-        // Lấy danh sách cho trang hiện tại (Chỉ lấy 5 dòng)
-        List<Incident> listIncidents = incidentServices.getIncidentByFilter(fromDate, toDate, status, page, pageSize);
-
-//         Lấy danh sách thợ (cho Modal)
+        req.setAttribute("relatedProducts", relatedProducts);
         List<Users> listTechnicians = userServices.findUserByRoleId(4);
 
-        // 4. GỬI DỮ LIỆU SANG JSP
-        req.setAttribute("listIncidents", listIncidents);
+        req.setAttribute("listRequests", listRequests);
         req.setAttribute("listTechnicians", listTechnicians);
         req.setAttribute("totalPages", totalPages);
         req.setAttribute("currentPage", page);
-
-        // Giữ lại giá trị bộ lọc
         req.setAttribute("fromDate", fromDateParam);
         req.setAttribute("toDate", toDateParam);
         req.setAttribute("status", status);
 
+        // Lưu ý tên file JSP: Trong các bước trước ta gọi là "incident-list.jsp"
+        // Bạn đang để là "incident-request.jsp", hãy chắc chắn tên file trong thư mục views khớp với dòng này
         RequestDispatcher rd = req.getRequestDispatcher("/views/staff/incident-request.jsp");
         rd.forward(req, resp);
     }
 
+    // Trong class StaffManagementController
 
+    private void handleIncidentVerify(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            long requestId = Long.parseLong(req.getParameter("id"));
+            SystemRequest sysReq = requestServices.findById(requestId);
+
+            if (sysReq == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
+
+            // 1. Lấy sản phẩm trong Request (để đối chiếu)
+            Product requestedProduct = getProductFromRequest(sysReq);
+
+            // 2. Lấy danh sách TẤT CẢ sản phẩm của khách hàng này (dựa vào sender_id)
+            // (Bạn cần đảm bảo ProductServices có hàm findByCustomerId)
+            int customerId = Math.toIntExact(sysReq.getSenderId());
+            List<Product> customerAssets = productServices.getAllProductByCustomerId(customerId);
+
+            // 3. Gửi dữ liệu sang JSP
+            req.setAttribute("req", sysReq);
+            req.setAttribute("requestedProduct", requestedProduct); // Sản phẩm khách chọn trong form
+            req.setAttribute("customerAssets", customerAssets);     // Toàn bộ máy của khách
+
+            req.getRequestDispatcher("/views/staff/incident-verify.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
+
+    // Hàm xử lý trang Gửi yêu cầu/Phân công (Bước 2)
+    private void handleIncidentEscalate(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            // 1. Lấy ID từ URL
+            long requestId = Long.parseLong(req.getParameter("id"));
+
+            // 2. Tìm Request
+            SystemRequest sysReq = requestServices.findById(requestId);
+
+            if (sysReq == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
+
+            // 3. Lấy thông tin máy (Product)
+            Product product = getProductFromRequest(sysReq);
+
+            // 4. Lấy danh sách Kỹ thuật viên (Để đổ vào Dropdown chọn người sửa)
+            List<Users> listTechnicians = userServices.findUserByRoleId(4);
+
+            // 5. Gửi dữ liệu sang JSP
+            req.setAttribute("req", sysReq);
+            req.setAttribute("prod", product);
+            req.setAttribute("listTechnicians", listTechnicians);
+
+            req.getRequestDispatcher("/views/staff/incident-escalate.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
+
+    // --- HÀM PHỤ TRỢ: Lấy Product từ SystemRequest ---
+    // (Giúp code gọn hơn, tránh lặp lại logic parse JSON ở nhiều nơi)
+    private Product getProductFromRequest(SystemRequest sysReq) {
+        if (sysReq == null) return null;
+
+        Map<String, Object> info = sysReq.getInfo();
+        if (info != null && info.containsKey("productId")) {
+            try {
+                String pIdStr = String.valueOf(info.get("productId"));
+                // Xử lý trường hợp Gson parse số thành 5.0
+                if (pIdStr.contains(".")) {
+                    pIdStr = pIdStr.substring(0, pIdStr.indexOf("."));
+                }
+                int pId = Integer.parseInt(pIdStr);
+                return productServices.getProductById(pId);
+            } catch (Exception e) {
+                System.err.println("Error parsing Product ID for Request ID: " + sysReq.getId());
+            }
+        }
+        return null;
+    }
 }

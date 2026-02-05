@@ -72,7 +72,7 @@
                 <thead class="table-light text-secondary small">
                 <tr>
                   <th class="py-3 ps-3">Mã Hợp Đồng</th>
-                  <th>Sản phẩm / Máy</th>
+
                   <th>Thời hạn</th>
                   <th>Trạng thái</th>
 
@@ -84,10 +84,7 @@
                     <td class="ps-3 fw-bold text-primary">
                       <i class="fas fa-hashtag me-1 text-muted small"></i>${contract.contractNumber}
                     </td>
-                    <td>
-                      <div class="fw-bold text-dark">${contract.productName}</div>
-                      <small class="text-muted">ID: ${contract.productId}</small>
-                    </td>
+
                     <td>
                       <div class="small">
                         <div class="text-success"><i class="fas fa-calendar-check me-1"></i>Start: <fmt:formatDate value="${contract.startDate}" pattern="dd/MM/yyyy"/></div>
