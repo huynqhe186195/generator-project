@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="s" uri="http://www.opensymphony.com/sitemesh/decorator" %>
+<%@ taglib prefix="dec" uri="http://www.opensymphony.com/sitemesh/decorator" %>
 
 <c:set var="currentUser" value="${sessionScope.USERMODEL}" />
 
@@ -8,108 +8,96 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title><s:title default="IT Dashboard" /> - GenCMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><dec:title default="IT Dashboard" /> - GEN-CMS</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- dùng chung css admin để giống admin -->
+    <link rel="stylesheet" href="<c:url value='/template/admin/css/admin-style.css'/>">
 
     <style>
-        body { min-height: 100vh; display: flex; flex-direction: column; }
-        .wrapper { display: flex; width: 100%; align-items: stretch; flex: 1; }
+        #wrapper { overflow-x: hidden; transition: all 0.3s; }
+        #sidebar-wrapper { min-height: 100vh; margin-left: -15rem; transition: margin 0.25s ease-out; }
+        #sidebar-wrapper .sidebar-heading { padding: 0.875rem 1.25rem; font-size: 1.2rem; }
+        #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
+        #page-content-wrapper { width: 100%; transition: all 0.3s; }
 
-        #sidebar {
-            min-width: 250px; max-width: 250px;
-            background: #2c3e50; color: #fff; transition: all 0.3s;
+        @media (min-width: 768px) {
+            #sidebar-wrapper { margin-left: 0; }
+            #page-content-wrapper { min-width: 0; width: 100%; }
+            #wrapper.toggled #sidebar-wrapper { margin-left: -15rem; }
         }
-        #sidebar .sidebar-header { padding: 20px; background: #1a252f; }
-        #sidebar ul.components { padding: 20px 0; border-bottom: 1px solid #47748b; }
-        #sidebar ul li a {
-            padding: 15px; font-size: 1.05em;
-            display: block; color: #fff; text-decoration: none;
-        }
-        #sidebar ul li a:hover, #sidebar ul li.active > a {
-            background: #34495e; border-left: 4px solid #3498db;
-        }
-
-        #content { width: 100%; padding: 20px; background-color: #f8f9fa; }
     </style>
 
-    <s:head />
+    <dec:head />
 </head>
-
 <body>
 
-<!-- NAVBAR TOP -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
-    <a class="navbar-brand" href="${pageContext.request.contextPath}/it/product-model/product-model-list">
-        GenCMS - IT
-    </a>
+<div class="d-flex" id="wrapper">
 
-    <div class="ms-auto d-flex align-items-center text-white">
-        <span class="me-3">
-            Xin chào, <strong>${currentUser.fullName}</strong>
-        </span>
-        <a href="${pageContext.request.contextPath}/account/logout" class="btn btn-outline-light btn-sm">
-            Đăng xuất
-        </a>
-    </div>
-</nav>
-
-<div class="wrapper">
-
-    <!-- SIDEBAR -->
-    <nav id="sidebar">
-        <div class="sidebar-header">
-            <h3><i class="fa fa-screwdriver-wrench"></i> IT</h3>
+    <!-- Sidebar -->
+    <div class="border-end bg-dark text-white" id="sidebar-wrapper" style="width: 250px;">
+        <div class="sidebar-heading text-center py-4 fs-4 fw-bold text-warning border-bottom border-secondary">
+            <i class="fas fa-screwdriver-wrench"></i> IT Console
         </div>
 
-        <ul class="list-unstyled components">
+        <div class="list-group list-group-flush">
+            <!-- Tạm thời chỉ quản lý sản phẩm -->
+            <a href="<c:url value='/it/products'/>"
+               class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <i class="fas fa-box-open me-2" style="width: 20px;"></i> Quản lý sản phẩm
+            </a>
+        </div>
+    </div>
 
-            <!-- Product Model -->
-            <c:if test="${currentUser.roleId == 6 || currentUser.roleId == 1
-                         || currentUser.hasPermission('PRODUCT_MODEL_VIEW')
-                         || currentUser.hasPermission('PRODUCT_MODEL_MANAGE')}">
-                <li class="${pageContext.request.requestURI.contains('/it/product-model') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/it/product-model/product-model-list">
-                        <i class="fa fa-cubes me-2"></i> Product Model
-                    </a>
-                </li>
-            </c:if>
+    <!-- Page content -->
+    <div id="page-content-wrapper">
 
-            <!-- CMS -->
-            <c:if test="${currentUser.roleId == 6 || currentUser.hasPermission('CMS_MANAGE')}">
-                <li class="${pageContext.request.requestURI.contains('/it/cms') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/it/cms/post-list">
-                        <i class="fa fa-newspaper me-2"></i> CMS
-                    </a>
-                </li>
-            </c:if>
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4">
+            <button class="btn btn-outline-secondary" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
 
-            <!-- Banner -->
-            <c:if test="${currentUser.roleId == 6 || currentUser.hasPermission('BANNER_MANAGE')}">
-                <li class="${pageContext.request.requestURI.contains('/it/banner') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/it/banner/banner-list">
-                        <i class="fa fa-image me-2"></i> Banner
-                    </a>
-                </li>
-            </c:if>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-bold" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            ${currentUser.fullName != null ? currentUser.fullName : 'IT'}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item text-danger" href="<c:url value='/account/logout'/>">
+                                    <i class="fas fa-sign-out-alt me-1"></i> Đăng xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
-            <!-- Profile -->
-            <li class="${pageContext.request.requestURI.contains('/it/it-profile') ? 'active' : ''}">
-                <a href="${pageContext.request.contextPath}/it/it-profile">
-                    <i class="fa fa-id-card me-2"></i> Hồ sơ cá nhân
-                </a>
-            </li>
-
-        </ul>
-    </nav>
-
-    <!-- CONTENT -->
-    <div id="content">
-        <s:body />
+        <!-- Body -->
+        <div class="container-fluid px-4 py-4">
+            <dec:body />
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const sidebarToggle = document.body.querySelector('#sidebarToggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', (event) => {
+                event.preventDefault();
+                document.body.querySelector('#wrapper').classList.toggle('toggled');
+            });
+        }
+    });
+</script>
+
 </body>
 </html>
