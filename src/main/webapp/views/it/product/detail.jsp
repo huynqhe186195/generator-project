@@ -13,6 +13,14 @@
   .status-active { color: #28a745; font-weight: 700; }
   .status-locked { color: #dc3545; font-weight: 700; }
   .status-coming { color: #f6c23e; font-weight: 800; }
+
+  .thumb-sm {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+  }
 </style>
 
 <div class="container-fluid py-4">
@@ -54,18 +62,48 @@
 
       <!-- BASIC INFO -->
       <div class="row g-4">
-        <!-- IMAGE -->
+
+        <!-- ✅ IMAGE GALLERY -->
         <div class="col-md-3 text-center">
+
+          <!-- main image: ưu tiên ảnh đầu tiên trong imageUrls -->
+          <c:set var="mainImg" value="" />
+          <c:if test="${not empty imageUrls}">
+            <c:set var="mainImg" value="${imageUrls[0]}" />
+          </c:if>
+
           <c:choose>
-            <c:when test="${not empty pm.imageUrl}">
-              <img src="${fn:startsWith(pm.imageUrl,'http') ? pm.imageUrl : ctx.concat('/').concat(pm.imageUrl)}"
+            <c:when test="${not empty mainImg}">
+              <img id="mainPreview"
+                   src="${fn:startsWith(mainImg,'http') ? mainImg : ctx.concat('/').concat(mainImg)}"
                    class="thumb-lg shadow-sm border" alt="image">
             </c:when>
+
+            <c:when test="${not empty pm.imageUrl}">
+              <img id="mainPreview"
+                   src="${fn:startsWith(pm.imageUrl,'http') ? pm.imageUrl : ctx.concat('/').concat(pm.imageUrl)}"
+                   class="thumb-lg shadow-sm border" alt="image">
+            </c:when>
+
             <c:otherwise>
-              <img src="https://via.placeholder.com/140x140?text=IMG"
+              <img id="mainPreview"
+                   src="https://via.placeholder.com/140x140?text=IMG"
                    class="thumb-lg shadow-sm border" alt="image">
             </c:otherwise>
           </c:choose>
+
+          <!-- thumbnails -->
+          <c:if test="${not empty imageUrls}">
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+              <c:forEach items="${imageUrls}" var="img" varStatus="st">
+                <img class="thumb-sm border shadow-sm"
+                     src="${fn:startsWith(img,'http') ? img : ctx.concat('/').concat(img)}"
+                     onclick="document.getElementById('mainPreview').src=this.src"
+                     alt="thumb-${st.index}">
+              </c:forEach>
+            </div>
+          </c:if>
+
         </div>
 
         <!-- MAIN FIELDS -->
@@ -140,6 +178,7 @@
 
           </div>
         </div>
+
       </div>
 
       <hr class="my-4"/>

@@ -6,6 +6,7 @@
 
 <style>
     .thumb-img { width: 84px; height: 84px; object-fit: cover; border-radius: 14px; }
+    .thumb-sm { width: 58px; height: 58px; object-fit: cover; border-radius: 10px; cursor: pointer; }
 </style>
 
 <div class="container-fluid py-4">
@@ -88,56 +89,68 @@
                     </select>
                 </div>
 
-                <!-- current image -->
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">Ảnh hiện tại</label>
-                    <div class="d-flex align-items-center gap-3">
+                <!-- ✅ ẢNH: thumbnail + gallery + xoá + upload thêm -->
+                <div class="col-12">
+                    <label class="form-label fw-bold">Ảnh sản phẩm</label>
+
+                    <!-- Thumbnail (pm.imageUrl) -->
+                    <div class="d-flex align-items-center gap-3 mb-3">
                         <c:choose>
                             <c:when test="${not empty pm.imageUrl}">
-                                <img class="thumb-img border"
+                                <img id="thumbPreview" class="thumb-img border"
                                      src="${fn:startsWith(pm.imageUrl,'http') ? pm.imageUrl : ctx.concat('/').concat(pm.imageUrl)}"
-                                     alt="image">
+                                     alt="thumb">
                             </c:when>
                             <c:otherwise>
-                                <img class="thumb-img border" src="https://via.placeholder.com/84x84?text=IMG" alt="image">
+                                <img id="thumbPreview" class="thumb-img border"
+                                     src="https://via.placeholder.com/84x84?text=IMG" alt="thumb">
                             </c:otherwise>
                         </c:choose>
 
                         <div class="flex-grow-1">
-                            <input type="file" name="imageFile" class="form-control" accept="image/*">
-                            <small class="text-muted">Chọn ảnh mới (nếu muốn thay)</small>
+                            <input type="file" name="imageFile" class="form-control" accept="image/*"
+                                   onchange="if(this.files && this.files[0]){document.getElementById('thumbPreview').src=URL.createObjectURL(this.files[0]);}">
+                            <small class="text-muted">Chọn ảnh đại diện mới (nếu muốn thay)</small>
                         </div>
+                    </div>
+
+                    <!-- Gallery hiện có từ product_images -->
+                    <c:if test="${not empty images}">
+                        <div class="border rounded p-3">
+                            <div class="fw-bold mb-2">Ảnh gallery hiện có (tick để xoá)</div>
+
+                            <div class="d-flex flex-wrap gap-3">
+                                <c:forEach items="${images}" var="img">
+                                    <div class="d-flex flex-column align-items-center" style="width: 92px;">
+                                        <img class="thumb-img border"
+                                             src="${fn:startsWith(img.imageUrl,'http') ? img.imageUrl : ctx.concat('/').concat(img.imageUrl)}"
+                                             alt="gallery">
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="deleteImageIds" value="${img.id}" id="del-${img.id}">
+                                            <label class="form-check-label small" for="del-${img.id}">Xoá</label>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:if>
+
+                    <!-- Upload thêm nhiều ảnh -->
+                    <div class="mt-3">
+                        <input type="file" name="imageFiles" class="form-control" accept="image/*" multiple>
+                        <small class="text-muted">Chọn thêm nhiều ảnh để bổ sung vào gallery</small>
                     </div>
                 </div>
 
-                <!-- current manual -->
+                <!-- PDF xuất động -->
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Manual PDF hiện tại</label>
-                    <div class="d-flex align-items-center gap-3">
-                        <div>
-                            <c:choose>
-                                <c:when test="${not empty pm.manualUrl}">
-                                    <a href="${fn:startsWith(pm.manualUrl,'http') ? pm.manualUrl : ctx.concat('/').concat(pm.manualUrl)}"
-                                       target="_blank" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-file-pdf me-1"></i> Xem/Tải
-                                    </a>
-                                </c:when>
-                                <c:otherwise>
-                                    <span class="text-muted">Không có</span>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">PDF thông tin sản phẩm</label>
-                            <div class="d-flex align-items-center gap-2">
-                                <a href="${ctx}/it/products/pdf?id=${pm.id}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-file-pdf me-1"></i> Xuất PDF
-                                </a>
-                                <span class="text-muted small">PDF được tạo tự động từ dữ liệu hiện tại</span>
-                            </div>
-                        </div>
-
+                    <label class="form-label fw-bold">PDF thông tin sản phẩm</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="${ctx}/it/products/pdf?id=${pm.id}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-file-pdf me-1"></i> Xuất PDF
+                        </a>
+                        <span class="text-muted small">PDF được tạo tự động từ dữ liệu hiện tại</span>
                     </div>
                 </div>
 

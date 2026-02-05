@@ -2,6 +2,7 @@ package com.generatorproject.controller.it.product;
 
 import com.generatorproject.dao.BrandDAO;
 import com.generatorproject.dao.CategoryDAO;
+import com.generatorproject.dao.ProductImageDAO;
 import com.generatorproject.dao.ProductModelDAO;
 import com.generatorproject.model.Brand;
 import com.generatorproject.model.Category;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -30,6 +32,7 @@ public class ProductModelEditController extends HttpServlet {
     private final ProductModelDAO productModelDAO = new ProductModelDAO();
     private final BrandDAO brandDAO = new BrandDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
+    private final ProductImageDAO productImageDAO = new ProductImageDAO(); // ✅ thêm
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -54,6 +57,9 @@ public class ProductModelEditController extends HttpServlet {
         req.setAttribute("pm", pm);
         req.setAttribute("brands", brands);
         req.setAttribute("categories", categories);
+
+        // ✅ load gallery images
+        req.setAttribute("images", productImageDAO.findByModelId(id));
 
         req.getRequestDispatcher("/views/it/product/edit.jsp").forward(req, resp);
     }
@@ -88,16 +94,7 @@ public class ProductModelEditController extends HttpServlet {
 
         if (slug == null && name != null) slug = toSlug(name);
 
-        // ✅ nếu không upload mới → giữ cũ
-        String newImageUrl = saveUploadFile(req, "imageFile", "/uploads/product-models", false);
-        // ✅ không dùng manual_url nữa (PDF xuất động)
-        String manualUrl = old.getManualUrl(); // hoặc null nếu bạn muốn reset luôn
-
-
-        String imageUrl = (newImageUrl != null) ? newImageUrl : old.getImageUrl();
-        
-
-        // validate tối thiểu
+        // ✅ validate tối thiểu
         String error = null;
         if (name == null) error = "Tên không được để trống";
         else if (brandId == null) error = "Vui lòng chọn Brand";
@@ -110,10 +107,16 @@ public class ProductModelEditController extends HttpServlet {
             req.setAttribute("pm", old);
             req.setAttribute("brands", brandDAO.getAllBrands());
             req.setAttribute("categories", categoryDAO.getAllCategories());
+            req.setAttribute("images", productImageDAO.findByModelId(id));
             req.getRequestDispatcher("/views/it/product/edit.jsp").forward(req, resp);
             return;
         }
 
+        // ✅ ảnh đại diện: nếu không upload mới thì giữ cũ
+        String newThumb = saveUploadFile(req, "imageFile", "/uploads/product-models", false);
+        String imageUrl = (newThumb != null) ? newThumb : old.getImageUrl();
+
+        // ✅ update product_models
         ProductModel updated = new ProductModel.Builder()
                 .setId(id)
                 .setName(name)
@@ -125,14 +128,34 @@ public class ProductModelEditController extends HttpServlet {
                 .setPower(power)
                 .setDescription(description)
                 .setSpecifications(specifications)
-                .setManualUrl(manualUrl)
-                .setImageUrl(imageUrl)
+                .setManualUrl(old.getManualUrl()) // PDF xuất động => giữ nguyên hoặc null tuỳ bạn
+                .setImageUrl(imageUrl)           // thumbnail
                 .setStatus(status)
                 .build();
 
         productModelDAO.updateProductModel(updated);
 
-        resp.sendRedirect(req.getContextPath() + "/it/products/detail?id=" + id);
+        // ✅ xoá ảnh gallery được tick
+        String[] deleteIds = req.getParameterValues("deleteImageIds");
+        if (deleteIds != null) {
+            for (String s : deleteIds) {
+                Integer imgId = parseIntOrNull(s);
+                if (imgId != null) {
+                    productImageDAO.deleteByIdAndModelId(imgId, id);
+                }
+            }
+        }
+
+        // ✅ upload thêm nhiều ảnh gallery
+        List<String> newGalleryUrls = saveUploadFiles(req, "imageFiles", "/uploads/product-models");
+        if (newGalleryUrls != null) {
+            for (String url : newGalleryUrls) {
+                productImageDAO.insertImage(id, url);
+            }
+        }
+
+        // quay lại edit để thấy ảnh mới/xoá ngay
+        resp.sendRedirect(req.getContextPath() + "/it/products/edit?id=" + id);
     }
 
     // ================= helpers =================
@@ -150,6 +173,11 @@ public class ProductModelEditController extends HttpServlet {
 
         if (pdfOnly && !".pdf".equals(ext)) return null;
 
+        // ✅ nếu là ảnh đại diện thì cũng chặn định dạng ảnh cơ bản
+        if (!pdfOnly) {
+            if (!(ext.equals(".png") || ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".webp"))) return null;
+        }
+
         String newName = UUID.randomUUID() + ext;
 
         String uploadDir = req.getServletContext().getRealPath(folder);
@@ -158,7 +186,39 @@ public class ProductModelEditController extends HttpServlet {
 
         part.write(uploadDir + File.separator + newName);
 
-        return folder.substring(1) + "/" + newName; // lưu DB: uploads/...
+        return folder.substring(1) + "/" + newName; // uploads/...
+    }
+
+    // ✅ upload nhiều ảnh
+    private List<String> saveUploadFiles(HttpServletRequest req, String partName, String folder)
+            throws IOException, ServletException {
+
+        List<String> urls = new ArrayList<>();
+
+        for (Part part : req.getParts()) {
+            if (!partName.equals(part.getName())) continue;
+            if (part.getSize() == 0) continue;
+
+            String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+            String ext = "";
+            int dot = original.lastIndexOf('.');
+            if (dot >= 0) ext = original.substring(dot).toLowerCase();
+
+            // ✅ chỉ nhận ảnh
+            if (!(ext.equals(".png") || ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".webp"))) continue;
+
+            String newName = UUID.randomUUID() + ext;
+
+            String uploadDir = req.getServletContext().getRealPath(folder);
+            File dir = new File(uploadDir);
+            if (!dir.exists()) dir.mkdirs();
+
+            part.write(uploadDir + File.separator + newName);
+
+            urls.add(folder.substring(1) + "/" + newName);
+        }
+
+        return urls.isEmpty() ? null : urls;
     }
 
     private String trim(String s) {

@@ -2,6 +2,7 @@ package com.generatorproject.controller.it.product;
 
 import com.generatorproject.dao.BrandDAO;
 import com.generatorproject.dao.CategoryDAO;
+import com.generatorproject.dao.ProductImageDAO;
 import com.generatorproject.dao.ProductModelDAO;
 import com.generatorproject.model.Brand;
 import com.generatorproject.model.Category;
@@ -15,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.Normalizer;
-import java.util.List;
+import java.util.*;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ public class ProductModelAddController extends HttpServlet {
     private final ProductModelDAO productModelDAO = new ProductModelDAO();
     private final BrandDAO brandDAO = new BrandDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
+    private final ProductImageDAO productImageDAO = new ProductImageDAO(); // ✅ thêm
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -65,11 +67,12 @@ public class ProductModelAddController extends HttpServlet {
 
         if (slug == null && name != null) slug = toSlug(name);
 
-        // ✅ Upload IMAGE (optional)
-        String imageUrl = saveUploadFile(req, "imageFile", "/uploads/product-models", false);
+        // ✅ Upload NHIỀU ảnh (optional) - name="imageFiles" multiple
+        List<String> imageUrls = saveUploadFiles(req, "imageFiles", "/uploads/product-models");
 
-        // ✅ Upload MANUAL PDF (optional)
-        String manualUrl = null; // ✅ PDF sẽ xuất động, không lưu file
+        // ✅ ảnh đại diện lưu vào product_models.image_url (lấy ảnh đầu tiên)
+        String thumbnail = (imageUrls != null && !imageUrls.isEmpty()) ? imageUrls.get(0) : null;
+
         // validate
         String error = null;
         if (name == null) error = "Tên không được để trống";
@@ -87,7 +90,7 @@ public class ProductModelAddController extends HttpServlet {
             return;
         }
 
-        // optional: check trùng tên
+        // check trùng tên
         ProductModel existed = productModelDAO.findByName(name);
         if (existed != null) {
             req.setAttribute("error", "Tên mẫu đã tồn tại!");
@@ -104,47 +107,73 @@ public class ProductModelAddController extends HttpServlet {
                 .setBrandId(brandId)
                 .setCategoryId(categoryId)
                 .setOrigin(origin)
-                .setFuelType(fuelType)      // DIESEL/GASOLINE/OTHER
-                .setPower(power)            // decimal(10,2)
+                .setFuelType(fuelType)
+                .setPower(power)
                 .setDescription(description)
                 .setSpecifications(specifications)
-                .setManualUrl(manualUrl)    // ✅ lưu path PDF
-                .setImageUrl(imageUrl)
-                .setStatus(status)          // ACTIVE/INACTIVE/COMING_SOON
+                .setManualUrl(null)
+                .setImageUrl(thumbnail)   // ✅ ảnh đại diện (optional)
+                .setStatus(status)
                 .build();
 
-        productModelDAO.insertProductModel(pm);
+        // ✅ insert product_models, lấy id
+        Long newId = productModelDAO.insertProductModel(pm);
+        if (newId == null) {
+            req.setAttribute("error", "Lỗi khi lưu sản phẩm (không lấy được ID)!");
+            req.setAttribute("brands", brandDAO.getAllBrands());
+            req.setAttribute("categories", categoryDAO.getAllCategories());
+            req.setAttribute("preBrandId", brandId);
+            req.getRequestDispatcher("/views/it/product/add.jsp").forward(req, resp);
+            return;
+        }
+
+        int modelId = newId.intValue();
+
+        // ✅ lưu N ảnh vào product_images
+        if (imageUrls != null) {
+            for (String url : imageUrls) {
+                productImageDAO.insertImage(modelId, url);
+            }
+        }
 
         resp.sendRedirect(req.getContextPath() + "/it/products");
     }
 
     // ================= helpers =================
 
-    private String saveUploadFile(HttpServletRequest req, String partName, String folder, boolean pdfOnly)
+    // ✅ upload nhiều file ảnh
+    private List<String> saveUploadFiles(HttpServletRequest req, String partName, String folder)
             throws IOException, ServletException {
 
-        Part part = req.getPart(partName);
-        if (part == null || part.getSize() == 0) return null;
+        List<String> urls = new ArrayList<>();
 
-        String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-        String ext = "";
-        int dot = original.lastIndexOf('.');
-        if (dot >= 0) ext = original.substring(dot).toLowerCase();
+        for (Part part : req.getParts()) {
+            if (!partName.equals(part.getName())) continue;
+            if (part.getSize() == 0) continue;
 
-        if (pdfOnly) {
-            if (!".pdf".equals(ext)) return null; // chặn file không phải pdf
+            String original = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+            String ext = "";
+            int dot = original.lastIndexOf('.');
+            if (dot >= 0) ext = original.substring(dot).toLowerCase();
+
+            // ✅ chỉ nhận ảnh
+            if (!(ext.equals(".png") || ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".webp"))) {
+                continue;
+            }
+
+            String newName = UUID.randomUUID() + ext;
+
+            String uploadDir = req.getServletContext().getRealPath(folder);
+            File dir = new File(uploadDir);
+            if (!dir.exists()) dir.mkdirs();
+
+            part.write(uploadDir + File.separator + newName);
+
+            // path tương đối lưu DB
+            urls.add(folder.substring(1) + "/" + newName); // bỏ dấu "/" đầu
         }
 
-        String newName = UUID.randomUUID() + ext;
-
-        String uploadDir = req.getServletContext().getRealPath(folder);
-        File dir = new File(uploadDir);
-        if (!dir.exists()) dir.mkdirs();
-
-        part.write(uploadDir + File.separator + newName);
-
-        // path tương đối lưu DB
-        return folder.substring(1) + "/" + newName; // bỏ dấu / đầu
+        return urls.isEmpty() ? null : urls;
     }
 
     private String trim(String s) {
