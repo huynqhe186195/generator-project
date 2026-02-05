@@ -29,7 +29,7 @@
         <a class="navbar-brand" href="#">GenCMS - Manager</a>
         <div class="ms-auto d-flex align-items-center text-white">
             <span class="me-3">Xin chào, <strong>${sessionScope.USERMODEL.fullName}</strong></span>
-            <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-light btn-sm">Đăng xuất</a>
+            <a href="${pageContext.request.contextPath}/account/logout" class="btn btn-outline-light btn-sm">Đăng xuất</a>
         </div>
     </nav>
 
@@ -49,6 +49,12 @@
                 <li class="${pageContext.request.requestURI.contains('contract') ? 'active' : ''}">
                     <a href="${pageContext.request.contextPath}/manager/contracts">
                         <i class="fa fa-file-contract me-2"></i> Hợp đồng
+                    </a>
+                </li>
+
+                <li class="${pageContext.request.requestURI.contains('/manager/requests') ? 'active' : ''}">
+                    <a href="${pageContext.request.contextPath}/manager/requests">
+                        <i class="fa fa-paper-plane me-2"></i> Gửi Yêu cầu (Admin)
                     </a>
                 </li>
 

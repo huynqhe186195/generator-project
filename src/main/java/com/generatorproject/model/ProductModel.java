@@ -3,86 +3,43 @@ package com.generatorproject.model;
 import java.sql.Timestamp;
 
 public class ProductModel {
-    private Long id;
+    private int id;
     private String name;
     private String slug;
-    private Integer brandId;
-    private Integer categoryId;
+    private int brandId;
+    private int categoryId;
     private String origin;
-    private String fuelType;   // 'DIESEL','GASOLINE','OTHER'
-    private Double power;      // kVA
+    private String fuelType;
+    private Double power;
     private String description;
     private String specifications;
     private String manualUrl;
     private String imageUrl;
     private Timestamp createdAt;
-    private String status;     // 'ACTIVE','INACTIVE','COMING_SOON'
+    private String status;
 
-    // Optional: embed Brand object (nếu bạn muốn)
-    private Brand brand;
-
-    private ProductModel(Builder b) {
-        this.id = b.id;
-        this.name = b.name;
-        this.slug = b.slug;
-        this.brandId = b.brandId;
-        this.categoryId = b.categoryId;
-        this.origin = b.origin;
-        this.fuelType = b.fuelType;
-        this.power = b.power;
-        this.description = b.description;
-        this.specifications = b.specifications;
-        this.manualUrl = b.manualUrl;
-        this.imageUrl = b.imageUrl;
-        this.createdAt = b.createdAt;
-        this.status = b.status;
-        this.brand = b.brand;
+    private ProductModel(Builder builder) {
+        this.id = builder.id;
+        this.name = builder.name;
+        this.slug = builder.slug;
+        this.brandId = builder.brandId;
+        this.categoryId = builder.categoryId;
+        this.origin = builder.origin;
+        this.fuelType = builder.fuelType;
+        this.power = builder.power;
+        this.description = builder.description;
+        this.specifications = builder.specifications;
+        this.manualUrl = builder.manualUrl;
+        this.imageUrl = builder.imageUrl;
+        this.createdAt = builder.createdAt;
+        this.status = builder.status;
     }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private Long id;
-        private String name;
-        private String slug;
-        private Integer brandId;
-        private Integer categoryId;
-        private String origin;
-        private String fuelType;
-        private Double power;
-        private String description;
-        private String specifications;
-        private String manualUrl;
-        private String imageUrl;
-        private Timestamp createdAt;
-        private String status;
-        private Brand brand;
-
-        public Builder id(Long id) { this.id = id; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public Builder slug(String slug) { this.slug = slug; return this; }
-        public Builder brandId(Integer brandId) { this.brandId = brandId; return this; }
-        public Builder categoryId(Integer categoryId) { this.categoryId = categoryId; return this; }
-        public Builder origin(String origin) { this.origin = origin; return this; }
-        public Builder fuelType(String fuelType) { this.fuelType = fuelType; return this; }
-        public Builder power(Double power) { this.power = power; return this; }
-        public Builder description(String description) { this.description = description; return this; }
-        public Builder specifications(String specifications) { this.specifications = specifications; return this; }
-        public Builder manualUrl(String manualUrl) { this.manualUrl = manualUrl; return this; }
-        public Builder imageUrl(String imageUrl) { this.imageUrl = imageUrl; return this; }
-        public Builder createdAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
-        public Builder status(String status) { this.status = status; return this; }
-        public Builder brand(Brand brand) { this.brand = brand; return this; }
-
-        public ProductModel build() { return new ProductModel(this); }
-    }
-
-    // Getters (setters không bắt buộc nếu dùng builder)
-    public Long getId() { return id; }
+    public int getId() { return id; }
     public String getName() { return name; }
     public String getSlug() { return slug; }
-    public Integer getBrandId() { return brandId; }
-    public Integer getCategoryId() { return categoryId; }
+    public int getBrandId() { return brandId; }
+    public int getCategoryId() { return categoryId; }
     public String getOrigin() { return origin; }
     public String getFuelType() { return fuelType; }
     public Double getPower() { return power; }
@@ -92,5 +49,45 @@ public class ProductModel {
     public String getImageUrl() { return imageUrl; }
     public Timestamp getCreatedAt() { return createdAt; }
     public String getStatus() { return status; }
-    public Brand getBrand() { return brand; }
+
+    public void setId(int id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+
+    public static class Builder {
+        private int id;
+        private String name;
+        private String slug;
+        private int brandId;
+        private int categoryId;
+        private String origin;
+        private String fuelType;
+        private Double power;
+        private String description;
+        private String specifications;
+        private String manualUrl;
+        private String imageUrl;
+        private Timestamp createdAt;
+        private String status;
+
+        public Builder() {}
+
+        public Builder setId(int id) { this.id = id; return this; }
+        public Builder setName(String name) { this.name = name; return this; }
+        public Builder setSlug(String slug) { this.slug = slug; return this; }
+        public Builder setBrandId(int brandId) { this.brandId = brandId; return this; }
+        public Builder setCategoryId(int categoryId) { this.categoryId = categoryId; return this; }
+        public Builder setOrigin(String origin) { this.origin = origin; return this; }
+        public Builder setFuelType(String fuelType) { this.fuelType = fuelType; return this; }
+        public Builder setPower(Double power) { this.power = power; return this; }
+        public Builder setDescription(String description) { this.description = description; return this; }
+        public Builder setSpecifications(String specifications) { this.specifications = specifications; return this; }
+        public Builder setManualUrl(String manualUrl) { this.manualUrl = manualUrl; return this; }
+        public Builder setImageUrl(String imageUrl) { this.imageUrl = imageUrl; return this; }
+        public Builder setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
+        public Builder setStatus(String status) { this.status = status; return this; }
+
+        public ProductModel build() {
+            return new ProductModel(this);
+        }
+    }
 }

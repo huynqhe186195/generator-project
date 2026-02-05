@@ -10,8 +10,30 @@
         <h2 class="mb-4 text-primary fw-bold">Quản lý Hợp đồng Bảo trì</h2>
 
         <c:if test="${not empty errorMessage}">
-            <div class="alert alert-danger alert-dismissible fade show">
-                <i class="fa fa-exclamation-circle"></i> ${errorMessage}
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-danger">
+                <h5 class="alert-heading fs-6"><i class="fa fa-exclamation-triangle"></i> Có lỗi xảy ra!</h5>
+                <p class="mb-0">${errorMessage}</p>
+
+                <c:if test="${not empty missingEmail}">
+                    <hr>
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                        <span>
+                            <i class="fa fa-user-times"></i> Email <strong>${missingEmail}</strong> chưa có tài khoản.
+                            Bạn có muốn gửi yêu cầu Admin tạo mới không?
+                        </span>
+
+                        <form action="contracts" method="post" class="d-inline">
+                            <input type="hidden" name="action" value="request_account">
+                            <input type="hidden" name="email" value="${missingEmail}">
+                            <input type="hidden" name="fullName" value="${param.fullName != null ? param.fullName : 'Khách hàng mới'}">
+
+                            <button type="submit" class="btn btn-warning btn-sm fw-bold text-dark shadow-sm">
+                                <i class="fa fa-paper-plane"></i> Gửi yêu cầu ngay
+                            </button>
+                        </form>
+                    </div>
+                </c:if>
+
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </c:if>
@@ -26,6 +48,20 @@
         <c:if test="${param.msg == 'create_success'}">
             <div class="alert alert-success alert-dismissible fade show">
                 <i class="fa fa-check-circle"></i> Tạo mới hợp đồng thành công!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+
+        <c:if test="${param.msg == 'request_success'}">
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fa fa-check-circle"></i> Đã gửi yêu cầu tạo tài khoản thành công! Vui lòng chờ Admin duyệt.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+
+        <c:if test="${param.msg == 'request_duplicate'}">
+            <div class="alert alert-warning alert-dismissible fade show">
+                <i class="fa fa-clock"></i> Yêu cầu cho email này đang chờ xử lý. Không cần gửi lại.
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </c:if>

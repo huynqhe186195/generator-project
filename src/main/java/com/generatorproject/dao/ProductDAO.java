@@ -284,12 +284,19 @@ public class ProductDAO extends GenericDAO<Product> {
     }
 
     public void update(Product product) {
-        String sql = "UPDATE products SET customer_id = ?, status = ?, current_location = ?, updated_at = NOW() WHERE id = ?";
+        String sql = "UPDATE products SET serial_number = ?, manufacture_year = ?, current_location = ?, " +
+                "status = ?, total_running_hours = ?, customer_id = ?, purchase_date = ?, model_id = ?, updated_at = NOW() " +
+                "WHERE id = ?";
 
         update(sql,
-                product.getCustomerId(),
-                product.getStatus(),
+                product.getSerialNumber(),
+                product.getManufactureYear(),
                 product.getCurrentLocation(),
+                product.getStatus(),
+                product.getTotalRunningHours(),
+                product.getCustomerId(),
+                product.getPurchaseDate(),
+                product.getModelId(),
                 product.getId()
         );
     }
@@ -303,7 +310,8 @@ public class ProductDAO extends GenericDAO<Product> {
         StringBuilder sql = new StringBuilder("INSERT INTO products (");
         sql.append("serial_number, customer_id, status, total_running_hours, ");
         sql.append("manufacture_year, purchase_date, current_location, model_id, created_at");
-        sql.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        sql.append(") VALUES (?, ?," +
+                " ?, ?, ?, ?, ?, ?, NOW())");
 
         return insert(sql.toString(),
                 product.getSerialNumber(),
