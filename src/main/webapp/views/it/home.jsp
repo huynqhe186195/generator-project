@@ -1,12 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="sitemesh" uri="http://www.opensymphony.com/sitemesh/decorator" %>
 
 <sitemesh:title>IT Dashboard</sitemesh:title>
 
 <div class="container-fluid">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
-      <h4 class="mb-1">IT Dashboard</h4>
+      <div class="text-muted small">IT Dashboard</div>
       <div class="text-muted">Trang tổng quan quản trị hệ thống</div>
     </div>
     <div class="text-muted small">
@@ -16,24 +17,26 @@
   </div>
 
   <div class="row g-3 mb-3">
+    <!-- Máy / Products -->
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <div class="text-muted small">Sản phẩm</div>
+              <div class="text-muted small">Máy</div>
               <div class="fs-4 fw-bold">${requestScope.totalProducts}</div>
             </div>
-            <i class="fa fa-box-open fs-2 text-secondary"></i>
+            <i class="fa fa-laptop fs-2 text-secondary"></i>
           </div>
           <a class="btn btn-sm btn-outline-primary mt-3"
              href="${pageContext.request.contextPath}/it/products">
-            Quản lý sản phẩm
+            Quản lý máy
           </a>
         </div>
       </div>
     </div>
 
+    <!-- ✅ Danh mục / Categories -->
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
@@ -52,24 +55,26 @@
       </div>
     </div>
 
+    <!-- ✅ Thương hiệu / Brands (thay cho Người dùng) -->
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <div class="text-muted small">Người dùng</div>
-              <div class="fs-4 fw-bold">${requestScope.totalUsers}</div>
+              <div class="text-muted small">Thương hiệu</div>
+              <div class="fs-4 fw-bold">${requestScope.totalBrands}</div>
             </div>
-            <i class="fa fa-users-gear fs-2 text-secondary"></i>
+            <i class="fa fa-copyright fs-2 text-secondary"></i>
           </div>
           <a class="btn btn-sm btn-outline-primary mt-3"
-             href="${pageContext.request.contextPath}/it/users">
-            Quản lý người dùng
+             href="${pageContext.request.contextPath}/it/brands">
+            Quản lý brand
           </a>
         </div>
       </div>
     </div>
 
+    <!-- Cấu hình -->
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
@@ -89,25 +94,5 @@
     </div>
   </div>
 
-  <div class="card shadow-sm">
-    <div class="card-header bg-white">
-      <strong>Thông báo / Công việc gần đây</strong>
-    </div>
-    <div class="card-body">
-      <c:choose>
-        <c:when test="${not empty requestScope.recentActivities}">
-          <ul class="mb-0">
-            <c:forEach items="${requestScope.recentActivities}" var="a">
-              <li>
-                <span class="text-muted small">${a.time}</span> - ${a.content}
-              </li>
-            </c:forEach>
-          </ul>
-        </c:when>
-        <c:otherwise>
-          <div class="text-muted">Chưa có dữ liệu hoạt động gần đây.</div>
-        </c:otherwise>
-      </c:choose>
-    </div>
-  </div>
+  <!-- ✅ Bỏ hẳn phần Thông báo / Công việc gần đây -->
 </div>

@@ -9,17 +9,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><dec:title default="IT Dashboard" /> - GEN-CMS</title>
+    <title><dec:title default="IT Home" /> - GEN-CMS</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- dùng chung css admin để giống admin -->
     <link rel="stylesheet" href="<c:url value='/template/admin/css/admin-style.css'/>">
 
     <style>
         #wrapper { overflow-x: hidden; transition: all 0.3s; }
         #sidebar-wrapper { min-height: 100vh; margin-left: -15rem; transition: margin 0.25s ease-out; }
-        #sidebar-wrapper .sidebar-heading { padding: 0.875rem 1.25rem; font-size: 1.2rem; }
         #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
         #page-content-wrapper { width: 100%; transition: all 0.3s; }
 
@@ -28,6 +26,9 @@
             #page-content-wrapper { min-width: 0; width: 100%; }
             #wrapper.toggled #sidebar-wrapper { margin-left: -15rem; }
         }
+
+        /* nice hover */
+        #sidebar-wrapper .list-group-item:hover { background: rgba(255,255,255,0.08) !important; }
     </style>
 
     <dec:head />
@@ -38,16 +39,39 @@
 
     <!-- Sidebar -->
     <div class="border-end bg-dark text-white" id="sidebar-wrapper" style="width: 250px;">
-        <div class="sidebar-heading text-center py-4 fs-4 fw-bold text-warning border-bottom border-secondary">
+
+        <!-- IT Console quay về IT HOME -->
+        <a href="<c:url value='/it/home'/>"
+           class="text-center py-4 fs-4 fw-bold text-warning border-bottom border-secondary d-block text-decoration-none">
             <i class="fas fa-screwdriver-wrench"></i> IT Console
-        </div>
+        </a>
 
         <div class="list-group list-group-flush">
-            <!-- Tạm thời chỉ quản lý sản phẩm -->
+
+            <!-- Home -->
+            <a href="<c:url value='/it/home'/>"
+               class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <i class="fas fa-house me-2" style="width: 20px;"></i> Trang chủ
+            </a>
+
+            <!-- Products -->
             <a href="<c:url value='/it/products'/>"
                class="list-group-item list-group-item-action bg-transparent text-white p-3">
-                <i class="fas fa-box-open me-2" style="width: 20px;"></i> Quản lý sản phẩm
+                <i class="fas fa-box-open me-2" style="width: 20px;"></i> Quản lý máy
             </a>
+
+            <!-- ✅ Brands -->
+            <a href="<c:url value='/it/brands'/>"
+               class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <i class="fas fa-copyright me-2" style="width: 20px;"></i> Quản lý brand
+            </a>
+
+            <!-- ✅ Quản lý danh mục (category) -->
+            <a href="<c:url value='/it/categories'/>"
+               class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <i class="fas fa-tags me-2" style="width: 20px;"></i> Quản lý danh mục
+            </a>
+
         </div>
     </div>
 
@@ -56,7 +80,7 @@
 
         <!-- Topbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4">
-            <button class="btn btn-outline-secondary" id="sidebarToggle">
+            <button class="btn btn-outline-secondary" id="sidebarToggle" type="button">
                 <i class="fas fa-bars"></i>
             </button>
 
@@ -89,11 +113,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     window.addEventListener('DOMContentLoaded', () => {
-        const sidebarToggle = document.body.querySelector('#sidebarToggle');
+        const sidebarToggle = document.querySelector('#sidebarToggle');
         if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', (event) => {
-                event.preventDefault();
-                document.body.querySelector('#wrapper').classList.toggle('toggled');
+            sidebarToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector('#wrapper').classList.toggle('toggled');
             });
         }
     });
