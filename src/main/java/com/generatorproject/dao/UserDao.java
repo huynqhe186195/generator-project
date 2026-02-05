@@ -255,4 +255,6 @@ public class UserDao extends GenericDAO<Users> {
         String sql = "SELECT * FROM users WHERE status = 1 ORDER BY full_name";
         return query(sql, new UserMapper());
     }
+
+
 }

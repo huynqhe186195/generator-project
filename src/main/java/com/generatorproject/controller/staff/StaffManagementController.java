@@ -1,11 +1,9 @@
 package com.generatorproject.controller.staff;
 
+import com.generatorproject.model.Contract;
 import com.generatorproject.model.Incident;
 import com.generatorproject.model.Users;
-import com.generatorproject.services.IIncidentServices;
-import com.generatorproject.services.IUserServices;
-import com.generatorproject.services.IncidentServices;
-import com.generatorproject.services.UserServices;
+import com.generatorproject.services.*;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -21,9 +19,11 @@ import java.util.List;
 public class StaffManagementController extends HttpServlet {
     private final IIncidentServices incidentServices;
     private final IUserServices userServices;
+    private final IContractServices contractServices;
     public StaffManagementController(){
         incidentServices = new IncidentServices();
         userServices = new UserServices();
+        contractServices = new ContractServices();
     }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -84,9 +84,10 @@ public class StaffManagementController extends HttpServlet {
 
                 // Gọi Service tìm User theo ID (Bạn cần đảm bảo Service có hàm này)
                 Users user = userServices.findUserById(userId);
-
+                List<Contract> listContracts = contractServices.getContractByCustomerId(userId);
                 if (user != null) {
                     req.setAttribute("user", user);
+                    req.setAttribute("listContracts", listContracts);
                     req.getRequestDispatcher("/views/staff/user-information.jsp").forward(req, resp);
                 } else {
                     // Không tìm thấy -> Quay về trang danh sách hoặc báo lỗi
