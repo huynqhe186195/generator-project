@@ -55,7 +55,7 @@ public class AuthorizationFilter implements Filter {
                 : null;
 
         if (user == null) {
-            resp.sendRedirect(contextPath + "/login?message=not_login");
+            resp.sendRedirect(contextPath + "/account/login?message=not_login");
             return;
         }
 

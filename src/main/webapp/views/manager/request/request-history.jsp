@@ -7,7 +7,7 @@
 
 <body>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary"><i class="fa fa-paper-plane"></i> Yêu cầu gửi Admin</h2>
+        <h2 class="text-primary"><i class="fa fa-paper-plane"></i> Yêu cầu hệ thống</h2>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRequestModal">
             <i class="fa fa-plus-circle"></i> Tạo yêu cầu mới
         </button>

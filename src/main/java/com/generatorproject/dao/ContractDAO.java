@@ -1,7 +1,6 @@
 package com.generatorproject.dao;
 
 import com.generatorproject.mapper.ContractMapper;
-import com.generatorproject.mapper.ProductMapper;
 import com.generatorproject.model.Contract;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.ProductModel;
@@ -20,9 +19,9 @@ import java.util.regex.Pattern;
 
 public class ContractDAO extends GenericDAO<Contract> {
 
-    private UserDao userDao;
-    private ProductDAO productDAO;
-    private ProductModelDAO productModelDAO;
+    private final UserDao userDao;
+    private final ProductDAO productDAO;
+    private final ProductModelDAO productModelDAO;
 
     public ContractDAO(){
         userDao = new UserDao();
@@ -66,15 +65,23 @@ public class ContractDAO extends GenericDAO<Contract> {
         return results.isEmpty() ? null : results.get(0);
     }
 
-    //Tìm kiếm theo ID nhưng có JOIN để lấy Tên khách & Serial (Dùng cho trang chi tiết)
     public Contract findByIdWithDetails(Long id) {
-        String sql = "SELECT c.*, u.full_name, p.serial_number " +
+        String sql = "SELECT c.*, u.full_name, " +
+                "p.serial_number, p.manufacture_year, " +
+                "pm.name AS model_name " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
                 "JOIN products p ON c.product_id = p.id " +
+                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
                 "WHERE c.id = ?";
+
         List<Contract> results = query(sql, new ContractMapper(), id);
-        return results.isEmpty() ? null : results.get(0);
+
+        if (results == null || results.isEmpty()) {
+            return null;
+        }
+
+        return results.get(0);
     }
 
     public List<Contract> searchAndFilter(String keyword, String status) {
@@ -87,7 +94,6 @@ public class ContractDAO extends GenericDAO<Contract> {
 
         List<Object> params = new ArrayList<>();
 
-        // Logic tìm kiếm theo từ khóa (Số HĐ hoặc Tên khách hoặc Serial máy)
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (c.contract_number LIKE ? OR u.full_name LIKE ? OR p.serial_number LIKE ?) ");
             String likeQuery = "%" + keyword.trim() + "%";
@@ -96,7 +102,6 @@ public class ContractDAO extends GenericDAO<Contract> {
             params.add(likeQuery);
         }
 
-        // Logic lọc theo trạng thái (ACTIVE, EXPIRED...)
         if (status != null && !status.trim().isEmpty()) {
             sql.append("AND c.status = ? ");
             params.add(status);
@@ -104,11 +109,9 @@ public class ContractDAO extends GenericDAO<Contract> {
 
         sql.append("ORDER BY c.created_at DESC");
 
-        // Chuyển List params thành mảng Object[] để truyền vào GenericDAO
         return query(sql.toString(), new ContractMapper(), params.toArray());
     }
 
-    // 6. Kiểm tra số hợp đồng đã tồn tại chưa (Dùng cho Import)
     public boolean isContractNumberExists(String contractNumber) {
         String sql = "SELECT count(*) FROM contracts WHERE contract_number = ?";
         int count = count(sql, contractNumber);
@@ -149,7 +152,6 @@ public class ContractDAO extends GenericDAO<Contract> {
 
             if (text.isEmpty()) continue;
 
-            // Xác định vùng Bên A / Bên B để lấy tên đại diện cho đúng
             String lowerText = text.toLowerCase();
             if (lowerText.contains("bên a") || lowerText.contains("bên mua")) {
                 isSectionA = true;
@@ -157,9 +159,7 @@ public class ContractDAO extends GenericDAO<Contract> {
                 isSectionA = false;
             }
 
-            // A. SỐ HỢP ĐỒNG (Pattern: Số : HD-2026...)
             if (contractNum == null && (text.contains("Số") || text.contains("No"))) {
-                // Regex mới: Chỉ lấy chữ, số và dấu gạch ngang (Bỏ \\/ đi)
                 Pattern p = Pattern.compile("Số\\s*[:.]?\\s*([A-Za-z0-9\\-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher m = p.matcher(text);
                 if (m.find()) {
@@ -167,26 +167,21 @@ public class ContractDAO extends GenericDAO<Contract> {
                 }
             }
 
-            // B. TÊN NGƯỜI MUA (Chỉ lấy trong vùng Bên A)
-            // Pattern: "Đại diện: ông huy., giám đốc." -> Lấy "huy"
             if (isSectionA && buyerName == null && text.contains("Đại diện")) {
                 Pattern p = Pattern.compile("Đại diện\\s*[:.]?\\s*(?:ông|bà)?\\s*([^.,\\-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher m = p.matcher(text);
                 if (m.find()) {
                     buyerName = m.group(1).trim();
-                    // Xử lý sạch tên (viết hoa chữ cái đầu)
                     buyerName = buyerName.substring(0, 1).toUpperCase() + buyerName.substring(1);
                 }
             }
 
-            // C. EMAIL (Lấy email đầu tiên tìm thấy trong phần Bên A)
             if (emailCustomer == null && isSectionA && (text.contains("@"))) {
                 Pattern p = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6})");
                 Matcher m = p.matcher(text);
                 if (m.find()) emailCustomer = m.group(1).trim();
             }
 
-            // D. TÊN MÁY PHÁT ĐIỆN
             // Pattern: "-Tên máy phát điện: Denyo DCA-25ESK"
             if (generatorName == null && text.toLowerCase().contains("tên máy")) {
                 Pattern p = Pattern.compile("Tên máy.*?[:.]\\s*(.*)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
@@ -194,7 +189,6 @@ public class ContractDAO extends GenericDAO<Contract> {
                 if (m.find()) generatorName = m.group(1).trim();
             }
 
-            // E. SỐ SERIAL
             if (serialNumber == null) {
                 Pattern p = Pattern.compile("(Số Serial|Serial|Số máy|S/N).*?[:.]\\s*([A-Za-z0-9\\-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher m = p.matcher(text);
@@ -204,7 +198,6 @@ public class ContractDAO extends GenericDAO<Contract> {
                 }
             }
 
-            // F. NGÀY MUA (Format yyyy-mm-dd trong file của bạn)
             if (purchaseDate == null && text.toLowerCase().contains("ngày mua")) {
                 // Regex bắt format: 2026-12-07
                 Pattern p = Pattern.compile("(\\d{4}-\\d{1,2}-\\d{1,2})");
@@ -218,7 +211,6 @@ public class ContractDAO extends GenericDAO<Contract> {
                 }
             }
 
-            // G. NĂM SẢN XUẤT
             if (manufactureYear == null && text.toLowerCase().contains("năm sản xuất")) {
                 Pattern p = Pattern.compile("(\\d{4})");
                 Matcher m = p.matcher(text);
@@ -226,7 +218,7 @@ public class ContractDAO extends GenericDAO<Contract> {
             }
         }
 
-        // --- 3. VALIDATE DỮ LIỆU ---
+        // validate data
         if (contractNum == null || emailCustomer == null || serialNumber == null || generatorName == null) {
             throw new Exception("File thiếu thông tin! Cần có: Số HĐ, Email, Tên máy và Serial.");
         }
@@ -244,17 +236,13 @@ public class ContractDAO extends GenericDAO<Contract> {
         System.out.println("Máy: " + generatorName + " - SerialNumber: " + serialNumber);
         System.out.println("Mua ngày: " + purchaseDate);
 
-        // --- 4. XỬ LÝ DATABASE ---
-
         // Check trùng số HĐ
         if (findByContractNumber(contractNum) != null) {
             throw new Exception("Số hợp đồng '" + contractNum + "' đã tồn tại!");
         }
 
-        // Check User (Nếu chưa có thì báo lỗi hoặc tự tạo tùy nghiệp vụ)
         Users customer = userDao.findByEmail(emailCustomer);
         if (customer == null) {
-            // Gợi ý: Có thể throw Exception báo user tạo tài khoản trước
             throw new Exception("Email '" + emailCustomer + "' chưa có tài khoản hệ thống.");
         }
         // Nếu muốn update tên thật cho khách dựa trên hợp đồng:
@@ -322,7 +310,7 @@ public class ContractDAO extends GenericDAO<Contract> {
 
     public void delete(Long id) {
         String sql = "DELETE FROM contracts WHERE id = ?";
-        update(sql, id); // Sử dụng hàm update() của GenericDAO
+        update(sql, id);
     }
 
     public List<Contract> findByProductId(Long productId) {

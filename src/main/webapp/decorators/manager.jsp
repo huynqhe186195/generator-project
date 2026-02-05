@@ -54,7 +54,7 @@
 
                 <li class="${pageContext.request.requestURI.contains('/manager/requests') ? 'active' : ''}">
                     <a href="${pageContext.request.contextPath}/manager/requests">
-                        <i class="fa fa-paper-plane me-2"></i> Gửi Yêu cầu (Admin)
+                        <i class="fa fa-paper-plane me-2"></i> Gửi Yêu cầu
                     </a>
                 </li>
 
