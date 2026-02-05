@@ -25,7 +25,6 @@
 </head>
 <body>
 
-<<<<<<< HEAD
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
     <a class="navbar-brand" href="#">GenCMS - Manager</a>
     <div class="ms-auto d-flex align-items-center text-white">
@@ -38,13 +37,6 @@
     <nav id="sidebar">
         <div class="sidebar-header">
             <h3><i class="fa fa-cogs"></i> Quản lý</h3>
-=======
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
-        <a class="navbar-brand" href="#">GenCMS - Manager</a>
-        <div class="ms-auto d-flex align-items-center text-white">
-            <span class="me-3">Xin chào, <strong>${sessionScope.USERMODEL.fullName}</strong></span>
-            <a href="${pageContext.request.contextPath}/account/logout" class="btn btn-outline-light btn-sm">Đăng xuất</a>
->>>>>>> main
         </div>
 
         <ul class="list-unstyled components">
@@ -80,53 +72,8 @@
         </ul>
     </nav>
 
-<<<<<<< HEAD
     <div id="content">
         <s:body />
-=======
-    <div class="wrapper">
-        <nav id="sidebar">
-            <div class="sidebar-header">
-                <h3><i class="fa fa-cogs"></i> Quản lý</h3>
-            </div>
-
-            <ul class="list-unstyled components">
-                <li class="${pageContext.request.requestURI.endsWith('/manager/home.jsp') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/home">
-                        <i class="fa fa-tachometer-alt me-2"></i> Tổng quan
-                    </a>
-                </li>
-
-                <li class="${pageContext.request.requestURI.contains('contract') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/contracts">
-                        <i class="fa fa-file-contract me-2"></i> Hợp đồng
-                    </a>
-                </li>
-
-                <li class="${pageContext.request.requestURI.contains('/manager/requests') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/requests">
-                        <i class="fa fa-paper-plane me-2"></i> Gửi Yêu cầu (Admin)
-                    </a>
-                </li>
-
-                <li>
-                    <a href="${pageContext.request.contextPath}/manager/assets">
-                        <i class="fa fa-server me-2"></i> Tài sản Khách hàng
-                    </a>
-                </li>
-
-                <li>
-                    <a href="${pageContext.request.contextPath}/manager/reports">
-                        <i class="fa fa-chart-line me-2"></i> Báo cáo
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <div id="content">
-            <s:body />
-        </div>
->>>>>>> main
     </div>
 </div>
 
