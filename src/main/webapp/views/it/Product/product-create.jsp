@@ -7,7 +7,7 @@
 
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="text-secondary">Thêm sản phẩm</h3>
-    <a class="btn btn-outline-secondary" href="<c:url value='/admin/product/product-list'/>">Quay lại</a>
+    <a class="btn btn-outline-secondary" href="<c:url value='/it/product/product-list'/>">Quay lại</a>
   </div>
 
   <c:if test="${not empty error}">
@@ -20,7 +20,7 @@
     <div class="card-body">
 
       <form method="post"
-            action="<c:url value='/admin/product/create'/>"
+            action="<c:url value='/it/product/create'/>"
             class="row g-3"
             enctype="multipart/form-data">
 
@@ -256,7 +256,7 @@
 
         <!-- ACTION -->
         <div class="col-12 d-flex justify-content-end gap-2 mt-4">
-          <a class="btn btn-outline-secondary" href="<c:url value='/admin/product/product-list'/>">Hủy</a>
+          <a class="btn btn-outline-secondary" href="<c:url value='/it/product/product-list'/>">Hủy</a>
           <button class="btn btn-primary" type="submit">Lưu sản phẩm</button>
         </div>
 
@@ -318,7 +318,7 @@
       fd.append("name", name);
       fd.append("slug", slug);
 
-      const res = await fetch("<c:url value='/admin/brand/create-ajax'/>", {
+      const res = await fetch("<c:url value='/it/brand/create-ajax'/>", {
         method: "POST",
         body: fd
       });

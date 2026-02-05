@@ -14,6 +14,7 @@
 
         <div class="d-flex gap-2">
             <a class="btn btn-outline-secondary" href="<c:url value='/admin/product/product-list'/>">
+            <a class="btn btn-outline-secondary" href="<c:url value='/admin/product/product-list'/>">
                 <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
             </a>
 
