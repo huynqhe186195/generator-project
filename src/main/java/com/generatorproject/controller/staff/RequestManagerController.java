@@ -65,7 +65,7 @@ public class RequestManagerController extends HttpServlet {
             sysReq.setStatus("WAITING_MANAGER"); // Chuyển trạng thái sang Chờ Manager duyệt
             sysReq.setReceiverRole("Manager");
             sysReq.setSenderId((long)user.getId());
-            sysReq.setRequestType("WAITING_APPROVE");
+
 
 
 
