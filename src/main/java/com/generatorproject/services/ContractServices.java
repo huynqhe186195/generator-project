@@ -59,4 +59,19 @@ public class ContractServices implements IContractServices{
     public List<Contract> getContractByCustomerId(int id) {
         return contractDAO.getContractByCustomerId(id);
     }
+
+    @Override
+    public int countByStatus(String status) {
+        return contractDAO.countByStatus(status);
+    }
+
+    @Override
+    public int countExpiringSoon(int days) {
+        return contractDAO.countExpiringSoon(days);
+    }
+
+    @Override
+    public List<Contract> findRecent(int limit) {
+        return contractDAO.findRecent(limit);
+    }
 }

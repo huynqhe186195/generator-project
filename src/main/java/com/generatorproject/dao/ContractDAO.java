@@ -321,4 +321,29 @@ public class ContractDAO extends GenericDAO<Contract> {
         String sql = "SELECT * FROM contracts WHERE customer_id = ?";
         return query(sql, new ContractMapper(), id);
     }
+    //Phần tổng quan
+    public int countByStatus(String status) {
+        String sql = "SELECT COUNT(*) FROM contracts WHERE status = ?";
+        return count(sql, status);
+    }
+
+    // 2. Đếm hợp đồng sắp hết hạn trong X ngày
+    public int countExpiringSoon(int days) {
+        // Logic: Ngày kết thúc nằm trong khoảng từ (Hôm nay) đến (Hôm nay + days)
+        String sql = "SELECT COUNT(*) FROM contracts " +
+                "WHERE status = 'ACTIVE' " +
+                "AND end_date BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL ? DAY)";
+        return count(sql, days);
+    }
+
+    public List<Contract> findRecent(int limit) {
+        String sql = "SELECT c.*, u.full_name, " +
+                "p.serial_number, pm.name AS model_name " +
+                "FROM contracts c " +
+                "JOIN users u ON c.customer_id = u.id " +
+                "JOIN products p ON c.product_id = p.id " +
+                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
+                "ORDER BY c.created_at DESC LIMIT ?";
+        return query(sql, new ContractMapper(), limit);
+    }
 }
