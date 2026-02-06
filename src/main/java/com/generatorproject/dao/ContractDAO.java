@@ -329,4 +329,8 @@ public class ContractDAO extends GenericDAO<Contract> {
         String sql = "SELECT * FROM contracts WHERE product_id = ?";
         return query(sql, new ContractMapper(), productId);
     }
+    public List<Contract> getContractByCustomerId(int id){
+        String sql = "SELECT * FROM contracts WHERE customer_id = ?";
+        return query(sql, new ContractMapper(), id);
+    }
 }

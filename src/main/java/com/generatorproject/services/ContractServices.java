@@ -54,4 +54,9 @@ public class ContractServices implements IContractServices{
 
     @Override
     public void deleteContract(Long id) {contractDAO.delete(id);}
+
+    @Override
+    public List<Contract> getContractByCustomerId(int id) {
+        return contractDAO.getContractByCustomerId(id);
+    }
 }
