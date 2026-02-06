@@ -23,14 +23,15 @@ public class ContractDAO extends GenericDAO<Contract> {
     private final ProductDAO productDAO;
     private final ProductModelDAO productModelDAO;
 
-    public ContractDAO(){
+    public ContractDAO() {
         userDao = new UserDao();
         productDAO = new ProductDAO();
         productModelDAO = new ProductModelDAO();
     }
 
     public Long save(Contract contract) {
-        String sql = "INSERT INTO contracts (contract_number, customer_id, product_id, start_date, end_date, status, manager_id, created_at) " +
+        String sql = "INSERT INTO contracts (contract_number, customer_id, product_id, start_date, end_date, status, manager_id, created_at) "
+                +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
         return insert(sql,
                 contract.getContractNumber(),
@@ -39,8 +40,7 @@ public class ContractDAO extends GenericDAO<Contract> {
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
-                contract.getManagerId()
-        );
+                contract.getManagerId());
     }
 
     public void update(Contract contract) {
@@ -55,8 +55,7 @@ public class ContractDAO extends GenericDAO<Contract> {
                 contract.getEndDate(),
                 contract.getStatus(),
                 contract.getManagerId(),
-                contract.getId()
-        );
+                contract.getId());
     }
 
     public Contract findById(Long id) {
@@ -140,17 +139,18 @@ public class ContractDAO extends GenericDAO<Contract> {
         Integer manufactureYear = null;
         Date purchaseDate = null;
 
-        //Read file word
+        // Read file word
         XWPFDocument document = new XWPFDocument(fileContent);
         List<XWPFParagraph> paragraphs = document.getParagraphs();
 
-        //Note reading buyer
+        // Note reading buyer
         boolean isSectionA = false;
 
         for (XWPFParagraph para : paragraphs) {
             String text = para.getText();
 
-            if (text.isEmpty()) continue;
+            if (text.isEmpty())
+                continue;
 
             String lowerText = text.toLowerCase();
             if (lowerText.contains("bên a") || lowerText.contains("bên mua")) {
@@ -160,7 +160,8 @@ public class ContractDAO extends GenericDAO<Contract> {
             }
 
             if (contractNum == null && (text.contains("Số") || text.contains("No"))) {
-                Pattern p = Pattern.compile("Số\\s*[:.]?\\s*([A-Za-z0-9\\-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                Pattern p = Pattern.compile("Số\\s*[:.]?\\s*([A-Za-z0-9\\-]+)",
+                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher m = p.matcher(text);
                 if (m.find()) {
                     contractNum = m.group(1).trim();
@@ -168,7 +169,8 @@ public class ContractDAO extends GenericDAO<Contract> {
             }
 
             if (isSectionA && buyerName == null && text.contains("Đại diện")) {
-                Pattern p = Pattern.compile("Đại diện\\s*[:.]?\\s*(?:ông|bà)?\\s*([^.,\\-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                Pattern p = Pattern.compile("Đại diện\\s*[:.]?\\s*(?:ông|bà)?\\s*([^.,\\-]+)",
+                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher m = p.matcher(text);
                 if (m.find()) {
                     buyerName = m.group(1).trim();
@@ -179,22 +181,26 @@ public class ContractDAO extends GenericDAO<Contract> {
             if (emailCustomer == null && isSectionA && (text.contains("@"))) {
                 Pattern p = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6})");
                 Matcher m = p.matcher(text);
-                if (m.find()) emailCustomer = m.group(1).trim();
+                if (m.find())
+                    emailCustomer = m.group(1).trim();
             }
 
             // Pattern: "-Tên máy phát điện: Denyo DCA-25ESK"
             if (generatorName == null && text.toLowerCase().contains("tên máy")) {
                 Pattern p = Pattern.compile("Tên máy.*?[:.]\\s*(.*)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher m = p.matcher(text);
-                if (m.find()) generatorName = m.group(1).trim();
+                if (m.find())
+                    generatorName = m.group(1).trim();
             }
 
             if (serialNumber == null) {
-                Pattern p = Pattern.compile("(Số Serial|Serial|Số máy|S/N).*?[:.]\\s*([A-Za-z0-9\\-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                Pattern p = Pattern.compile("(Số Serial|Serial|Số máy|S/N).*?[:.]\\s*([A-Za-z0-9\\-]+)",
+                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
                 Matcher m = p.matcher(text);
                 if (m.find()) {
                     serialNumber = m.group(2).trim();
-                    if (serialNumber.endsWith("-")) serialNumber = serialNumber.substring(0, serialNumber.length() - 1);
+                    if (serialNumber.endsWith("-"))
+                        serialNumber = serialNumber.substring(0, serialNumber.length() - 1);
                 }
             }
 
@@ -207,14 +213,17 @@ public class ContractDAO extends GenericDAO<Contract> {
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                         java.util.Date parsed = sdf.parse(m.group(1));
                         purchaseDate = new java.sql.Date(parsed.getTime());
-                    } catch (Exception e) { System.out.println("Lỗi ngày tháng: " + e.getMessage()); }
+                    } catch (Exception e) {
+                        System.out.println("Lỗi ngày tháng: " + e.getMessage());
+                    }
                 }
             }
 
             if (manufactureYear == null && text.toLowerCase().contains("năm sản xuất")) {
                 Pattern p = Pattern.compile("(\\d{4})");
                 Matcher m = p.matcher(text);
-                if (m.find()) manufactureYear = Integer.parseInt(m.group(1));
+                if (m.find())
+                    manufactureYear = Integer.parseInt(m.group(1));
             }
         }
 
@@ -226,7 +235,8 @@ public class ContractDAO extends GenericDAO<Contract> {
         ProductModel model = productModelDAO.findByName(generatorName);
 
         if (model == null) {
-            throw new Exception("Lỗi Import: Dòng máy '" + generatorName + "' chưa có trong danh mục hệ thống. Vui lòng tạo Model này trước!");
+            throw new Exception("Lỗi Import: Dòng máy '" + generatorName
+                    + "' chưa có trong danh mục hệ thống. Vui lòng tạo Model này trước!");
         }
 
         // In ra console để debug xem lấy đúng chưa
@@ -261,7 +271,8 @@ public class ContractDAO extends GenericDAO<Contract> {
             product.setModelName(generatorName != null ? generatorName : "Máy phát điện (Import)");
         } else {
             // Máy cũ -> Check quyền sở hữu
-            if (product.getCustomerId() != null && product.getCustomerId() > 0 && product.getCustomerId() != customer.getId()) {
+            if (product.getCustomerId() != null && product.getCustomerId() > 0
+                    && product.getCustomerId() != customer.getId()) {
                 throw new Exception("XUNG ĐỘT: Máy " + serialNumber + " đang thuộc về khách hàng khác!");
             }
             // Update lại tên model nếu trong file có thông tin chi tiết hơn
@@ -277,8 +288,10 @@ public class ContractDAO extends GenericDAO<Contract> {
         product.setCustomerId((long) customer.getId());
         product.setStatus("RUNNING");
         product.setCurrentLocation(customer.getFullName()); // Gán vị trí máy theo tên khách
-        if (manufactureYear != null) product.setManufactureYear(manufactureYear);
-        if (purchaseDate != null) product.setPurchaseDate(purchaseDate);
+        if (manufactureYear != null)
+            product.setManufactureYear(manufactureYear);
+        if (purchaseDate != null)
+            product.setPurchaseDate(purchaseDate);
 
         // Lưu máy
         if (product.getId() == 0) {
@@ -317,11 +330,13 @@ public class ContractDAO extends GenericDAO<Contract> {
         String sql = "SELECT * FROM contracts WHERE product_id = ?";
         return query(sql, new ContractMapper(), productId);
     }
-    public List<Contract> getContractByCustomerId(int id){
+
+    public List<Contract> getContractByCustomerId(int id) {
         String sql = "SELECT * FROM contracts WHERE customer_id = ?";
         return query(sql, new ContractMapper(), id);
     }
-    //Phần tổng quan
+
+    // Phần tổng quan
     public int countByStatus(String status) {
         String sql = "SELECT COUNT(*) FROM contracts WHERE status = ?";
         return count(sql, status);
