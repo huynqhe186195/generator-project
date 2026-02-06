@@ -2,8 +2,10 @@ package com.generatorproject.dao;
 
 import com.generatorproject.mapper.ProductMapper;
 import com.generatorproject.mapper.RowMapper;
+import com.generatorproject.mapper.UserMapper;
 import com.generatorproject.model.Brand;
 import com.generatorproject.model.Product;
+import com.generatorproject.model.Users;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -323,5 +325,22 @@ public class ProductDAO extends GenericDAO<Product> {
                 product.getCurrentLocation(),
                 product.getModelId()
         );
+    }
+    public Product getProductById(int id) {
+        String sql = "SELECT p1.*, p2.name as model_name " +
+                "FROM products p1 " +
+                "LEFT JOIN product_models p2 ON p1.model_id = p2.id " +
+                "WHERE p1.id = ?";
+
+        // 1. Hàm query thường trả về List<Product>
+        List<Product> list = query(sql, new ProductMapper(), id);
+
+        // 2. Kiểm tra danh sách: Nếu rỗng trả về null, nếu có thì lấy phần tử đầu tiên
+        return list.isEmpty() ? null : list.get(0);
+    }
+    public List<Product> getAllProductByCustomerId(int id){
+        String sql = "select p1.*, p2.name as model_name FROM products p1 LEFT JOIN product_models p2 ON p1.model_id = p2.id WHERE p1.customer_id = ?";
+        List<Product> list = query(sql, new ProductMapper(), id);
+        return list.isEmpty() ? null : list;
     }
 }

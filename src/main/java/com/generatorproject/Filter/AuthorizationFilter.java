@@ -31,17 +31,15 @@ public class AuthorizationFilter implements Filter {
         // =======================
         // 1️⃣ BỎ QUA STATIC FILE
         // =======================
-        if (
-                url.startsWith(contextPath + "/uploads/")
-                        || url.startsWith(contextPath + "/assets/")
-                        || url.endsWith(".css")
-                        || url.endsWith(".js")
-                        || url.endsWith(".png")
-                        || url.endsWith(".jpg")
-                        || url.endsWith(".jpeg")
-                        || url.endsWith(".webp")
-                        || url.endsWith(".svg")
-        ) {
+        if (url.startsWith(contextPath + "/uploads/")
+                || url.startsWith(contextPath + "/assets/")
+                || url.endsWith(".css")
+                || url.endsWith(".js")
+                || url.endsWith(".png")
+                || url.endsWith(".jpg")
+                || url.endsWith(".jpeg")
+                || url.endsWith(".webp")
+                || url.endsWith(".svg")) {
             chain.doFilter(request, response);
             return;
         }
@@ -78,9 +76,8 @@ public class AuthorizationFilter implements Filter {
                 return;
             }
 
-            boolean hasUserRight =
-                    user.hasPermission("USER_VIEW") ||
-                            user.hasPermission("USER_MANAGE");
+            boolean hasUserRight = user.hasPermission("USER_VIEW") ||
+                    user.hasPermission("USER_MANAGE");
 
             if (!hasUserRight) {
                 req.getRequestDispatcher("/views/error/403.jsp").forward(req, resp);
@@ -120,13 +117,14 @@ public class AuthorizationFilter implements Filter {
             }
         }
 
-
         chain.doFilter(request, response);
     }
 
     @Override
-    public void init(FilterConfig filterConfig) {}
+    public void init(FilterConfig filterConfig) {
+    }
 
     @Override
-    public void destroy() {}
+    public void destroy() {
+    }
 }

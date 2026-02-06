@@ -37,4 +37,14 @@ public class ProductServices implements IProductServices {
     public Long save(Product product) {
         return  productDAO.save(product);
     }
+
+    @Override
+    public Product getProductById(int id) {
+        return productDAO.getProductById(id);
+    }
+
+    @Override
+    public List<Product> getAllProductByCustomerId(int id) {
+        return productDAO.getAllProductByCustomerId(id);
+    }
 }

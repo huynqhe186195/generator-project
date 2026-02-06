@@ -25,6 +25,8 @@ public class AccountManagementController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/html; charset=UTF-8");
+        req.setCharacterEncoding("UTF-8");
         String path = req.getPathInfo();
 
         if (path == null || path.equals("/")) {

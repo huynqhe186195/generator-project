@@ -10,4 +10,6 @@ public interface IProductServices {
     void update(Product product);
     List<Product> findAll();
     Long save(Product product);
+    Product getProductById(int id);
+    List<Product> getAllProductByCustomerId(int id);
 }
