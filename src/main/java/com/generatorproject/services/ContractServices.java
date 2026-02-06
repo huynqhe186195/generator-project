@@ -7,10 +7,10 @@ import com.generatorproject.model.Users;
 import java.io.InputStream;
 import java.util.List;
 
-public class ContractServices implements IContractServices{
+public class ContractServices implements IContractServices {
     private ContractDAO contractDAO;
 
-    public ContractServices(){
+    public ContractServices() {
         contractDAO = new ContractDAO();
     }
 
@@ -53,10 +53,27 @@ public class ContractServices implements IContractServices{
     }
 
     @Override
-    public void deleteContract(Long id) {contractDAO.delete(id);}
+    public void deleteContract(Long id) {
+        contractDAO.delete(id);
+    }
 
     @Override
     public List<Contract> getContractByCustomerId(int id) {
         return contractDAO.getContractByCustomerId(id);
+    }
+
+    @Override
+    public int countByStatus(String status) {
+        return contractDAO.countByStatus(status);
+    }
+
+    @Override
+    public int countExpiringSoon(int days) {
+        return contractDAO.countExpiringSoon(days);
+    }
+
+    @Override
+    public List<Contract> findRecent(int limit) {
+        return contractDAO.findRecent(limit);
     }
 }

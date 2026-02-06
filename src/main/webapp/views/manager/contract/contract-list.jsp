@@ -156,6 +156,9 @@
                                     </c:choose>
                                 </td>
                                 <td class="text-center">
+                                    <a href="contracts?action=detail&id=${c.id}" class="btn btn-sm btn-info" title="Xem chi tiết">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
                                     <a href="contracts?action=edit_view&id=${c.id}" class="btn btn-sm btn-warning" title="Sửa thông tin">
                                         <i class="fa fa-edit"></i>
                                     </a>

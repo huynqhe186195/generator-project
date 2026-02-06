@@ -1,18 +1,15 @@
 package com.generatorproject.mapper;
 
 import com.generatorproject.model.Contract;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ContractMapper implements RowMapper<Contract> {
-
     @Override
     public Contract mapRow(ResultSet rs) {
         try {
-            Contract.Builder builder = Contract.builder();
-
-            builder.id(rs.getLong("id"))
+            Contract.Builder builder = Contract.builder()
+                    .id(rs.getLong("id"))
                     .contractNumber(rs.getString("contract_number"))
                     .customerId(rs.getInt("customer_id"))
                     .productId(rs.getInt("product_id"))
@@ -24,22 +21,23 @@ public class ContractMapper implements RowMapper<Contract> {
 
             try {
                 builder.customerName(rs.getString("full_name"));
-            } catch (SQLException e) {
-            }
+            } catch (SQLException e) { }
 
             try {
                 builder.productSerial(rs.getString("serial_number"));
+
+                String mName = rs.getString("model_name");
+                builder.productModelName(mName != null ? mName : "");
+
+                if (rs.getObject("manufacture_year") != null) {
+                    builder.productManufactureYear(rs.getInt("manufacture_year"));
+                }
             } catch (SQLException e) {
             }
-
-            try {
-                builder.productSerial(rs.getString("product_serial"));
-            } catch (SQLException e) { /* ignore */ }
 
             return builder.build();
 
         } catch (SQLException e) {
-            e.printStackTrace();
             return null;
         }
     }
