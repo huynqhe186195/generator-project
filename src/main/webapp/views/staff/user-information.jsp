@@ -10,6 +10,9 @@
             <i class="fas fa-arrow-left me-2"></i>Quay lại
           </a>
         </div>
+        <h3 class="mb-0 fw-bold">${user.fullName}</h3>
+        <p class="mb-0 opacity-75">ID: #${user.id}</p>
+      </div>
 
         <div class="row justify-content-center">
           <div class="col-md-9">
