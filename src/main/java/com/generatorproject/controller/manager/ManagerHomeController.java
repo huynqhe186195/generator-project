@@ -1,24 +1,53 @@
 package com.generatorproject.controller.manager;
 
+import com.generatorproject.model.Contract;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.ContractServices;
+import com.generatorproject.services.IContractServices;
+import com.generatorproject.services.IProductServices;
+import com.generatorproject.services.ProductServices;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet(urlPatterns = {"/manager", "/manager/home"})
 public class ManagerHomeController extends HttpServlet {
 
+    private final IContractServices contractService;
+    private final IProductServices productService;
+    // private final IIncidentServices incidentService; // Nếu bạn đã làm module sự cố
+
+    public ManagerHomeController() {
+        contractService = new ContractServices();
+        productService = new ProductServices();
+        // incidentService = new IncidentServices();
+    }
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        // 1. (Optional) Nếu muốn load số liệu thống kê thật thì gọi Service ở đây
-        // Ví dụ: req.setAttribute("totalContracts", contractService.countAll());
+        int activeContracts = contractService.countByStatus("ACTIVE");
+        int expiringContracts = contractService.countExpiringSoon(30);
+        int totalProducts = productService.countAll("");
 
-        // 2. Forward sang trang Dashboard
-        // Đường dẫn này phải khớp với nơi bạn lưu file home.jsp
+        // chưa làm module Incident thì để tạm số 0 hoặc query bảng contracts trạng thái PENDING
+        int pendingRequests = 0;
+        // int pendingRequests = incidentService.countByStatus("NEW");
+
+        List<Contract> recentContracts = contractService.findRecent(5);
+
+        req.setAttribute("activeCount", activeContracts);
+        req.setAttribute("expiringCount", expiringContracts);
+        req.setAttribute("productCount", totalProducts);
+        req.setAttribute("pendingCount", pendingRequests);
+
+        req.setAttribute("recentContracts", recentContracts);
+
         req.getRequestDispatcher("/views/manager/home.jsp").forward(req, resp);
     }
 }
