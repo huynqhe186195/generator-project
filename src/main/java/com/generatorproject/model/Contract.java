@@ -4,29 +4,26 @@ import java.sql.Date;
 import java.sql.Timestamp;
 
 public class Contract {
-    // 1. Các trường mapping trực tiếp với Database
     private Long id;
     private String contractNumber;
     private int customerId;
     private int productId;
     private Date startDate;
     private Date endDate;
-    private String status;    // ENUM: ACTIVE, EXPIRED, TERMINATED
+    private String status;
     private int managerId;
     private Timestamp createdAt;
 
-    // 2. Các trường phụ (Dùng để hiển thị khi JOIN, không lưu xuống bảng contracts)
-    private String customerName;  // Tên khách hàng (từ bảng users)
-    private String productSerial; // Serial máy (từ bảng products)
-
-    // Trường tạm dùng cho logic Import (như đã bàn ở luồng trước)
+    private String customerName;
     private String tempCustomerEmail;
 
-    // Constructor rỗng (Bắt buộc phải có để RowMapper sử dụng reflection/setter)
+    private String productSerial;
+    private String productModelName;
+    private Integer productManufactureYear;
+
     public Contract() {
     }
 
-    // Constructor Private dùng cho Builder
     private Contract(Builder builder) {
         this.id = builder.id;
         this.contractNumber = builder.contractNumber;
@@ -37,11 +34,14 @@ public class Contract {
         this.status = builder.status;
         this.managerId = builder.managerId;
         this.createdAt = builder.createdAt;
+
         this.customerName = builder.customerName;
         this.productSerial = builder.productSerial;
+        this.productModelName = builder.productModelName;
+        this.productManufactureYear = builder.productManufactureYear;
     }
 
-    // --- GETTERS & SETTERS (Cần thiết cho RowMapper & JSP) ---
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -75,10 +75,15 @@ public class Contract {
     public String getProductSerial() { return productSerial; }
     public void setProductSerial(String productSerial) { this.productSerial = productSerial; }
 
+    public String getProductModelName() { return productModelName; }
+    public void setProductModelName(String productModelName) { this.productModelName = productModelName; }
+
+    public Integer getProductManufactureYear() { return productManufactureYear; }
+    public void setProductManufactureYear(Integer productManufactureYear) { this.productManufactureYear = productManufactureYear; }
+
     public String getTempCustomerEmail() { return tempCustomerEmail; }
     public void setTempCustomerEmail(String tempCustomerEmail) { this.tempCustomerEmail = tempCustomerEmail; }
 
-    // --- BUILDER PATTERN ---
     public static Builder builder() {
         return new Builder();
     }
@@ -95,59 +100,27 @@ public class Contract {
         private Timestamp createdAt;
         private String customerName;
         private String productSerial;
+        private String productModelName;
+        private Integer productManufactureYear;
 
-        public Builder id(Long id) {
-            this.id = id;
+        public Builder id(Long id) { this.id = id; return this; }
+        public Builder contractNumber(String contractNumber) { this.contractNumber = contractNumber; return this; }
+        public Builder customerId(int customerId) { this.customerId = customerId; return this; }
+        public Builder productId(int productId) { this.productId = productId; return this; }
+        public Builder startDate(Date startDate) { this.startDate = startDate; return this; }
+        public Builder endDate(Date endDate) { this.endDate = endDate; return this; }
+        public Builder status(String status) { this.status = status; return this; }
+        public Builder managerId(int managerId) { this.managerId = managerId; return this; }
+        public Builder createdAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
+        public Builder customerName(String customerName) { this.customerName = customerName; return this; }
+        public Builder productSerial(String productSerial) { this.productSerial = productSerial; return this; }
+
+        public Builder productModelName(String productModelName) {
+            this.productModelName = productModelName;
             return this;
         }
-
-        public Builder contractNumber(String contractNumber) {
-            this.contractNumber = contractNumber;
-            return this;
-        }
-
-        public Builder customerId(int customerId) {
-            this.customerId = customerId;
-            return this;
-        }
-
-        public Builder productId(int productId) {
-            this.productId = productId;
-            return this;
-        }
-
-        public Builder startDate(Date startDate) {
-            this.startDate = startDate;
-            return this;
-        }
-
-        public Builder endDate(Date endDate) {
-            this.endDate = endDate;
-            return this;
-        }
-
-        public Builder status(String status) {
-            this.status = status;
-            return this;
-        }
-
-        public Builder managerId(int managerId) {
-            this.managerId = managerId;
-            return this;
-        }
-
-        public Builder createdAt(Timestamp createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
-        public Builder customerName(String customerName) {
-            this.customerName = customerName;
-            return this;
-        }
-
-        public Builder productSerial(String productSerial) {
-            this.productSerial = productSerial;
+        public Builder productManufactureYear(Integer productManufactureYear) {
+            this.productManufactureYear = productManufactureYear;
             return this;
         }
 
