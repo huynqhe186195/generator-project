@@ -21,8 +21,8 @@ public class StaffManagementController extends HttpServlet {
     private final IUserServices userServices;
     private final IContractServices contractServices;
     private final IProductServices productServices;
-    public StaffManagementController(){
 
+    public StaffManagementController() {
         userServices = new UserServices();
         contractServices = new ContractServices();
         requestServices = new RequestServices();
@@ -66,14 +66,12 @@ public class StaffManagementController extends HttpServlet {
             try {
                 page = Integer.parseInt(req.getParameter("page"));
             } catch (NumberFormatException e) {
-                page = 1; // Nếu nhập bậy bạ thì về trang 1
+                page = 1;
             }
         }
 
         int totalUsers = userServices.countCustomerByFilter(keyword);
-
         int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
-
         List<Users> listUsers = userServices.getCustomerByFilter(keyword, page, pageSize);
 
         req.setAttribute("listUsers", listUsers);
@@ -91,16 +89,14 @@ public class StaffManagementController extends HttpServlet {
         if (idParam != null) {
             try {
                 int userId = Integer.parseInt(idParam);
-
-                // Gọi Service tìm User theo ID (Bạn cần đảm bảo Service có hàm này)
                 Users user = userServices.findUserById(userId);
                 List<Contract> listContracts = contractServices.getContractByCustomerId(userId);
+
                 if (user != null) {
                     req.setAttribute("user", user);
                     req.setAttribute("listContracts", listContracts);
                     req.getRequestDispatcher("/views/staff/user-information.jsp").forward(req, resp);
                 } else {
-                    // Không tìm thấy -> Quay về trang danh sách hoặc báo lỗi
                     req.setAttribute("errorMessage", "Không tìm thấy người dùng này!");
                     req.getRequestDispatcher("/views/error/404.jsp").forward(req, resp);
                 }
@@ -132,32 +128,34 @@ public class StaffManagementController extends HttpServlet {
 
         // 3. Xử lý Phân trang
         int page = 1;
-        int pageSize = 5; // Số dòng trên 1 trang
+        int pageSize = 5;
         if (req.getParameter("page") != null) {
             try {
                 page = Integer.parseInt(req.getParameter("page"));
-                if (page < 1)
-                    page = 1;
+                if (page < 1) page = 1;
             } catch (NumberFormatException e) {
                 page = 1;
             }
         }
 
-        // 4. GỌI SERVICE MỚI (SystemRequestServices)
-        // Quan trọng: Định nghĩa loại request ta muốn lấy là "INCIDENT_REPORT"
+        // 4. GỌI SERVICE
         String requestType = "INCIDENT_REPORT";
         int totalRequests = requestServices.countByFilter(fromDate, toDate, status, requestType);
         int totalPages = (int) Math.ceil((double) totalRequests / pageSize);
 
         List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
 
+        // --- ĐOẠN CODE BẠN BỊ THIẾU ĐÃ ĐƯỢC THÊM LẠI Ở ĐÂY ---
+        Map<Long, Product> relatedProducts = new HashMap<>();
+
+        for (SystemRequest sysReq : listRequests) {
             // Tận dụng hàm phụ trợ getProductFromRequest thay vì viết lại logic parse JSON
             Product p = getProductFromRequest(sysReq);
             if (p != null) {
                 relatedProducts.put(sysReq.getId(), p);
             }
         }
-        // ----------------------
+        // -----------------------------------------------------
 
         req.setAttribute("relatedProducts", relatedProducts);
         List<Users> listTechnicians = userServices.findUserByRoleId(4);
@@ -170,13 +168,10 @@ public class StaffManagementController extends HttpServlet {
         req.setAttribute("toDate", toDateParam);
         req.setAttribute("status", status);
 
-        // Lưu ý tên file JSP: Trong các bước trước ta gọi là "incident-list.jsp"
-
+        // Chú ý: Đảm bảo tên file JSP khớp với file bạn đã tạo (incident-list.jsp hoặc incident-request.jsp)
         RequestDispatcher rd = req.getRequestDispatcher("/views/staff/incident-request.jsp");
         rd.forward(req, resp);
     }
-
-    // Trong class StaffManagementController
 
     private void handleIncidentVerify(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
@@ -188,18 +183,17 @@ public class StaffManagementController extends HttpServlet {
                 return;
             }
 
-            // 1. Lấy sản phẩm trong Request (để đối chiếu)
+            // 1. Lấy sản phẩm trong Request
             Product requestedProduct = getProductFromRequest(sysReq);
 
-            // 2. Lấy danh sách TẤT CẢ sản phẩm của khách hàng này (dựa vào sender_id)
-            // (Bạn cần đảm bảo ProductServices có hàm findByCustomerId)
+            // 2. Lấy danh sách TẤT CẢ sản phẩm của khách hàng này
             int customerId = Math.toIntExact(sysReq.getSenderId());
             List<Product> customerAssets = productServices.getAllProductByCustomerId(customerId);
 
             // 3. Gửi dữ liệu sang JSP
             req.setAttribute("req", sysReq);
-            req.setAttribute("requestedProduct", requestedProduct); // Sản phẩm khách chọn trong form
-            req.setAttribute("customerAssets", customerAssets);     // Toàn bộ máy của khách
+            req.setAttribute("requestedProduct", requestedProduct);
+            req.setAttribute("customerAssets", customerAssets);
 
             req.getRequestDispatcher("/views/staff/incident-verify.jsp").forward(req, resp);
 
@@ -209,7 +203,6 @@ public class StaffManagementController extends HttpServlet {
         }
     }
 
-    // Hàm xử lý trang Gửi yêu cầu/Phân công (Bước 2)
     private void handleIncidentEscalate(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             // 1. Lấy ID từ URL
@@ -226,7 +219,7 @@ public class StaffManagementController extends HttpServlet {
             // 3. Lấy thông tin máy (Product)
             Product product = getProductFromRequest(sysReq);
 
-            // 4. Lấy danh sách Kỹ thuật viên (Để đổ vào Dropdown chọn người sửa)
+            // 4. Lấy danh sách Kỹ thuật viên
             List<Users> listTechnicians = userServices.findUserByRoleId(4);
 
             // 5. Gửi dữ liệu sang JSP
@@ -242,8 +235,7 @@ public class StaffManagementController extends HttpServlet {
         }
     }
 
-    // --- HÀM PHỤ TRỢ: Lấy Product từ SystemRequest ---
-    // (Giúp code gọn hơn, tránh lặp lại logic parse JSON ở nhiều nơi)
+    // --- HÀM PHỤ TRỢ ---
     private Product getProductFromRequest(SystemRequest sysReq) {
         if (sysReq == null)
             return null;
@@ -252,7 +244,6 @@ public class StaffManagementController extends HttpServlet {
         if (info != null && info.containsKey("productId")) {
             try {
                 String pIdStr = String.valueOf(info.get("productId"));
-                // Xử lý trường hợp Gson parse số thành 5.0
                 if (pIdStr.contains(".")) {
                     pIdStr = pIdStr.substring(0, pIdStr.indexOf("."));
                 }
