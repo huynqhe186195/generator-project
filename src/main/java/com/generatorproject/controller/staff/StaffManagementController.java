@@ -1,8 +1,6 @@
 package com.generatorproject.controller.staff;
 
-import com.generatorproject.model.Contract;
-import com.generatorproject.model.Incident;
-import com.generatorproject.model.Users;
+import com.generatorproject.model.*;
 import com.generatorproject.services.*;
 
 import javax.servlet.RequestDispatcher;
