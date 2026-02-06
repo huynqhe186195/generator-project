@@ -3,7 +3,6 @@
 
 <h4 class="mb-4">🛠 Công việc của tôi</h4>
 
-
 <form method="get"
       action="<c:url value='/technical/my-tasks'/>"
       class="row g-2 mb-3">
@@ -12,18 +11,9 @@
     <div class="col-md-3">
         <select name="status" class="form-select">
             <option value="">-- Tất cả trạng thái --</option>
-            <option value="SCHEDULED"
-            ${param.status == 'SCHEDULED' ? 'selected' : ''}>
-                SCHEDULED
-            </option>
-            <option value="COMPLETED"
-            ${param.status == 'COMPLETED' ? 'selected' : ''}>
-                COMPLETED
-            </option>
-            <option value="CANCELLED"
-            ${param.status == 'CANCELLED' ? 'selected' : ''}>
-                CANCELLED
-            </option>
+            <option value="SCHEDULED" ${param.status == 'SCHEDULED' ? 'selected' : ''}>SCHEDULED</option>
+            <option value="COMPLETED" ${param.status == 'COMPLETED' ? 'selected' : ''}>COMPLETED</option>
+            <option value="CANCELLED" ${param.status == 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
         </select>
     </div>
 
@@ -31,25 +21,14 @@
     <div class="col-md-3">
         <select name="type" class="form-select">
             <option value="">-- Tất cả loại bảo trì --</option>
-            <option value="PERIODIC"
-            ${param.type == 'PERIODIC' ? 'selected' : ''}>
-                PERIODIC
-            </option>
-            <option value="REPAIR"
-            ${param.type == 'REPAIR' ? 'selected' : ''}>
-                REPAIR
-            </option>
-            <option value="INSPECTION"
-            ${param.type == 'INSPECTION' ? 'selected' : ''}>
-                INSPECTION
-            </option>
+            <option value="PERIODIC" ${param.type == 'PERIODIC' ? 'selected' : ''}>PERIODIC</option>
+            <option value="REPAIR" ${param.type == 'REPAIR' ? 'selected' : ''}>REPAIR</option>
+            <option value="INSPECTION" ${param.type == 'INSPECTION' ? 'selected' : ''}>INSPECTION</option>
         </select>
     </div>
 
     <div class="col-md-2">
-        <button class="btn btn-primary w-100">
-            Lọc
-        </button>
+        <button class="btn btn-primary w-100">Lọc</button>
     </div>
 </form>
 
@@ -62,14 +41,13 @@
         <th>Trạng thái</th>
         <th>Ngày bảo trì</th>
         <th>Hành động</th>
-
     </tr>
     </thead>
     <tbody>
 
     <c:if test="${empty tasks}">
         <tr>
-            <td colspan="5" class="text-center text-muted">
+            <td colspan="6" class="text-center text-muted">
                 Không có công việc nào được giao
             </td>
         </tr>
@@ -81,49 +59,76 @@
             <td>${t.productName}</td>
             <td>${t.type}</td>
 
-
-            <!-- ===== TRẠNG THÁI (ENUM CHUẨN) ===== -->
+            <!-- TRẠNG THÁI (CHỈ HIỂN THỊ) -->
             <td>
-                <form method="post"
-                      action="<c:url value='/technical/task-status'/>">
-
-                    <input type="hidden" name="id" value="${t.id}" />
-
-                    <select name="status"
-                            class="form-select form-select-sm"
-                            onchange="this.form.submit()">
-
-                        <option value="SCHEDULED"
-                            ${t.status == 'SCHEDULED' ? 'selected' : ''}>
-                            SCHEDULED
-                        </option>
-
-                        <option value="COMPLETED"
-                            ${t.status == 'COMPLETED' ? 'selected' : ''}>
-                            COMPLETED
-                        </option>
-
-                        <option value="CANCELLED"
-                            ${t.status == 'CANCELLED' ? 'selected' : ''}>
-                            CANCELLED
-                        </option>
-
-                    </select>
-                </form>
+                <span class="badge
+                    ${t.status == 'COMPLETED' ? 'bg-success' :
+                      t.status == 'SCHEDULED' ? 'bg-warning' : 'bg-secondary'}">
+                        ${t.status}
+                </span>
             </td>
 
+            <td>${t.createdAt}</td>
+
+            <!-- HÀNH ĐỘNG -->
             <td>
-                    ${t.createdAt}
-            </td>
-            <!-- ===== HÀNH ĐỘNG ===== -->
-            <td>
-                <a class="btn btn-sm btn-primary"
-                   href="<c:url value='/technical/task-detail?id=${t.id}'/>">
-                    Xem
-                </a>
+                <!-- CHI TIẾT -->
+
+
+                       <a class="btn btn-sm btn-primary"
+                             href="<c:url value='/technical/task-detail?id=${t.id}'/>">
+                                 Chi tiết
+                       </a>
+
+
+                <!-- REPAIR: BÁO CÁO -->
+                <c:if test="${t.type == 'REPAIR' && t.status != 'COMPLETED'}">
+                    <a class="btn btn-sm btn-warning"
+                       href="<c:url value='/technical/repair-report?id=${t.id}'/>">
+                        Báo cáo sửa chữa
+                    </a>
+                </c:if>
+
+                <!-- PERIODIC / INSPECTION: HOÀN THÀNH -->
+                <c:if test="${t.type != 'REPAIR' && t.status != 'COMPLETED'}">
+                    <a class="btn btn-sm btn-success"
+                       href="<c:url value='/technical/task-complete?id=${t.id}'/>"
+                       onclick="return confirm('Xác nhận hoàn thành công việc?')">
+                        Hoàn thành
+                    </a>
+                </c:if>
             </td>
         </tr>
     </c:forEach>
 
     </tbody>
 </table>
+
+<c:if test="${totalPages > 1}">
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                <a class="page-link"
+                   href="?page=${currentPage - 1}&status=${param.status}&type=${param.type}">
+                    «
+                </a>
+            </li>
+
+            <c:forEach begin="1" end="${totalPages}" var="i">
+                <li class="page-item ${i == currentPage ? 'active' : ''}">
+                    <a class="page-link"
+                       href="?page=${i}&status=${param.status}&type=${param.type}">
+                            ${i}
+                    </a>
+                </li>
+            </c:forEach>
+
+            <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                <a class="page-link"
+                   href="?page=${currentPage + 1}&status=${param.status}&type=${param.type}">
+                    »
+                </a>
+            </li>
+        </ul>
+    </nav>
+</c:if>
