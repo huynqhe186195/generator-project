@@ -20,4 +20,7 @@
     <decorator name="manager-layout" page="manager.jsp">
         <pattern>/manager*</pattern>
     </decorator>
+    <decorator name="it" page="it.jsp">
+        <pattern>/it*</pattern>
+    </decorator>
 </decorators>
