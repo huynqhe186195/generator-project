@@ -82,10 +82,6 @@
 
                 <div class="wrapper">
                     <nav id="sidebar">
-                        <div class="sidebar-header">
-                            <h3><i class="fa fa-cogs"></i> Quản lý</h3>
-                        </div>
-
                         <ul class="list-unstyled components">
                             <li class="${pageContext.request.requestURI.endsWith('/manager/home.jsp') ? 'active' : ''}">
                                 <a href="${pageContext.request.contextPath}/manager/home">

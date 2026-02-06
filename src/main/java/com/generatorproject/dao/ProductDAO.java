@@ -214,9 +214,6 @@ public class ProductDAO extends GenericDAO<Product> {
         return count(sql.toString(), params.toArray());
     }
 
-    /**
-     * Paging (LIMIT/OFFSET) - nếu DB là MySQL/Postgres
-     */
     public List<Product> findByFilterPaging(
             String keyword,
             Long modelId,
@@ -285,6 +282,42 @@ public class ProductDAO extends GenericDAO<Product> {
         return count(sql, null);
     }
 
+    public int countAll() {
+        String sql = "SELECT COUNT(*) FROM products";
+        return count(sql); // Giả sử GenericDAO của bạn có hàm count trả về int
+    }
+
+    public List<Product> findAllWithPagination(int offset, int limit) {
+        String sql = "SELECT p.*, u.full_name AS customer_name, pm.name AS model_name " +
+                "FROM products p " +
+                "LEFT JOIN users u ON p.customer_id = u.id " +
+                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
+                "ORDER BY p.id DESC " +
+                "LIMIT ? OFFSET ?";
+
+        return query(sql, new ProductMapper(), limit, offset);
+    }
+
+    public Product findByIdWithDetails(Long id) {
+        String sql = "SELECT p.*, u.full_name AS customer_name, pm.name AS model_name " +
+                "FROM products p " +
+                "LEFT JOIN users u ON p.customer_id = u.id " +
+                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
+                "WHERE p.id = ?";
+
+        List<Product> results = query(sql, new ProductMapper(), id);
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+    public void updateRunningHours(Long id, Double newHours) {
+        Product p = findByIdWithDetails(id);
+
+        if (p != null) {
+            p.setTotalRunningHours(newHours);
+            update(p);
+        }
+    }
+
     public void update(Product product) {
         String sql = "UPDATE products SET serial_number = ?, manufacture_year = ?, current_location = ?, " +
                 "status = ?, total_running_hours = ?, customer_id = ?, purchase_date = ?, model_id = ?, updated_at = NOW() " +
@@ -342,5 +375,31 @@ public class ProductDAO extends GenericDAO<Product> {
         String sql = "select p1.*, p2.name as model_name FROM products p1 LEFT JOIN product_models p2 ON p1.model_id = p2.id WHERE p1.customer_id = ?";
         List<Product> list = query(sql, new ProductMapper(), id);
         return list.isEmpty() ? null : list;
+    }
+
+    public List<Product> findByKeywordWithPagination(String keyword, int offset, int limit) {
+        String searchPattern = "%" + keyword + "%";
+
+        String sql = "SELECT p.*, u.full_name AS customer_name, pm.name AS model_name " +
+                "FROM products p " +
+                "LEFT JOIN users u ON p.customer_id = u.id " +
+                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
+                "WHERE p.serial_number LIKE ? OR pm.name LIKE ? " + // <-- Điều kiện lọc
+                "ORDER BY p.id DESC " +
+                "LIMIT ? OFFSET ?";
+
+        // Truyền tham số: searchPattern xuất hiện 2 lần (cho serial và name)
+        return query(sql, new ProductMapper(), searchPattern, searchPattern, limit, offset);
+    }
+
+    public int countByKeyword(String keyword) {
+        String searchPattern = "%" + keyword + "%";
+
+        String sql = "SELECT COUNT(*) " +
+                "FROM products p " +
+                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
+                "WHERE p.serial_number LIKE ? OR pm.name LIKE ?";
+
+        return count(sql, searchPattern, searchPattern);
     }
 }
