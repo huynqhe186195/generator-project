@@ -39,6 +39,13 @@
         </div>
 
         <div class="list-group list-group-flush">
+            <c:if test="${currentUser.roleId == 1 || currentUser.hasPermission('PRODUCT_VIEW')}">
+                <a href="<c:url value='/admin/product/product-list'/>"
+                   class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-box-open me-2" style="width: 20px;"></i>
+                    Quản lý Product
+                </a>
+            </c:if>
             <c:if test="${currentUser.roleId == 2}">
                 <a href="<c:url value='/admin/user/dashboard'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                     <i class="fas fa-tachometer-alt me-2" style="width: 20px;"></i> Dashboard

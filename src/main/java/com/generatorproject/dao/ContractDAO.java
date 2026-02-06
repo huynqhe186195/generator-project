@@ -1,9 +1,9 @@
 package com.generatorproject.dao;
 
 import com.generatorproject.mapper.ContractMapper;
+import com.generatorproject.mapper.ProductMapper;
 import com.generatorproject.model.Contract;
 import com.generatorproject.model.Product;
-import com.generatorproject.model.ProductModel;
 import com.generatorproject.model.Users;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -19,19 +19,16 @@ import java.util.regex.Pattern;
 
 public class ContractDAO extends GenericDAO<Contract> {
 
-    private final UserDao userDao;
-    private final ProductDAO productDAO;
-    private final ProductModelDAO productModelDAO;
+    private UserDao userDao;
+    private ProductDAO productDAO;
 
-    public ContractDAO() {
+    public ContractDAO(){
         userDao = new UserDao();
         productDAO = new ProductDAO();
-        productModelDAO = new ProductModelDAO();
     }
 
     public Long save(Contract contract) {
-        String sql = "INSERT INTO contracts (contract_number, customer_id, product_id, start_date, end_date, status, manager_id, created_at) "
-                +
+        String sql = "INSERT INTO contracts (contract_number, customer_id, product_id, start_date, end_date, status, manager_id, created_at) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
         return insert(sql,
                 contract.getContractNumber(),
@@ -40,7 +37,8 @@ public class ContractDAO extends GenericDAO<Contract> {
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
-                contract.getManagerId());
+                contract.getManagerId()
+        );
     }
 
     public void update(Contract contract) {
@@ -55,7 +53,8 @@ public class ContractDAO extends GenericDAO<Contract> {
                 contract.getEndDate(),
                 contract.getStatus(),
                 contract.getManagerId(),
-                contract.getId());
+                contract.getId()
+        );
     }
 
     public Contract findById(Long id) {
@@ -64,23 +63,15 @@ public class ContractDAO extends GenericDAO<Contract> {
         return results.isEmpty() ? null : results.get(0);
     }
 
+    //Tìm kiếm theo ID nhưng có JOIN để lấy Tên khách & Serial (Dùng cho trang chi tiết)
     public Contract findByIdWithDetails(Long id) {
-        String sql = "SELECT c.*, u.full_name, " +
-                "p.serial_number, p.manufacture_year, " +
-                "pm.name AS model_name " +
+        String sql = "SELECT c.*, u.full_name, p.serial_number " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
                 "JOIN products p ON c.product_id = p.id " +
-                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
                 "WHERE c.id = ?";
-
         List<Contract> results = query(sql, new ContractMapper(), id);
-
-        if (results == null || results.isEmpty()) {
-            return null;
-        }
-
-        return results.get(0);
+        return results.isEmpty() ? null : results.get(0);
     }
 
     public List<Contract> searchAndFilter(String keyword, String status) {
@@ -93,6 +84,7 @@ public class ContractDAO extends GenericDAO<Contract> {
 
         List<Object> params = new ArrayList<>();
 
+        // Logic tìm kiếm theo từ khóa (Số HĐ hoặc Tên khách hoặc Serial máy)
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (c.contract_number LIKE ? OR u.full_name LIKE ? OR p.serial_number LIKE ?) ");
             String likeQuery = "%" + keyword.trim() + "%";
@@ -101,6 +93,7 @@ public class ContractDAO extends GenericDAO<Contract> {
             params.add(likeQuery);
         }
 
+        // Logic lọc theo trạng thái (ACTIVE, EXPIRED...)
         if (status != null && !status.trim().isEmpty()) {
             sql.append("AND c.status = ? ");
             params.add(status);
@@ -108,9 +101,11 @@ public class ContractDAO extends GenericDAO<Contract> {
 
         sql.append("ORDER BY c.created_at DESC");
 
+        // Chuyển List params thành mảng Object[] để truyền vào GenericDAO
         return query(sql.toString(), new ContractMapper(), params.toArray());
     }
 
+    // 6. Kiểm tra số hợp đồng đã tồn tại chưa (Dùng cho Import)
     public boolean isContractNumberExists(String contractNumber) {
         String sql = "SELECT count(*) FROM contracts WHERE contract_number = ?";
         int count = count(sql, contractNumber);
@@ -133,198 +128,160 @@ public class ContractDAO extends GenericDAO<Contract> {
         String contractNum = null;
         String emailCustomer = null;
         String serialNumber = null;
-        int warrantyMonths = 12;
-        String generatorName = null;
-        String buyerName = null;
-        Integer manufactureYear = null;
-        Date purchaseDate = null;
+        int warrantyMonths = 12; // Mặc định 12 tháng
 
-        // Read file word
+        Integer manufactureYear = null;
+        java.sql.Date purchaseDate = null;
+
         XWPFDocument document = new XWPFDocument(fileContent);
         List<XWPFParagraph> paragraphs = document.getParagraphs();
-
-        // Note reading buyer
-        boolean isSectionA = false;
 
         for (XWPFParagraph para : paragraphs) {
             String text = para.getText();
 
-            if (text.isEmpty())
-                continue;
+            if (text == null || text.trim().isEmpty()) continue;
 
-            String lowerText = text.toLowerCase();
-            if (lowerText.contains("bên a") || lowerText.contains("bên mua")) {
-                isSectionA = true;
-            } else if (lowerText.contains("bên b") || lowerText.contains("bên bán")) {
-                isSectionA = false;
-            }
-
-            if (contractNum == null && (text.contains("Số") || text.contains("No"))) {
-                Pattern p = Pattern.compile("Số\\s*[:.]?\\s*([A-Za-z0-9\\-]+)",
-                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find()) {
-                    contractNum = m.group(1).trim();
+            if (contractNum == null && text.contains("HĐMB")) {
+                Pattern pContract = Pattern.compile("Số\\s*[:.]?\\s*(.*?)\\s*/HĐMB", Pattern.CASE_INSENSITIVE);
+                Matcher mContract = pContract.matcher(text);
+                if (mContract.find()) {
+                    contractNum = mContract.group(1).trim();
                 }
             }
 
-            if (isSectionA && buyerName == null && text.contains("Đại diện")) {
-                Pattern p = Pattern.compile("Đại diện\\s*[:.]?\\s*(?:ông|bà)?\\s*([^.,\\-]+)",
-                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find()) {
-                    buyerName = m.group(1).trim();
-                    buyerName = buyerName.substring(0, 1).toUpperCase() + buyerName.substring(1);
+            // Regex: Tìm số có 4 chữ số sau cụm "Năm sản xuất"
+            if (text.contains("Năm sản xuất")) {
+                Pattern pYear = Pattern.compile("Năm sản xuất\\s*[:.]?\\s*(\\d{4})");
+                Matcher mYear = pYear.matcher(text);
+                if (mYear.find()) {
+                    manufactureYear = Integer.parseInt(mYear.group(1));
                 }
             }
 
-            if (emailCustomer == null && isSectionA && (text.contains("@"))) {
-                Pattern p = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6})");
-                Matcher m = p.matcher(text);
-                if (m.find())
-                    emailCustomer = m.group(1).trim();
-            }
-
-            // Pattern: "-Tên máy phát điện: Denyo DCA-25ESK"
-            if (generatorName == null && text.toLowerCase().contains("tên máy")) {
-                Pattern p = Pattern.compile("Tên máy.*?[:.]\\s*(.*)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find())
-                    generatorName = m.group(1).trim();
-            }
-
-            // D. TÊN MÁY PHÁT ĐIỆN
-            // Pattern: "-Tên máy phát điện: Denyo DCA-25ESK"
-            if (generatorName == null && text.toLowerCase().contains("tên máy")) {
-                Pattern p = Pattern.compile("Tên máy.*?[:.]\\s*(.*)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find()) generatorName = m.group(1).trim();
-            }
-
-            // E. SỐ SERIAL
-            if (serialNumber == null) {
-                Pattern p = Pattern.compile("(Số Serial|Serial|Số máy|S/N).*?[:.]\\s*([A-Za-z0-9\\-]+)",
-                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find()) {
-                    serialNumber = m.group(2).trim();
-                    if (serialNumber.endsWith("-"))
-                        serialNumber = serialNumber.substring(0, serialNumber.length() - 1);
-                }
-            }
-
-            if (purchaseDate == null && text.toLowerCase().contains("ngày mua")) {
-                // Regex bắt format: 2026-12-07
-                Pattern p = Pattern.compile("(\\d{4}-\\d{1,2}-\\d{1,2})");
-                Matcher m = p.matcher(text);
-                if (m.find()) {
+            // Regex: dd-MM-yyyy
+            if (text.contains("Ngày mua")) {
+                Pattern pDate = Pattern.compile("Ngày mua\\s*[:.]?\\s*([0-9]{1,2}-[0-9]{1,2}-[0-9]{4})");
+                Matcher mDate = pDate.matcher(text);
+                if (mDate.find()) {
                     try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        java.util.Date parsed = sdf.parse(m.group(1));
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+                        java.util.Date parsed = sdf.parse(mDate.group(1));
                         purchaseDate = new java.sql.Date(parsed.getTime());
                     } catch (Exception e) {
-                        System.out.println("Lỗi ngày tháng: " + e.getMessage());
+                        System.out.println("Lỗi parse ngày mua: " + e.getMessage());
                     }
                 }
             }
 
-            if (manufactureYear == null && text.toLowerCase().contains("năm sản xuất")) {
-                Pattern p = Pattern.compile("(\\d{4})");
-                Matcher m = p.matcher(text);
-                if (m.find())
-                    manufactureYear = Integer.parseInt(m.group(1));
+            if (emailCustomer == null && (text.contains("Email") || text.contains("email"))) {
+                Pattern pEmail = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6})");
+                Matcher mEmail = pEmail.matcher(text);
+                if (mEmail.find()) {
+                    emailCustomer = mEmail.group(1).trim();
+                }
+            }
+
+            if (serialNumber == null) {
+                Pattern pSerial = Pattern.compile("(Số Serial máy|Serial|Số máy|Số khung|S/N)\\s*[:.]?\\s*([A-Za-z0-9-]+)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                Matcher mSerial = pSerial.matcher(text);
+
+                if (mSerial.find()) {
+                    String potentialSerial = mSerial.group(2).trim();
+                    // Cắt dấu gạch ngang thừa ở cuối nếu có (Do lỗi nhập liệu file word)
+                    if (potentialSerial.endsWith("-")) {
+                        potentialSerial = potentialSerial.substring(0, potentialSerial.length() - 1);
+                    }
+                    // Check độ dài để tránh rác
+                    if (potentialSerial.length() >= 3) {
+                        serialNumber = potentialSerial;
+                    }
+                }
+            }
+
+            if (text.contains("Thời gian bảo hành") && text.contains("tháng")) {
+                Pattern pWarranty = Pattern.compile("(\\d+)\\s*tháng");
+                Matcher mWarranty = pWarranty.matcher(text);
+                if (mWarranty.find()) {
+                    try {
+                        warrantyMonths = Integer.parseInt(mWarranty.group(1));
+                    } catch (NumberFormatException e) { warrantyMonths = 12; }
+                }
+            }
+
+            if (contractNum != null && emailCustomer != null && serialNumber != null) {
+                break;
             }
         }
 
-        // validate data
-        if (contractNum == null || emailCustomer == null || serialNumber == null || generatorName == null) {
-            throw new Exception("File thiếu thông tin! Cần có: Số HĐ, Email, Tên máy và Serial.");
+        if (contractNum == null || emailCustomer == null || serialNumber == null) {
+            throw new Exception("File thiếu thông tin! Cần có: Số HĐ, Email, và Serial/Số máy.");
         }
 
-        ProductModel model = productModelDAO.findByName(generatorName);
 
-        if (model == null) {
-            throw new Exception("Lỗi Import: Dòng máy '" + generatorName
-                    + "' chưa có trong danh mục hệ thống. Vui lòng tạo Model này trước!");
-        }
-
-        // In ra console để debug xem lấy đúng chưa
-        System.out.println("--- KẾT QUẢ IMPORT DOCX ---");
-        System.out.println("HĐ: " + contractNum);
-        System.out.println("Khách: " + buyerName + " (" + emailCustomer + ")");
-        System.out.println("Máy: " + generatorName + " - SerialNumber: " + serialNumber);
-        System.out.println("Mua ngày: " + purchaseDate);
-
-        // --- 4. XỬ LÝ DATABASE ---
-
-        // Check trùng số HĐ
         if (findByContractNumber(contractNum) != null) {
-            throw new Exception("Số hợp đồng '" + contractNum + "' đã tồn tại!");
+            throw new Exception("Số hợp đồng '" + contractNum + "' đã tồn tại trong hệ thống!");
         }
 
-        // Check User (Nếu chưa có thì báo lỗi hoặc tự tạo tùy nghiệp vụ)
         Users customer = userDao.findByEmail(emailCustomer);
         if (customer == null) {
-            // Gợi ý: Có thể throw Exception báo user tạo tài khoản trước
-            throw new Exception("Email '" + emailCustomer + "' chưa có tài khoản hệ thống.");
-        }
-        // Nếu muốn update tên thật cho khách dựa trên hợp đồng:
-        else if (buyerName != null && !buyerName.isEmpty()) {
-            // customer.setFullName(buyerName);
-            // userDao.update(customer); // Uncomment nếu muốn update tên
+            throw new Exception("Email '" + emailCustomer + "' chưa có tài khoản. Vui lòng tạo User trước.");
         }
 
-        // Check Product
         Product product = productDAO.findBySerial(serialNumber);
+
         if (product == null) {
-            // Máy mới -> Tạo mới
+            // Máy mới tinh -> Tự động tạo mới
             product = new Product();
             product.setSerialNumber(serialNumber);
             product.setTotalRunningHours(0.0);
-            product.setModelName(generatorName != null ? generatorName : "Máy phát điện (Import)");
-        } else {
-            // Máy cũ -> Check quyền sở hữu
-            if (product.getCustomerId() != null && product.getCustomerId() > 0
-                    && product.getCustomerId() != customer.getId()) {
-                throw new Exception("XUNG ĐỘT: Máy " + serialNumber + " đang thuộc về khách hàng khác!");
+            product.setModelName("Máy in mã vạch công nghiệp"); // Set tạm hoặc lấy từ file nếu có logic
+        }else {
+            if (product.getCustomerId() != null && product.getCustomerId() > 0) {
+                if (product.getCustomerId() != customer.getId()) {
+                    throw new Exception("XUNG ĐỘT: Máy '" + serialNumber + "' đang thuộc về khách hàng khác!");
+                }
             }
-            // Update lại tên model nếu trong file có thông tin chi tiết hơn
-            if (generatorName != null) {
-                product.setModelName(generatorName);
+
+            // Kiểm tra xem máy này ĐÃ CÓ hợp đồng nào trong hệ thống chưa?
+            List<Contract> existingContracts = findByProductId((long) product.getId());
+
+            if (existingContracts != null && !existingContracts.isEmpty()) {
+                String oldContractNum = existingContracts.get(0).getContractNumber();
+                throw new Exception("TRÙNG SERIAL: Máy '" + serialNumber + "' đã có Hợp đồng (" + oldContractNum + ") trong hệ thống. Một máy chỉ được bán 1 lần!");
             }
         }
 
-        product.setModelId((long) model.getId());
-        product.setModelName(model.getName());
-
-        // Cập nhật thông tin máy
         product.setCustomerId((long) customer.getId());
         product.setStatus("RUNNING");
-        product.setCurrentLocation(customer.getFullName()); // Gán vị trí máy theo tên khách
-        if (manufactureYear != null)
-            product.setManufactureYear(manufactureYear);
-        if (purchaseDate != null)
-            product.setPurchaseDate(purchaseDate);
+        product.setCurrentLocation(customer.getFullName());
 
-        // Lưu máy
-        if (product.getId() == 0) {
-            Long newPid = productDAO.save(product);
-            product.setId(Math.toIntExact(newPid));
+        if (manufactureYear != null) {
+            product.setManufactureYear(manufactureYear);
+        }
+        if (purchaseDate != null) {
+            product.setPurchaseDate(purchaseDate);
+        }
+
+        if (product.getId() == 0 || product.getId() == 0) {
+            // Máy mới -> Insert
+            Long newId = productDAO.save(product);
+            product.setId(Math.toIntExact(newId));
         } else {
+            // Máy cũ -> Update
             productDAO.update(product);
         }
 
-        // Tạo Hợp đồng
         Date startDate = new java.sql.Date(System.currentTimeMillis());
+
         Calendar cal = Calendar.getInstance();
         cal.setTime(startDate);
-        cal.add(Calendar.MONTH, warrantyMonths); // Cộng thời gian bảo hành
+        cal.add(Calendar.MONTH, warrantyMonths);
         java.sql.Date endDate = new java.sql.Date(cal.getTimeInMillis());
 
         Contract newContract = Contract.builder()
                 .contractNumber(contractNum)
                 .customerId(customer.getId())
-                .productId(product.getId())
+                .productId(product.getId()) // Liên kết với ID máy vừa xử lý
                 .startDate(startDate)
                 .endDate(endDate)
                 .status("ACTIVE")
@@ -336,42 +293,15 @@ public class ContractDAO extends GenericDAO<Contract> {
 
     public void delete(Long id) {
         String sql = "DELETE FROM contracts WHERE id = ?";
-        update(sql, id);
+        update(sql, id); // Sử dụng hàm update() của GenericDAO
     }
 
     public List<Contract> findByProductId(Long productId) {
         String sql = "SELECT * FROM contracts WHERE product_id = ?";
         return query(sql, new ContractMapper(), productId);
     }
-
-    public List<Contract> getContractByCustomerId(int id) {
+    public List<Contract> getContractByCustomerId(int id){
         String sql = "SELECT * FROM contracts WHERE customer_id = ?";
         return query(sql, new ContractMapper(), id);
-    }
-
-    // Phần tổng quan
-    public int countByStatus(String status) {
-        String sql = "SELECT COUNT(*) FROM contracts WHERE status = ?";
-        return count(sql, status);
-    }
-
-    // 2. Đếm hợp đồng sắp hết hạn trong X ngày
-    public int countExpiringSoon(int days) {
-        // Logic: Ngày kết thúc nằm trong khoảng từ (Hôm nay) đến (Hôm nay + days)
-        String sql = "SELECT COUNT(*) FROM contracts " +
-                "WHERE status = 'ACTIVE' " +
-                "AND end_date BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL ? DAY)";
-        return count(sql, days);
-    }
-
-    public List<Contract> findRecent(int limit) {
-        String sql = "SELECT c.*, u.full_name, " +
-                "p.serial_number, pm.name AS model_name " +
-                "FROM contracts c " +
-                "JOIN users u ON c.customer_id = u.id " +
-                "JOIN products p ON c.product_id = p.id " +
-                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
-                "ORDER BY c.created_at DESC LIMIT ?";
-        return query(sql, new ContractMapper(), limit);
     }
 }

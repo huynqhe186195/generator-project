@@ -18,17 +18,6 @@ public class Maintenance {
 
     private Timestamp createdAt;  // created_at
     private Integer createdBy;    // created_by
-
-    private String actualDescription;
-
-    public String getActualDescription() {
-        return actualDescription;
-    }
-
-    public void setActualDescription(String actualDescription) {
-        this.actualDescription = actualDescription;
-    }
-
     private String productName;
 
     public String getProductName() {

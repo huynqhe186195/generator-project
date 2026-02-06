@@ -1,116 +1,82 @@
 <%@ page contentType="text/html; charset=UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<h4 class="mb-4">📝 Báo cáo hiện trường</h4>
+<h4 class="mb-3">🛠 Chi tiết công việc</h4>
 
-<div class="card shadow-sm">
+<!-- Thông tin công việc -->
+<div class="card mb-3">
   <div class="card-body">
+    <p><b>Mã máy:</b> ${task.productId}</p>
+    <p><b>Loại bảo trì:</b> ${task.type}</p>
+    <p><b>Ngày bảo trì:</b> ${task.maintenanceDate}</p>
 
-    <!-- THÔNG TIN CHUNG -->
-    <div class="row mb-3">
-      <div class="col-md-6">
-        <p><strong>Serial:</strong> ${task.productSerialNumber}</p>
-        <p><strong>Tên máy:</strong> ${task.productName}</p>
-      </div>
-      <div class="col-md-6">
-        <p><strong>Ngày bảo trì:</strong> ${task.maintenanceDate}</p>
-        <p><strong>Loại:</strong> ${task.type}</p>
-        <p>
-          <strong>Trạng thái:</strong>
-          <span class="badge
-            ${task.status == 'COMPLETED' ? 'bg-success' :
-              task.status == 'CANCELLED' ? 'bg-danger' : 'bg-warning'}">
-            ${task.status}
-          </span>
-        </p>
-      </div>
-    </div>
+    <p><b>Trạng thái:</b>
+      <span class="badge
+                ${task.status == 'SCHEDULED' ? 'bg-warning' :
+                  task.status == 'COMPLETED' ? 'bg-success' :
+                  'bg-secondary'}">
+        ${task.status}
+      </span>
+    </p>
 
-    <form method="post" action="<c:url value='/technical/task-report'/>">
-      <input type="hidden" name="id" value="${task.id}"/>
-
-      <!-- MÔ TẢ BAN ĐẦU -->
-      <div class="mb-3">
-        <label class="form-label fw-bold">Mô tả ban đầu</label>
-        <textarea rows="4"
-                  class="form-control"
-                  readonly>${task.description}</textarea>
-      </div>
-
-      <!-- BÁO CÁO HIỆN TRƯỜNG -->
-      <div class="mb-3">
-        <label class="form-label fw-bold">Báo cáo hiện trường</label>
-
-        <c:choose>
-          <c:when test="${task.status == 'SCHEDULED'}">
-            <textarea name="actualDescription"
-                      rows="5"
-                      class="form-control"
-                      required>${task.actualDescription}</textarea>
-          </c:when>
-
-          <c:otherwise>
-            <textarea rows="5"
-                      class="form-control"
-                      readonly>${task.actualDescription}</textarea>
-          </c:otherwise>
-        </c:choose>
-      </div>
-
-      <!-- VẬT TƯ ĐÃ SỬ DỤNG -->
-      <c:if test="${not empty materials}">
-        <div class="mt-4">
-          <h5 class="fw-bold">🧰 Vật tư đã sử dụng</h5>
-
-          <table class="table table-bordered mt-2">
-            <thead class="table-light">
-              <tr>
-                <th>#</th>
-                <th>Mã vật tư</th>
-                <th>Số lượng</th>
-                <th>Chi phí</th>
-              </tr>
-            </thead>
-            <tbody>
-              <c:forEach var="m" items="${materials}" varStatus="st">
-                <tr>
-                  <td>${st.index + 1}</td>
-                  <td>${m.sparePartId}</td>
-                  <td>${m.quantityUsed}</td>
-                  <td>
-                    <fmt:formatNumber value="${m.costAtTime}" type="number"/> đ
-                  </td>
-                </tr>
-              </c:forEach>
-            </tbody>
-          </table>
-        </div>
-      </c:if>
-
-
-      <div class="d-flex justify-content-between">
-        <a href="<c:url value='/technical/my-tasks'/>"
-           class="btn btn-secondary">
-          ← Quay lại
-        </a>
-
-        <!-- CHỈ SCHEDULED MỚI CÓ HÀNH ĐỘNG -->
-        <c:if test="${task.status == 'SCHEDULED'}">
-          <div>
-            <c:if test="${task.status == 'SCHEDULED' && task.type != 'REPAIR'}">
-                <button class="btn btn-primary">💾 Lưu báo cáo</button>
-            </c:if>
-
-
-            <a href="<c:url value='/technical/task-complete?id=${task.id}'/>"
-               class="btn btn-success ms-2"
-               onclick="return confirm('Xác nhận hoàn thành công việc?')">
-              ✅ Hoàn thành
-            </a>
-          </div>
-        </c:if>
-      </div>
-
-    </form>
+    <p><b>Mô tả ban đầu:</b> ${task.description}</p>
   </div>
 </div>
+
+<hr>
+
+<!-- Chỉ cho báo cáo khi CHƯA hoàn thành -->
+<c:if test="${task.status == 'SCHEDULED'}">
+  <h5 class="mb-3">📝 Báo cáo hiện trường</h5>
+
+  <form action="<c:url value='/technical/task-report'/>"
+        method="post"
+        enctype="multipart/form-data">
+
+    + <input type="hidden" name="id" value="${task.id}" />
+
+    <!-- Ghi chú lỗi -->
+    <div class="mb-3">
+      <label class="form-label">Mô tả lỗi / tình trạng máy</label>
+       <textarea class="form-control"
+                  name="description"
+                rows="3"
+                placeholder="Mô tả chi tiết tình trạng thực tế..."></textarea>
+    </div>
+
+    <!-- Ảnh hiện trường -->
+    <div class="mb-3">
+      <label class="form-label">Ảnh hiện trường</label>
+      <input type="file"
+             class="form-control"
+             name="images"
+             multiple />
+    </div>
+
+    <!-- Đề xuất linh kiện -->
+    <div class="mb-3">
+      <label class="form-label">Đề xuất thay linh kiện</label>
+      <textarea class="form-control"
+                name="sparePartSuggestion"
+                rows="2"
+                placeholder="Ví dụ: thay bugi, lọc nhớt..."></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      💾 Lưu báo cáo
+    </button>
+
+    <a class="btn btn-outline-secondary ms-2"
+       href="<c:url value='/technical/materials'/>">
+      📦 Kho vật tư
+    </a>
+  </form>
+</c:if>
+
+<!-- Khi đã hoàn thành hoặc hủy -->
+<c:if test="${task.status != 'SCHEDULED'}">
+  <div class="alert alert-info">
+    Công việc đã <b>${task.status}</b>.
+    Bạn chỉ có thể xem lại thông tin, không chỉnh sửa.
+  </div>
+</c:if>

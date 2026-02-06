@@ -17,14 +17,14 @@
 
                 <form action="contracts" method="post">
                     <input type="hidden" name="action" value="${not empty contract ? 'update' : 'create'}">
+
                     <c:if test="${not empty contract}">
                         <input type="hidden" name="id" value="${contract.id}">
                     </c:if>
 
-                    <h6 class="text-primary mb-3"><i class="fa fa-file-contract me-1"></i> Thông tin chung</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Số Hợp Đồng (*)</label>
+                            <label class="form-label fw-bold">Số Hợp Đồng</label>
                             <input type="text" name="contractNumber" class="form-control" required
                                    value="${contract.contractNumber}" placeholder="VD: HD-2026-001">
                         </div>
@@ -38,12 +38,9 @@
                         </div>
                     </div>
 
-                    <hr class="my-4 opacity-25">
-
-                    <h6 class="text-primary mb-3"><i class="fa fa-hdd me-1"></i> Thông tin Máy & Khách hàng</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Khách hàng (*)</label>
+                            <label class="form-label fw-bold">Khách hàng</label>
                             <select name="customerId" class="form-select" required>
                                 <option value="">-- Chọn khách hàng --</option>
                                 <c:forEach var="u" items="${customers}">
@@ -53,49 +50,23 @@
                                 </c:forEach>
                             </select>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Tên máy phát điện (*)</label>
-
-                            <input type="text" class="form-control" name="inputModelName"
-                                   list="modelSuggestions"
-                                   placeholder="Gõ tên máy để tìm (VD: Denyo...)"
-                                   value="${contract.productModelName}"
-                                   required autocomplete="off">
-
-                            <datalist id="modelSuggestions">
-                                <c:forEach items="${models}" var="m">
-                                    <option value="${m.name}"></option>
-                                </c:forEach>
-                            </datalist>
-                            <small class="text-muted fst-italic">
-                                <i class="fa fa-search me-1"></i>Hệ thống sẽ tự tìm ID dựa trên tên bạn nhập.
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Số Serial Máy (*)</label>
                             <input type="text" name="serialNumber" class="form-control" required
-                                   placeholder="VD: SN-2026-8888"
-                                   value="${contract.productSerial}">
-                            <small class="text-muted">
-                                Nếu là máy mới, hệ thống sẽ tự động tạo hồ sơ máy.
+                                   placeholder="Nhập chính xác số Serial trên hợp đồng (VD: SN-2026-8888)"
+                                   value="${contract.productSerial}"> <small class="text-muted">
+                                <i class="fa fa-info-circle"></i> Nếu máy mới, hệ thống sẽ tự động tạo hồ sơ máy.
                             </small>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Năm sản xuất</label>
-                            <input type="number" name="manufactureYear" class="form-control"
-                                   placeholder="VD: 2025" min="1990" max="2100"
-                                   value="${contract.productManufactureYear}">
-                        </div>
+                                <label class="form-label fw-bold">Năm sản xuất (Của máy)</label>
+                                <input type="number" name="manufactureYear" class="form-control"
+                                       placeholder="VD: 2025" min="1990" max="2100">
+                                <small class="text-muted">Nếu máy mới, hệ thống sẽ lưu năm này vào hồ sơ.</small>
+                            </div>
                     </div>
 
-                    <hr class="my-4 opacity-25">
-
-                    <h6 class="text-primary mb-3"><i class="fa fa-calendar-alt me-1"></i> Thời hạn bảo hành</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Ngày bắt đầu</label>
@@ -103,18 +74,16 @@
                                    value="${contract.startDate}">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Ngày kết thúc</label>
+                            <label class="form-label fw-bold">Ngày kết thúc (Hết bảo hành)</label>
                             <input type="date" name="endDate" class="form-control" required
                                    value="${contract.endDate}">
                         </div>
                     </div>
 
                     <div class="text-end mt-4">
-                        <a href="contracts" class="btn btn-secondary me-2">
-                            <i class="fa fa-arrow-left me-1"></i> Quay lại
-                        </a>
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="fa fa-save me-1"></i> Lưu Hợp Đồng
+                        <a href="contracts" class="btn btn-secondary me-2">Hủy bỏ</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save"></i> Lưu lại
                         </button>
                     </div>
                 </form>

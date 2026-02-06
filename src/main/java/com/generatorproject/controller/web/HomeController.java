@@ -57,7 +57,7 @@ public class HomeController extends HttpServlet {
         req.setAttribute("error", errorGenerators);
 
         // 6. Lấy danh sách thương hiệu
-        List<Brand> brands = bDao.getAllBrands();
+        List<Brand> brands = bDao.findAll();
         req.setAttribute("brands", brands);
 
         // 7. Chuyển hướng về trang chủ
