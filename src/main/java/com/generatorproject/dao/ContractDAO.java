@@ -193,6 +193,15 @@ public class ContractDAO extends GenericDAO<Contract> {
                     generatorName = m.group(1).trim();
             }
 
+            // D. TÊN MÁY PHÁT ĐIỆN
+            // Pattern: "-Tên máy phát điện: Denyo DCA-25ESK"
+            if (generatorName == null && text.toLowerCase().contains("tên máy")) {
+                Pattern p = Pattern.compile("Tên máy.*?[:.]\\s*(.*)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                Matcher m = p.matcher(text);
+                if (m.find()) generatorName = m.group(1).trim();
+            }
+
+            // E. SỐ SERIAL
             if (serialNumber == null) {
                 Pattern p = Pattern.compile("(Số Serial|Serial|Số máy|S/N).*?[:.]\\s*([A-Za-z0-9\\-]+)",
                         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
@@ -246,13 +255,17 @@ public class ContractDAO extends GenericDAO<Contract> {
         System.out.println("Máy: " + generatorName + " - SerialNumber: " + serialNumber);
         System.out.println("Mua ngày: " + purchaseDate);
 
+        // --- 4. XỬ LÝ DATABASE ---
+
         // Check trùng số HĐ
         if (findByContractNumber(contractNum) != null) {
             throw new Exception("Số hợp đồng '" + contractNum + "' đã tồn tại!");
         }
 
+        // Check User (Nếu chưa có thì báo lỗi hoặc tự tạo tùy nghiệp vụ)
         Users customer = userDao.findByEmail(emailCustomer);
         if (customer == null) {
+            // Gợi ý: Có thể throw Exception báo user tạo tài khoản trước
             throw new Exception("Email '" + emailCustomer + "' chưa có tài khoản hệ thống.");
         }
         // Nếu muốn update tên thật cho khách dựa trên hợp đồng:

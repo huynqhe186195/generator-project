@@ -90,4 +90,7 @@ public class ProductModel {
             return new ProductModel(this);
         }
     }
+    public void setDescription(String description) { this.description = description; }
+    public void setStatus(String status) { this.status = status; }
+
 }
