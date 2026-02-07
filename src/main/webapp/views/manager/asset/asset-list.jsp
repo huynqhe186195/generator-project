@@ -90,7 +90,7 @@
                                     </td>
                                     <td class="text-center">
                                         <c:choose>
-                                            <c:when test="${p.status == 'RUNNING'}">
+                                            <c:when test="${p.status == 'RUNNING' || p.status == 'READY'}">
                                                 <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
                                                     <i class="fa fa-check-circle"></i> Hoạt động
                                                 </span>

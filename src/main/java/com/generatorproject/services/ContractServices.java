@@ -5,6 +5,7 @@ import com.generatorproject.model.Contract;
 import com.generatorproject.model.Users;
 
 import java.io.InputStream;
+import java.sql.Date;
 import java.util.List;
 
 public class ContractServices implements IContractServices {
@@ -75,5 +76,10 @@ public class ContractServices implements IContractServices {
     @Override
     public List<Contract> findRecent(int limit) {
         return contractDAO.findRecent(limit);
+    }
+
+    @Override
+    public Long assignSerialToContract(Long contractId, String serialNumber, Long modelId, Date purchaseDate, Integer manufactureYear, String currentLocation) throws Exception {
+        return contractDAO.assignSerialToContract(contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
     }
 }

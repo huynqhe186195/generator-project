@@ -14,6 +14,7 @@ import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @WebServlet(urlPatterns = {"/manager/contracts"})
@@ -52,6 +53,9 @@ public class ManagementContractController extends HttpServlet {
             case "list":
                 showList(req, resp);
                 break;
+            case "assignSerialForm":
+                showAssignSerialForm(req, resp);
+                break;
             case "detail":
                 showDetail(req, resp); break;
         }
@@ -76,11 +80,36 @@ public class ManagementContractController extends HttpServlet {
             case "request_account":
                 handleRequestAccount(req, resp);
                 break;
+            case "assignSerialSubmit":
+                submitAssignSerial(req, resp);
+                break;
             default:
                 showList(req, resp);
                 break;
         }
     }
+
+    private void showAssignSerialForm(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            Long contractId = Long.parseLong(req.getParameter("id"));
+
+            Contract contract = contractService.findContractById(contractId);
+            if (contract == null) {
+                resp.sendError(404, "Không tìm thấy hợp đồng");
+                return;
+            }
+
+            req.setAttribute("contract", contract);
+            req.setAttribute("models", productModelServices.findAll()); // dropdown model
+
+            req.getRequestDispatcher("/views/manager/contract/assign_serial.jsp").forward(req, resp);
+        } catch (Exception e) {
+            req.setAttribute("error", e.getMessage());
+            req.getRequestDispatcher("/views/manager/contract/assign_serial.jsp").forward(req, resp);
+        }
+    }
+
 
     private void showList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String keyword = req.getParameter("keyword");
@@ -91,28 +120,34 @@ public class ManagementContractController extends HttpServlet {
 
     private void showDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            String idStr = req.getParameter("id");
-            if (idStr == null || idStr.isEmpty()) {
-                resp.sendRedirect("contracts?msg=error");
-                return;
-            }
-            Long id = Long.parseLong(idStr);
+            Long contractId = Long.parseLong(req.getParameter("id"));
 
-            Contract contract = contractService.findContractDetail(id);
-
+            Contract contract = contractService.findContractDetail(contractId);
             if (contract == null) {
                 req.setAttribute("errorMessage", "Không tìm thấy hợp đồng!");
                 showList(req, resp);
                 return;
             }
 
-            Product product = productServices.findProductBySerial(contract.getProductSerial());
-
             Users customer = userServices.findUserById(contract.getCustomerId());
 
+            List<Product> products = productServices.findByContractId(contractId);
+
+            String selectedSerial = req.getParameter("serial");
+            if ((selectedSerial == null || selectedSerial.isBlank()) && products != null && !products.isEmpty()) {
+                selectedSerial = products.get(0).getSerialNumber();
+            }
+
+            Product selectedProduct = null;
+            if (selectedSerial != null && !selectedSerial.isBlank()) {
+                selectedProduct = productServices.findProductDetailBySerial(selectedSerial);
+            }
+
             req.setAttribute("c", contract);
-            req.setAttribute("p", product);
             req.setAttribute("u", customer);
+            req.setAttribute("products", products);
+            req.setAttribute("p", selectedProduct);
+            req.setAttribute("selectedSerial", selectedSerial);
 
             req.getRequestDispatcher("/views/manager/contract/contract-detail.jsp").forward(req, resp);
 
@@ -122,9 +157,9 @@ public class ManagementContractController extends HttpServlet {
         }
     }
 
+
     private void showCreateForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setAttribute("customers", userServices.getUsersByRole(5));
-        req.setAttribute("products", productServices.findAll());
         req.getRequestDispatcher("/views/manager/contract/contract-form.jsp").forward(req, resp);
     }
 
@@ -137,6 +172,44 @@ public class ManagementContractController extends HttpServlet {
         req.setAttribute("products", productServices.findAll());
 
         req.getRequestDispatcher("/views/manager/contract/contract-edit.jsp").forward(req, resp);
+    }
+
+    private void submitAssignSerial(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            Long contractId = Long.parseLong(req.getParameter("contractId"));
+            String serialNumber = req.getParameter("serialNumber");
+
+            String modelIdStr = req.getParameter("modelId");
+            Long modelId = (modelIdStr == null || modelIdStr.isBlank()) ? null : Long.parseLong(modelIdStr);
+
+            String purchaseDateStr = req.getParameter("purchaseDate");
+            java.sql.Date purchaseDate = (purchaseDateStr == null || purchaseDateStr.isBlank())
+                    ? null : java.sql.Date.valueOf(purchaseDateStr.trim());
+
+            String manufactureYearStr = req.getParameter("manufactureYear");
+            Integer manufactureYear = (manufactureYearStr == null || manufactureYearStr.isBlank())
+                    ? null : Integer.parseInt(manufactureYearStr.trim());
+
+            String currentLocation = req.getParameter("currentLocation");
+
+            Long newProductId = contractService.assignSerialToContract(
+                    contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation
+            );
+
+            resp.sendRedirect(req.getContextPath()
+                    + "/manager/contracts?action=detail&id=" + contractId
+                    + "&assignedProductId=" + newProductId);
+        } catch (Exception e) {
+            try {
+                Long contractId = Long.parseLong(req.getParameter("contractId"));
+                req.setAttribute("contract", contractService.findContractById(contractId));
+                req.setAttribute("models", productModelServices.findAll());
+            } catch (Exception ignored) {}
+
+            req.setAttribute("error", e.getMessage());
+            req.getRequestDispatcher("/WEB-INF/views/contracts/assign_serial.jsp").forward(req, resp);
+        }
     }
 
 
@@ -202,25 +275,33 @@ public class ManagementContractController extends HttpServlet {
             resp.sendRedirect("contracts?msg=success&id=" + newContractId);
 
         } catch (Exception e) {
-            e.printStackTrace(); // In lỗi ra console để debug
+            String msg = e.getMessage();
 
-            String errorMsg = e.getMessage();
+            if (msg != null && msg.startsWith("MISSING_USER|")) {
+                String email = "";
+                String fullName = "Khách hàng mới";
+                String phone = "";
 
-            if (errorMsg != null && errorMsg.contains("chưa có tài khoản")) {
-                try {
-                    int start = errorMsg.indexOf("'");
-                    int end = errorMsg.lastIndexOf("'");
-
-                    if (start != -1 && end > start) {
-                        String extractedEmail = errorMsg.substring(start + 1, end);
-                        req.setAttribute("missingEmail", extractedEmail);
-                    }
-                } catch (Exception ex) {
+                String[] parts = msg.split("\\|");
+                for (String part : parts) {
+                    if (part.startsWith("email=")) email = part.substring("email=".length());
+                    if (part.startsWith("fullName=")) fullName = part.substring("fullName=".length());
+                    if (part.startsWith("phoneNumber=")) phone = part.substring("phoneNumber=".length());
                 }
+
+                req.setAttribute("missingEmail", email);
+                req.setAttribute("missingFullName", fullName);
+                req.setAttribute("missingPhone", phone);
+
+                req.setAttribute("errorMessage",
+                        "Email '" + email + "' chưa có tài khoản hệ thống. Bạn có muốn gửi yêu cầu Admin tạo mới không?");
+                showList(req, resp);
+                return;
             }
 
-            req.setAttribute("errorMessage", errorMsg);
-
+            // Lỗi thật sự mới in stacktrace
+            e.printStackTrace();
+            req.setAttribute("errorMessage", msg);
             showList(req, resp);
         }
     }
@@ -228,102 +309,64 @@ public class ManagementContractController extends HttpServlet {
     private void handleCreateManual(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         try {
             String contractNumber = req.getParameter("contractNumber");
-
-            String serialNumber = req.getParameter("serialNumber");
-            if (serialNumber == null || serialNumber.trim().isEmpty()) {
-                req.setAttribute("errorMessage", "Vui lòng nhập Số Serial!");
+            if (contractNumber == null || contractNumber.trim().isEmpty()) {
+                req.setAttribute("errorMessage", "Vui lòng nhập Số hợp đồng!");
                 showCreateForm(req, resp);
                 return;
             }
-            serialNumber = serialNumber.trim();
+            contractNumber = contractNumber.trim();
 
-            Long customerId = Long.parseLong(req.getParameter("customerId"));
-            Date startDate = Date.valueOf(req.getParameter("startDate"));
-            Date endDate = Date.valueOf(req.getParameter("endDate"));
-            String status = req.getParameter("status");
-
-            String inputModelName = req.getParameter("inputModelName");
-            if (inputModelName == null || inputModelName.trim().isEmpty()) {
-                req.setAttribute("errorMessage", "Vui lòng nhập tên máy phát điện!");
+            String customerIdStr = req.getParameter("customerId");
+            if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
+                req.setAttribute("errorMessage", "Vui lòng chọn Khách hàng!");
                 showCreateForm(req, resp);
                 return;
             }
+            Long customerId = Long.parseLong(customerIdStr);
 
-            ProductModel model = productModelServices.findByName(inputModelName);
-
-            if (model == null) {
-                req.setAttribute("errorMessage", "Lỗi: Dòng máy '" + inputModelName + "' chưa có trong danh mục! Vui lòng chọn tên chính xác từ gợi ý.");
-                req.setAttribute("contract", Contract.builder()
-                        .contractNumber(contractNumber)
-                        .productSerial(serialNumber)
-                        .startDate(startDate)
-                        .endDate(endDate)
-                        .build());
+            String startDateStr = req.getParameter("startDate");
+            String endDateStr = req.getParameter("endDate");
+            if (startDateStr == null || endDateStr == null || startDateStr.isEmpty() || endDateStr.isEmpty()) {
+                req.setAttribute("errorMessage", "Vui lòng chọn Ngày bắt đầu và Ngày kết thúc!");
                 showCreateForm(req, resp);
                 return;
             }
 
-            Product product = productServices.findProductBySerial(serialNumber);
+            Date startDate = Date.valueOf(startDateStr);
+            Date endDate = Date.valueOf(endDateStr);
 
-            if (product == null) {
-                product = new Product();
-                product.setSerialNumber(serialNumber);
-                product.setCustomerId(customerId);
-                product.setStatus("RUNNING");
+            // (optional) validate ngày
+            if (endDate.before(startDate)) {
+                req.setAttribute("errorMessage", "Ngày kết thúc phải >= ngày bắt đầu!");
+                showCreateForm(req, resp);
+                return;
+            }
 
-                product.setModelId((long) model.getId());
-                product.setModelName(model.getName()); // Set luôn tên để hiển thị (nếu cần)
-
-                product.setTotalRunningHours(0.0);
-                product.setPurchaseDate(startDate);
-
-                Users customer = userServices.findUserById(Math.toIntExact(customerId));
-                if (customer != null) {
-                    product.setCurrentLocation(customer.getFullName());
-                }
-
-                String manuYearStr = req.getParameter("manufactureYear");
-                if (manuYearStr != null && !manuYearStr.isEmpty()) {
-                    product.setManufactureYear(Integer.parseInt(manuYearStr));
-                }
-
-                Long newProductId = productServices.save(product);
-                product.setId(Math.toIntExact(newProductId));
-
-            } else {
-
-                if (product.getCustomerId() != null && product.getCustomerId() > 0
-                        && product.getCustomerId() != customerId) {
-                    req.setAttribute("errorMessage", "XUNG ĐỘT: Máy có Serial " + serialNumber + " đang thuộc về khách hàng khác!");
-                    showCreateForm(req, resp);
-                    return;
-                }
-
-                product.setCustomerId(customerId);
-                product.setStatus("RUNNING");
-                product.setModelId((long) model.getId());
-                product.setModelName(model.getName());
-
-                productServices.update(product);
+            Users manager = (Users) req.getSession().getAttribute("USERMODEL");
+            if (manager == null) {
+                resp.sendRedirect(req.getContextPath() + "/account/login");
+                return;
             }
 
             Contract c = Contract.builder()
                     .contractNumber(contractNumber)
                     .customerId(Math.toIntExact(customerId))
-                    .productId(product.getId())
                     .startDate(startDate)
                     .endDate(endDate)
-                    .status(status)
-                    .managerId(((Users) req.getSession().getAttribute("USERMODEL")).getId())
+                    .status("PENDING_SERIAL")
+                    .managerId(manager.getId())
                     .build();
 
-            contractService.saveContract(c);
+            Long newContractId = contractService.saveContract(c);
 
-            resp.sendRedirect("contracts?msg=create_success");
+            // Redirect sang màn gán serial
+            resp.sendRedirect(req.getContextPath()
+                    + "/manager/contracts?action=assignSerialForm&id=" + newContractId);
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect("contracts?msg=error");
+            req.setAttribute("errorMessage", e.getMessage());
+            showCreateForm(req, resp);
         }
     }
 
