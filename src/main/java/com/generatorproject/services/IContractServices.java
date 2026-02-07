@@ -4,6 +4,7 @@ import com.generatorproject.model.Contract;
 import com.generatorproject.model.Users;
 
 import java.io.InputStream;
+import java.sql.Date;
 import java.util.List;
 
 public interface IContractServices {
@@ -30,4 +31,11 @@ public interface IContractServices {
     int countExpiringSoon(int days);
 
     List<Contract> findRecent(int limit);
+
+    Long assignSerialToContract(Long contractId,
+                                String serialNumber,
+                                Long modelId,
+                                Date purchaseDate,
+                                Integer manufactureYear,
+                                String currentLocation) throws Exception;
 }

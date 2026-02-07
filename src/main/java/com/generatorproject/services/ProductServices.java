@@ -83,4 +83,14 @@ public class ProductServices implements IProductServices {
         }
         return productDAO.countAll();
     }
+
+    @Override
+    public List<Product> findByContractId(Long contractId) {
+        return  productDAO.findByContractId(contractId);
+    }
+
+    @Override
+    public Product findProductDetailBySerial(String serial) {
+        return productDAO.findProductDetailBySerial(serial);
+    }
 }

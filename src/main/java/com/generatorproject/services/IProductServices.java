@@ -18,4 +18,6 @@ public interface IProductServices {
     void updateRunningHours(Long id, Double newHours);
     List<Product> findAllWithPagination(int offset, int limit, String keyword);
     int countAll(String keyword);
+    List<Product> findByContractId(Long contractId);
+    Product findProductDetailBySerial(String serial);
 }

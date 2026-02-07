@@ -27,7 +27,7 @@
 
                     <div class="mb-3">
                         <c:choose>
-                            <c:when test="${p.status == 'RUNNING'}">
+                            <c:when test="${p.status == 'RUNNING' || p.status == 'READY'}">
                                 <span class="badge bg-success px-3 py-2 rounded-pill">Đang hoạt động</span>
                             </c:when>
                             <c:when test="${p.status == 'MAINTENANCE'}">
