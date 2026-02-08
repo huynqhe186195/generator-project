@@ -30,33 +30,34 @@ public class ContractDAO extends GenericDAO<Contract> {
     }
 
     public Long save(Contract contract) {
-        String sql = "INSERT INTO contracts (contract_number, customer_id, product_id, start_date, end_date, status, manager_id, created_at) "
-                +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+        String sql = "INSERT INTO contracts (contract_number, customer_id, start_date, end_date, status, manager_id, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, NOW())";
         return insert(sql,
                 contract.getContractNumber(),
                 contract.getCustomerId(),
-                contract.getProductId(),
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
-                contract.getManagerId());
+                contract.getManagerId()
+        );
     }
 
+
     public void update(Contract contract) {
-        String sql = "UPDATE contracts SET contract_number = ?, customer_id = ?, product_id = ?, " +
+        String sql = "UPDATE contracts SET contract_number = ?, customer_id = ?, " +
                 "start_date = ?, end_date = ?, status = ?, manager_id = ? WHERE id = ?";
 
         update(sql,
                 contract.getContractNumber(),
                 contract.getCustomerId(),
-                contract.getProductId(),
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
                 contract.getManagerId(),
-                contract.getId());
+                contract.getId()
+        );
     }
+
 
     public Contract findById(Long id) {
         String sql = "SELECT * FROM contracts WHERE id = ?";
@@ -64,41 +65,48 @@ public class ContractDAO extends GenericDAO<Contract> {
         return results.isEmpty() ? null : results.get(0);
     }
 
+
+
     public Contract findByIdWithDetails(Long id) {
-        String sql = "SELECT c.*, u.full_name, " +
-                "p.serial_number, p.manufacture_year, " +
-                "pm.name AS model_name " +
+        String sql = "SELECT c.*, u.full_name " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
-                "JOIN products p ON c.product_id = p.id " +
-                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
                 "WHERE c.id = ?";
 
         List<Contract> results = query(sql, new ContractMapper(), id);
-
-        if (results == null || results.isEmpty()) {
-            return null;
-        }
-
-        return results.get(0);
+        return results.isEmpty() ? null : results.get(0);
     }
+
+    public Contract findContractByProductId(Long productId) {
+        String sql = "SELECT c.* FROM contracts c " +
+                "JOIN products p ON p.contract_id = c.id " +
+                "WHERE p.id = ?";
+        List<Contract> results = query(sql, new ContractMapper(), productId);
+        return results.isEmpty() ? null : results.get(0);
+    }
+
 
     public List<Contract> searchAndFilter(String keyword, String status) {
         StringBuilder sql = new StringBuilder(
-                "SELECT c.*, u.full_name, p.serial_number " +
+                "SELECT c.*, u.full_name, " +
+                        " (SELECT p.serial_number " +
+                        "  FROM products p " +
+                        "  WHERE p.contract_id = c.id " +
+                        "  ORDER BY p.created_at DESC " +
+                        "  LIMIT 1) AS serial_number " +
                         "FROM contracts c " +
                         "JOIN users u ON c.customer_id = u.id " +
-                        "JOIN products p ON c.product_id = p.id " +
                         "WHERE 1=1 ");
 
         List<Object> params = new ArrayList<>();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (c.contract_number LIKE ? OR u.full_name LIKE ? OR p.serial_number LIKE ?) ");
-            String likeQuery = "%" + keyword.trim() + "%";
-            params.add(likeQuery);
-            params.add(likeQuery);
-            params.add(likeQuery);
+            sql.append("AND (c.contract_number LIKE ? OR u.full_name LIKE ? ");
+            sql.append("OR EXISTS (SELECT 1 FROM products p WHERE p.contract_id = c.id AND p.serial_number LIKE ?)) ");
+            String like = "%" + keyword.trim() + "%";
+            params.add(like);
+            params.add(like);
+            params.add(like);
         }
 
         if (status != null && !status.trim().isEmpty()) {
@@ -110,6 +118,7 @@ public class ContractDAO extends GenericDAO<Contract> {
 
         return query(sql.toString(), new ContractMapper(), params.toArray());
     }
+
 
     public boolean isContractNumberExists(String contractNumber) {
         String sql = "SELECT count(*) FROM contracts WHERE contract_number = ?";
@@ -128,206 +137,212 @@ public class ContractDAO extends GenericDAO<Contract> {
         return searchAndFilter(null, null);
     }
 
+    public Long assignSerialToContract(Long contractId,
+                                       String serialNumber,
+                                       Long modelId,
+                                       Date purchaseDate,
+                                       Integer manufactureYear,
+                                       String currentLocation) throws Exception {
+
+        if (contractId == null) throw new IllegalArgumentException("contractId không được null");
+        if (serialNumber == null || serialNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Serial number không được để trống");
+        }
+        serialNumber = serialNumber.trim();
+
+        // 1) Check contract tồn tại
+        Contract contract = findById(contractId);
+        if (contract == null) {
+            throw new Exception("Hợp đồng không tồn tại (id=" + contractId + ")");
+        }
+
+        // (optional) Không cho gán nếu đã terminated/expired
+        if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
+            throw new Exception("Hợp đồng đã TERMINATED nên không thể gán máy.");
+        }
+        if ("EXPIRED".equalsIgnoreCase(contract.getStatus())) {
+            throw new Exception("Hợp đồng đã EXPIRED nên không thể gán máy.");
+        }
+
+        // 2) Check user/customer tồn tại
+        Users customer = userDao.findUserById(contract.getCustomerId());
+        if (customer == null) {
+            throw new Exception("Không tìm thấy khách hàng của hợp đồng (customer_id=" + contract.getCustomerId() + ")");
+        }
+
+        // 3) Check serial đã tồn tại chưa (unique toàn hệ thống)
+        Product existed = productDAO.findBySerial(serialNumber);
+        if (existed != null) {
+            // Vì rule của bạn: mỗi serial chỉ thuộc 1 hợp đồng bán
+            throw new Exception("Serial '" + serialNumber + "' đã tồn tại trong hệ thống (đã thuộc một hợp đồng khác).");
+        }
+
+        // 4) (optional) validate modelId nếu bạn muốn bắt buộc model
+        if (modelId != null && modelId > 0) {
+            ProductModel model = productModelDAO.findById(modelId.intValue());
+            if (model == null) {
+                throw new Exception("Model không tồn tại (model_id=" + modelId + ")");
+            }
+        }
+
+        // 5) Tạo Product mới (vì product chỉ sinh ra sau khi có hợp đồng)
+        Product p = new Product();
+        p.setSerialNumber(serialNumber);
+        p.setContractId(contractId);                 // QUAN TRỌNG (NOT NULL)
+        p.setCustomerId((long) customer.getId());           // nếu bạn vẫn lưu customer_id trong products
+        p.setModelId(modelId);                       // có thể null nếu chưa chọn
+        p.setPurchaseDate(purchaseDate);             // có thể null
+        p.setManufactureYear(manufactureYear);       // có thể null
+        p.setCurrentLocation(
+                (currentLocation != null && !currentLocation.trim().isEmpty())
+                        ? currentLocation.trim()
+                        : customer.getFullName()
+        );
+
+        p.setStatus("READY");                        // hoặc RUNNING tuỳ bạn
+        p.setTotalRunningHours(0.0);
+
+        Long newProductId = productDAO.save(p);
+
+        // 6) Update contract status: PENDING_SERIAL -> ACTIVE
+        update("UPDATE contracts SET status = 'ACTIVE' WHERE id = ? AND status = 'PENDING_SERIAL'", contractId);
+
+        return newProductId;
+    }
+
+
     public Long importContractFromDocx(InputStream fileContent, Users manager) throws Exception {
 
         String contractNum = null;
         String emailCustomer = null;
-        String serialNumber = null;
-        int warrantyMonths = 12;
-        String generatorName = null;
         String buyerName = null;
-        Integer manufactureYear = null;
-        Date purchaseDate = null;
+        String phoneNumber = null;
 
-        // Read file word
-        XWPFDocument document = new XWPFDocument(fileContent);
-        List<XWPFParagraph> paragraphs = document.getParagraphs();
+        int warrantyMonths = 12; // default
 
-        // Note reading buyer
-        boolean isSectionA = false;
+        // Read file word (auto close)
+        try (XWPFDocument document = new XWPFDocument(fileContent)) {
+            List<XWPFParagraph> paragraphs = document.getParagraphs();
 
-        for (XWPFParagraph para : paragraphs) {
-            String text = para.getText();
+            boolean isSectionA = false; // Bên A / Bên mua
 
-            if (text.isEmpty())
-                continue;
+            for (XWPFParagraph para : paragraphs) {
+                String text = para.getText();
+                if (text == null) continue;
 
-            String lowerText = text.toLowerCase();
-            if (lowerText.contains("bên a") || lowerText.contains("bên mua")) {
-                isSectionA = true;
-            } else if (lowerText.contains("bên b") || lowerText.contains("bên bán")) {
-                isSectionA = false;
-            }
+                text = text.trim();
+                if (text.isEmpty()) continue;
 
-            if (contractNum == null && (text.contains("Số") || text.contains("No"))) {
-                Pattern p = Pattern.compile("Số\\s*[:.]?\\s*([A-Za-z0-9\\-]+)",
-                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find()) {
-                    contractNum = m.group(1).trim();
+                String lowerText = text.toLowerCase();
+
+                // Detect section buyer/seller
+                if (lowerText.contains("bên a") || lowerText.contains("bên mua")) {
+                    isSectionA = true;
+                } else if (lowerText.contains("bên b") || lowerText.contains("bên bán")) {
+                    isSectionA = false;
                 }
-            }
 
-            if (isSectionA && buyerName == null && text.contains("Đại diện")) {
-                Pattern p = Pattern.compile("Đại diện\\s*[:.]?\\s*(?:ông|bà)?\\s*([^.,\\-]+)",
-                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find()) {
-                    buyerName = m.group(1).trim();
-                    buyerName = buyerName.substring(0, 1).toUpperCase() + buyerName.substring(1);
+                // Contract number (allow "/" etc.)
+                if (contractNum == null && (text.contains("Số") || text.toLowerCase().contains("no"))) {
+                    Pattern p = Pattern.compile("(?i)Số\\s*[:.]?\\s*([^\\r\\n]+)");
+                    Matcher m = p.matcher(text);
+                    if (m.find()) {
+                        contractNum = m.group(1).trim();
+                        contractNum = contractNum.replaceAll("[\\s\\t]+$", "");
+                    }
                 }
-            }
 
-            if (emailCustomer == null && isSectionA && (text.contains("@"))) {
-                Pattern p = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6})");
-                Matcher m = p.matcher(text);
-                if (m.find())
-                    emailCustomer = m.group(1).trim();
-            }
-
-            // Pattern: "-Tên máy phát điện: Denyo DCA-25ESK"
-            if (generatorName == null && text.toLowerCase().contains("tên máy")) {
-                Pattern p = Pattern.compile("Tên máy.*?[:.]\\s*(.*)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find())
-                    generatorName = m.group(1).trim();
-            }
-
-            // D. TÊN MÁY PHÁT ĐIỆN
-            // Pattern: "-Tên máy phát điện: Denyo DCA-25ESK"
-            if (generatorName == null && text.toLowerCase().contains("tên máy")) {
-                Pattern p = Pattern.compile("Tên máy.*?[:.]\\s*(.*)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find()) generatorName = m.group(1).trim();
-            }
-
-            // E. SỐ SERIAL
-            if (serialNumber == null) {
-                Pattern p = Pattern.compile("(Số Serial|Serial|Số máy|S/N).*?[:.]\\s*([A-Za-z0-9\\-]+)",
-                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                Matcher m = p.matcher(text);
-                if (m.find()) {
-                    serialNumber = m.group(2).trim();
-                    if (serialNumber.endsWith("-"))
-                        serialNumber = serialNumber.substring(0, serialNumber.length() - 1);
+                // Buyer representative name
+                if (isSectionA && buyerName == null && text.contains("Đại diện")) {
+                    Pattern p = Pattern.compile(
+                            "Đại diện\\s*(?:là)?\\s*[:.]?\\s*(?:ông|bà)?\\s*(.+?)(?=\\s{2,}|\\t|\\s*Chức\\s*vụ|$)",
+                            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE
+                    );
+                    Matcher m = p.matcher(text);
+                    if (m.find()) {
+                        buyerName = m.group(1).trim();
+                        buyerName = buyerName.replaceAll("\\s+", " ");
+                    }
                 }
-            }
 
-            if (purchaseDate == null && text.toLowerCase().contains("ngày mua")) {
-                // Regex bắt format: 2026-12-07
-                Pattern p = Pattern.compile("(\\d{4}-\\d{1,2}-\\d{1,2})");
-                Matcher m = p.matcher(text);
-                if (m.find()) {
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        java.util.Date parsed = sdf.parse(m.group(1));
-                        purchaseDate = new java.sql.Date(parsed.getTime());
-                    } catch (Exception e) {
-                        System.out.println("Lỗi ngày tháng: " + e.getMessage());
+                // Email customer
+                if (emailCustomer == null && isSectionA && text.contains("@")) {
+                    // widen TLD length
+                    Pattern p = Pattern.compile("([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,63})");
+                    Matcher m = p.matcher(text);
+                    if (m.find()) {
+                        emailCustomer = m.group(1).trim();
+                    }
+                }
+
+                // Warranty months (optional) - e.g. "Thời gian bảo hành ... 12 tháng"
+                if (lowerText.contains("bảo hành") && lowerText.contains("tháng")) {
+                    Pattern p = Pattern.compile("(?i)\\b(\\d{1,2})\\s*tháng\\b");
+                    Matcher m = p.matcher(text);
+                    if (m.find()) {
+                        try {
+                            warrantyMonths = Integer.parseInt(m.group(1));
+                        } catch (Exception ignored) {}
+                    }
+                }
+
+                // Phone number
+                if (phoneNumber == null && isSectionA && lowerText.contains("điện thoại")) {
+                    Pattern p = Pattern.compile("điện\\s*thoại\\s*[:.]?\\s*([+]?\\d[\\d\\s.\\-()]{7,})",
+                            Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+                    Matcher m = p.matcher(text);
+                    if (m.find()) {
+                        String raw = m.group(1);
+
+                        String cleaned = raw.replaceAll("[^0-9+]", "");
+
+                        if (cleaned.startsWith("+84")) cleaned = "0" + cleaned.substring(3);
+
+                        phoneNumber = cleaned.trim();
                     }
                 }
             }
-
-            if (manufactureYear == null && text.toLowerCase().contains("năm sản xuất")) {
-                Pattern p = Pattern.compile("(\\d{4})");
-                Matcher m = p.matcher(text);
-                if (m.find())
-                    manufactureYear = Integer.parseInt(m.group(1));
-            }
         }
 
-        // validate data
-        if (contractNum == null || emailCustomer == null || serialNumber == null || generatorName == null) {
-            throw new Exception("File thiếu thông tin! Cần có: Số HĐ, Email, Tên máy và Serial.");
+        // Validate required fields (new flow)
+        if (contractNum == null || contractNum.trim().isEmpty() ||
+                emailCustomer == null || emailCustomer.trim().isEmpty()) {
+            throw new Exception("File thiếu thông tin! Cần có: Số HĐ và Email bên mua.");
         }
 
-        ProductModel model = productModelDAO.findByName(generatorName);
-
-        if (model == null) {
-            throw new Exception("Lỗi Import: Dòng máy '" + generatorName
-                    + "' chưa có trong danh mục hệ thống. Vui lòng tạo Model này trước!");
-        }
-
-        // In ra console để debug xem lấy đúng chưa
-        System.out.println("--- KẾT QUẢ IMPORT DOCX ---");
-        System.out.println("HĐ: " + contractNum);
-        System.out.println("Khách: " + buyerName + " (" + emailCustomer + ")");
-        System.out.println("Máy: " + generatorName + " - SerialNumber: " + serialNumber);
-        System.out.println("Mua ngày: " + purchaseDate);
-
-        // --- 4. XỬ LÝ DATABASE ---
-
-        // Check trùng số HĐ
+        // Check duplicate contract number
         if (findByContractNumber(contractNum) != null) {
             throw new Exception("Số hợp đồng '" + contractNum + "' đã tồn tại!");
         }
 
-        // Check User (Nếu chưa có thì báo lỗi hoặc tự tạo tùy nghiệp vụ)
+
+
+        // Check user exists
         Users customer = userDao.findByEmail(emailCustomer);
         if (customer == null) {
-            // Gợi ý: Có thể throw Exception báo user tạo tài khoản trước
-            throw new Exception("Email '" + emailCustomer + "' chưa có tài khoản hệ thống.");
-        }
-        // Nếu muốn update tên thật cho khách dựa trên hợp đồng:
-        else if (buyerName != null && !buyerName.isEmpty()) {
-            // customer.setFullName(buyerName);
-            // userDao.update(customer); // Uncomment nếu muốn update tên
+            String safeName = (buyerName == null || buyerName.isBlank()) ? "Khách hàng mới" : buyerName.trim();
+            throw new Exception("MISSING_USER|email=" + emailCustomer + "|fullName=" + safeName + "|phoneNumber=" + phoneNumber);
         }
 
-        // Check Product
-        Product product = productDAO.findBySerial(serialNumber);
-        if (product == null) {
-            // Máy mới -> Tạo mới
-            product = new Product();
-            product.setSerialNumber(serialNumber);
-            product.setTotalRunningHours(0.0);
-            product.setModelName(generatorName != null ? generatorName : "Máy phát điện (Import)");
-        } else {
-            // Máy cũ -> Check quyền sở hữu
-            if (product.getCustomerId() != null && product.getCustomerId() > 0
-                    && product.getCustomerId() != customer.getId()) {
-                throw new Exception("XUNG ĐỘT: Máy " + serialNumber + " đang thuộc về khách hàng khác!");
-            }
-            // Update lại tên model nếu trong file có thông tin chi tiết hơn
-            if (generatorName != null) {
-                product.setModelName(generatorName);
-            }
+        // Nếu muốn cập nhật tên từ hợp đồng
+        if (buyerName != null && !buyerName.isEmpty()) {
+             customer.setFullName(buyerName);
+             userDao.update(customer.getFullName());
         }
 
-        product.setModelId((long) model.getId());
-        product.setModelName(model.getName());
-
-        // Cập nhật thông tin máy
-        product.setCustomerId((long) customer.getId());
-        product.setStatus("RUNNING");
-        product.setCurrentLocation(customer.getFullName()); // Gán vị trí máy theo tên khách
-        if (manufactureYear != null)
-            product.setManufactureYear(manufactureYear);
-        if (purchaseDate != null)
-            product.setPurchaseDate(purchaseDate);
-
-        // Lưu máy
-        if (product.getId() == 0) {
-            Long newPid = productDAO.save(product);
-            product.setId(Math.toIntExact(newPid));
-        } else {
-            productDAO.update(product);
-        }
-
-        // Tạo Hợp đồng
+        // Create contract: PENDING_SERIAL (not ACTIVE yet)
         Date startDate = new java.sql.Date(System.currentTimeMillis());
         Calendar cal = Calendar.getInstance();
         cal.setTime(startDate);
-        cal.add(Calendar.MONTH, warrantyMonths); // Cộng thời gian bảo hành
-        java.sql.Date endDate = new java.sql.Date(cal.getTimeInMillis());
+        cal.add(Calendar.MONTH, warrantyMonths);
+        Date endDate = new java.sql.Date(cal.getTimeInMillis());
 
         Contract newContract = Contract.builder()
                 .contractNumber(contractNum)
                 .customerId(customer.getId())
-                .productId(product.getId())
                 .startDate(startDate)
                 .endDate(endDate)
-                .status("ACTIVE")
+                .status("PENDING_SERIAL")
                 .managerId(manager.getId())
                 .build();
 
@@ -366,11 +381,9 @@ public class ContractDAO extends GenericDAO<Contract> {
 
     public List<Contract> findRecent(int limit) {
         String sql = "SELECT c.*, u.full_name, " +
-                "p.serial_number, pm.name AS model_name " +
+                "(SELECT p.serial_number FROM products p WHERE p.contract_id = c.id ORDER BY p.created_at DESC LIMIT 1) AS serial_number " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
-                "JOIN products p ON c.product_id = p.id " +
-                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
                 "ORDER BY c.created_at DESC LIMIT ?";
         return query(sql, new ContractMapper(), limit);
     }

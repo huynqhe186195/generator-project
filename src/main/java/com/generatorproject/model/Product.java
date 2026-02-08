@@ -4,29 +4,27 @@ import java.sql.Date;
 import java.sql.Timestamp;
 
 public class Product {
-    // --- CỘT TRONG DATABASE (Bảng products) ---
     private int id;
-    private String serialNumber;      // Số khung/số máy
-    private Integer manufactureYear;  // Năm sản xuất
-    private String currentLocation;   // Vị trí lắp đặt
-    private String status;            // READY, BROKEN, MAINTENANCE...
-    private Double totalRunningHours; // Số giờ chạy
-    private Long customerId;          // FK: Chủ sở hữu
-    private Long modelId;             // FK: Dòng máy (Link sang product_models)
-    private Date purchaseDate;        // Ngày mua
+    private String serialNumber;
+    private Integer manufactureYear;
+    private String currentLocation;
+    private String status;
+    private Double totalRunningHours;
+    private Long customerId;
+    private Long modelId;
+    private Date purchaseDate;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private String brandName;
+    private Long contractId;
+    private String categoryName;
 
-    // --- TRƯỜNG PHỤ (Transient - Không lưu trong bảng products) ---
-    // Dùng để hiển thị khi JOIN với bảng product_models hoặc users
-    private String modelName;   // Tên dòng máy (VD: Honda EU22i)
-    private String customerName; // Tên khách hàng
+    private String modelName;
+    private String customerName;
 
     public Product() {
     }
 
-    // Constructor cho Builder
     private Product(Builder builder) {
         this.id = builder.id;
         this.serialNumber = builder.serialNumber;
@@ -42,9 +40,21 @@ public class Product {
         this.modelName = builder.modelName;
         this.customerName = builder.customerName;
         this.brandName = builder.brandName;
+        this.contractId = builder.contractId;
+        this.categoryName = builder.categoryName;
     }
 
-    // --- GETTERS & SETTERS ---
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+
+    public Long getContractId() {
+        return contractId;
+    }
+
+    public void setContractId(Long contractId) {
+        this.contractId = contractId;
+    }
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -87,7 +97,6 @@ public class Product {
     public String getBrandName() { return brandName; }
     public void setBrandName(String brandName) { this.brandName = brandName; }
 
-    // --- BUILDER PATTERN ---
     public static Builder builder() {
         return new Builder();
     }
@@ -107,7 +116,8 @@ public class Product {
         private String modelName;
         private String customerName;
         private String brandName;
-
+        private Long contractId;
+        private String categoryName;
 
         public Builder id(int id) { this.id = id; return this; }
         public Builder serialNumber(String serialNumber) { this.serialNumber = serialNumber; return this; }
@@ -123,7 +133,11 @@ public class Product {
         public Builder modelName(String modelName) { this.modelName = modelName; return this; }
         public Builder customerName(String customerName) { this.customerName = customerName; return this; }
         public Builder brandName(String brandName) { this.brandName = brandName; return this; }
-
+        public Builder contractId(Long contractId) {
+            this.contractId = contractId;
+            return this;
+        }
+        public Builder categoryName(String categoryName) { this.categoryName = categoryName; return this; }
 
         public Product build() {
             return new Product(this);
