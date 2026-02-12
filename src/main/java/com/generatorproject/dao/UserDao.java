@@ -256,5 +256,24 @@ public class UserDao extends GenericDAO<Users> {
         return query(sql, new UserMapper());
     }
 
+    public boolean hasContracts(int userId) {
+        String sql = "SELECT COUNT(*) FROM contracts WHERE customer_id = ?";
+        return count(sql, userId) > 0;
+    }
 
+    public boolean hasProducts(int userId) {
+        String sql = "SELECT COUNT(*) FROM products WHERE customer_id = ?";
+        return count(sql, userId) > 0;
+    }
+
+    public void anonymizeAndDeactivate(int id) {
+        String sql =
+                "UPDATE users SET status = 0, " +
+                        "full_name = CONCAT('DELETED_USER_', id), " +
+                        "email = CONCAT('deleted_', id, '@local'), " +
+                        "phone = NULL, " +
+                        "avatar_url = NULL " +
+                        "WHERE id = ?";
+        update(sql, id);
+    }
 }

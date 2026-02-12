@@ -28,6 +28,7 @@ public class ProductMapper implements RowMapper<Product> {
             try { builder.customerName(rs.getString("customer_name")); } catch (SQLException ignored) {}
             try { builder.brandName(rs.getString("brand_name")); } catch (Exception ignored) {}
             try { builder.categoryName(rs.getString("category_name")); } catch (Exception ignored) {}
+            try { builder.customerEmail(rs.getString("customer_email")); } catch (Exception ignored) {}
 
 
             return builder.build();
