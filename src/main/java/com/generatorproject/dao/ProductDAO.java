@@ -323,7 +323,7 @@ public class ProductDAO extends GenericDAO<Product> {
     }
 
     public Product findByIdWithDetails(Long id) {
-        String sql = "SELECT p.*, u.full_name AS customer_name, pm.name AS model_name " +
+        String sql = "SELECT p.*, u.full_name AS customer_name, pm.name AS model_name, u.email AS customer_email " +
                 "FROM products p " +
                 "LEFT JOIN users u ON p.customer_id = u.id " +
                 "LEFT JOIN product_models pm ON p.model_id = pm.id " +

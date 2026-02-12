@@ -48,7 +48,6 @@ public class ManagementProductController extends HttpServlet {
                 handleUpdateHours(req, resp);
                 break;
             default:
-                // Nếu không có action khớp thì quay về danh sách
                 resp.sendRedirect("assets");
                 break;
         }

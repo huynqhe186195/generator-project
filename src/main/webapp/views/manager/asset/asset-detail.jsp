@@ -92,6 +92,13 @@
                                     </div>
                                 </div>
 
+                                <div class="row mb-3">
+                                    <div class="col-md-4 text-muted">Email:</div>
+                                    <div class="col-md-8">
+                                        ${p.customerEmail != null ? p.customerEmail : 'Chưa cập nhật'}
+                                        </div>
+                                </div>
+
                                 <h6 class="text-primary border-bottom pb-2 mb-3 mt-4">Thông số Kỹ thuật</h6>
                                 <div class="row mb-3">
                                     <div class="col-md-4 text-muted">Năm sản xuất:</div>

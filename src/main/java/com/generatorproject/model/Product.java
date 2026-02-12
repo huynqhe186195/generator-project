@@ -18,6 +18,7 @@ public class Product {
     private String brandName;
     private Long contractId;
     private String categoryName;
+    private String customerEmail;
 
     private String modelName;
     private String customerName;
@@ -42,7 +43,11 @@ public class Product {
         this.brandName = builder.brandName;
         this.contractId = builder.contractId;
         this.categoryName = builder.categoryName;
+        this.customerEmail = builder.customerEmail;
     }
+
+    public String getCustomerEmail() { return customerEmail; }
+    public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }
 
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
@@ -118,6 +123,7 @@ public class Product {
         private String brandName;
         private Long contractId;
         private String categoryName;
+        private String customerEmail;
 
         public Builder id(int id) { this.id = id; return this; }
         public Builder serialNumber(String serialNumber) { this.serialNumber = serialNumber; return this; }
@@ -138,6 +144,7 @@ public class Product {
             return this;
         }
         public Builder categoryName(String categoryName) { this.categoryName = categoryName; return this; }
+        public Builder customerEmail(String customerEmail) { this.customerEmail = customerEmail; return this; }
 
         public Product build() {
             return new Product(this);
