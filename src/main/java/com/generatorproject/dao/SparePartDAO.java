@@ -71,7 +71,7 @@ public class SparePartDAO extends DbContext {
     }
 
     // =========================
-    // Lấy vật tư theo ID
+    // Lấy theo ID
     // =========================
     public SparePart getById(int id) {
         String sql = "SELECT * FROM spare_parts WHERE id = ?";
@@ -98,6 +98,107 @@ public class SparePartDAO extends DbContext {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // =========================
+    // INSERT
+    // =========================
+    public boolean insert(SparePart p) {
+        String sql = """
+            INSERT INTO spare_parts
+            (name, part_code, unit, quantity_in_stock, min_stock_alert, price, description)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """;
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, p.getName());
+            ps.setString(2, p.getPartCode());
+            ps.setString(3, p.getUnit());
+            ps.setInt(4, p.getQuantityInStock());
+            ps.setInt(5, p.getMinStockAlert());
+            ps.setDouble(6, p.getPrice());
+            ps.setString(7, p.getDescription());
+
+            boolean result = ps.executeUpdate() > 0;
+
+            ps.close();
+            conn.close();
+
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // =========================
+    // UPDATE
+    // =========================
+    public boolean update(SparePart p) {
+        String sql = """
+            UPDATE spare_parts
+            SET name=?,
+                part_code=?,
+                unit=?,
+                quantity_in_stock=?,
+                min_stock_alert=?,
+                price=?,
+                description=?
+            WHERE id=?
+        """;
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setString(1, p.getName());
+            ps.setString(2, p.getPartCode());
+            ps.setString(3, p.getUnit());
+            ps.setInt(4, p.getQuantityInStock());
+            ps.setInt(5, p.getMinStockAlert());
+            ps.setDouble(6, p.getPrice());
+            ps.setString(7, p.getDescription());
+            ps.setInt(8, p.getId());
+
+            boolean result = ps.executeUpdate() > 0;
+
+            ps.close();
+            conn.close();
+
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // =========================
+    // DELETE
+    // =========================
+    public boolean delete(int id) {
+        String sql = "DELETE FROM spare_parts WHERE id = ?";
+
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setInt(1, id);
+            boolean result = ps.executeUpdate() > 0;
+
+            ps.close();
+            conn.close();
+
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     // =========================

@@ -220,6 +220,22 @@ public class MaintenanceDAO extends DbContext {
     }
 
 
+    public boolean updateAssignmentStatus(int id, String assignmentStatus) {
+        String sql = """
+        UPDATE maintenances
+        SET assignment_status = ?
+        WHERE id = ?
+    """;
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, assignmentStatus);
+            ps.setInt(2, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 
     public boolean updateActualReport(int id, String actualReport) {
@@ -293,6 +309,9 @@ public class MaintenanceDAO extends DbContext {
         m.setCreatedAt(rs.getTimestamp("created_at"));
         m.setCreatedBy((Integer) rs.getObject("created_by"));
         m.setActualDescription(rs.getString("actual_description"));
+        m.setAssignmentStatus(rs.getString("assignment_status"));
+        m.setApprovedBy((Integer) rs.getObject("approved_by"));
+
 
         try {
             m.setProductName(rs.getString("product_name"));
