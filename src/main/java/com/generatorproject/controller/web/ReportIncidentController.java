@@ -73,7 +73,7 @@ public class ReportIncidentController extends HttpServlet {
             // 4. Tạo đối tượng SystemRequest
             SystemRequest request = new SystemRequest();
             request.setSenderId((long) user.getId());     // Người gửi là khách hàng
-            request.setReceiverRole("Staff");         // Người nhận là bộ phận Kỹ thuật (hoặc STAFF)
+            request.setReceiverRole("STAFF");         // Người nhận là bộ phận Kỹ thuật (hoặc STAFF)
             request.setRequestType("INCIDENT_REPORT");    // Loại yêu cầu
             request.setRequestData(jsonData);             // Dữ liệu JSON
             request.setStatus("NEW");                 // Trạng thái ban đầu
