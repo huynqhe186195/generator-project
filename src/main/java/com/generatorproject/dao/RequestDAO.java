@@ -139,4 +139,34 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
         String sql = "UPDATE system_requests SET status = ?, updated_at = NOW() WHERE id = ?";
         update(sql, status, id);
     }
+
+    //lấy tất cả request gửi cho role (status có thể null/blank)
+    public List<SystemRequest> findInboxByRole(String role, String status) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM system_requests WHERE receiver_role = ? ");
+        List<Object> params = new ArrayList<>();
+        params.add(role);
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append("AND status = ? ");
+            params.add(status.trim());
+        }
+
+        sql.append("ORDER BY created_at DESC");
+        return query(sql.toString(), new SystemRequestMapper(), params.toArray());
+    }
+
+    public void approve(long id, String responseMessage) {
+        String sql = "UPDATE system_requests " +
+                "SET status = 'APPROVED', response_message = ?, updated_at = NOW() " +
+                "WHERE id = ?";
+        update(sql, responseMessage, id);
+    }
+
+    public void reject(long id, String responseMessage) {
+        String sql = "UPDATE system_requests " +
+                "SET status = 'REJECTED', response_message = ?, updated_at = NOW() " +
+                "WHERE id = ?";
+        update(sql, responseMessage, id);
+    }
+
 }

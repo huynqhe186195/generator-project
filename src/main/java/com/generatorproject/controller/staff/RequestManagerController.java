@@ -63,7 +63,7 @@ public class RequestManagerController extends HttpServlet {
             // 3. Cập nhật vào DB
             sysReq.setRequestData(updatedJsonData);
             sysReq.setStatus("WAITING_MANAGER"); // Chuyển trạng thái sang Chờ Manager duyệt
-            sysReq.setReceiverRole("Manager");
+            sysReq.setReceiverRole("MANAGER");
             sysReq.setSenderId((long)user.getId());
 
 
