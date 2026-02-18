@@ -3,6 +3,7 @@ package com.generatorproject.controller.technical;
 import com.generatorproject.dao.MaintenanceDAO;
 import com.generatorproject.dao.MaintenanceSparePartDAO;
 import com.generatorproject.dao.SparePartDAO;
+import com.generatorproject.dao.SystemRequestDAO;
 import com.generatorproject.model.Maintenance;
 import com.generatorproject.model.MaintenanceSparePart;
 import com.generatorproject.model.SparePart;
@@ -25,7 +26,12 @@ import java.util.List;
         "/technical/materials",
         "/technical/repair-report",
         "/technical/add-material",
-        "/technical/profile"
+        "/technical/profile",
+        "/technical/send-quote",
+        "/technical/spare-part-create",
+        "/technical/spare-part-update",
+        "/technical/spare-part-delete",
+
 })
 public class TechnicalController extends HttpServlet {
 
@@ -117,6 +123,27 @@ public class TechnicalController extends HttpServlet {
                         return;
                     }
                 }
+                if ("REPAIR".equals(task.getType())) {
+                    // nếu đã gửi quote thì phải APPROVED mới cho complete
+                    String asg = task.getAssignmentStatus(); // DRAFT/QUOTE_PENDING/APPROVED/REJECTED
+
+                    if ("QUOTE_PENDING".equals(asg)) {
+                        resp.sendRedirect(req.getContextPath()
+                                + "/technical/repair-report?id=" + id + "&error=quote_pending");
+                        return;
+                    }
+                    if ("REJECTED".equals(asg)) {
+                        resp.sendRedirect(req.getContextPath()
+                                + "/technical/repair-report?id=" + id + "&error=quote_rejected");
+                        return;
+                    }
+                    // nếu bạn bắt buộc REPAIR phải được duyệt báo giá:
+                    if (!"APPROVED".equals(asg)) {
+                        resp.sendRedirect(req.getContextPath()
+                                + "/technical/repair-report?id=" + id + "&error=quote_not_approved");
+                        return;
+                    }
+                }
 
                 maintenanceDAO.updateStatus(id, "COMPLETED");
                 resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
@@ -179,6 +206,26 @@ public class TechnicalController extends HttpServlet {
                 break;
             }
 
+            case "/technical/spare-part-update": {
+
+                String editIdRaw = req.getParameter("editId");
+
+                SparePartDAO spareDAO = new SparePartDAO();
+
+                if (editIdRaw != null) {
+                    int editId = Integer.parseInt(editIdRaw);
+                    SparePart editPart = spareDAO.getById(editId);
+                    req.setAttribute("editPart", editPart);
+                }
+
+                // load lại danh sách
+                List<SparePart> parts = spareDAO.getAll();
+                req.setAttribute("parts", parts);
+
+                req.getRequestDispatcher("/views/Technical/materials.jsp")
+                        .forward(req, resp);
+                break;
+            }
 
 
 
@@ -305,6 +352,135 @@ public class TechnicalController extends HttpServlet {
             return;
         }
 
+        if ("/technical/send-quote".equals(path)) {
+            int id = Integer.parseInt(req.getParameter("id"));
+            String laborRaw = req.getParameter("laborCost");
+            double laborCost = 0;
+            try { laborCost = Double.parseDouble(laborRaw); } catch (Exception ignore) {}
+
+            Maintenance task = maintenanceDAO.getById(id);
+
+            // bảo vệ nghiệp vụ
+            if (task == null || task.getTechnicianId() != currentUser.getId()) {
+                resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
+                return;
+            }
+            // chỉ cho gửi khi đang làm
+            if (!"SCHEDULED".equals(task.getStatus())) {
+                resp.sendRedirect(req.getContextPath() + "/technical/repair-report?id=" + id);
+                return;
+            }
+
+            MaintenanceSparePartDAO mspDAO = new MaintenanceSparePartDAO();
+            List<MaintenanceSparePart> materials = mspDAO.getByMaintenanceId(id); // nếu DAO bạn khác tên thì đổi lại
+
+            if (materials == null || materials.isEmpty()) {
+                resp.sendRedirect(req.getContextPath()
+                        + "/technical/repair-report?id=" + id + "&error=nomaterial");
+                return;
+            }
+
+            double partsTotal = 0;
+            for (MaintenanceSparePart m : materials) {
+                partsTotal += m.getCostAtTime(); // KHÔNG nhân lại
+            }
+
+            double grandTotal = partsTotal + laborCost;
+
+            // Tạo JSON request_data (không phụ thuộc lib)
+            StringBuilder json = new StringBuilder();
+            json.append("{");
+            json.append("\"maintenanceId\":").append(id).append(",");
+            json.append("\"technicianId\":").append(currentUser.getId()).append(",");
+            json.append("\"actualDescription\":").append(toJsonString(task.getActualDescription())).append(",");
+            json.append("\"laborCost\":").append(laborCost).append(",");
+            json.append("\"partsTotal\":").append(partsTotal).append(",");
+            json.append("\"grandTotal\":").append(grandTotal).append(",");
+            json.append("\"materials\":[");
+            for (int i = 0; i < materials.size(); i++) {
+                MaintenanceSparePart m = materials.get(i);
+                json.append("{")
+                        .append("\"sparePartId\":").append(m.getSparePartId()).append(",")
+                        .append("\"quantityUsed\":").append(m.getQuantityUsed()).append(",")
+                        .append("\"costAtTime\":").append(m.getCostAtTime())
+                        .append("}");
+                if (i < materials.size() - 1) json.append(",");
+            }
+            json.append("]}");
+
+            // Insert vào system_requests
+            // ==> Bạn cần SystemRequestDAO (mình đưa mẫu bên dưới)
+            SystemRequestDAO srDAO = new SystemRequestDAO();
+            srDAO.createRequest(
+                    currentUser.getId(),
+                    "MANAGER",
+                    "REPAIR_QUOTE",
+                    json.toString()
+            );
+
+            // (tuỳ bạn) update status task để khóa nghiệp vụ chờ duyệt
+            maintenanceDAO.updateStatus(id, "QUOTE_PENDING");
+
+            resp.sendRedirect(req.getContextPath()
+                    + "/technical/repair-report?id=" + id + "&msg=quote_sent");
+            return;
+        }
+
+        // =========================
+// CRUD SPARE PART
+// =========================
+        if ("/technical/spare-part-create".equals(path)) {
+
+            SparePartDAO spareDAO = new SparePartDAO();
+
+            SparePart p = new SparePart();
+            p.setName(req.getParameter("name"));
+            p.setPartCode(req.getParameter("partCode"));
+            p.setUnit(req.getParameter("unit"));
+            p.setQuantityInStock(Integer.parseInt(req.getParameter("quantityInStock")));
+            p.setMinStockAlert(Integer.parseInt(req.getParameter("minStockAlert")));
+            p.setPrice(Double.parseDouble(req.getParameter("price")));
+            p.setDescription(req.getParameter("description"));
+
+            spareDAO.insert(p);
+
+            resp.sendRedirect(req.getContextPath() + "/technical/materials");
+            return;
+        }
+
+        if ("/technical/spare-part-update".equals(path)) {
+
+            SparePartDAO spareDAO = new SparePartDAO();
+
+            SparePart p = new SparePart();
+            p.setId(Integer.parseInt(req.getParameter("id")));
+            p.setName(req.getParameter("name"));
+            p.setPartCode(req.getParameter("partCode"));
+            p.setUnit(req.getParameter("unit"));
+            p.setQuantityInStock(Integer.parseInt(req.getParameter("quantityInStock")));
+            p.setMinStockAlert(Integer.parseInt(req.getParameter("minStockAlert")));
+            p.setPrice(Double.parseDouble(req.getParameter("price")));
+            p.setDescription(req.getParameter("description"));
+
+            spareDAO.update(p);
+
+            resp.sendRedirect(req.getContextPath() + "/technical/materials");
+            return;
+        }
+
+        if ("/technical/spare-part-delete".equals(path)) {
+
+            int id = Integer.parseInt(req.getParameter("id"));
+
+            SparePartDAO spareDAO = new SparePartDAO();
+            spareDAO.delete(id);
+
+            resp.sendRedirect(req.getContextPath() + "/technical/materials");
+            return;
+        }
+
+
+
         if ("/technical/task-complete".equals(path)) {
 
             int id = Integer.parseInt(req.getParameter("id"));
@@ -326,6 +502,30 @@ public class TechnicalController extends HttpServlet {
                         + "/technical/repair-report?id=" + id + "&error=noreport");
                 return;
             }
+
+
+            if ("REPAIR".equals(task.getType())) {
+                // nếu đã gửi quote thì phải APPROVED mới cho complete
+                String asg = task.getAssignmentStatus(); // DRAFT/QUOTE_PENDING/APPROVED/REJECTED
+
+                if ("QUOTE_PENDING".equals(asg)) {
+                    resp.sendRedirect(req.getContextPath()
+                            + "/technical/repair-report?id=" + id + "&error=quote_pending");
+                    return;
+                }
+                if ("REJECTED".equals(asg)) {
+                    resp.sendRedirect(req.getContextPath()
+                            + "/technical/repair-report?id=" + id + "&error=quote_rejected");
+                    return;
+                }
+                // nếu bạn bắt buộc REPAIR phải được duyệt báo giá:
+                if (!"APPROVED".equals(asg)) {
+                    resp.sendRedirect(req.getContextPath()
+                            + "/technical/repair-report?id=" + id + "&error=quote_not_approved");
+                    return;
+                }
+            }
+
 
             // 🔥 LƯU BÁO CÁO
             maintenanceDAO.updateActualReport(id, actualDescription);
@@ -378,5 +578,14 @@ public class TechnicalController extends HttpServlet {
     }
 
 
+    private String toJsonString(String s) {
+        if (s == null) return "null";
+        String escaped = s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
+        return "\"" + escaped + "\"";
+    }
 
 }
