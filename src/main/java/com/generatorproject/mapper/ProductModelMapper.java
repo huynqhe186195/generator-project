@@ -28,4 +28,5 @@ public class ProductModelMapper implements RowMapper<ProductModel> {
             return null;
         }
     }
+
 }

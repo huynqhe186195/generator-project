@@ -343,10 +343,6 @@ public class ProductDAO extends GenericDAO<Product> {
     }
 
     public void update(Product product) {
-        if (product.getContractId() == null) {
-            throw new IllegalArgumentException("contractId không được null");
-        }
-
         String sql = "UPDATE products SET serial_number = ?, manufacture_year = ?, current_location = ?, " +
                 "status = ?, total_running_hours = ?, customer_id = ?, purchase_date = ?, model_id = ?, updated_at = NOW() " +
                 "WHERE id = ?";
