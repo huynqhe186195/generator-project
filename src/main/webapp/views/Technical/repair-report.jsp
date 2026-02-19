@@ -28,23 +28,7 @@
 
         <!-- ===== FORM LƯU + HOÀN THÀNH ===== -->
         <c:if test="${task.status == 'SCHEDULED'}">
-            <form method="post" action="<c:url value='/technical/task-complete'/>">
 
-                <input type="hidden" name="id" value="${task.id}"/>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Báo cáo hiện trường</label>
-                    <textarea name="actualDescription"
-                              class="form-control"
-                              rows="4"
-                              required>${task.actualDescription}</textarea>
-                </div>
-
-                <button class="btn btn-success"
-                        onclick="return confirm('Xác nhận hoàn thành sửa chữa?')">
-                    ✅ Lưu báo cáo & Hoàn thành
-                </button>
-            </form>
         </c:if>
 
         <c:if test="${task.status != 'SCHEDULED'}">
@@ -80,6 +64,27 @@
                 </c:forEach>
                 </tbody>
             </table>
+        </c:if>
+
+        <c:if test="${task.status == 'SCHEDULED'}">
+            <hr/>
+            <h5 class="mt-3">💰 Báo giá sửa chữa</h5>
+
+            <form method="post" action="<c:url value='/technical/send-quote'/>" class="row g-3">
+                <input type="hidden" name="id" value="${task.id}"/>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Chi phí công (labor)</label>
+                    <input type="number" step="0.01" min="0" name="laborCost" class="form-control" value="0"/>
+                </div>
+
+                <div class="col-md-8 d-flex align-items-end">
+                    <button class="btn btn-warning w-100"
+                            onclick="return confirm('Gửi báo giá cho Manager duyệt? Sau khi gửi sẽ chuyển trạng thái chờ duyệt.')">
+                        📩 Gửi báo giá cho Manager duyệt
+                    </button>
+                </div>
+            </form>
         </c:if>
 
 

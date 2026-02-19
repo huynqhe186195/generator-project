@@ -1,7 +1,6 @@
 package com.generatorproject.dao;
 
 import com.generatorproject.mapper.ContractMapper;
-import com.generatorproject.mapper.ProductMapper;
 import com.generatorproject.model.Contract;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.ProductModel;
@@ -20,23 +19,22 @@ import java.util.regex.Pattern;
 
 public class ContractDAO extends GenericDAO<Contract> {
 
-    private UserDao userDao;
-    private ProductDAO productDAO;
-    private ProductModelDAO productModelDAO;
+    private final UserDao userDao;
+    private final ProductDAO productDAO;
+    private final ProductModelDAO productModelDAO;
 
-    public ContractDAO(){
+    public ContractDAO() {
         userDao = new UserDao();
         productDAO = new ProductDAO();
         productModelDAO = new ProductModelDAO();
     }
 
     public Long save(Contract contract) {
-        String sql = "INSERT INTO contracts (contract_number, customer_id, product_id, start_date, end_date, status, manager_id, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+        String sql = "INSERT INTO contracts (contract_number, customer_id, start_date, end_date, status, manager_id, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, NOW())";
         return insert(sql,
                 contract.getContractNumber(),
                 contract.getCustomerId(),
-                contract.getProductId(),
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
@@ -44,14 +42,14 @@ public class ContractDAO extends GenericDAO<Contract> {
         );
     }
 
+
     public void update(Contract contract) {
-        String sql = "UPDATE contracts SET contract_number = ?, customer_id = ?, product_id = ?, " +
+        String sql = "UPDATE contracts SET contract_number = ?, customer_id = ?, " +
                 "start_date = ?, end_date = ?, status = ?, manager_id = ? WHERE id = ?";
 
         update(sql,
                 contract.getContractNumber(),
                 contract.getCustomerId(),
-                contract.getProductId(),
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
@@ -60,43 +58,57 @@ public class ContractDAO extends GenericDAO<Contract> {
         );
     }
 
+
     public Contract findById(Long id) {
         String sql = "SELECT * FROM contracts WHERE id = ?";
         List<Contract> results = query(sql, new ContractMapper(), id);
         return results.isEmpty() ? null : results.get(0);
     }
 
-    //Tìm kiếm theo ID nhưng có JOIN để lấy Tên khách & Serial (Dùng cho trang chi tiết)
+
+
     public Contract findByIdWithDetails(Long id) {
-        String sql = "SELECT c.*, u.full_name, p.serial_number " +
+        String sql = "SELECT c.*, u.full_name " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
-                "JOIN products p ON c.product_id = p.id " +
                 "WHERE c.id = ?";
+
         List<Contract> results = query(sql, new ContractMapper(), id);
         return results.isEmpty() ? null : results.get(0);
     }
 
+    public Contract findContractByProductId(Long productId) {
+        String sql = "SELECT c.* FROM contracts c " +
+                "JOIN products p ON p.contract_id = c.id " +
+                "WHERE p.id = ?";
+        List<Contract> results = query(sql, new ContractMapper(), productId);
+        return results.isEmpty() ? null : results.get(0);
+    }
+
+
     public List<Contract> searchAndFilter(String keyword, String status) {
         StringBuilder sql = new StringBuilder(
-                "SELECT c.*, u.full_name, p.serial_number " +
+                "SELECT c.*, u.full_name, " +
+                        " (SELECT p.serial_number " +
+                        "  FROM products p " +
+                        "  WHERE p.contract_id = c.id " +
+                        "  ORDER BY p.created_at DESC " +
+                        "  LIMIT 1) AS serial_number " +
                         "FROM contracts c " +
                         "JOIN users u ON c.customer_id = u.id " +
-                        "JOIN products p ON c.product_id = p.id " +
                         "WHERE 1=1 ");
 
         List<Object> params = new ArrayList<>();
 
-        // Logic tìm kiếm theo từ khóa (Số HĐ hoặc Tên khách hoặc Serial máy)
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (c.contract_number LIKE ? OR u.full_name LIKE ? OR p.serial_number LIKE ?) ");
-            String likeQuery = "%" + keyword.trim() + "%";
-            params.add(likeQuery);
-            params.add(likeQuery);
-            params.add(likeQuery);
+            sql.append("AND (c.contract_number LIKE ? OR u.full_name LIKE ? ");
+            sql.append("OR EXISTS (SELECT 1 FROM products p WHERE p.contract_id = c.id AND p.serial_number LIKE ?)) ");
+            String like = "%" + keyword.trim() + "%";
+            params.add(like);
+            params.add(like);
+            params.add(like);
         }
 
-        // Logic lọc theo trạng thái (ACTIVE, EXPIRED...)
         if (status != null && !status.trim().isEmpty()) {
             sql.append("AND c.status = ? ");
             params.add(status);
@@ -104,11 +116,10 @@ public class ContractDAO extends GenericDAO<Contract> {
 
         sql.append("ORDER BY c.created_at DESC");
 
-        // Chuyển List params thành mảng Object[] để truyền vào GenericDAO
         return query(sql.toString(), new ContractMapper(), params.toArray());
     }
 
-    // 6. Kiểm tra số hợp đồng đã tồn tại chưa (Dùng cho Import)
+
     public boolean isContractNumberExists(String contractNumber) {
         String sql = "SELECT count(*) FROM contracts WHERE contract_number = ?";
         int count = count(sql, contractNumber);
@@ -125,6 +136,80 @@ public class ContractDAO extends GenericDAO<Contract> {
     public List<Contract> findAll() {
         return searchAndFilter(null, null);
     }
+
+    public Long assignSerialToContract(Long contractId,
+                                       String serialNumber,
+                                       Long modelId,
+                                       Date purchaseDate,
+                                       Integer manufactureYear,
+                                       String currentLocation) throws Exception {
+
+        if (contractId == null) throw new IllegalArgumentException("contractId không được null");
+        if (serialNumber == null || serialNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Serial number không được để trống");
+        }
+        serialNumber = serialNumber.trim();
+
+        // 1) Check contract tồn tại
+        Contract contract = findById(contractId);
+        if (contract == null) {
+            throw new Exception("Hợp đồng không tồn tại (id=" + contractId + ")");
+        }
+
+        // (optional) Không cho gán nếu đã terminated/expired
+        if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
+            throw new Exception("Hợp đồng đã TERMINATED nên không thể gán máy.");
+        }
+        if ("EXPIRED".equalsIgnoreCase(contract.getStatus())) {
+            throw new Exception("Hợp đồng đã EXPIRED nên không thể gán máy.");
+        }
+
+        // 2) Check user/customer tồn tại
+        Users customer = userDao.findUserById(contract.getCustomerId());
+        if (customer == null) {
+            throw new Exception("Không tìm thấy khách hàng của hợp đồng (customer_id=" + contract.getCustomerId() + ")");
+        }
+
+        // 3) Check serial đã tồn tại chưa (unique toàn hệ thống)
+        Product existed = productDAO.findBySerial(serialNumber);
+        if (existed != null) {
+            // Vì rule của bạn: mỗi serial chỉ thuộc 1 hợp đồng bán
+            throw new Exception("Serial '" + serialNumber + "' đã tồn tại trong hệ thống (đã thuộc một hợp đồng khác).");
+        }
+
+        // 4) (optional) validate modelId nếu bạn muốn bắt buộc model
+        if (modelId != null && modelId > 0) {
+            ProductModel model = productModelDAO.findById(modelId.intValue());
+            if (model == null) {
+                throw new Exception("Model không tồn tại (model_id=" + modelId + ")");
+            }
+        }
+
+        // 5) Tạo Product mới (vì product chỉ sinh ra sau khi có hợp đồng)
+        Product p = new Product();
+        p.setSerialNumber(serialNumber);
+        p.setContractId(contractId);                 // QUAN TRỌNG (NOT NULL)
+        p.setCustomerId((long) customer.getId());           // nếu bạn vẫn lưu customer_id trong products
+        p.setModelId(modelId);                       // có thể null nếu chưa chọn
+        p.setPurchaseDate(purchaseDate);             // có thể null
+        p.setManufactureYear(manufactureYear);       // có thể null
+        p.setCurrentLocation(
+                (currentLocation != null && !currentLocation.trim().isEmpty())
+                        ? currentLocation.trim()
+                        : customer.getFullName()
+        );
+
+        p.setStatus("READY");                        // hoặc RUNNING tuỳ bạn
+        p.setTotalRunningHours(0.0);
+
+        Long newProductId = productDAO.save(p);
+
+        // 6) Update contract status: PENDING_SERIAL -> ACTIVE
+        update("UPDATE contracts SET status = 'ACTIVE' WHERE id = ? AND status = 'PENDING_SERIAL'", contractId);
+
+        return newProductId;
+    }
+
 
     public Long importContractFromDocx(InputStream fileContent, Users manager) throws Exception {
 
@@ -165,7 +250,6 @@ public class ContractDAO extends GenericDAO<Contract> {
                 if (m.find()) {
                     contractNum = m.group(1).trim();
                 }
-            }
 
             // B. TÊN NGƯỜI MUA (Chỉ lấy trong vùng Bên A)
             // Pattern: "Đại diện: ông huy., giám đốc." -> Lấy "huy"
@@ -177,7 +261,6 @@ public class ContractDAO extends GenericDAO<Contract> {
                     // Xử lý sạch tên (viết hoa chữ cái đầu)
                     buyerName = buyerName.substring(0, 1).toUpperCase() + buyerName.substring(1);
                 }
-            }
 
             // C. EMAIL (Lấy email đầu tiên tìm thấy trong phần Bên A)
             if (emailCustomer == null && isSectionA && (text.contains("@"))) {
@@ -202,7 +285,6 @@ public class ContractDAO extends GenericDAO<Contract> {
                     serialNumber = m.group(2).trim();
                     if (serialNumber.endsWith("-")) serialNumber = serialNumber.substring(0, serialNumber.length() - 1);
                 }
-            }
 
             // F. NGÀY MUA (Format yyyy-mm-dd trong file của bạn)
             if (purchaseDate == null && text.toLowerCase().contains("ngày mua")) {
@@ -216,7 +298,6 @@ public class ContractDAO extends GenericDAO<Contract> {
                         purchaseDate = new java.sql.Date(parsed.getTime());
                     } catch (Exception e) { System.out.println("Lỗi ngày tháng: " + e.getMessage()); }
                 }
-            }
 
             // G. NĂM SẢN XUẤT
             if (manufactureYear == null && text.toLowerCase().contains("năm sản xuất")) {
@@ -313,7 +394,7 @@ public class ContractDAO extends GenericDAO<Contract> {
                 .productId(product.getId())
                 .startDate(startDate)
                 .endDate(endDate)
-                .status("ACTIVE")
+                .status("PENDING_SERIAL")
                 .managerId(manager.getId())
                 .build();
 
@@ -322,15 +403,40 @@ public class ContractDAO extends GenericDAO<Contract> {
 
     public void delete(Long id) {
         String sql = "DELETE FROM contracts WHERE id = ?";
-        update(sql, id); // Sử dụng hàm update() của GenericDAO
+        update(sql, id);
     }
 
     public List<Contract> findByProductId(Long productId) {
         String sql = "SELECT * FROM contracts WHERE product_id = ?";
         return query(sql, new ContractMapper(), productId);
     }
-    public List<Contract> getContractByCustomerId(int id){
+
+    public List<Contract> getContractByCustomerId(int id) {
         String sql = "SELECT * FROM contracts WHERE customer_id = ?";
         return query(sql, new ContractMapper(), id);
+    }
+
+    // Phần tổng quan
+    public int countByStatus(String status) {
+        String sql = "SELECT COUNT(*) FROM contracts WHERE status = ?";
+        return count(sql, status);
+    }
+
+    // 2. Đếm hợp đồng sắp hết hạn trong X ngày
+    public int countExpiringSoon(int days) {
+        // Logic: Ngày kết thúc nằm trong khoảng từ (Hôm nay) đến (Hôm nay + days)
+        String sql = "SELECT COUNT(*) FROM contracts " +
+                "WHERE status = 'ACTIVE' " +
+                "AND end_date BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL ? DAY)";
+        return count(sql, days);
+    }
+
+    public List<Contract> findRecent(int limit) {
+        String sql = "SELECT c.*, u.full_name, " +
+                "(SELECT p.serial_number FROM products p WHERE p.contract_id = c.id ORDER BY p.created_at DESC LIMIT 1) AS serial_number " +
+                "FROM contracts c " +
+                "JOIN users u ON c.customer_id = u.id " +
+                "ORDER BY c.created_at DESC LIMIT ?";
+        return query(sql, new ContractMapper(), limit);
     }
 }

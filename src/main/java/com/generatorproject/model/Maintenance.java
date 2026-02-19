@@ -51,6 +51,14 @@ public class Maintenance {
         this.productSerialNumber = productSerialNumber;
     }
 
+    private String assignmentStatus;  // DRAFT | QUOTE_PENDING | APPROVED | REJECTED
+    private Integer approvedBy;
+
+    public String getAssignmentStatus() { return assignmentStatus; }
+    public void setAssignmentStatus(String assignmentStatus) { this.assignmentStatus = assignmentStatus; }
+
+    public Integer getApprovedBy() { return approvedBy; }
+    public void setApprovedBy(Integer approvedBy) { this.approvedBy = approvedBy; }
 
     public Maintenance() {}
 
