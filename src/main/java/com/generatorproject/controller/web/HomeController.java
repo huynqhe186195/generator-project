@@ -28,7 +28,7 @@ public class HomeController extends HttpServlet {
         UserDao uDao = new UserDao();
         HomeStatsDAO hsDao = new HomeStatsDAO();
 
-        // ===== STATS (KHÔNG DÙNG ProductDAO) =====
+        // ===== STATS  =====
         HomeStats stats = hsDao.getStatsForHome();   // totalProducts + totalHours
         stats.setTotalUsers(uDao.countUsers());      // totalUsers vẫn dùng UserDao
         req.setAttribute("stats", stats);
