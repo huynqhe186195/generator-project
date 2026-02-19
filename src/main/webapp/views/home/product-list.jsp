@@ -313,6 +313,14 @@
 
 <main>
     <div class="container" data-aos="fade-up">
+
+        <c:if test="${param.message == 'success'}">
+            <div class="alert alert-success alert-dismissible fade show mb-4">
+                <i class="fas fa-check-circle me-2"></i>Gửi báo cáo sự cố thành công!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+
         <div class="main-card">
 
             <div class="card-header-soft">
@@ -322,7 +330,6 @@
                 <p class="section-sub">Dùng bộ lọc để tìm thiết bị theo Brand hoặc Từ khóa.</p>
             </div>
 
-            <!-- FILTER -->
             <div class="filter-wrap">
                 <form method="get" action="<c:url value='/product-list'/>">
                     <div class="filter-grid">
@@ -364,7 +371,6 @@
                 </form>
             </div>
 
-            <!-- TABLE -->
             <div class="table-responsive px-3 pb-3">
                 <table class="table table-hover align-middle mb-0">
                     <thead>
@@ -380,30 +386,69 @@
                     <c:forEach items="${products}" var="p">
                         <tr>
                             <td class="ps-3">
-                                <span class="fw-bold">${p.serialNumber}</span>
+                                <span class="fw-bold text-dark font-monospace">${p.serialNumber}</span>
                             </td>
 
                             <td>
-                                <p class="name mb-1">${p.modelName}</p>
-                                <div class="meta">
+                                <p class="name mb-1 fw-bold text-primary">${p.modelName}</p>
+                                <div class="meta text-muted small">
                                     <span class="fw-bold">${p.brandName}</span>
                                     <c:if test="${not empty p.currentLocation}">
-                                        &nbsp;•&nbsp; <span>${p.currentLocation}</span>
+                                        &nbsp;•&nbsp; <i class="fas fa-map-marker-alt me-1"></i>${p.currentLocation}
                                     </c:if>
                                 </div>
                             </td>
 
                             <td>
-                                <span class="product-badge">${p.status}</span>
+                                <c:choose>
+                                    <c:when test="${p.status == 'MAINTENANCE'}">
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                            <i class="fas fa-clock me-1"></i>Chờ phản hồi
+                        </span>
+                                    </c:when>
+                                    <c:when test="${p.status == 'RUNNING'}">
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">Đang hoạt động</span>
+                                    </c:when>
+                                    <c:when test="${p.status == 'BROKEN'}">
+                                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">Hỏng hóc</span>
+                                    </c:when>
+<%--                                    <c:when test="${p.status == 'MAINTENANCE'}">--%>
+<%--                                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">Đang bảo trì</span>--%>
+<%--                                    </c:when>--%>
+                                    <c:otherwise>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">${p.status}</span>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
 
                             <td class="text-end pe-3">
-                                <form action="<c:url value='/product/report-error'/>" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="${p.id}">
-                                    <button type="submit" class="btn btn-sm btn-danger btn-pill px-3">
-                                        <i class="fas fa-triangle-exclamation me-1"></i>Báo lỗi
-                                    </button>
-                                </form>
+                                <c:choose>
+                                    <%-- Trường hợp 1: Đang chờ xử lý -> Nút xám, Disable --%>
+                                    <c:when test="${p.status == 'MAINTENANCE'}">
+                                        <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled
+                                                title="Bạn đã gửi báo cáo cho máy này rồi">
+                                            <i class="fas fa-hourglass-half me-1"></i>Đã gửi báo cáo
+                                        </button>
+                                    </c:when>
+
+                                    <%-- Trường hợp 2: Máy đang bảo trì/hỏng -> Disable (Tuỳ chọn logic của bạn) --%>
+                                    <%-- Nếu bạn muốn máy đang hỏng vẫn báo cáo tiếp được thì bỏ đoạn when này đi --%>
+                                    <c:when test="${p.status == 'BROKEN'}">
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3"
+                                                onclick="openReportModal('${p.id}', '${p.modelName}', '${p.serialNumber}')">
+                                            <i class="fas fa-triangle-exclamation me-1"></i>Báo tiếp
+                                        </button>
+                                    </c:when>
+
+                                    <%-- Trường hợp 3: Bình thường -> Cho phép báo lỗi --%>
+                                    <c:otherwise>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger btn-pill px-3"
+                                                onclick="openReportModal('${p.id}', '${p.modelName}', '${p.serialNumber}')">
+                                            <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
+                                        </button>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>
@@ -421,7 +466,6 @@
                 </table>
             </div>
 
-            <!-- PAGINATION -->
             <c:if test="${totalPages > 1}">
                 <div class="px-3 pb-4">
                     <nav>
@@ -494,10 +538,86 @@
     </div>
 </footer>
 
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <form action="<c:url value='/report-incident'/>" method="POST">
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Báo Cáo Sự Cố
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="fas fa-server fa-2x me-3 opacity-50"></i>
+                        <div>
+                            <div class="small text-uppercase fw-bold opacity-75">Thiết bị gặp lỗi:</div>
+                            <div class="fs-5 fw-bold text-dark" id="modalProductName"></div>
+                            <div class="small">Serial: <span class="font-monospace fw-bold" id="modalProductSerial"></span></div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="productId" id="modalProductId" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Loại sự cố <span class="text-danger">*</span></label>
+                            <select name="issueType" class="form-select py-2" required>
+                                <option value="">-- Chọn loại yêu cầu --</option>
+                                <option value="MAINTENANCE">Bảo dưỡng định kỳ</option>
+                                <option value="REPLACEMENT">Thay thế phụ tùng</option>
+                                <option value="BROKEN">Báo Lỗi / Hỏng hóc</option>
+                                <option value="OTHER">Vấn đề khác</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Ngày đề xuất kiểm tra</label>
+                            <input type="date" name="preferredDate" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Tiêu đề ngắn <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="VD: Máy không đề nổ được..." required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Mô tả chi tiết</label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Mô tả kỹ hơn về hiện tượng..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-bold">
+                        <i class="fas fa-paper-plane me-2"></i> Gửi Báo Cáo
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 <script>
     AOS.init({ duration: 800, once: true });
+
+    // HÀM MỞ MODAL VÀ ĐIỀN DỮ LIỆU TỰ ĐỘNG
+    function openReportModal(id, name, serial) {
+        document.getElementById('modalProductId').value = id;
+        document.getElementById('modalProductName').innerText = name;
+        document.getElementById('modalProductSerial').innerText = serial;
+
+        var myModal = new bootstrap.Modal(document.getElementById('reportModal'));
+        myModal.show();
+    }
 </script>
 
 </body>

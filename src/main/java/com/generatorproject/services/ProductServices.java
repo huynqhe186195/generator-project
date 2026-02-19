@@ -37,4 +37,60 @@ public class ProductServices implements IProductServices {
     public Long save(Product product) {
         return  productDAO.save(product);
     }
+
+    @Override
+    public Product getProductById(int id) {
+        return productDAO.getProductById(id);
+    }
+
+    @Override
+    public List<Product> getAllProductByCustomerId(int id) {
+        return productDAO.getAllProductByCustomerId(id);
+    }
+
+    @Override
+    public int countAll() {
+        return productDAO.countAll();
+    }
+
+    @Override
+    public List<Product> findAllWithPagination(int offset, int limit) {
+        return productDAO.findAllWithPagination(offset, limit);
+    }
+
+    @Override
+    public Product findByIdWithDetails(Long id) {
+        return productDAO.findByIdWithDetails(id);
+    }
+
+    @Override
+    public void updateRunningHours(Long id, Double newHours) {
+        productDAO.updateRunningHours(id, newHours);
+    }
+
+    @Override
+    public List<Product> findAllWithPagination(int offset, int limit, String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return productDAO.findByKeywordWithPagination(keyword.trim(), offset, limit);
+        }
+        return productDAO.findAllWithPagination(offset, limit);
+    }
+
+    @Override
+    public int countAll(String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return productDAO.countByKeyword(keyword.trim());
+        }
+        return productDAO.countAll();
+    }
+
+    @Override
+    public List<Product> findByContractId(Long contractId) {
+        return  productDAO.findByContractId(contractId);
+    }
+
+    @Override
+    public Product findProductDetailBySerial(String serial) {
+        return productDAO.findProductDetailBySerial(serial);
+    }
 }
