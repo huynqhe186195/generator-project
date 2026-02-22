@@ -59,5 +59,20 @@ public class RequestServices implements IRequestServices {
         requestDAO.updateStatus(id, status);
     }
 
+    @Override
+    public List<SystemRequest> findInboxByRole(String role, String status) {
+        return requestDAO.findInboxByRole(role, status);
+    }
+
+    @Override
+    public void approve(long id, String responseMessage) {
+        requestDAO.approve(id, responseMessage);
+    }
+
+    @Override
+    public void reject(long id, String responseMessage) {
+        requestDAO.reject(id, responseMessage);
+    }
+
 
 }
