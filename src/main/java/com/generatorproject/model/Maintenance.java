@@ -18,6 +18,17 @@ public class Maintenance {
 
     private Timestamp createdAt;  // created_at
     private Integer createdBy;    // created_by
+
+    private String actualDescription;
+
+    public String getActualDescription() {
+        return actualDescription;
+    }
+
+    public void setActualDescription(String actualDescription) {
+        this.actualDescription = actualDescription;
+    }
+
     private String productName;
 
     public String getProductName() {
@@ -40,6 +51,14 @@ public class Maintenance {
         this.productSerialNumber = productSerialNumber;
     }
 
+    private String assignmentStatus;  // DRAFT | QUOTE_PENDING | APPROVED | REJECTED
+    private Integer approvedBy;
+
+    public String getAssignmentStatus() { return assignmentStatus; }
+    public void setAssignmentStatus(String assignmentStatus) { this.assignmentStatus = assignmentStatus; }
+
+    public Integer getApprovedBy() { return approvedBy; }
+    public void setApprovedBy(Integer approvedBy) { this.approvedBy = approvedBy; }
 
     public Maintenance() {}
 
