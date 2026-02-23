@@ -32,7 +32,7 @@ public interface IUserServices {
 
     void deleteToken(String token);
 
-    void deleteUser(int id);
+    void deleteUser(int targetUserId, Users actor) throws Exception;
 
     int countUsersByFilter(String keyword, Integer roleId, Integer status);
 

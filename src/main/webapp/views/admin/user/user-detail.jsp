@@ -1,115 +1,200 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> <title>Chi tiết người dùng</title>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+<title>Chi tiết người dùng</title>
 
 <div class="container-fluid">
-    <div class="mb-3">
-        <a href="<c:url value='/admin/user/user-list'/>" class="text-decoration-none text-secondary">
+
+    <!-- Back + Edit -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <a href="<c:url value='/admin/user/user-list'/>"
+           class="text-decoration-none text-secondary">
             <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+
+        <a class="btn btn-outline-primary btn-sm"
+           href="<c:url value='/admin/user/updateUser?id=${user.id}'/>">
+            <i class="fas fa-pen me-1"></i> Chỉnh sửa
         </a>
     </div>
 
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card shadow border-0 text-center p-4 h-100">
-                <div class="mb-3">
-                    <c:choose>
-                        <%-- Trường hợp 1: Link online (http...) --%>
-                        <c:when test="${user.avatarUrl != null && fn:startsWith(user.avatarUrl, 'http')}">
-                            <img src="${user.avatarUrl}"
-                                 class="rounded-circle img-thumbnail"
-                                 width="150" height="150"
-                                 style="object-fit: cover;"
-                                 alt="${user.fullName}">
-                        </c:when>
+    <div class="row g-4">
 
-                        <%-- Trường hợp 2: Ảnh Upload (local) --%>
-                        <c:otherwise>
-                            <img src="${pageContext.request.contextPath}/${user.avatarUrl}"
-                                 class="rounded-circle img-thumbnail"
-                                 width="150" height="150"
-                                 style="object-fit: cover;"
-                                 alt="${user.fullName}"
-                                 onerror="this.src='https://ui-avatars.com/api/?name=${user.fullName}&background=random&size=150'">
-                            <%-- onerror: Nếu ảnh lỗi -> Tự tạo avatar theo tên --%>
-                        </c:otherwise>
-                    </c:choose>
-                </div>
+        <!-- LEFT: Profile Card -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center p-4">
 
-                <h4 class="mb-1">${user.fullName}</h4>
+                    <!-- Avatar -->
+                    <div class="mb-3">
+                        <c:choose>
+                            <c:when test="${user.avatarUrl != null && fn:startsWith(user.avatarUrl,'http')}">
+                                <img src="${user.avatarUrl}"
+                                     class="rounded-circle img-thumbnail"
+                                     width="140" height="140"
+                                     style="object-fit:cover;"
+                                     alt="${user.fullName}">
+                            </c:when>
+                            <c:otherwise>
+                                <img src="${pageContext.request.contextPath}/${user.avatarUrl}"
+                                     class="rounded-circle img-thumbnail"
+                                     width="140" height="140"
+                                     style="object-fit:cover;"
+                                     alt="${user.fullName}"
+                                     onerror="this.src='https://ui-avatars.com/api/?name=${fn:escapeXml(user.fullName)}&background=0D6EFD&color=fff&size=140'">
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
 
-                <p class="mb-3">
-                    <c:choose>
-                        <c:when test="${user.roleId == 1}"><span class="badge bg-danger">Quản trị viên</span></c:when>
-                        <c:when test="${user.roleId == 2}"><span class="badge bg-info text-dark">Quản lý</span></c:when>
-                        <c:when test="${user.roleId == 3}"><span class="badge bg-secondary">Nhân viên</span></c:when>
-                        <c:when test="${user.roleId == 4}"><span class="badge bg-secondary">Nhân viên kỹ thuật</span></c:when>
-                        <c:when test="${user.roleId == 5}"><span class="badge bg-secondary">Khách hàng</span></c:when>
-                        <c:when test="${user.roleId == 6}"><span class="badge bg-secondary">IT</span></c:when>
-                        <c:otherwise><span class="badge bg-light text-dark">Chưa phân quyền</span></c:otherwise>
-                    </c:choose>
-                </p>
+                    <!-- Name -->
+                    <h4 class="mb-1">${user.fullName}</h4>
+                    <div class="text-muted small mb-3">
+                        ID: <span class="fw-semibold">#${user.id}</span>
+                    </div>
 
-                <div>
-                    <c:if test="${user.status == 1}">
-                        <span class="badge bg-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i> Đang hoạt động</span>
-                    </c:if>
-                    <c:if test="${user.status != 1}">
-                        <span class="badge bg-secondary px-3 py-2 rounded-pill"><i class="fas fa-lock me-1"></i> Đã bị khóa</span>
-                    </c:if>
-                </div>
+                    <!-- Role Badge -->
+                    <div class="mb-3">
+                        <c:choose>
+                            <c:when test="${user.roleId == 1}">
+                                <span class="badge bg-danger px-3 py-2">
+                                    <i class="fas fa-shield-alt me-1"></i> Quản trị viên
+                                </span>
+                            </c:when>
+                            <c:when test="${user.roleId == 2}">
+                                <span class="badge bg-info text-dark px-3 py-2">
+                                    <i class="fas fa-user-tie me-1"></i> Quản lý
+                                </span>
+                            </c:when>
+                            <c:when test="${user.roleId == 5}">
+                                <span class="badge bg-secondary px-3 py-2">
+                                    <i class="fas fa-user-tag me-1"></i> Khách hàng
+                                </span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge bg-light text-dark px-3 py-2">
+                                    Người dùng
+                                </span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
 
-                <div class="mt-4 d-grid gap-2">
-                    <c:if test="${canDelete}">
-                        <a href="<c:url value='/admin/user/deleteUser?id=${user.id}'/>"
-                           class="text-decoration-none"
-                           onclick="return confirm('CẢNH BÁO: Hành động này không thể hoàn tác!\nBạn có chắc chắn muốn xóa người dùng ${user.fullName} không?');">
+                    <!-- Status -->
+                    <div class="mb-4">
+                        <c:choose>
+                            <c:when test="${user.status == 1}">
+                                <span class="badge bg-success px-3 py-2 rounded-pill">
+                                    <i class="fas fa-check-circle me-1"></i> Active
+                                </span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge bg-dark px-3 py-2 rounded-pill">
+                                    <i class="fas fa-lock me-1"></i> Deactive
+                                </span>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
 
-                           <button class="btn btn-outline-danger w-100">
-                              <i class="fas fa-trash-alt me-2"></i> Xóa tài khoản
-                           </button>
-                        </a>
-                    </c:if>
+                    <!-- Actions: ONLY DELETE -->
+                    <div class="d-grid gap-2">
+
+                        <!-- Delete only if not Admin -->
+                        <c:if test="${canDelete && user.roleId != 1}">
+                            <a class="btn btn-outline-danger"
+                               href="<c:url value='/admin/user/deleteUser?id=${user.id}'/>"
+                               onclick="return confirm('CẢNH BÁO: Không thể hoàn tác!\nBạn chắc chắn muốn xóa ${user.fullName} không?');">
+                                <i class="fas fa-trash-alt me-2"></i> Xóa tài khoản
+                            </a>
+                        </c:if>
+
+                        <!-- Admin warning -->
+                        <c:if test="${user.roleId == 1}">
+                            <div class="alert alert-warning py-2 mb-0 small text-start">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Tài khoản <b>Admin</b> không được phép xóa trên giao diện.
+                            </div>
+                        </c:if>
+
+                    </div>
+
                 </div>
             </div>
         </div>
 
-        <div class="col-md-8">
-            <div class="card shadow border-0 h-100">
-                <div class="card-header bg-white py-3">
-                    <h5 class="m-0 font-weight-bold text-primary">Thông tin hồ sơ</h5>
+        <!-- RIGHT: Detail Info -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white py-3 d-flex justify-content-between">
+                    <h5 class="m-0 text-primary fw-bold">
+                        <i class="fas fa-id-card me-2"></i> Thông tin hồ sơ
+                    </h5>
+                    <span class="text-muted small">
+                        Tạo lúc: <b>${user.createdAt}</b>
+                    </span>
                 </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <label class="col-sm-3 fw-bold text-secondary">ID Người dùng:</label>
-                        <div class="col-sm-9 text-dark">#${user.id}</div>
-                    </div>
-                    <hr class="my-2">
 
-                    <div class="row mb-3">
-                        <label class="col-sm-3 fw-bold text-secondary">Họ và tên:</label>
-                        <div class="col-sm-9 fw-bold">${user.fullName}</div>
-                    </div>
-                    <hr class="my-2">
+                <div class="card-body p-4">
+                    <div class="row g-3">
 
-                    <div class="row mb-3">
-                        <label class="col-sm-3 fw-bold text-secondary">Email:</label>
-                        <div class="col-sm-9"><a href="mailto:${user.email}" class="text-decoration-none">${user.email}</a></div>
-                    </div>
-                    <hr class="my-2">
+                        <!-- FullName -->
+                        <div class="col-md-6">
+                            <div class="p-3 rounded border bg-light">
+                                <div class="text-muted small">Họ và tên</div>
+                                <div class="fw-bold fs-5">${user.fullName}</div>
+                            </div>
+                        </div>
 
-                    <div class="row mb-3">
-                        <label class="col-sm-3 fw-bold text-secondary">Số điện thoại:</label>
-                        <div class="col-sm-9">${user.phone}</div>
-                    </div>
-                    <hr class="my-2">
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <div class="p-3 rounded border bg-light">
+                                <div class="text-muted small">Email</div>
+                                <div class="fw-semibold">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    ${user.email}
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="row mb-3">
-                        <label class="col-sm-3 fw-bold text-secondary">Ngày tạo:</label>
-                        <div class="col-sm-9">${user.createdAt}</div>
+                        <!-- Phone -->
+                        <div class="col-md-6">
+                            <div class="p-3 rounded border bg-light">
+                                <div class="text-muted small">Số điện thoại</div>
+                                <div class="fw-semibold">
+                                    <c:choose>
+                                        <c:when test="${user.phone != null && user.phone != ''}">
+                                            <i class="fas fa-phone me-1"></i> ${user.phone}
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="text-muted">Chưa cập nhật</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-6">
+                            <div class="p-3 rounded border bg-light">
+                                <div class="text-muted small">Trạng thái</div>
+                                <div class="fw-semibold">
+                                    <c:choose>
+                                        <c:when test="${user.status == 1}">
+                                            <span class="badge bg-success">Active</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge bg-dark">Deactive</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
+
             </div>
         </div>
+
     </div>
 </div>

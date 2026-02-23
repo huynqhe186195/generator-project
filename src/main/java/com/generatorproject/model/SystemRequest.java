@@ -1,6 +1,12 @@
 package com.generatorproject.model;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SystemRequest {
     private Long id;
@@ -106,7 +112,20 @@ public class SystemRequest {
             return new SystemRequest(this);
         }
     }
-
+    public Map<String, Object> getInfo() {
+        if (this.requestData == null || this.requestData.trim().isEmpty()) {
+            return new HashMap<>();
+        }
+        try {
+            Gson gson = new Gson();
+            // Chuyển chuỗi JSON thành Map để JSP truy cập được key (title, description...)
+            Type type = new TypeToken<Map<String, Object>>(){}.getType();
+            return gson.fromJson(this.requestData, type);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new HashMap<>();
+        }
+    }
     @Override
     public String toString() {
         return "SystemRequest{" +

@@ -57,11 +57,11 @@ public class UserManagementController extends HttpServlet {
 
     private void handleDeleteUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String idParam = req.getParameter("id");
-
+        Users actor = (Users) req.getSession().getAttribute("USERMODEL");
         try {
             if (idParam != null && !idParam.isEmpty()) {
                 int id = Integer.parseInt(idParam);
-                userServices.deleteUser(id);
+                userServices.deleteUser(id, actor);
             }
 
             resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=delete_success");
@@ -137,32 +137,41 @@ public class UserManagementController extends HttpServlet {
         HttpSession session = req.getSession();
         Users currentUser = (Users) session.getAttribute("USERMODEL");
 
-        boolean canDelete = false;
-        if (currentUser != null) {
-            if (currentUser.getRoleId() == 1 || currentUser.hasPermission("USER_MANAGE")) {
-                canDelete = true;
-            }
-        }
-
-        req.setAttribute("canDelete", canDelete);
         try {
             String idParam = req.getParameter("id");
-            if (idParam != null && !idParam.isEmpty()) {
-                int id = Integer.parseInt(idParam);
-                Users user = userServices.findUserById(id);
-                if (user != null) {
-                    req.setAttribute("user", user);
-                    RequestDispatcher rd = req.getRequestDispatcher("/views/admin/user/user-detail.jsp");
-                    rd.forward(req, resp);
-                } else {
-                    resp.sendRedirect(req.getContextPath() + "/admin/user-list");
-                }
+            if (idParam == null || idParam.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/admin/user/user-list");
+                return;
             }
+
+            int id = Integer.parseInt(idParam);
+
+            Users user = userServices.findUserById(id);
+            if (user == null) {
+                resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=not_found");
+                return;
+            }
+
+            boolean canDelete = false;
+            if (currentUser != null) {
+                boolean hasPermission = (currentUser.getRoleId() == 1 || currentUser.hasPermission("USER_MANAGE"));
+                boolean targetIsAdmin = user.getRoleId() == 1;
+                boolean targetIsSelf  = user.getId() == currentUser.getId();
+
+                canDelete = hasPermission && !targetIsAdmin && !targetIsSelf;
+            }
+
+            req.setAttribute("user", user);
+            req.setAttribute("canDelete", canDelete);
+
+            req.getRequestDispatcher("/views/admin/user/user-detail.jsp").forward(req, resp);
+
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list");
+            resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=error");
         }
     }
+
 
     private void handleAddUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         List<Role> listRoles = roleServices.getAllRoles();

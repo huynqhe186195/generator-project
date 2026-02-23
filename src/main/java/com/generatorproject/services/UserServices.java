@@ -88,10 +88,28 @@ public class UserServices implements IUserServices {
         tokenDao.deleteRequest(token);
     }
 
-    @Override
-    public void deleteUser(int id) {
-        userDao.deleteUser(id);
+    public void deleteUser(int targetUserId, Users actor) throws Exception {
+        if (actor != null && actor.getId() == targetUserId) {
+            throw new Exception("Không thể tự xóa chính mình.");
+        }
+
+        Users target = userDao.findUserById(targetUserId);
+        if (target == null) throw new Exception("User không tồn tại.");
+
+        if (target.getRoleId() == 1) {
+            throw new Exception("Không thể xóa tài khoản ADMIN.");
+        }
+
+        boolean hasContracts = userDao.hasContracts(targetUserId);
+        boolean hasProducts  = userDao.hasProducts(targetUserId);
+
+        if (!hasContracts && !hasProducts) {
+            userDao.deleteUser(targetUserId);
+        } else {
+            userDao.anonymizeAndDeactivate(targetUserId);
+        }
     }
+
 
     @Override
     public int countUsersByFilter(String keyword, Integer roleId, Integer status) {
