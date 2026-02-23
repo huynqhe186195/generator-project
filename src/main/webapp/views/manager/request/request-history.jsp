@@ -129,6 +129,9 @@
                                 <c:when test="${r.requestType == 'INCIDENT_REPORT'}">
                                     <span class="badge bg-warning text-dark">INCIDENT_REPORT</span>
                                 </c:when>
+                                <c:when test="${r.requestType == 'NEW_PRODUCT'}">
+                                    <span class="badge bg-primary">NEW_PRODUCT</span>
+                                </c:when>
                                 <c:otherwise>
                                     <span class="badge bg-secondary"><c:out value="${r.requestType}"/></span>
                                 </c:otherwise>
@@ -251,7 +254,7 @@
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="${pageContext.request.contextPath}/manager/requests" method="post">
+            <form action="${pageContext.request.contextPath}/manager/requests" method="post" enctype="multipart/form-data">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title"><i class="fa fa-times-circle"></i> Từ chối request</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -280,7 +283,7 @@
 <div class="modal fade" id="createRequestModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="${pageContext.request.contextPath}/manager/requests" method="post">
+      <form action="${pageContext.request.contextPath}/manager/requests" method="post" enctype="multipart/form-data">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title">Tạo yêu cầu mới</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -309,6 +312,7 @@
               <option value="CREATE_USER">CREATE_USER - Tạo tài khoản</option>
               <option value="INCIDENT_REPORT">INCIDENT_REPORT - Báo sự cố</option>
               <option value="CUSTOMER_REMINDER">CUSTOMER_REMINDER - Nhắc khách hàng</option>
+              <option value="NEW_PRODUCT">NEW_PRODUCT - Yêu cầu thêm sản phẩm mới</option>
             </select>
             <div class="form-text">Form sẽ thay đổi theo loại yêu cầu.</div>
           </div>
@@ -390,9 +394,86 @@
             </div>
           </div>
 
+          <!-- GROUP: NEW_PRODUCT -->
+          <div class="req-group d-none" data-type="NEW_PRODUCT">
+            <div class="mb-3">
+              <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control" placeholder="VD: Cummins C250D5">
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Brand <span class="text-danger">*</span></label>
+                <select name="brandName" class="form-select">
+                  <option value="">-- Chọn brand --</option>
+                  <c:forEach var="b" items="${brands}">
+                    <option value="${b.name}"><c:out value="${b.name}"/></option>
+                  </c:forEach>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Category <span class="text-danger">*</span></label>
+                <select name="categoryName" class="form-select">
+                  <option value="">-- Chọn category --</option>
+                  <c:forEach var="c" items="${categories}">
+                    <option value="${c.name}"><c:out value="${c.name}"/></option>
+                  </c:forEach>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Xuất xứ</label>
+                <input type="text" name="origin" class="form-control" placeholder="Nhật Bản">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Fuel Type <span class="text-danger">*</span></label>
+                <select name="fuelType" class="form-select">
+                  <option value="DIESEL">DIESEL</option>
+                  <option value="GASOLINE">GASOLINE</option>
+                  <option value="OTHER">OTHER</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Công suất (kVA)</label>
+              <input type="number" step="0.1" name="power" class="form-control" placeholder="250">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Mô tả</label>
+              <textarea name="description" class="form-control" rows="2" placeholder="Mô tả nhanh sản phẩm..."></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Thông số kỹ thuật</label>
+              <textarea name="specifications" class="form-control" rows="2" placeholder="Thông số chính..."></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Trạng thái sản phẩm</label>
+              <select name="productStatus" class="form-select">
+                <option value="COMING_SOON">COMING_SOON</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Manual file (PDF)</label>
+              <input type="file" name="manualFile" class="form-control" accept=".pdf,application/pdf">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Image file</label>
+              <input type="file" name="imageFile" class="form-control" accept="image/*,.png,.jpg,.jpeg,.webp">
+            </div>
+          </div>
           <div class="alert alert-info small mb-0">
             <i class="fa fa-info-circle"></i>
-            Role nhận sẽ xử lý theo <b>requestType</b> và cập nhật trạng thái.
+            Với <b>NEW_PRODUCT</b>, hệ thống sẽ tự gửi request xuống role <b>IT</b> để tạo sản phẩm mới.
           </div>
         </div>
 
@@ -407,8 +488,11 @@
 
 <script>
 (function(){
+  var receiverRoleEl = document.querySelector("select[name='receiverRole']");
+
   function toggleGroups() {
     var type = document.getElementById("requestType").value;
+
     document.querySelectorAll(".req-group").forEach(function(g){
       var match = g.getAttribute("data-type") === type;
       g.classList.toggle("d-none", !match);
@@ -417,8 +501,28 @@
         el.disabled = !match;
       });
     });
+
+    if (receiverRoleEl) {
+      if (type === "NEW_PRODUCT") {
+        receiverRoleEl.value = "IT";
+        receiverRoleEl.setAttribute("disabled", "disabled");
+      } else {
+        receiverRoleEl.removeAttribute("disabled");
+      }
+    }
   }
   document.getElementById("requestType").addEventListener("change", toggleGroups);
+
+  // Giữ receiverRole gửi lên server khi select đang disabled
+  var formEl = document.querySelector("#createRequestModal form");
+  if (formEl && receiverRoleEl) {
+    formEl.addEventListener("submit", function(){
+      if (receiverRoleEl.disabled) {
+        receiverRoleEl.removeAttribute("disabled");
+      }
+    });
+  }
+
   toggleGroups();
 })();
 </script>
@@ -446,6 +550,15 @@
             const issueType = obj.issueType || "-";
             const productId = obj.productId || "-";
             return `Sự cố: ${title} | Priority: ${priority} | Type: ${issueType} | ProductID: ${productId}`;
+        }
+
+        if (reqType === "NEW_PRODUCT") {
+            const name = obj.name || "-";
+            const brandName = obj.brandName || obj.brandId || "-";
+            const categoryName = obj.categoryName || obj.categoryId || "-";
+            const power = obj.power || "-";
+            const fuelType = obj.fuelType || "-";
+            return `New product: ${name} | Brand: ${brandName} | Category: ${categoryName} | Fuel: ${fuelType} | Power: ${power}`;
         }
 
         const keys = Object.keys(obj);
