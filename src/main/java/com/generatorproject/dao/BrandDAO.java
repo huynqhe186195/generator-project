@@ -61,6 +61,29 @@ public class BrandDAO extends DbContext {
         return null;
     }
 
+
+    public Brand findById(int id) {
+        String sql = "SELECT id, name, slug, logo_url FROM brands WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Brand b = new Brand();
+                    b.setId(rs.getInt("id"));
+                    b.setName(rs.getString("name"));
+                    b.setSlug(rs.getString("slug"));
+                    b.setLogoUrl(rs.getString("logo_url"));
+                    return b;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public int insert(Brand b) {
         String sql = "INSERT INTO brands(name, slug, logo_url) VALUES(?,?,?)";
 
