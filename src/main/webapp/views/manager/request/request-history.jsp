@@ -62,6 +62,9 @@
 <c:if test="${param.msg == 'error'}">
     <div class="alert alert-danger">Có lỗi xảy ra, vui lòng thử lại.</div>
 </c:if>
+<c:if test="${param.msg == 'invalid_file'}">
+    <div class="alert alert-warning">Vui lòng tải đúng file Excel (.xlsx/.xls) chứa thông tin NEW_PRODUCT.</div>
+</c:if>
 
 <div class="card shadow-sm">
     <div class="card-body">
@@ -128,6 +131,9 @@
                                 </c:when>
                                 <c:when test="${r.requestType == 'INCIDENT_REPORT'}">
                                     <span class="badge bg-warning text-dark">INCIDENT_REPORT</span>
+                                </c:when>
+                                <c:when test="${r.requestType == 'NEW_PRODUCT'}">
+                                    <span class="badge bg-primary">NEW_PRODUCT</span>
                                 </c:when>
                                 <c:otherwise>
                                     <span class="badge bg-secondary"><c:out value="${r.requestType}"/></span>
@@ -251,7 +257,7 @@
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="${pageContext.request.contextPath}/manager/requests" method="post">
+            <form action="${pageContext.request.contextPath}/manager/requests" method="post" enctype="multipart/form-data">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title"><i class="fa fa-times-circle"></i> Từ chối request</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -280,7 +286,7 @@
 <div class="modal fade" id="createRequestModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="${pageContext.request.contextPath}/manager/requests" method="post">
+      <form action="${pageContext.request.contextPath}/manager/requests" method="post" enctype="multipart/form-data">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title">Tạo yêu cầu mới</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -309,6 +315,7 @@
               <option value="CREATE_USER">CREATE_USER - Tạo tài khoản</option>
               <option value="INCIDENT_REPORT">INCIDENT_REPORT - Báo sự cố</option>
               <option value="CUSTOMER_REMINDER">CUSTOMER_REMINDER - Nhắc khách hàng</option>
+              <option value="NEW_PRODUCT">NEW_PRODUCT - Yêu cầu thêm sản phẩm mới</option>
             </select>
             <div class="form-text">Form sẽ thay đổi theo loại yêu cầu.</div>
           </div>
@@ -390,9 +397,17 @@
             </div>
           </div>
 
+          <!-- GROUP: NEW_PRODUCT -->
+          <div class="req-group d-none" data-type="NEW_PRODUCT">
+            <div class="mb-3">
+              <label class="form-label">File Excel thông tin sản phẩm <span class="text-danger">*</span></label>
+              <input type="file" name="productExcelFile" class="form-control" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+              <div class="form-text">Mẫu cột theo thứ tự: name, brandName, categoryName, origin, fuelType, power, description, specifications, manualUrl, imageUrl, status.</div>
+            </div>
+          </div>
           <div class="alert alert-info small mb-0">
             <i class="fa fa-info-circle"></i>
-            Role nhận sẽ xử lý theo <b>requestType</b> và cập nhật trạng thái.
+            Với <b>NEW_PRODUCT</b>, hệ thống sẽ tự gửi request xuống role <b>IT</b> để tạo sản phẩm mới.
           </div>
         </div>
 
@@ -407,8 +422,11 @@
 
 <script>
 (function(){
+  var receiverRoleEl = document.querySelector("select[name='receiverRole']");
+
   function toggleGroups() {
     var type = document.getElementById("requestType").value;
+
     document.querySelectorAll(".req-group").forEach(function(g){
       var match = g.getAttribute("data-type") === type;
       g.classList.toggle("d-none", !match);
@@ -417,8 +435,28 @@
         el.disabled = !match;
       });
     });
+
+    if (receiverRoleEl) {
+      if (type === "NEW_PRODUCT") {
+        receiverRoleEl.value = "IT";
+        receiverRoleEl.setAttribute("disabled", "disabled");
+      } else {
+        receiverRoleEl.removeAttribute("disabled");
+      }
+    }
   }
   document.getElementById("requestType").addEventListener("change", toggleGroups);
+
+  // Giữ receiverRole gửi lên server khi select đang disabled
+  var formEl = document.querySelector("#createRequestModal form");
+  if (formEl && receiverRoleEl) {
+    formEl.addEventListener("submit", function(){
+      if (receiverRoleEl.disabled) {
+        receiverRoleEl.removeAttribute("disabled");
+      }
+    });
+  }
+
   toggleGroups();
 })();
 </script>
@@ -446,6 +484,11 @@
             const issueType = obj.issueType || "-";
             const productId = obj.productId || "-";
             return `Sự cố: ${title} | Priority: ${priority} | Type: ${issueType} | ProductID: ${productId}`;
+        }
+
+        if (reqType === "NEW_PRODUCT") {
+            const excelFileName = obj.excelFileName || "(không có tên file)";
+            return `Tạo product từ file Excel: ${excelFileName}`;
         }
 
         const keys = Object.keys(obj);

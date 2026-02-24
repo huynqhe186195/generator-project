@@ -15,23 +15,40 @@
   .pagination .page-item.active .page-link { background-color: #4e73df; border-color: #4e73df; }
 </style>
 
-<c:set var="qs"
-       value="&keyword=${fn:escapeXml(param.keyword)}
-              &brandId=${fn:escapeXml(param.brandId)}
-              &categoryId=${fn:escapeXml(param.categoryId)}
-              &fuelType=${fn:escapeXml(param.fuelType)}
-              &power=${fn:escapeXml(param.power)}
-              &status=${fn:escapeXml(param.status)}" />
+<c:set var="qs" value="&keyword=${fn:escapeXml(param.keyword)}&brandId=${fn:escapeXml(param.brandId)}&categoryId=${fn:escapeXml(param.categoryId)}&fuelType=${fn:escapeXml(param.fuelType)}&power=${fn:escapeXml(param.power)}&status=${fn:escapeXml(param.status)}" />
 
 <div class="container-fluid py-4">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold text-dark">Quản lý Product Model</h3>
 
-    <!-- ✅ ADD -->
-    <a href="${ctx}/it/products/add" class="btn btn-primary px-4 shadow-sm">
-      <i class="fas fa-plus-circle me-2"></i> Thêm mẫu
-    </a>
+  <c:if test="${param.msg == 'import_success'}">
+    <div class="alert alert-success">Import Excel thành công. Đã tạo <b>${param.count}</b> product model.</div>
+  </c:if>
+  <c:if test="${param.msg == 'import_empty'}">
+    <div class="alert alert-warning">Không import được dòng nào từ file Excel (kiểm tra dữ liệu).</div>
+  </c:if>
+  <c:if test="${param.msg == 'import_invalid_file'}">
+    <div class="alert alert-warning">Vui lòng chọn file Excel hợp lệ (.xlsx/.xls).</div>
+  </c:if>
+  <c:if test="${param.msg == 'import_error'}">
+    <div class="alert alert-danger">Lỗi khi import Excel, vui lòng thử lại.</div>
+  </c:if>
+
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h3 class="fw-bold text-dark mb-0">Quản lý Product Model</h3>
+
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <form action="${ctx}/it/products/import-excel" method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+        <input type="file" name="excelFile" class="form-control form-control-sm" accept=".xlsx,.xls" required style="max-width: 260px;"/>
+        <button type="submit" class="btn btn-success btn-sm">
+          <i class="fas fa-file-import me-1"></i> Import Excel
+        </button>
+      </form>
+
+      <!-- ✅ ADD -->
+      <a href="${ctx}/it/products/add" class="btn btn-primary btn-sm px-3 shadow-sm">
+        <i class="fas fa-plus-circle me-1"></i> Thêm mẫu
+      </a>
+    </div>
   </div>
 
   <!-- FILTER -->
@@ -128,7 +145,7 @@
         <tbody>
         <c:forEach items="${listModels}" var="pm" varStatus="i">
           <tr>
-            <td class="text-center text-muted">${i.index + 1}</td>
+            <td class="text-center text-muted">${(currentPage - 1) * pageSize + i.index + 1}</td>
 
             <td>
               <div class="d-flex align-items-center">
@@ -210,9 +227,19 @@
 
     <!-- PAGINATION -->
     <c:if test="${totalPages > 1}">
+      <c:set var="window" value="2"/>
+      <c:set var="startPage" value="${currentPage - window}"/>
+      <c:set var="endPage" value="${currentPage + window}"/>
+      <c:if test="${startPage < 1}">
+        <c:set var="startPage" value="1"/>
+      </c:if>
+      <c:if test="${endPage > totalPages}">
+        <c:set var="endPage" value="${totalPages}"/>
+      </c:if>
+
       <div class="card-footer bg-white border-top-0 py-3">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="text-muted small">Trang ${currentPage} / ${totalPages}</div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div class="text-muted small">Trang ${currentPage} / ${totalPages} • Tổng ${totalItems} mẫu</div>
 
           <nav>
             <ul class="pagination pagination-sm mb-0">
@@ -222,11 +249,25 @@
                 </a>
               </li>
 
-              <c:forEach begin="1" end="${totalPages}" var="pg">
+              <c:if test="${startPage > 1}">
+                <li class="page-item"><a class="page-link" href="${ctx}/it/products?page=1${qs}">1</a></li>
+                <c:if test="${startPage > 2}">
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                </c:if>
+              </c:if>
+
+              <c:forEach begin="${startPage}" end="${endPage}" var="pg">
                 <li class="page-item ${currentPage == pg ? 'active' : ''}">
                   <a class="page-link" href="${ctx}/it/products?page=${pg}${qs}">${pg}</a>
                 </li>
               </c:forEach>
+
+              <c:if test="${endPage < totalPages}">
+                <c:if test="${endPage < totalPages - 1}">
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                </c:if>
+                <li class="page-item"><a class="page-link" href="${ctx}/it/products?page=${totalPages}${qs}">${totalPages}</a></li>
+              </c:if>
 
               <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
                 <a class="page-link" href="${ctx}/it/products?page=${currentPage + 1}${qs}">
