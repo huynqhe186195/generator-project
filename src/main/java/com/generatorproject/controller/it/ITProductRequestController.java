@@ -1,7 +1,11 @@
 package com.generatorproject.controller.it;
 
+import com.generatorproject.dao.BrandDAO;
+import com.generatorproject.dao.CategoryDAO;
 import com.generatorproject.dao.ProductModelDAO;
 import com.generatorproject.dao.RequestDAO;
+import com.generatorproject.model.Brand;
+import com.generatorproject.model.Category;
 import com.generatorproject.model.ProductModel;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
@@ -14,6 +18,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.lang.reflect.Type;
 import java.text.Normalizer;
 import java.util.Arrays;
@@ -31,6 +44,8 @@ public class ITProductRequestController extends HttpServlet {
 
     private final RequestDAO requestDAO = new RequestDAO();
     private final ProductModelDAO productModelDAO = new ProductModelDAO();
+    private final BrandDAO brandDAO = new BrandDAO();
+    private final CategoryDAO categoryDAO = new CategoryDAO();
     private final Gson gson = new Gson();
 
     @Override
@@ -99,50 +114,101 @@ public class ITProductRequestController extends HttpServlet {
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
         Map<String, Object> data = gson.fromJson(request.getRequestData(), type);
-        if (data == null)
-            data = new HashMap<>();
+        if (data == null) data = new HashMap<>();
 
-        String name = trim(asText(data.get("name")));
-        Integer brandId = parseInt(asText(data.get("brandId")));
-        Integer categoryId = parseInt(asText(data.get("categoryId")));
-        String fuelType = normalizeFuelType(asText(data.get("fuelType")));
-        String status = normalizeStatus(asText(data.get("status")));
-
-        if (name == null || brandId == null || categoryId == null || fuelType == null) {
-            throw new IllegalArgumentException("Thiếu dữ liệu bắt buộc để tạo mẫu sản phẩm mới");
+        String excelFileUrl = trim(asText(data.get("excelFileUrl")));
+        if (excelFileUrl == null) {
+            throw new IllegalArgumentException("Thiếu file excel của request NEW_PRODUCT");
         }
 
-        ProductModel existed = productModelDAO.findByName(name);
-        if (existed != null) {
+        String excelAbsolutePath = getServletContext().getRealPath("/" + excelFileUrl);
+        File excelFile = new File(excelAbsolutePath);
+        if (!excelFile.exists()) {
+            throw new IllegalArgumentException("Không tìm thấy file excel: " + excelFileUrl);
+        }
+
+        int createdCount = 0;
+        DataFormatter formatter = new DataFormatter();
+
+        try (FileInputStream fis = new FileInputStream(excelFile);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet sheet = workbook.getNumberOfSheets() > 0 ? workbook.getSheetAt(0) : null;
+            if (sheet == null) {
+                throw new IllegalArgumentException("File excel không có sheet dữ liệu");
+            }
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                String name = trim(readCell(row, 0, formatter));
+                String brandName = trim(readCell(row, 1, formatter));
+                String categoryName = trim(readCell(row, 2, formatter));
+                String origin = trim(readCell(row, 3, formatter));
+                String fuelType = normalizeFuelType(readCell(row, 4, formatter));
+                Double power = parseDouble(readCell(row, 5, formatter));
+                String description = trim(readCell(row, 6, formatter));
+                String specifications = trim(readCell(row, 7, formatter));
+                String manualUrl = trim(readCell(row, 8, formatter));
+                String imageUrl = trim(readCell(row, 9, formatter));
+                String status = normalizeStatus(readCell(row, 10, formatter));
+
+                if (name == null || brandName == null || categoryName == null || fuelType == null) {
+                    continue;
+                }
+
+                Brand brand = brandDAO.findByName(brandName);
+                Category category = categoryDAO.findByName(categoryName);
+                if (brand == null || category == null) {
+                    continue;
+                }
+
+                ProductModel existed = productModelDAO.findByName(name);
+                if (existed != null) {
+                    continue;
+                }
+
+                ProductModel model = new ProductModel.Builder()
+                        .setName(name)
+                        .setSlug(toSlug(name))
+                        .setBrandId(brand.getId())
+                        .setCategoryId(category.getId())
+                        .setOrigin(origin)
+                        .setFuelType(fuelType)
+                        .setPower(power)
+                        .setDescription(description)
+                        .setSpecifications(specifications)
+                        .setManualUrl(manualUrl)
+                        .setImageUrl(imageUrl)
+                        .setStatus(status != null ? status : "COMING_SOON")
+                        .build();
+
+                Long newId = productModelDAO.insertProductModel(model);
+                if (newId != null) {
+                    createdCount++;
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Không đọc được file excel để tạo product", e);
+        }
+
+        if (createdCount == 0) {
             request.setStatus("REJECTED");
-            request.setResponseMessage("Mẫu sản phẩm đã tồn tại: " + name);
+            request.setResponseMessage("Không tạo được product nào từ file excel (kiểm tra cột dữ liệu/hệ thống brand/category)");
             requestDAO.update(request);
             return;
         }
 
-        ProductModel model = new ProductModel.Builder()
-                .setName(name)
-                .setSlug(toSlug(name))
-                .setBrandId(brandId)
-                .setCategoryId(categoryId)
-                .setOrigin(trim(asText(data.get("origin"))))
-                .setFuelType(fuelType)
-                .setPower(parseDouble(asText(data.get("power"))))
-                .setDescription(trim(asText(data.get("description"))))
-                .setSpecifications(trim(asText(data.get("specifications"))))
-                .setManualUrl(trim(asText(data.get("manualUrl"))))
-                .setImageUrl(trim(asText(data.get("imageUrl"))))
-                .setStatus(status != null ? status : "COMING_SOON")
-                .build();
-
-        Long newId = productModelDAO.insertProductModel(model);
-        if (newId == null) {
-            throw new IllegalStateException("Không tạo được product model mới");
-        }
-
         request.setStatus("APPROVED");
-        request.setResponseMessage("IT đã thêm sản phẩm mới thành công. ProductModel ID: " + newId);
+        request.setResponseMessage("IT đã tạo " + createdCount + " product từ file excel.");
         requestDAO.update(request);
+    }
+
+    private String readCell(Row row, int index, DataFormatter formatter) {
+        Cell cell = row.getCell(index, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (cell == null) return null;
+        return formatter.formatCellValue(cell);
     }
 
     private String asText(Object value) {

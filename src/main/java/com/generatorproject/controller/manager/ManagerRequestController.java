@@ -1,9 +1,5 @@
 package com.generatorproject.controller.manager;
 
-import com.generatorproject.dao.BrandDAO;
-import com.generatorproject.dao.CategoryDAO;
-import com.generatorproject.model.Brand;
-import com.generatorproject.model.Category;
 import com.generatorproject.services.IRequestServices;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.RequestServices;
@@ -37,14 +33,10 @@ public class ManagerRequestController extends HttpServlet {
 
     private IRequestServices requestService;
     private IUserServices userService;
-    private BrandDAO brandDAO;
-    private CategoryDAO categoryDAO;
 
     public ManagerRequestController() {
         requestService = new RequestServices();
         userService = new UserServices();
-        brandDAO = new BrandDAO();
-        categoryDAO = new CategoryDAO();
     }
 
     @Override
@@ -82,9 +74,6 @@ public class ManagerRequestController extends HttpServlet {
             req.setAttribute("requests", myRequests);
             req.setAttribute("box", "sent");
         }
-
-        req.setAttribute("brands", brandDAO.getAllBrands());
-        req.setAttribute("categories", categoryDAO.getAllCategories());
 
         req.getRequestDispatcher("/views/manager/request/request-history.jsp").forward(req, resp);
     }
@@ -203,47 +192,15 @@ public class ManagerRequestController extends HttpServlet {
                 case "NEW_PRODUCT":
                     receiverRole = "IT"; // Luồng nghiệp vụ: Manager gửi yêu cầu tạo product mới cho IT
 
-                    String name = req.getParameter("name");
-                    String brandName = req.getParameter("brandName");
-                    String categoryName = req.getParameter("categoryName");
-                    String fuelType = req.getParameter("fuelType");
-
-                    if (name == null || name.isBlank() || brandName == null || brandName.isBlank()
-                            || categoryName == null || categoryName.isBlank() || fuelType == null || fuelType.isBlank()) {
-                        resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=error");
-                        return;
-                    }
-
-                    Brand brand = brandDAO.findByName(brandName);
-                    Category category = categoryDAO.findByName(categoryName);
-                    if (brand == null || category == null) {
-                        resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=error");
-                        return;
-                    }
-
-                    String manualFileUrl = saveUploadFile(req, "manualFile", "/uploads/product-manuals",
-                            new String[]{".pdf"});
-                    String imageFileUrl = saveUploadFile(req, "imageFile", "/uploads/product-models",
-                            new String[]{".png", ".jpg", ".jpeg", ".webp"});
-
-                    if (manualFileUrl == null || imageFileUrl == null) {
+                    String excelFileUrl = saveUploadFile(req, "productExcelFile", "/uploads/product-excels",
+                            new String[]{".xlsx", ".xls"});
+                    if (excelFileUrl == null) {
                         resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=invalid_file");
                         return;
                     }
 
-                    data.put("name", name.trim());
-                    data.put("brandId", brand.getId());
-                    data.put("brandName", brand.getName());
-                    data.put("categoryId", category.getId());
-                    data.put("categoryName", category.getName());
-                    data.put("origin", req.getParameter("origin"));
-                    data.put("fuelType", fuelType.trim().toUpperCase());
-                    data.put("power", req.getParameter("power"));
-                    data.put("description", req.getParameter("description"));
-                    data.put("specifications", req.getParameter("specifications"));
-                    data.put("manualUrl", manualFileUrl);
-                    data.put("imageUrl", imageFileUrl);
-                    data.put("status", req.getParameter("productStatus"));
+                    data.put("excelFileUrl", excelFileUrl);
+                    data.put("excelFileName", req.getPart("productExcelFile").getSubmittedFileName());
                     break;
 
                 default:

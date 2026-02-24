@@ -63,7 +63,7 @@
     <div class="alert alert-danger">Có lỗi xảy ra, vui lòng thử lại.</div>
 </c:if>
 <c:if test="${param.msg == 'invalid_file'}">
-    <div class="alert alert-warning">Vui lòng tải đúng file Manual (.pdf) và file ảnh (.png/.jpg/.jpeg/.webp).</div>
+    <div class="alert alert-warning">Vui lòng tải đúng file Excel (.xlsx/.xls) chứa thông tin NEW_PRODUCT.</div>
 </c:if>
 
 <div class="card shadow-sm">
@@ -400,78 +400,9 @@
           <!-- GROUP: NEW_PRODUCT -->
           <div class="req-group d-none" data-type="NEW_PRODUCT">
             <div class="mb-3">
-              <label class="form-label">Tên sản phẩm <span class="text-danger">*</span></label>
-              <input type="text" name="name" class="form-control" placeholder="VD: Cummins C250D5">
-            </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Brand <span class="text-danger">*</span></label>
-                <select name="brandName" class="form-select" required>
-                  <option value="">-- Chọn brand --</option>
-                  <c:forEach var="b" items="${brands}">
-                    <option value="${b.name}"><c:out value="${b.name}"/></option>
-                  </c:forEach>
-                </select>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Category <span class="text-danger">*</span></label>
-                <select name="categoryName" class="form-select" required>
-                  <option value="">-- Chọn category --</option>
-                  <c:forEach var="c" items="${categories}">
-                    <option value="${c.name}"><c:out value="${c.name}"/></option>
-                  </c:forEach>
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Xuất xứ</label>
-                <input type="text" name="origin" class="form-control" placeholder="Nhật Bản">
-              </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label">Fuel Type <span class="text-danger">*</span></label>
-                <select name="fuelType" class="form-select">
-                  <option value="DIESEL">DIESEL</option>
-                  <option value="GASOLINE">GASOLINE</option>
-                  <option value="OTHER">OTHER</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Công suất (kVA)</label>
-              <input type="number" step="0.1" name="power" class="form-control" placeholder="250">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Mô tả</label>
-              <textarea name="description" class="form-control" rows="2" placeholder="Mô tả nhanh sản phẩm..."></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Thông số kỹ thuật</label>
-              <textarea name="specifications" class="form-control" rows="2" placeholder="Thông số chính..."></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Trạng thái sản phẩm</label>
-              <select name="productStatus" class="form-select">
-                <option value="COMING_SOON">COMING_SOON</option>
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="INACTIVE">INACTIVE</option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Manual file (PDF)</label>
-              <input type="file" name="manualFile" class="form-control" accept=".pdf,application/pdf" required>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Image file</label>
-              <input type="file" name="imageFile" class="form-control" accept="image/*,.png,.jpg,.jpeg,.webp" required>
+              <label class="form-label">File Excel thông tin sản phẩm <span class="text-danger">*</span></label>
+              <input type="file" name="productExcelFile" class="form-control" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+              <div class="form-text">Mẫu cột theo thứ tự: name, brandName, categoryName, origin, fuelType, power, description, specifications, manualUrl, imageUrl, status.</div>
             </div>
           </div>
           <div class="alert alert-info small mb-0">
@@ -556,12 +487,8 @@
         }
 
         if (reqType === "NEW_PRODUCT") {
-            const name = obj.name || "-";
-            const brandName = obj.brandName || obj.brandId || "-";
-            const categoryName = obj.categoryName || obj.categoryId || "-";
-            const power = obj.power || "-";
-            const fuelType = obj.fuelType || "-";
-            return `New product: ${name} | Brand: ${brandName} | Category: ${categoryName} | Fuel: ${fuelType} | Power: ${power}`;
+            const excelFileName = obj.excelFileName || "(không có tên file)";
+            return `Tạo product từ file Excel: ${excelFileName}`;
         }
 
         const keys = Object.keys(obj);
