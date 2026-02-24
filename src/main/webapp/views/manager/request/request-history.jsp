@@ -62,6 +62,9 @@
 <c:if test="${param.msg == 'error'}">
     <div class="alert alert-danger">Có lỗi xảy ra, vui lòng thử lại.</div>
 </c:if>
+<c:if test="${param.msg == 'invalid_file'}">
+    <div class="alert alert-warning">Vui lòng tải đúng file Manual (.pdf) và file ảnh (.png/.jpg/.jpeg/.webp).</div>
+</c:if>
 
 <div class="card shadow-sm">
     <div class="card-body">
@@ -404,7 +407,7 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label class="form-label">Brand <span class="text-danger">*</span></label>
-                <select name="brandName" class="form-select">
+                <select name="brandName" class="form-select" required>
                   <option value="">-- Chọn brand --</option>
                   <c:forEach var="b" items="${brands}">
                     <option value="${b.name}"><c:out value="${b.name}"/></option>
@@ -413,7 +416,7 @@
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label">Category <span class="text-danger">*</span></label>
-                <select name="categoryName" class="form-select">
+                <select name="categoryName" class="form-select" required>
                   <option value="">-- Chọn category --</option>
                   <c:forEach var="c" items="${categories}">
                     <option value="${c.name}"><c:out value="${c.name}"/></option>
@@ -463,12 +466,12 @@
 
             <div class="mb-3">
               <label class="form-label">Manual file (PDF)</label>
-              <input type="file" name="manualFile" class="form-control" accept=".pdf,application/pdf">
+              <input type="file" name="manualFile" class="form-control" accept=".pdf,application/pdf" required>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Image file</label>
-              <input type="file" name="imageFile" class="form-control" accept="image/*,.png,.jpg,.jpeg,.webp">
+              <input type="file" name="imageFile" class="form-control" accept="image/*,.png,.jpg,.jpeg,.webp" required>
             </div>
           </div>
           <div class="alert alert-info small mb-0">

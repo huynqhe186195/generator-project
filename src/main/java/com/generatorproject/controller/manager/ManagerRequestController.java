@@ -30,8 +30,8 @@ import java.util.UUID;
 @WebServlet(urlPatterns = {"/manager/requests"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024,
-        maxFileSize = 20 * 1024 * 1024,
-        maxRequestSize = 30 * 1024 * 1024
+        maxFileSize = 50 * 1024 * 1024,
+        maxRequestSize = 80 * 1024 * 1024
 )
 public class ManagerRequestController extends HttpServlet {
 
@@ -225,6 +225,11 @@ public class ManagerRequestController extends HttpServlet {
                             new String[]{".pdf"});
                     String imageFileUrl = saveUploadFile(req, "imageFile", "/uploads/product-models",
                             new String[]{".png", ".jpg", ".jpeg", ".webp"});
+
+                    if (manualFileUrl == null || imageFileUrl == null) {
+                        resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=invalid_file");
+                        return;
+                    }
 
                     data.put("name", name.trim());
                     data.put("brandId", brand.getId());
