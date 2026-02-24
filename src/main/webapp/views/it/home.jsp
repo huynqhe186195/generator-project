@@ -92,6 +92,24 @@
         </div>
       </div>
     </div>
+
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-muted small">Yêu cầu NEW_PRODUCT</div>
+              <div class="fs-6 fw-semibold">Từ Manager gửi IT</div>
+            </div>
+            <i class="fa fa-paper-plane fs-2 text-secondary"></i>
+          </div>
+          <a class="btn btn-sm btn-outline-primary mt-3"
+             href="${pageContext.request.contextPath}/it/requests">
+            Xử lý yêu cầu
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ✅ Bỏ hẳn phần Thông báo / Công việc gần đây -->
