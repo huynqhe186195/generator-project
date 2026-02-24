@@ -6,6 +6,7 @@
     <h3 class="mb-0 text-primary"><i class="fa fa-inbox"></i> Yêu cầu NEW_PRODUCT từ Manager</h3>
     <a href="${pageContext.request.contextPath}/it/home" class="btn btn-outline-secondary btn-sm">Về dashboard</a>
 </div>
+<div class="alert alert-info py-2">Duyệt request = IT xác nhận tiếp nhận và tải file Excel về để import ở màn Quản lý Product Model.</div>
 
 <c:if test="${param.msg == 'success'}">
     <div class="alert alert-success">Xử lý yêu cầu thành công.</div>
@@ -39,7 +40,12 @@
                         <td><span class="badge bg-warning text-dark">${r.status}</span></td>
                         <td>${r.createdAt}</td>
                         <td class="text-end">
-                            <form action="${pageContext.request.contextPath}/it/requests" method="post" class="d-inline">
+                            <a href="${pageContext.request.contextPath}/it/requests?action=download&id=${r.id}"
+                               class="btn btn-primary btn-sm">
+                                <i class="fa fa-download"></i> Tải Excel
+                            </a>
+
+                            <form action="${pageContext.request.contextPath}/it/requests" method="post" class="d-inline ms-1">
                                 <input type="hidden" name="action" value="approve"/>
                                 <input type="hidden" name="requestId" value="${r.id}"/>
                                 <button type="submit" class="btn btn-success btn-sm"

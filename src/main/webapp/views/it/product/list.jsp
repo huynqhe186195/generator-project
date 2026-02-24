@@ -19,13 +19,36 @@
 
 <div class="container-fluid py-4">
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold text-dark">Quản lý Product Model</h3>
 
-    <!-- ✅ ADD -->
-    <a href="${ctx}/it/products/add" class="btn btn-primary px-4 shadow-sm">
-      <i class="fas fa-plus-circle me-2"></i> Thêm mẫu
-    </a>
+  <c:if test="${param.msg == 'import_success'}">
+    <div class="alert alert-success">Import Excel thành công. Đã tạo <b>${param.count}</b> product model.</div>
+  </c:if>
+  <c:if test="${param.msg == 'import_empty'}">
+    <div class="alert alert-warning">Không import được dòng nào từ file Excel (kiểm tra dữ liệu).</div>
+  </c:if>
+  <c:if test="${param.msg == 'import_invalid_file'}">
+    <div class="alert alert-warning">Vui lòng chọn file Excel hợp lệ (.xlsx/.xls).</div>
+  </c:if>
+  <c:if test="${param.msg == 'import_error'}">
+    <div class="alert alert-danger">Lỗi khi import Excel, vui lòng thử lại.</div>
+  </c:if>
+
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h3 class="fw-bold text-dark mb-0">Quản lý Product Model</h3>
+
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <form action="${ctx}/it/products/import-excel" method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+        <input type="file" name="excelFile" class="form-control form-control-sm" accept=".xlsx,.xls" required style="max-width: 260px;"/>
+        <button type="submit" class="btn btn-success btn-sm">
+          <i class="fas fa-file-import me-1"></i> Import Excel
+        </button>
+      </form>
+
+      <!-- ✅ ADD -->
+      <a href="${ctx}/it/products/add" class="btn btn-primary btn-sm px-3 shadow-sm">
+        <i class="fas fa-plus-circle me-1"></i> Thêm mẫu
+      </a>
+    </div>
   </div>
 
   <!-- FILTER -->
