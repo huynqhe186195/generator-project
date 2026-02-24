@@ -326,8 +326,8 @@ public class ContractDAO extends GenericDAO<Contract> {
 
         // Nếu muốn cập nhật tên từ hợp đồng
         if (buyerName != null && !buyerName.isEmpty()) {
-            customer.setFullName(buyerName);
-            userDao.update(customer.getFullName());
+             customer.setFullName(buyerName);
+             userDao.update(customer.getFullName());
         }
 
         // Create contract: PENDING_SERIAL (not ACTIVE yet)
