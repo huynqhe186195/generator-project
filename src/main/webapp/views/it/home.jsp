@@ -122,6 +122,10 @@
              href="${pageContext.request.contextPath}/it/requests">
             Xử lý yêu cầu
           </a>
+          <a class="btn btn-sm btn-success mt-2"
+             href="${pageContext.request.contextPath}/it/products">
+            Import Excel Product
+          </a>
         </div>
       </div>
     </div>
