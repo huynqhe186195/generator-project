@@ -29,7 +29,7 @@
         <h3 class="fw-bold text-dark">Quản trị người dùng</h3>
         <c:if test="${me.hasPermission('USER_MANAGE')}">
             <a href="${ctx}/admin/user/addNewUser" class="btn btn-primary px-4 shadow-sm">
-                <i class="fas fa-plus-circle me-2"></i> Thêm nhân viên
+                <i class="fas fa-plus-circle me-2"></i> Thêm người dùng
             </a>
         </c:if>
     </div>
