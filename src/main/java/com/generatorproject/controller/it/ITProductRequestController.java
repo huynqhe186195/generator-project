@@ -78,7 +78,7 @@ public class ITProductRequestController extends HttpServlet {
         try {
             if ("approve".equalsIgnoreCase(action)) {
                 request.setStatus("APPROVED");
-                request.setResponseMessage("IT đã duyệt yêu cầu. Vui lòng import file Excel tại màn Quản lý Product Model.");
+                request.setResponseMessage("Yêu cầu thêm sản phẩm vào hệ thống đã được xử lý thành công!");
                 requestDAO.update(request);
             } else if ("reject".equalsIgnoreCase(action)) {
                 String reason = req.getParameter("responseMessage");
@@ -132,7 +132,7 @@ public class ITProductRequestController extends HttpServlet {
         }
 
         String downloadName = (excelFileName == null || excelFileName.trim().isEmpty()) ? file.getName() : excelFileName.trim();
-        String encodedName = URLEncoder.encode(downloadName, StandardCharsets.UTF_8.name()).replace("+", "%20");
+        String encodedName = URLEncoder.encode(downloadName, StandardCharsets.UTF_8).replace("+", "%20");
 
         resp.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         resp.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedName);
