@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Locale;
@@ -55,6 +57,9 @@ public class ProductModelImportExcelController extends HttpServlet {
         }
 
         int createdCount = 0;
+        int invalidRequiredCount = 0;
+        int invalidBrandCategoryCount = 0;
+        int duplicateCount = 0;
         try (InputStream is = excelPart.getInputStream();
              Workbook workbook = WorkbookFactory.create(is)) {
 
@@ -85,17 +90,20 @@ public class ProductModelImportExcelController extends HttpServlet {
                 String status = normalizeStatus(readByKey(row, col, "status", 10, formatter));
 
                 if (name == null || brandRaw == null || categoryRaw == null || fuelType == null) {
+                    invalidRequiredCount++;
                     continue;
                 }
 
                 Brand brand = resolveBrand(brandRaw);
                 Category category = resolveCategory(categoryRaw);
                 if (brand == null || category == null) {
+                    invalidBrandCategoryCount++;
                     continue;
                 }
 
                 ProductModel existed = productModelDAO.findByName(name);
                 if (existed != null) {
+                    duplicateCount++;
                     continue;
                 }
 
@@ -125,7 +133,11 @@ public class ProductModelImportExcelController extends HttpServlet {
         }
 
         if (createdCount == 0) {
-            resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_empty");
+            String detail = "required=" + invalidRequiredCount
+                    + ",brandCategory=" + invalidBrandCategoryCount
+                    + ",duplicate=" + duplicateCount;
+            String encoded = URLEncoder.encode(detail, StandardCharsets.UTF_8.name());
+            resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_empty&detail=" + encoded);
             return;
         }
 
@@ -141,17 +153,17 @@ public class ProductModelImportExcelController extends HttpServlet {
             String key = normalizeHeader(readCell(row0, i, formatter));
             if (key == null) continue;
 
-            if ("name".equals(key)) map.put("name", i);
-            else if ("brandname".equals(key) || "brand".equals(key) || "brandid".equals(key)) map.put("brand", i);
-            else if ("categoryname".equals(key) || "category".equals(key) || "categoryid".equals(key)) map.put("category", i);
-            else if ("origin".equals(key)) map.put("origin", i);
-            else if ("fueltype".equals(key) || "fuel".equals(key)) map.put("fueltype", i);
-            else if ("power".equals(key)) map.put("power", i);
-            else if ("description".equals(key)) map.put("description", i);
-            else if ("specifications".equals(key) || "specification".equals(key)) map.put("specifications", i);
-            else if ("manualurl".equals(key) || "manual".equals(key)) map.put("manualurl", i);
-            else if ("imageurl".equals(key) || "image".equals(key)) map.put("imageurl", i);
-            else if ("status".equals(key)) map.put("status", i);
+            if ("name".equals(key) || "ten".equals(key) || "tensanpham".equals(key)) map.put("name", i);
+            else if ("brandname".equals(key) || "brand".equals(key) || "brandid".equals(key) || "hang".equals(key) || "thuonghieu".equals(key)) map.put("brand", i);
+            else if ("categoryname".equals(key) || "category".equals(key) || "categoryid".equals(key) || "danhmuc".equals(key) || "loai".equals(key)) map.put("category", i);
+            else if ("origin".equals(key) || "xuatxu".equals(key)) map.put("origin", i);
+            else if ("fueltype".equals(key) || "fuel".equals(key) || "nhienlieu".equals(key)) map.put("fueltype", i);
+            else if ("power".equals(key) || "congsuat".equals(key)) map.put("power", i);
+            else if ("description".equals(key) || "mota".equals(key)) map.put("description", i);
+            else if ("specifications".equals(key) || "specification".equals(key) || "thongsokythuat".equals(key)) map.put("specifications", i);
+            else if ("manualurl".equals(key) || "manual".equals(key) || "tailieuhuongdan".equals(key)) map.put("manualurl", i);
+            else if ("imageurl".equals(key) || "image".equals(key) || "hinhanh".equals(key) || "anh".equals(key)) map.put("imageurl", i);
+            else if ("status".equals(key) || "trangthai".equals(key)) map.put("status", i);
         }
 
         return map;
@@ -163,7 +175,7 @@ public class ProductModelImportExcelController extends HttpServlet {
         String c0 = normalizeHeader(readCell(row0, 0, formatter));
         String c1 = normalizeHeader(readCell(row0, 1, formatter));
         String c2 = normalizeHeader(readCell(row0, 2, formatter));
-        return "name".equals(c0) || "brand".equals(c1) || "brandname".equals(c1) || "category".equals(c2) || "categoryname".equals(c2);
+        return "name".equals(c0) || "ten".equals(c0) || "brand".equals(c1) || "brandname".equals(c1) || "hang".equals(c1) || "category".equals(c2) || "categoryname".equals(c2) || "danhmuc".equals(c2);
     }
 
     private String readByKey(Row row, Map<String, Integer> colMap, String key, int defaultIndex, DataFormatter formatter) {
@@ -213,7 +225,9 @@ public class ProductModelImportExcelController extends HttpServlet {
     private String normalizeHeader(String text) {
         text = trim(text);
         if (text == null) return null;
-        return text.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+        String normalized = Normalizer.normalize(text, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        return normalized.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
     }
 
     private String normalizeForCompare(String value) {
@@ -234,14 +248,20 @@ public class ProductModelImportExcelController extends HttpServlet {
         String normalized = trim(value);
         if (normalized == null) return null;
         normalized = normalized.toUpperCase(Locale.ROOT);
-        return ("DIESEL".equals(normalized) || "GASOLINE".equals(normalized) || "OTHER".equals(normalized)) ? normalized : null;
+        if ("DIESEL".equals(normalized) || "DO".equals(normalized)) return "DIESEL";
+        if ("GASOLINE".equals(normalized) || "GAS".equals(normalized) || "XANG".equals(normalized)) return "GASOLINE";
+        if ("OTHER".equals(normalized) || "KHAC".equals(normalized)) return "OTHER";
+        return null;
     }
 
     private String normalizeStatus(String value) {
         String normalized = trim(value);
         if (normalized == null) return null;
         normalized = normalized.toUpperCase(Locale.ROOT);
-        return ("ACTIVE".equals(normalized) || "INACTIVE".equals(normalized) || "COMING_SOON".equals(normalized)) ? normalized : null;
+        if ("ACTIVE".equals(normalized) || "HOATDONG".equals(normalized)) return "ACTIVE";
+        if ("INACTIVE".equals(normalized) || "NGUNGHOATDONG".equals(normalized)) return "INACTIVE";
+        if ("COMING_SOON".equals(normalized) || "COMINGSOON".equals(normalized) || "SAPRAMAT".equals(normalized)) return "COMING_SOON";
+        return null;
     }
 
     private Integer parseInt(String value) {
