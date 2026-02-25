@@ -33,6 +33,31 @@ public class CategoryDAO extends DbContext {
         return list;
     }
 
+
+    public Category findByName(String name) {
+        if (name == null || name.trim().isEmpty()) return null;
+
+        String sql = "SELECT id, name FROM categories WHERE LOWER(name) = LOWER(?) LIMIT 1";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, name.trim());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Category c = new Category();
+                    c.setId(rs.getInt("id"));
+                    c.setName(rs.getString("name"));
+                    return c;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     // Lấy 1 category theo id (nếu bạn cần)
     public Category findById(int id) {
         String sql = "SELECT id, name FROM categories WHERE id = ?";
