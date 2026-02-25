@@ -28,7 +28,7 @@ public class HomeController extends HttpServlet {
         UserDao uDao = new UserDao();
         HomeStatsDAO hsDao = new HomeStatsDAO();
 
-        // ===== STATS (KHÔNG DÙNG ProductDAO) =====
+        // ===== STATS  =====
         HomeStats stats = hsDao.getStatsForHome();   // totalProducts + totalHours
         stats.setTotalUsers(uDao.countUsers());      // totalUsers vẫn dùng UserDao
         req.setAttribute("stats", stats);
@@ -44,6 +44,7 @@ public class HomeController extends HttpServlet {
         req.setAttribute("maintenance", maintenanceGenerators);
         req.setAttribute("error", errorGenerators);
 
+        // 6. Lấy danh sách thương hiệu
         // ===== BRANDS =====
         List<Brand> brands = bDao.getAllBrands();
         req.setAttribute("brands", brands);
