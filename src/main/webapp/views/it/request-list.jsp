@@ -2,11 +2,16 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h3 class="mb-0 text-primary"><i class="fa fa-inbox"></i> Yêu cầu NEW_PRODUCT từ Manager</h3>
-    <a href="${pageContext.request.contextPath}/it/home" class="btn btn-outline-secondary btn-sm">Về dashboard</a>
+    <div class="d-flex gap-2">
+        <a href="${pageContext.request.contextPath}/it/products" class="btn btn-success btn-sm">
+            <i class="fa fa-file-import"></i> Mở trang Import Excel
+        </a>
+        <a href="${pageContext.request.contextPath}/it/home" class="btn btn-outline-secondary btn-sm">Về dashboard</a>
+    </div>
 </div>
-<div class="alert alert-info py-2">Duyệt request = IT xác nhận tiếp nhận và tải file Excel về để import ở màn Quản lý Product Model.</div>
+<div class="alert alert-info py-2">Duyệt request = chỉ xác nhận tiếp nhận (KHÔNG auto tạo product). Sau đó IT tải Excel và vào trang Quản lý Product Model để Import.</div>
 
 <c:if test="${param.msg == 'success'}">
     <div class="alert alert-success">Xử lý yêu cầu thành công.</div>

@@ -37,7 +37,8 @@
     <h3 class="fw-bold text-dark mb-0">Quản lý Product Model</h3>
 
     <div class="d-flex align-items-center gap-2 flex-wrap">
-      <form action="${ctx}/it/products/import-excel" method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+      <form action="${ctx}/it/products/import-excel" method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-2 p-2 border rounded bg-light">
+        <span class="small fw-bold text-success">Import Product từ Excel:</span>
         <input type="file" name="excelFile" class="form-control form-control-sm" accept=".xlsx,.xls" required style="max-width: 260px;"/>
         <button type="submit" class="btn btn-success btn-sm">
           <i class="fas fa-file-import me-1"></i> Import Excel
