@@ -66,6 +66,8 @@ public class ProductModelListController extends HttpServlet {
         req.setAttribute("categories", categories);
         req.setAttribute("currentPage", page);
         req.setAttribute("totalPages", totalPages);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalItems", totalItems);
 
         req.getRequestDispatcher("/views/it/product/list.jsp").forward(req, resp);
     }
