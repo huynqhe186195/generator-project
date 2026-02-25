@@ -1,11 +1,10 @@
 package com.generatorproject.controller.web;
 
 import com.generatorproject.dao.BrandDAO;
-import com.generatorproject.dao.ProductDAO;
+import com.generatorproject.dao.HomeStatsDAO;
 import com.generatorproject.dao.UserDao;
 import com.generatorproject.model.Brand;
 import com.generatorproject.model.HomeStats;
-import com.generatorproject.model.Users;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -17,37 +16,26 @@ import java.io.IOException;
 import java.util.List;
 
 @WebServlet(urlPatterns = {"/home"})
-
 public class HomeController extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // 1. Khởi tạo các DAO
+
+        // DAO
         BrandDAO bDao = new BrandDAO();
-        ProductDAO pDao = new ProductDAO();
         UserDao uDao = new UserDao();
+        HomeStatsDAO hsDao = new HomeStatsDAO();
 
-        // 2. Lấy thông tin người dùng (nếu cần)
-        Users user = new Users();
-        // user.setFullName("Nguyễn Quang Huy");
-        req.setAttribute("userInfo", user);
-
-        // 3. Tiêu đề dashboard
-        String dashboardTitle = "Hệ Thống Quản Lý Máy Phát Điện (Gen-CMS)";
-        req.setAttribute("title", dashboardTitle);
-
-        // 4. Gom dữ liệu thống kê vào HomeStats
-        HomeStats stats = new HomeStats();
-        stats.setTotalProducts(pDao.countProducts());
-        stats.setTotalHours((int) pDao.sumRunningHours());
-        stats.setTotalUsers(uDao.countUsers());
+        // ===== STATS (KHÔNG DÙNG ProductDAO) =====
+        HomeStats stats = hsDao.getStatsForHome();   // totalProducts + totalHours
+        stats.setTotalUsers(uDao.countUsers());      // totalUsers vẫn dùng UserDao
         req.setAttribute("stats", stats);
 
-        // 5. Thống kê trạng thái máy phát điện (giả lập hoặc lấy từ DB)
-        int totalGenerators = pDao.countProducts(); // Có thể dùng từ stats
-        int runningGenerators = 18; // Có thể thêm method trong ProductDAO
+        // ===== THỐNG KÊ TRẠNG THÁI (TẠM GIẢ LẬP) =====
+        int totalGenerators = stats.getTotalProducts();
+        int runningGenerators = 18;
         int maintenanceGenerators = 5;
         int errorGenerators = 2;
 
@@ -57,12 +45,12 @@ public class HomeController extends HttpServlet {
         req.setAttribute("error", errorGenerators);
 
         // 6. Lấy danh sách thương hiệu
+        // ===== BRANDS =====
         List<Brand> brands = bDao.getAllBrands();
         req.setAttribute("brands", brands);
 
-        // 7. Chuyển hướng về trang chủ
+        // Forward
         RequestDispatcher rd = req.getRequestDispatcher("/views/home/home.jsp");
-        // Hoặc: req.getRequestDispatcher("/index.jsp").forward(req, resp);
         rd.forward(req, resp);
     }
 
