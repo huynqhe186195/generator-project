@@ -75,7 +75,7 @@ public class ProductModelImportExcelController extends HttpServlet {
 
             for (int i = startRow; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null || isRowBlank(row, formatter)) continue;
 
                 String name = trim(readByKey(row, col, "name", 0, formatter));
                 String brandRaw = trim(readByKey(row, col, "brand", 1, formatter));
@@ -89,10 +89,11 @@ public class ProductModelImportExcelController extends HttpServlet {
                 String imageUrl = trim(readByKey(row, col, "imageurl", 9, formatter));
                 String status = normalizeStatus(readByKey(row, col, "status", 10, formatter));
 
-                if (name == null || brandRaw == null || categoryRaw == null || fuelType == null) {
+                if (name == null || brandRaw == null || categoryRaw == null) {
                     invalidRequiredCount++;
                     continue;
                 }
+                if (fuelType == null) fuelType = "OTHER";
 
                 Brand brand = resolveBrand(brandRaw);
                 Category category = resolveCategory(categoryRaw);
@@ -188,14 +189,15 @@ public class ProductModelImportExcelController extends HttpServlet {
         Brand brand = brandDAO.findByName(brandRaw);
         if (brand != null) return brand;
 
-        Integer id = parseInt(brandRaw);
+        Integer id = parseIntFlexible(brandRaw);
         if (id != null) {
             return brandDAO.findById(id);
         }
 
         String target = normalizeForCompare(brandRaw);
         for (Brand b : brandDAO.getAllBrands()) {
-            if (normalizeForCompare(b.getName()).equals(target)) return b;
+            String bn = normalizeForCompare(b.getName());
+            if (bn.equals(target) || bn.contains(target) || target.contains(bn)) return b;
         }
         return null;
     }
@@ -204,14 +206,15 @@ public class ProductModelImportExcelController extends HttpServlet {
         Category category = categoryDAO.findByName(categoryRaw);
         if (category != null) return category;
 
-        Integer id = parseInt(categoryRaw);
+        Integer id = parseIntFlexible(categoryRaw);
         if (id != null) {
             return categoryDAO.findById(id);
         }
 
         String target = normalizeForCompare(categoryRaw);
         for (Category c : categoryDAO.getAllCategories()) {
-            if (normalizeForCompare(c.getName()).equals(target)) return c;
+            String cn = normalizeForCompare(c.getName());
+            if (cn.equals(target) || cn.contains(target) || target.contains(cn)) return c;
         }
         return null;
     }
@@ -220,6 +223,16 @@ public class ProductModelImportExcelController extends HttpServlet {
         Cell cell = row.getCell(index, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (cell == null) return null;
         return formatter.formatCellValue(cell);
+    }
+
+
+    private boolean isRowBlank(Row row, DataFormatter formatter) {
+        int max = Math.max(11, row.getLastCellNum());
+        for (int i = 0; i < max; i++) {
+            String v = trim(readCell(row, i, formatter));
+            if (v != null) return false;
+        }
+        return true;
     }
 
     private String normalizeHeader(String text) {
@@ -235,7 +248,7 @@ public class ProductModelImportExcelController extends HttpServlet {
         if (value == null) return "";
         String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-        return normalized.toLowerCase(Locale.ROOT).replaceAll("\\s+", " ").trim();
+        return normalized.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
     }
 
     private String trim(String value) {
@@ -248,9 +261,9 @@ public class ProductModelImportExcelController extends HttpServlet {
         String normalized = trim(value);
         if (normalized == null) return null;
         normalized = normalized.toUpperCase(Locale.ROOT);
-        if ("DIESEL".equals(normalized) || "DO".equals(normalized)) return "DIESEL";
-        if ("GASOLINE".equals(normalized) || "GAS".equals(normalized) || "XANG".equals(normalized)) return "GASOLINE";
-        if ("OTHER".equals(normalized) || "KHAC".equals(normalized)) return "OTHER";
+        if (normalized.contains("DIESEL") || normalized.contains("DO")) return "DIESEL";
+        if (normalized.contains("GASOLINE") || normalized.contains("GAS") || normalized.contains("XANG")) return "GASOLINE";
+        if (normalized.contains("OTHER") || normalized.contains("KHAC")) return "OTHER";
         return null;
     }
 
@@ -262,6 +275,22 @@ public class ProductModelImportExcelController extends HttpServlet {
         if ("INACTIVE".equals(normalized) || "NGUNGHOATDONG".equals(normalized)) return "INACTIVE";
         if ("COMING_SOON".equals(normalized) || "COMINGSOON".equals(normalized) || "SAPRAMAT".equals(normalized)) return "COMING_SOON";
         return null;
+    }
+
+
+    private Integer parseIntFlexible(String value) {
+        value = trim(value);
+        if (value == null) return null;
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception ignore) {
+        }
+        try {
+            Double d = Double.parseDouble(value.replace(",", "."));
+            return d.intValue();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private Integer parseInt(String value) {
