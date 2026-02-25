@@ -249,7 +249,42 @@
                 </div>
                 <pre class="json-pretty border rounded p-3 bg-light" id="detailJson"></pre>
             </div>
+
+            <div class="mb-3">
+              <label class="form-label">Ngày mong muốn</label>
+              <input type="date" name="preferredDate" class="form-control">
+            </div>
+          </div>
+
+          <!-- GROUP: CUSTOMER_REMINDER -->
+          <div class="req-group d-none" data-type="CUSTOMER_REMINDER">
+            <div class="mb-3">
+              <label class="form-label">Customer ID <span class="text-danger">*</span></label>
+              <input type="number" name="customerId" class="form-control" placeholder="39">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Nội dung nhắc <span class="text-danger">*</span></label>
+              <textarea name="content" class="form-control" rows="3" placeholder="Nhắc khách hàng..."></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Hạn xử lý</label>
+              <input type="date" name="dueDate" class="form-control">
+            </div>
+          </div>
+
+          <div class="alert alert-info small mb-0">
+            <i class="fa fa-info-circle"></i>
+            Role nhận sẽ xử lý theo <b>requestType</b> và cập nhật trạng thái.
+          </div>
         </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary">Gửi ngay</button>
+        </div>
+      </form>
     </div>
 </div>
 
