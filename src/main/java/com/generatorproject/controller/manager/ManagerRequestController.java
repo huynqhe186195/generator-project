@@ -203,6 +203,20 @@ public class ManagerRequestController extends HttpServlet {
                     data.put("excelFileName", req.getPart("productExcelFile").getSubmittedFileName());
                     break;
 
+                case "NEW_USER":
+                    receiverRole = "ADMIN"; // Luồng nghiệp vụ: Manager gửi yêu cầu import user cho Admin
+
+                    String userExcelFileUrl = saveUploadFile(req, "userExcelFile", "/uploads/user-excels",
+                            new String[]{".xlsx", ".xls"});
+                    if (userExcelFileUrl == null) {
+                        resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=invalid_file");
+                        return;
+                    }
+
+                    data.put("excelFileUrl", userExcelFileUrl);
+                    data.put("excelFileName", req.getPart("userExcelFile").getSubmittedFileName());
+                    break;
+
                 default:
                     // loại request mới chưa support
                     resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=error");
