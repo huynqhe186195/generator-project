@@ -5,7 +5,6 @@ import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.UserServices;
-import com.generatorproject.utils.EmailServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -31,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @WebServlet(urlPatterns = {"/admin/requests"})
 public class AdminRequestController extends HttpServlet {
@@ -130,7 +130,7 @@ public class AdminRequestController extends HttpServlet {
             return "Email đã tồn tại, hệ thống bỏ qua tạo mới.";
         }
 
-        String randomPassword = EmailServices.generateRandomPassword();
+        String randomPassword = generateRandomPassword();
         String hashedPassword = BCrypt.hashpw(randomPassword, BCrypt.gensalt(12));
 
         Users newUser = new Users();
@@ -142,9 +142,8 @@ public class AdminRequestController extends HttpServlet {
         newUser.setPhone(phone);
 
         userServices.createUser(newUser);
-        sendWelcomeEmailAsync(newUser.getEmail(), newUser.getFullName(), randomPassword);
 
-        return "Đã duyệt và tạo tài khoản thành công.";
+        return "Đã duyệt và tạo tài khoản thành công!";
     }
 
     private String approveNewUserExcelRequest(SystemRequest request) throws Exception {
@@ -206,7 +205,7 @@ public class AdminRequestController extends HttpServlet {
                 int roleId = parseIntegerOrDefault(rawRoleId, 5);
                 int status = parseIntegerOrDefault(rawStatus, 1);
 
-                String randomPassword = EmailServices.generateRandomPassword();
+                String randomPassword = generateRandomPassword();
                 String hashedPassword = BCrypt.hashpw(randomPassword, BCrypt.gensalt(12));
 
                 Users newUser = new Users();
@@ -218,12 +217,11 @@ public class AdminRequestController extends HttpServlet {
                 newUser.setStatus(status);
 
                 userServices.createUser(newUser);
-                sendWelcomeEmailAsync(email, fullName, randomPassword);
                 created++;
             }
         }
 
-        return "Đã import user từ Excel. Thành công: " + created + ", bỏ qua: " + skipped + ".";
+        return "Đã import user từ Excel (không gửi email). Thành công: " + created + ", bỏ qua: " + skipped + ".";
     }
 
     private void handleDownload(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -280,15 +278,8 @@ public class AdminRequestController extends HttpServlet {
         return data == null ? new HashMap<String, Object>() : data;
     }
 
-    private void sendWelcomeEmailAsync(String email, String fullName, String password) {
-        new Thread(() -> {
-            try {
-                EmailServices.sendWelcomeEmail(email, fullName, password);
-                System.out.println(">> AdminRequestController: Đã gửi mail cho " + email);
-            } catch (Exception e) {
-                System.err.println(">> AdminRequestController: Lỗi gửi mail - " + e.getMessage());
-            }
-        }).start();
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     }
 
     private String asText(Object value) {
