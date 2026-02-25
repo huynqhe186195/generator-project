@@ -11,19 +11,37 @@ public class HomeStatsDAO extends GenericDAO<Object> {
     public HomeStats getStatsForHome() {
         HomeStats stats = new HomeStats();
 
-        String sql =
+        // 1) Tổng máy + tổng giờ chạy (từ bảng products)
+        String sqlProducts =
                 "SELECT " +
                         "   COUNT(*) AS total_products, " +
                         "   COALESCE(SUM(total_running_hours), 0) AS total_hours " +
                         "FROM products";
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        // 2) Tổng model (từ bảng product_models)
+        String sqlModels =
+                "SELECT COUNT(*) AS total_models " +
+                        "FROM product_models";
 
-            if (rs.next()) {
-                stats.setTotalProducts(rs.getInt("total_products"));
-                stats.setTotalHours((int) Math.round(rs.getDouble("total_hours")));
+        try (Connection conn = getConnection()) {
+
+            // Query products
+            try (PreparedStatement ps = conn.prepareStatement(sqlProducts);
+                 ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+                    stats.setTotalProducts(rs.getInt("total_products"));
+                    stats.setTotalHours((int) Math.round(rs.getDouble("total_hours")));
+                }
+            }
+
+            // Query product_models
+            try (PreparedStatement ps2 = conn.prepareStatement(sqlModels);
+                 ResultSet rs2 = ps2.executeQuery()) {
+
+                if (rs2.next()) {
+                    stats.setTotalProductModels(rs2.getInt("total_models"));
+                }
             }
 
         } catch (Exception e) {
