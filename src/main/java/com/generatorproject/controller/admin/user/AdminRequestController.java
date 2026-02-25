@@ -143,7 +143,7 @@ public class AdminRequestController extends HttpServlet {
 
         userServices.createUser(newUser);
 
-        return "Đã duyệt và tạo tài khoản thành công (không gửi email).";
+        return "Đã duyệt và tạo tài khoản thành công!";
     }
 
     private String approveNewUserExcelRequest(SystemRequest request) throws Exception {
