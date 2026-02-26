@@ -152,6 +152,14 @@
                                                             <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu
                                                         </a>
                                                     </c:when>
+                                                    <c:when test="${req.status == 'APPROVED'}">
+                                                        <form action="<c:url value='/staff/assign-task'/>" method="post" style="display: inline;">
+                                                            <input type="hidden" name="id" value="${req.id}">
+                                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận tạo task bảo trì cho yêu cầu này?')">
+                                                                <i class="fas fa-tools me-1"></i> Gửi task
+                                                            </button>
+                                                        </form>
+                                                    </c:when>
                                                 </c:choose>
                                             </td>
                                         </tr>
@@ -205,123 +213,7 @@
                 </div>
             </div>
 
-            <div class="modal fade" id="verifyModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <form action="<c:url value='/staff/incident/escalate'/>" method="POST">
-                            <div class="modal-header bg-primary text-white">
-                                <h5 class="modal-title">
-                                    <i class="fas fa-clipboard-check me-2"></i>Xác minh Yêu cầu & Trình duyệt Manager
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                            </div>
 
-                            <div class="modal-body bg-light">
-                                <input type="hidden" name="incident_id" id="modalIncidentId" />
-
-                                <div class="row">
-                                    <div class="col-lg-6 border-end">
-                                        <h6 class="text-uppercase text-secondary fw-bold mb-3 border-bottom pb-2">
-                                            <i class="fas fa-info-circle me-1"></i> Thông tin Sự cố & Hợp đồng
-                                        </h6>
-
-                                        <div class="card card-body shadow-sm border-0">
-                                            <div class="row g-2">
-                                                <div class="col-12">
-                                                    <label class="small text-muted">Sự cố:</label>
-                                                    <div class="fw-bold" id="modalTitle"></div>
-                                                </div>
-                                                <div class="col-12">
-                                                    <label class="small text-muted">Mô tả của khách:</label>
-                                                    <div class="fst-italic bg-light p-2 rounded" id="modalDesc"></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="small text-muted">Số Hợp đồng:</label>
-                                                    <div class="fw-bold text-primary" id="modalContract"></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="small text-muted">Serial Máy:</label>
-                                                    <div class="fw-bold text-dark" id="modalSerial"></div>
-                                                </div>
-                                                <div class="col-12 mt-2">
-                                                    <div class="alert alert-info py-1 px-2 small mb-0">
-                                                        <i class="fas fa-info-circle me-1"></i>
-                                                        Vui lòng đối chiếu số HĐ và Serial trên hệ thống trước khi gửi
-                                                        duyệt.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-lg-6 ps-4">
-                                        <h6 class="text-uppercase text-secondary fw-bold mb-3 border-bottom pb-2">
-                                            <i class="fas fa-user-cog me-1"></i> Đề xuất phương án
-                                        </h6>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">Đề xuất Kỹ thuật viên:</label>
-                                            <select name="technician_id" class="form-select border-primary" required>
-                                                <option value="">-- Chọn nhân viên phù hợp --</option>
-                                                <c:forEach items="${listTechnicians}" var="tech">
-                                                    <option value="${tech.id}">
-                                                        ${tech.fullName}
-                                                    </option>
-                                                </c:forEach>
-                                            </select>
-                                            <div class="form-text">Manager sẽ xem xét đề xuất này và duyệt cuối cùng.
-                                            </div>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">Đánh giá mức độ ưu tiên:</label>
-                                            <select name="priority" class="form-select">
-                                                <option value="LOW">Thấp (Không gấp)</option>
-                                                <option value="MEDIUM" selected>Trung bình</option>
-                                                <option value="HIGH">Cao (Cần xử lý sớm)</option>
-                                                <option value="CRITICAL">Nghiêm trọng (Xử lý ngay)</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">Loại hình xử lý:</label>
-                                            <select name="type" class="form-select">
-                                                <option value="REPAIR">Sửa chữa sự cố (Repair)</option>
-                                                <option value="INSPECTION">Kiểm tra hiện trường (Inspection)</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">Ghi chú trình Manager:</label>
-                                            <textarea name="staff_note" class="form-control" rows="3"
-                                                placeholder="Ví dụ: Đã check hợp đồng còn hạn, lỗi này có vẻ do phần cứng..."></textarea>
-                                        </div>
-
-                                        <div class="form-check mb-4">
-                                            <input class="form-check-input" type="checkbox" id="confirmCheck" required>
-                                            <label class="form-check-label small" for="confirmCheck">
-                                                Tôi xác nhận đã kiểm tra thông tin hợp đồng và sự cố này là hợp lệ.
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="modal-footer bg-light">
-                                <button type="button" class="btn btn-outline-danger me-auto" onclick="rejectIncident()">
-                                    <i class="fas fa-times me-1"></i> Từ chối yêu cầu
-                                </button>
-
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                <button type="submit" class="btn btn-primary px-4">
-                                    <i class="fas fa-paper-plane me-2"></i> Trình duyệt Manager
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
 
             <script>
                 function openVerifyModal(button) {

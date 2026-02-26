@@ -1,5 +1,7 @@
 package com.generatorproject.dao;
 
+import com.generatorproject.model.SystemRequest;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -66,5 +68,37 @@ public class SystemRequestDAO extends DbContext {
             return false;
         }
     }
+    public SystemRequest getSystemRequestById(long id) {
+        String sql = "SELECT * FROM system_requests WHERE id = ?";
 
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            // Set giá trị id vào câu query
+            ps.setLong(1, id);
+
+            // Thực thi và lấy kết quả
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                SystemRequest req = new SystemRequest();
+
+                req.setId(rs.getLong("id"));
+                req.setSenderId((long)rs.getInt("sender_id"));
+                req.setReceiverRole(rs.getString("receiver_role"));
+                req.setRequestType(rs.getString("request_type"));
+                req.setRequestData(rs.getString("request_data"));
+                req.setStatus(rs.getString("status"));
+                req.setResponseMessage(rs.getString("response_message"));
+                req.setCreatedAt(rs.getTimestamp("created_at"));
+                req.setUpdatedAt(rs.getTimestamp("updated_at"));
+
+                return req; // Trả về object chứa toàn bộ data
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null; // Trả về null nếu không tìm thấy ID này
+    }
 }
