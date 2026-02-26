@@ -60,7 +60,7 @@ public class ContractDAO extends GenericDAO<Contract> {
 
 
     public Contract findById(Long id) {
-        String sql = "SELECT * FROM contracts WHERE id = ?";
+        String sql = "SELECT * FROM contracts WHERE id = ? AND status <> 'DELETED'";
         List<Contract> results = query(sql, new ContractMapper(), id);
         return results.isEmpty() ? null : results.get(0);
     }
@@ -71,7 +71,7 @@ public class ContractDAO extends GenericDAO<Contract> {
         String sql = "SELECT c.*, u.full_name " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
-                "WHERE c.id = ?";
+                "WHERE c.id = ? AND c.status <> 'DELETED'";
 
         List<Contract> results = query(sql, new ContractMapper(), id);
         return results.isEmpty() ? null : results.get(0);
@@ -80,7 +80,7 @@ public class ContractDAO extends GenericDAO<Contract> {
     public Contract findContractByProductId(Long productId) {
         String sql = "SELECT c.* FROM contracts c " +
                 "JOIN products p ON p.contract_id = c.id " +
-                "WHERE p.id = ?";
+                "WHERE p.id = ? AND c.status <> 'DELETED'";
         List<Contract> results = query(sql, new ContractMapper(), productId);
         return results.isEmpty() ? null : results.get(0);
     }
@@ -96,7 +96,7 @@ public class ContractDAO extends GenericDAO<Contract> {
                         "  LIMIT 1) AS serial_number " +
                         "FROM contracts c " +
                         "JOIN users u ON c.customer_id = u.id " +
-                        "WHERE 1=1 ");
+                        "WHERE c.status <> 'DELETED' ");
 
         List<Object> params = new ArrayList<>();
 
@@ -121,13 +121,13 @@ public class ContractDAO extends GenericDAO<Contract> {
 
 
     public boolean isContractNumberExists(String contractNumber) {
-        String sql = "SELECT count(*) FROM contracts WHERE contract_number = ?";
+        String sql = "SELECT count(*) FROM contracts WHERE contract_number = ? AND status <> 'DELETED'";
         int count = count(sql, contractNumber);
         return count > 0;
     }
 
     public Contract findByContractNumber(String contractNumber) {
-        String sql = "SELECT * FROM contracts WHERE contract_number = ?";
+        String sql = "SELECT * FROM contracts WHERE contract_number = ? AND status <> 'DELETED'";
 
         List<Contract> results = query(sql, new ContractMapper(), contractNumber);
         return results.isEmpty() ? null : results.get(0);
@@ -350,23 +350,23 @@ public class ContractDAO extends GenericDAO<Contract> {
     }
 
     public void delete(Long id) {
-        String sql = "DELETE FROM contracts WHERE id = ?";
+        String sql = "UPDATE contracts SET status = 'DELETED' WHERE id = ?";
         update(sql, id);
     }
 
     public List<Contract> findByProductId(Long productId) {
-        String sql = "SELECT * FROM contracts WHERE product_id = ?";
+        String sql = "SELECT * FROM contracts WHERE product_id = ? AND status <> 'DELETED'";
         return query(sql, new ContractMapper(), productId);
     }
 
     public List<Contract> getContractByCustomerId(int id) {
-        String sql = "SELECT * FROM contracts WHERE customer_id = ?";
+        String sql = "SELECT * FROM contracts WHERE customer_id = ? AND status <> 'DELETED'";
         return query(sql, new ContractMapper(), id);
     }
 
     // Phần tổng quan
     public int countByStatus(String status) {
-        String sql = "SELECT COUNT(*) FROM contracts WHERE status = ?";
+        String sql = "SELECT COUNT(*) FROM contracts WHERE status = ? AND status <> 'DELETED'";
         return count(sql, status);
     }
 
@@ -374,7 +374,7 @@ public class ContractDAO extends GenericDAO<Contract> {
     public int countExpiringSoon(int days) {
         // Logic: Ngày kết thúc nằm trong khoảng từ (Hôm nay) đến (Hôm nay + days)
         String sql = "SELECT COUNT(*) FROM contracts " +
-                "WHERE status = 'ACTIVE' " +
+                "WHERE status = 'ACTIVE' AND status <> 'DELETED' " +
                 "AND end_date BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL ? DAY)";
         return count(sql, days);
     }
@@ -384,6 +384,7 @@ public class ContractDAO extends GenericDAO<Contract> {
                 "(SELECT p.serial_number FROM products p WHERE p.contract_id = c.id ORDER BY p.created_at DESC LIMIT 1) AS serial_number " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
+                "WHERE c.status <> 'DELETED' " +
                 "ORDER BY c.created_at DESC LIMIT ?";
         return query(sql, new ContractMapper(), limit);
     }
