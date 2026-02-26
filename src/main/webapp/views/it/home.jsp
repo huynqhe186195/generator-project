@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="sitemesh" uri="http://www.opensymphony.com/sitemesh/decorator" %>
 
-<sitemesh:title>IT Dashboard</sitemesh:title>
+<sitemesh:title>IT Home</sitemesh:title>
 
 <div class="container-fluid">
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -24,7 +24,12 @@
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <div class="text-muted small">Máy</div>
-              <div class="fs-4 fw-bold">${requestScope.totalProducts}</div>
+              <div class="fs-4 fw-bold">
+                <c:choose>
+                  <c:when test="${empty requestScope.totalProducts}">0</c:when>
+                  <c:otherwise>${requestScope.totalProducts}</c:otherwise>
+                </c:choose>
+              </div>
             </div>
             <i class="fa fa-laptop fs-2 text-secondary"></i>
           </div>
@@ -36,14 +41,19 @@
       </div>
     </div>
 
-    <!-- ✅ Danh mục / Categories -->
+    <!-- Danh mục / Categories -->
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <div class="text-muted small">Danh mục</div>
-              <div class="fs-4 fw-bold">${requestScope.totalCategories}</div>
+              <div class="fs-4 fw-bold">
+                <c:choose>
+                  <c:when test="${empty requestScope.totalCategories}">0</c:when>
+                  <c:otherwise>${requestScope.totalCategories}</c:otherwise>
+                </c:choose>
+              </div>
             </div>
             <i class="fa fa-tags fs-2 text-secondary"></i>
           </div>
@@ -55,14 +65,19 @@
       </div>
     </div>
 
-    <!-- ✅ Thương hiệu / Brands (thay cho Người dùng) -->
+    <!-- Thương hiệu / Brands -->
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <div class="text-muted small">Thương hiệu</div>
-              <div class="fs-4 fw-bold">${requestScope.totalBrands}</div>
+              <div class="fs-4 fw-bold">
+                <c:choose>
+                  <c:when test="${empty requestScope.totalBrands}">0</c:when>
+                  <c:otherwise>${requestScope.totalBrands}</c:otherwise>
+                </c:choose>
+              </div>
             </div>
             <i class="fa fa-copyright fs-2 text-secondary"></i>
           </div>
@@ -107,10 +122,14 @@
              href="${pageContext.request.contextPath}/it/requests">
             Xử lý yêu cầu
           </a>
+          <a class="btn btn-sm btn-success mt-2"
+             href="${pageContext.request.contextPath}/it/products">
+            Import Excel Product
+          </a>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ✅ Bỏ hẳn phần Thông báo / Công việc gần đây -->
+  <!-- Bỏ hẳn phần Thông báo / Công việc gần đây -->
 </div>

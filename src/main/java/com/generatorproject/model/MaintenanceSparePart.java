@@ -6,6 +6,11 @@ public class MaintenanceSparePart {
     private int quantityUsed;
     private double costAtTime;
 
+    // NEW: để hiển thị ra màn hình
+    private String sparePartName;
+    private String partCode;
+    private String unit;
+
     public MaintenanceSparePart(int maintenanceId, int sparePartId, int quantityUsed, double costAtTime) {
         this.maintenanceId = maintenanceId;
         this.sparePartId = sparePartId;
@@ -13,7 +18,7 @@ public class MaintenanceSparePart {
         this.costAtTime = costAtTime;
     }
 
-    // getter / setter
+    public MaintenanceSparePart() {}
 
     public int getMaintenanceId() {
         return maintenanceId;
@@ -46,5 +51,28 @@ public class MaintenanceSparePart {
     public void setCostAtTime(double costAtTime) {
         this.costAtTime = costAtTime;
     }
-}
 
+    public String getSparePartName() {
+        return sparePartName;
+    }
+
+    public void setSparePartName(String sparePartName) {
+        this.sparePartName = sparePartName;
+    }
+
+    public String getPartCode() {
+        return partCode;
+    }
+
+    public void setPartCode(String partCode) {
+        this.partCode = partCode;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+}

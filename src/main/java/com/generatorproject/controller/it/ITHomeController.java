@@ -1,5 +1,8 @@
 package com.generatorproject.controller.it;
 
+import com.generatorproject.dao.BrandDAO;
+import com.generatorproject.dao.CategoryDAO;
+import com.generatorproject.dao.ProductModelDAO;
 import com.generatorproject.model.Users;
 
 import javax.servlet.ServletException;
@@ -27,12 +30,23 @@ public class ITHomeController extends HttpServlet {
             return;
         }
 
-        // Load dữ liệu dashboard (nếu có)
-        req.setAttribute("totalProducts", 0);
-        req.setAttribute("totalCategories", 0);
-        req.setAttribute("totalUsers", 0);
+        // product = product_models
+        int totalProducts = 0;
+        int totalCategories = 0;
+        int totalBrands = 0;
 
-        // Forward tới trang IT Home
+        try {
+            totalProducts = new ProductModelDAO().countAll();      // COUNT(*) FROM product_models
+            totalCategories = new CategoryDAO().countCategories(); // COUNT(*) FROM categories
+            totalBrands = new BrandDAO().countBrands();            // COUNT(*) FROM brands
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        req.setAttribute("totalProducts", totalProducts);
+        req.setAttribute("totalCategories", totalCategories);
+        req.setAttribute("totalBrands", totalBrands);
+
         req.getRequestDispatcher("/views/it/home.jsp").forward(req, resp);
     }
 }
