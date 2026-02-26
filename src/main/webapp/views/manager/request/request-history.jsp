@@ -259,24 +259,6 @@
             </div>
           </div>
 
-          <!-- GROUP: CUSTOMER_REMINDER -->
-          <div class="req-group d-none" data-type="CUSTOMER_REMINDER">
-            <div class="mb-3">
-              <label class="form-label">Customer ID <span class="text-danger">*</span></label>
-              <input type="number" name="customerId" class="form-control" placeholder="39">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Nội dung nhắc <span class="text-danger">*</span></label>
-              <textarea name="content" class="form-control" rows="3" placeholder="Nhắc khách hàng..."></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Hạn xử lý</label>
-              <input type="date" name="dueDate" class="form-control">
-            </div>
-          </div>
-
           <div class="alert alert-info small mb-0">
             <i class="fa fa-info-circle"></i>
             Role nhận sẽ xử lý theo <b>requestType</b> và cập nhật trạng thái.
@@ -351,8 +333,6 @@
             <label class="form-label">Loại yêu cầu <span class="text-danger">*</span></label>
             <select name="requestType" id="requestType" class="form-select" required>
               <option value="CREATE_USER">CREATE_USER - Tạo tài khoản</option>
-              <option value="INCIDENT_REPORT">INCIDENT_REPORT - Báo sự cố</option>
-              <option value="CUSTOMER_REMINDER">CUSTOMER_REMINDER - Nhắc khách hàng</option>
               <option value="NEW_PRODUCT">NEW_PRODUCT - Yêu cầu thêm sản phẩm mới</option>
               <option value="NEW_USER">NEW_USER - Yêu cầu import users từ Excel</option>
             </select>
@@ -415,24 +395,6 @@
             <div class="mb-3">
               <label class="form-label">Ngày mong muốn</label>
               <input type="date" name="preferredDate" class="form-control">
-            </div>
-          </div>
-
-          <!-- GROUP: CUSTOMER_REMINDER -->
-          <div class="req-group d-none" data-type="CUSTOMER_REMINDER">
-            <div class="mb-3">
-              <label class="form-label">Customer ID <span class="text-danger">*</span></label>
-              <input type="number" name="customerId" class="form-control" placeholder="39">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Nội dung nhắc <span class="text-danger">*</span></label>
-              <textarea name="content" class="form-control" rows="3" placeholder="Nhắc khách hàng..."></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Hạn xử lý</label>
-              <input type="date" name="dueDate" class="form-control">
             </div>
           </div>
 
