@@ -41,11 +41,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @WebServlet("/it/products/import-excel")
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024,
-        maxFileSize = 50 * 1024 * 1024,
-        maxRequestSize = 80 * 1024 * 1024
-)
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, maxFileSize = 50 * 1024 * 1024, maxRequestSize = 80 * 1024 * 1024)
 public class ProductModelImportExcelController extends HttpServlet {
 
     private final ProductModelDAO productModelDAO = new ProductModelDAO();
@@ -53,7 +49,8 @@ public class ProductModelImportExcelController extends HttpServlet {
     private final BrandDAO brandDAO = new BrandDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
 
-    private static final Pattern IMG_SRC_PATTERN = Pattern.compile("src\\s*=\\s*[\"\']([^\"\']+)[\"\']", Pattern.CASE_INSENSITIVE);
+    private static final Pattern IMG_SRC_PATTERN = Pattern.compile("src\\s*=\\s*[\"\']([^\"\']+)[\"\']",
+            Pattern.CASE_INSENSITIVE);
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
@@ -75,7 +72,7 @@ public class ProductModelImportExcelController extends HttpServlet {
         int invalidBrandCategoryCount = 0;
         int duplicateCount = 0;
         try (InputStream is = excelPart.getInputStream();
-             Workbook workbook = WorkbookFactory.create(is)) {
+                Workbook workbook = WorkbookFactory.create(is)) {
 
             Sheet sheet = workbook.getNumberOfSheets() > 0 ? workbook.getSheetAt(0) : null;
             if (sheet == null) {
@@ -89,7 +86,8 @@ public class ProductModelImportExcelController extends HttpServlet {
 
             for (int i = startRow; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null || isRowBlank(row, formatter)) continue;
+                if (row == null || isRowBlank(row, formatter))
+                    continue;
 
                 String name = trim(readByKey(row, col, "name", 0, formatter));
                 String brandRaw = trim(readByKey(row, col, "brand", 1, formatter));
@@ -116,7 +114,8 @@ public class ProductModelImportExcelController extends HttpServlet {
                     invalidRequiredCount++;
                     continue;
                 }
-                if (fuelType == null) fuelType = "OTHER";
+                if (fuelType == null)
+                    fuelType = "OTHER";
 
                 Brand brand = resolveBrand(brandRaw);
                 Category category = resolveCategory(categoryRaw);
@@ -180,23 +179,38 @@ public class ProductModelImportExcelController extends HttpServlet {
     private Map<String, Integer> buildColumnMap(Sheet sheet, DataFormatter formatter) {
         Map<String, Integer> map = new HashMap<>();
         Row row0 = sheet.getRow(0);
-        if (row0 == null) return map;
+        if (row0 == null)
+            return map;
 
         for (int i = 0; i < row0.getLastCellNum(); i++) {
             String key = normalizeHeader(readCell(row0, i, formatter));
-            if (key == null) continue;
+            if (key == null)
+                continue;
 
-            if ("name".equals(key) || "ten".equals(key) || "tensanpham".equals(key)) map.put("name", i);
-            else if ("brandname".equals(key) || "brand".equals(key) || "brandid".equals(key) || "hang".equals(key) || "thuonghieu".equals(key)) map.put("brand", i);
-            else if ("categoryname".equals(key) || "category".equals(key) || "categoryid".equals(key) || "danhmuc".equals(key) || "loai".equals(key)) map.put("category", i);
-            else if ("origin".equals(key) || "xuatxu".equals(key)) map.put("origin", i);
-            else if ("fueltype".equals(key) || "fuel".equals(key) || "nhienlieu".equals(key)) map.put("fueltype", i);
-            else if ("power".equals(key) || "congsuat".equals(key)) map.put("power", i);
-            else if ("description".equals(key) || "mota".equals(key)) map.put("description", i);
-            else if ("specifications".equals(key) || "specification".equals(key) || "thongsokythuat".equals(key)) map.put("specifications", i);
-            else if ("manualurl".equals(key) || "manual".equals(key) || "tailieuhuongdan".equals(key)) map.put("manualurl", i);
-            else if ("imageurl".equals(key) || "image".equals(key) || "hinhanh".equals(key) || "anh".equals(key)) map.put("imageurl", i);
-            else if ("status".equals(key) || "trangthai".equals(key)) map.put("status", i);
+            if ("name".equals(key) || "ten".equals(key) || "tensanpham".equals(key))
+                map.put("name", i);
+            else if ("brandname".equals(key) || "brand".equals(key) || "brandid".equals(key) || "hang".equals(key)
+                    || "thuonghieu".equals(key))
+                map.put("brand", i);
+            else if ("categoryname".equals(key) || "category".equals(key) || "categoryid".equals(key)
+                    || "danhmuc".equals(key) || "loai".equals(key))
+                map.put("category", i);
+            else if ("origin".equals(key) || "xuatxu".equals(key))
+                map.put("origin", i);
+            else if ("fueltype".equals(key) || "fuel".equals(key) || "nhienlieu".equals(key))
+                map.put("fueltype", i);
+            else if ("power".equals(key) || "congsuat".equals(key))
+                map.put("power", i);
+            else if ("description".equals(key) || "mota".equals(key))
+                map.put("description", i);
+            else if ("specifications".equals(key) || "specification".equals(key) || "thongsokythuat".equals(key))
+                map.put("specifications", i);
+            else if ("manualurl".equals(key) || "manual".equals(key) || "tailieuhuongdan".equals(key))
+                map.put("manualurl", i);
+            else if ("imageurl".equals(key) || "image".equals(key) || "hinhanh".equals(key) || "anh".equals(key))
+                map.put("imageurl", i);
+            else if ("status".equals(key) || "trangthai".equals(key))
+                map.put("status", i);
         }
 
         return map;
@@ -204,22 +218,27 @@ public class ProductModelImportExcelController extends HttpServlet {
 
     private boolean hasHeaderRow(Sheet sheet, DataFormatter formatter) {
         Row row0 = sheet.getRow(0);
-        if (row0 == null) return false;
+        if (row0 == null)
+            return false;
         String c0 = normalizeHeader(readCell(row0, 0, formatter));
         String c1 = normalizeHeader(readCell(row0, 1, formatter));
         String c2 = normalizeHeader(readCell(row0, 2, formatter));
-        return "name".equals(c0) || "ten".equals(c0) || "brand".equals(c1) || "brandname".equals(c1) || "hang".equals(c1) || "category".equals(c2) || "categoryname".equals(c2) || "danhmuc".equals(c2);
+        return "name".equals(c0) || "ten".equals(c0) || "brand".equals(c1) || "brandname".equals(c1)
+                || "hang".equals(c1) || "category".equals(c2) || "categoryname".equals(c2) || "danhmuc".equals(c2);
     }
 
-    private String readByKey(Row row, Map<String, Integer> colMap, String key, int defaultIndex, DataFormatter formatter) {
+    private String readByKey(Row row, Map<String, Integer> colMap, String key, int defaultIndex,
+            DataFormatter formatter) {
         Integer idx = colMap.get(key);
-        if (idx != null) return readCell(row, idx, formatter);
+        if (idx != null)
+            return readCell(row, idx, formatter);
         return readCell(row, defaultIndex, formatter);
     }
 
     private Brand resolveBrand(String brandRaw) {
         Brand brand = brandDAO.findByName(brandRaw);
-        if (brand != null) return brand;
+        if (brand != null)
+            return brand;
 
         Integer id = parseIntFlexible(brandRaw);
         if (id != null) {
@@ -229,14 +248,16 @@ public class ProductModelImportExcelController extends HttpServlet {
         String target = normalizeForCompare(brandRaw);
         for (Brand b : brandDAO.getAllBrands()) {
             String bn = normalizeForCompare(b.getName());
-            if (bn.equals(target) || bn.contains(target) || target.contains(bn)) return b;
+            if (bn.equals(target) || bn.contains(target) || target.contains(bn))
+                return b;
         }
         return null;
     }
 
     private Category resolveCategory(String categoryRaw) {
         Category category = categoryDAO.findByName(categoryRaw);
-        if (category != null) return category;
+        if (category != null)
+            return category;
 
         Integer id = parseIntFlexible(categoryRaw);
         if (id != null) {
@@ -246,30 +267,33 @@ public class ProductModelImportExcelController extends HttpServlet {
         String target = normalizeForCompare(categoryRaw);
         for (Category c : categoryDAO.getAllCategories()) {
             String cn = normalizeForCompare(c.getName());
-            if (cn.equals(target) || cn.contains(target) || target.contains(cn)) return c;
+            if (cn.equals(target) || cn.contains(target) || target.contains(cn))
+                return c;
         }
         return null;
     }
 
     private String readCell(Row row, int index, DataFormatter formatter) {
         Cell cell = row.getCell(index, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (cell == null) return null;
+        if (cell == null)
+            return null;
         return formatter.formatCellValue(cell);
     }
-
 
     private boolean isRowBlank(Row row, DataFormatter formatter) {
         int max = Math.max(11, row.getLastCellNum());
         for (int i = 0; i < max; i++) {
             String v = trim(readCell(row, i, formatter));
-            if (v != null) return false;
+            if (v != null)
+                return false;
         }
         return true;
     }
 
     private String normalizeHeader(String text) {
         text = trim(text);
-        if (text == null) return null;
+        if (text == null)
+            return null;
         String normalized = Normalizer.normalize(text, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
         return normalized.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
@@ -277,43 +301,53 @@ public class ProductModelImportExcelController extends HttpServlet {
 
     private String normalizeForCompare(String value) {
         value = trim(value);
-        if (value == null) return "";
+        if (value == null)
+            return "";
         String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
         return normalized.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9\\s]", " ").replaceAll("\\s+", " ").trim();
     }
 
     private String trim(String value) {
-        if (value == null) return null;
+        if (value == null)
+            return null;
         value = value.trim();
         return value.isEmpty() ? null : value;
     }
 
     private String normalizeFuelType(String value) {
         String normalized = trim(value);
-        if (normalized == null) return null;
+        if (normalized == null)
+            return null;
         normalized = normalized.toUpperCase(Locale.ROOT);
-        if (normalized.contains("DIESEL") || normalized.contains("DO")) return "DIESEL";
-        if (normalized.contains("GASOLINE") || normalized.contains("GAS") || normalized.contains("XANG")) return "GASOLINE";
-        if (normalized.contains("OTHER") || normalized.contains("KHAC")) return "OTHER";
+        if (normalized.contains("DIESEL") || normalized.contains("DO"))
+            return "DIESEL";
+        if (normalized.contains("GASOLINE") || normalized.contains("GAS") || normalized.contains("XANG"))
+            return "GASOLINE";
+        if (normalized.contains("OTHER") || normalized.contains("KHAC"))
+            return "OTHER";
         return null;
     }
 
     private String normalizeStatus(String value) {
         String normalized = trim(value);
-        if (normalized == null) return null;
+        if (normalized == null)
+            return null;
         normalized = normalized.toUpperCase(Locale.ROOT);
-        if ("ACTIVE".equals(normalized) || "HOATDONG".equals(normalized)) return "ACTIVE";
-        if ("INACTIVE".equals(normalized) || "NGUNGHOATDONG".equals(normalized)) return "INACTIVE";
-        if ("COMING_SOON".equals(normalized) || "COMINGSOON".equals(normalized) || "SAPRAMAT".equals(normalized)) return "COMING_SOON";
+        if ("ACTIVE".equals(normalized) || "HOATDONG".equals(normalized))
+            return "ACTIVE";
+        if ("INACTIVE".equals(normalized) || "NGUNGHOATDONG".equals(normalized))
+            return "INACTIVE";
+        if ("COMING_SOON".equals(normalized) || "COMINGSOON".equals(normalized) || "SAPRAMAT".equals(normalized))
+            return "COMING_SOON";
         return null;
     }
-
 
     private java.util.List<String> parseImageCandidates(String rawImageUrl) {
         java.util.List<String> result = new ArrayList<>();
         String value = trim(rawImageUrl);
-        if (value == null) return result;
+        if (value == null)
+            return result;
 
         if (value.toLowerCase(Locale.ROOT).contains("<img")) {
             Matcher matcher = IMG_SRC_PATTERN.matcher(value);
@@ -323,7 +357,8 @@ public class ProductModelImportExcelController extends HttpServlet {
                     result.add(src);
                 }
             }
-            if (!result.isEmpty()) return result;
+            if (!result.isEmpty())
+                return result;
         }
 
         String normalized = value.replace("\r", "\n");
@@ -343,7 +378,8 @@ public class ProductModelImportExcelController extends HttpServlet {
 
     private String normalizeAndPersistImageUrl(HttpServletRequest req, String rawImageUrl) {
         String value = trim(rawImageUrl);
-        if (value == null) return null;
+        if (value == null)
+            return null;
 
         value = extractSrcIfHtml(value);
         value = value.replace("\\", "/").trim();
@@ -383,8 +419,10 @@ public class ProductModelImportExcelController extends HttpServlet {
     }
 
     private String extractSrcIfHtml(String value) {
-        if (value == null) return null;
-        if (!value.toLowerCase(Locale.ROOT).contains("<img")) return value;
+        if (value == null)
+            return null;
+        if (!value.toLowerCase(Locale.ROOT).contains("<img"))
+            return value;
         Matcher matcher = IMG_SRC_PATTERN.matcher(value);
         if (matcher.find()) {
             return matcher.group(1);
@@ -430,7 +468,7 @@ public class ProductModelImportExcelController extends HttpServlet {
 
             File outputFile = new File(dir, fileName);
             try (InputStream in = connection.getInputStream();
-                 FileOutputStream out = new FileOutputStream(outputFile)) {
+                    FileOutputStream out = new FileOutputStream(outputFile)) {
                 byte[] buffer = new byte[8192];
                 int len;
                 while ((len = in.read(buffer)) != -1) {
@@ -450,19 +488,25 @@ public class ProductModelImportExcelController extends HttpServlet {
 
     private String contentTypeToExt(String contentType) {
         String ct = contentType.toLowerCase(Locale.ROOT);
-        if (ct.contains("jpeg") || ct.contains("jpg")) return ".jpg";
-        if (ct.contains("png")) return ".png";
-        if (ct.contains("webp")) return ".webp";
-        if (ct.contains("gif")) return ".gif";
-        if (ct.contains("bmp")) return ".bmp";
-        if (ct.contains("svg")) return ".svg";
+        if (ct.contains("jpeg") || ct.contains("jpg"))
+            return ".jpg";
+        if (ct.contains("png"))
+            return ".png";
+        if (ct.contains("webp"))
+            return ".webp";
+        if (ct.contains("gif"))
+            return ".gif";
+        if (ct.contains("bmp"))
+            return ".bmp";
+        if (ct.contains("svg"))
+            return ".svg";
         return ".img";
     }
 
-
     private Integer parseIntFlexible(String value) {
         value = trim(value);
-        if (value == null) return null;
+        if (value == null)
+            return null;
         try {
             return Integer.parseInt(value);
         } catch (Exception ignore) {
