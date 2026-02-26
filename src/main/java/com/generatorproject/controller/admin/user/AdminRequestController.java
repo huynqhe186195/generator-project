@@ -181,9 +181,9 @@ public class AdminRequestController extends HttpServlet {
                     continue;
                 }
 
-                String email = formatter.formatCellValue(row.getCell(0)).trim();
-                String fullName = formatter.formatCellValue(row.getCell(1)).trim();
-                String phone = formatter.formatCellValue(row.getCell(2)).trim();
+                String email = formatter.formatCellValue(row.getCell(1)).trim();
+                String fullName = formatter.formatCellValue(row.getCell(2)).trim();
+                String phone = formatter.formatCellValue(row.getCell(3)).trim();
 
                 if (email.isEmpty() && fullName.isEmpty() && phone.isEmpty()) {
                     continue;
@@ -199,8 +199,9 @@ public class AdminRequestController extends HttpServlet {
                     continue;
                 }
 
-                String rawRoleId = formatter.formatCellValue(row.getCell(3)).trim();
-                String rawStatus = formatter.formatCellValue(row.getCell(4)).trim();
+                String rawRoleId = formatter.formatCellValue(row.getCell(0)).trim();
+                String rawStatus = formatter.formatCellValue(row.getCell(5)).trim();
+                String avatarUrl = formatter.formatCellValue(row.getCell(4)).trim();
 
                 int roleId = parseIntegerOrDefault(rawRoleId, 5);
                 int status = parseIntegerOrDefault(rawStatus, 1);
@@ -215,13 +216,14 @@ public class AdminRequestController extends HttpServlet {
                 newUser.setPassword(hashedPassword);
                 newUser.setRoleId(roleId);
                 newUser.setStatus(status);
+                newUser.setAvatarUrl(avatarUrl);
 
                 userServices.createUser(newUser);
                 created++;
             }
         }
 
-        return "Đã import user từ Excel (không gửi email). Thành công: " + created + ", bỏ qua: " + skipped + ".";
+        return "Đã import user từ Excel. Thành công: " + created + ", bỏ qua: " + skipped + ".";
     }
 
     private void handleDownload(HttpServletRequest req, HttpServletResponse resp) throws IOException {
