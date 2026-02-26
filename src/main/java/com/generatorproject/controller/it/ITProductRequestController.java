@@ -78,7 +78,7 @@ public class ITProductRequestController extends HttpServlet {
         try {
             if ("approve".equalsIgnoreCase(action)) {
                 request.setStatus("APPROVED");
-                request.setResponseMessage("IT đã duyệt yêu cầu. Vui lòng import file Excel tại màn Quản lý Product Model.");
+                request.setResponseMessage("Yêu cầu thêm sản phẩm vào hệ thống đã được xử lý thành công!");
                 requestDAO.update(request);
             } else if ("reject".equalsIgnoreCase(action)) {
                 String reason = req.getParameter("responseMessage");
