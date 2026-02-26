@@ -2,27 +2,36 @@ package com.generatorproject.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class SystemRequestDAO extends DbContext {
 
-    public boolean createRepairQuoteRequest(int senderId, String requestDataJson) {
-        // NOTE: chỉnh tên bảng/cột đúng theo DB của bạn
+    public String getRepairQuoteStatus(int maintenanceId) {
+
         String sql = """
-            INSERT INTO system_requests(sender_id, receiver_role, request_type, request_data, status)
-            VALUES (?, 'MANAGER', 'REPAIR_QUOTE', ?, 'PENDING')
-        """;
+        SELECT status
+        FROM system_requests
+        WHERE request_type = 'REPAIR_QUOTE'
+          AND request_data LIKE ?
+        ORDER BY id DESC
+        LIMIT 1
+    """;
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, senderId);
-            ps.setString(2, requestDataJson);
-            return ps.executeUpdate() > 0;
+            ps.setString(1, "%\"maintenanceId\":" + maintenanceId + "%");
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("status"); // WAITING_MANAGER / APPROVED / REJECTED
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
+
+        return null; // chưa gửi quote
     }
 
     public boolean createRequest(int senderId,
@@ -33,7 +42,7 @@ public class SystemRequestDAO extends DbContext {
         String sql = """
         INSERT INTO system_requests
         (sender_id, receiver_role, request_type, request_data, status, created_at)
-        VALUES (?, ?, ?, ?, 'PENDING', NOW())
+        VALUES (?, ?, ?, ?, 'WAITING_STAFF', NOW())
     """;
 
         try {

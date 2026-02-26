@@ -114,12 +114,16 @@ public class MaintenanceSparePartDAO extends DbContext {
         List<MaintenanceSparePart> list = new ArrayList<>();
 
         String sql = """
-        SELECT maintenance_id,
-               spare_part_id,
-               quantity_used,
-               cost_at_time
-        FROM maintenance_spare_parts
-        WHERE maintenance_id = ?
+        SELECT msp.maintenance_id,
+               msp.spare_part_id,
+               msp.quantity_used,
+               msp.cost_at_time,
+               sp.name AS spare_part_name,
+               sp.part_code AS part_code,
+               sp.unit AS unit
+        FROM maintenance_spare_parts msp
+        JOIN spare_parts sp ON msp.spare_part_id = sp.id
+        WHERE msp.maintenance_id = ?
     """;
 
         try (Connection conn = getConnection();
@@ -135,6 +139,12 @@ public class MaintenanceSparePartDAO extends DbContext {
                         rs.getInt("quantity_used"),
                         rs.getDouble("cost_at_time")
                 );
+
+                // NEW fields
+                m.setSparePartName(rs.getString("spare_part_name"));
+                m.setPartCode(rs.getString("part_code"));
+                m.setUnit(rs.getString("unit"));
+
                 list.add(m);
             }
 
