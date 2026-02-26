@@ -20,12 +20,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URLEncoder;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.Locale;
 import java.util.Map;
 
@@ -86,7 +91,8 @@ public class ProductModelImportExcelController extends HttpServlet {
                 String description = trim(readByKey(row, col, "description", 6, formatter));
                 String specifications = trim(readByKey(row, col, "specifications", 7, formatter));
                 String manualUrl = trim(readByKey(row, col, "manualurl", 8, formatter));
-                String imageUrl = trim(readByKey(row, col, "imageurl", 9, formatter));
+                String imageUrlRaw = trim(readByKey(row, col, "imageurl", 9, formatter));
+                String imageUrl = normalizeAndPersistImageUrl(req, imageUrlRaw);
                 String status = normalizeStatus(readByKey(row, col, "status", 10, formatter));
 
                 if (name == null || brandRaw == null || categoryRaw == null) {
@@ -275,6 +281,93 @@ public class ProductModelImportExcelController extends HttpServlet {
         if ("INACTIVE".equals(normalized) || "NGUNGHOATDONG".equals(normalized)) return "INACTIVE";
         if ("COMING_SOON".equals(normalized) || "COMINGSOON".equals(normalized) || "SAPRAMAT".equals(normalized)) return "COMING_SOON";
         return null;
+    }
+
+
+    private String normalizeAndPersistImageUrl(HttpServletRequest req, String rawImageUrl) {
+        String value = trim(rawImageUrl);
+        if (value == null) return null;
+
+        if (value.startsWith("data:image")) {
+            return value;
+        }
+
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            String downloaded = downloadImageToUploads(req, value);
+            return downloaded != null ? downloaded : value;
+        }
+
+        if (value.startsWith("//")) {
+            String httpUrl = "https:" + value;
+            String downloaded = downloadImageToUploads(req, httpUrl);
+            return downloaded != null ? downloaded : httpUrl;
+        }
+
+        if (value.startsWith("/")) {
+            return value.substring(1);
+        }
+
+        return value;
+    }
+
+    private String downloadImageToUploads(HttpServletRequest req, String sourceUrl) {
+        HttpURLConnection connection = null;
+        try {
+            URL url = new URL(sourceUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(8000);
+            connection.setReadTimeout(8000);
+            connection.setInstanceFollowRedirects(true);
+
+            int code = connection.getResponseCode();
+            if (code < 200 || code >= 300) {
+                return null;
+            }
+
+            String contentType = connection.getContentType();
+            if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+                return null;
+            }
+
+            String ext = contentTypeToExt(contentType);
+            String fileName = UUID.randomUUID() + ext;
+
+            String uploadDir = req.getServletContext().getRealPath("/uploads/product-images");
+            File dir = new File(uploadDir);
+            if (!dir.exists() && !dir.mkdirs()) {
+                return null;
+            }
+
+            File outputFile = new File(dir, fileName);
+            try (InputStream in = connection.getInputStream();
+                 FileOutputStream out = new FileOutputStream(outputFile)) {
+                byte[] buffer = new byte[8192];
+                int len;
+                while ((len = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, len);
+                }
+            }
+
+            return "uploads/product-images/" + fileName;
+        } catch (Exception ignored) {
+            return null;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    private String contentTypeToExt(String contentType) {
+        String ct = contentType.toLowerCase(Locale.ROOT);
+        if (ct.contains("jpeg") || ct.contains("jpg")) return ".jpg";
+        if (ct.contains("png")) return ".png";
+        if (ct.contains("webp")) return ".webp";
+        if (ct.contains("gif")) return ".gif";
+        if (ct.contains("bmp")) return ".bmp";
+        if (ct.contains("svg")) return ".svg";
+        return ".img";
     }
 
 

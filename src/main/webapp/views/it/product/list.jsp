@@ -25,6 +25,7 @@
   </c:if>
   <c:if test="${param.msg == 'import_empty'}">
     <div class="alert alert-warning">Không import được dòng nào từ file Excel (kiểm tra dữ liệu). <c:if test="${not empty param.detail}">Chi tiết: ${param.detail}</c:if></div>
+    <div class="alert alert-info">Mẹo ảnh: cột <b>imageUrl</b> nên là URL ảnh public (https://...) để hệ thống có thể tải về và lưu vào <code>/uploads/product-images</code>.</div>
   </c:if>
   <c:if test="${param.msg == 'import_invalid_file'}">
     <div class="alert alert-warning">Vui lòng chọn file Excel hợp lệ (.xlsx/.xls).</div>
@@ -152,10 +153,10 @@
               <div class="d-flex align-items-center">
                 <c:choose>
                   <c:when test="${not empty pm.imageUrl and fn:startsWith(pm.imageUrl, 'http')}">
-                    <img src="${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb">
+                    <img src="${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb" onerror="this.onerror=null;this.src='https://via.placeholder.com/42x42?text=IMG';">
                   </c:when>
                   <c:when test="${not empty pm.imageUrl}">
-                    <img src="${ctx}/${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb">
+                    <img src="${ctx}${fn:startsWith(pm.imageUrl, '/') ? '' : '/'}${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb" onerror="this.onerror=null;this.src='https://via.placeholder.com/42x42?text=IMG';">
                   </c:when>
                   <c:otherwise>
                     <img src="https://via.placeholder.com/42x42?text=IMG" class="thumb-img me-3 shadow-sm border" alt="thumb">
