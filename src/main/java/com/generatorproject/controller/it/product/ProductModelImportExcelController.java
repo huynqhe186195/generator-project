@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @WebServlet("/it/products/import-excel")
 @MultipartConfig(
@@ -45,6 +47,8 @@ public class ProductModelImportExcelController extends HttpServlet {
     private final ProductModelDAO productModelDAO = new ProductModelDAO();
     private final BrandDAO brandDAO = new BrandDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
+
+    private static final Pattern IMG_SRC_PATTERN = Pattern.compile("src\\s*=\\s*[\"\']([^\"\']+)[\"\']", Pattern.CASE_INSENSITIVE);
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
@@ -288,6 +292,9 @@ public class ProductModelImportExcelController extends HttpServlet {
         String value = trim(rawImageUrl);
         if (value == null) return null;
 
+        value = extractSrcIfHtml(value);
+        value = value.replace("\\", "/").trim();
+
         if (value.startsWith("data:image")) {
             return value;
         }
@@ -307,7 +314,36 @@ public class ProductModelImportExcelController extends HttpServlet {
             return value.substring(1);
         }
 
+        if (value.startsWith("uploads/")) {
+            return value;
+        }
+
+        if (value.startsWith("product-images/")) {
+            return "uploads/" + value;
+        }
+
+        if (isImageFileName(value)) {
+            return "uploads/product-images/" + value;
+        }
+
+        return null;
+    }
+
+    private String extractSrcIfHtml(String value) {
+        if (value == null) return null;
+        if (!value.toLowerCase(Locale.ROOT).contains("<img")) return value;
+        Matcher matcher = IMG_SRC_PATTERN.matcher(value);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
         return value;
+    }
+
+    private boolean isImageFileName(String value) {
+        String lower = value.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")
+                || lower.endsWith(".webp") || lower.endsWith(".gif") || lower.endsWith(".bmp")
+                || lower.endsWith(".svg");
     }
 
     private String downloadImageToUploads(HttpServletRequest req, String sourceUrl) {

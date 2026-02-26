@@ -153,13 +153,16 @@
               <div class="d-flex align-items-center">
                 <c:choose>
                   <c:when test="${not empty pm.imageUrl and fn:startsWith(pm.imageUrl, 'http')}">
-                    <img src="${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb" onerror="this.onerror=null;this.src='https://via.placeholder.com/42x42?text=IMG';">
+                    <img src="${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb" onerror="this.onerror=null;this.src='${ctx}/uploads/download.jpg';">
                   </c:when>
-                  <c:when test="${not empty pm.imageUrl}">
-                    <img src="${ctx}${fn:startsWith(pm.imageUrl, '/') ? '' : '/'}${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb" onerror="this.onerror=null;this.src='https://via.placeholder.com/42x42?text=IMG';">
+                  <c:when test="${not empty pm.imageUrl and (fn:startsWith(pm.imageUrl, '/') or fn:startsWith(pm.imageUrl, 'uploads/') or fn:startsWith(pm.imageUrl, 'product-images/'))}">
+                    <img src="${ctx}${fn:startsWith(pm.imageUrl, '/') ? '' : '/'}${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb" onerror="this.onerror=null;this.src='${ctx}/uploads/download.jpg';">
+                  </c:when>
+                  <c:when test="${not empty pm.imageUrl and (fn:endsWith(pm.imageUrl, '.jpg') or fn:endsWith(pm.imageUrl, '.jpeg') or fn:endsWith(pm.imageUrl, '.png') or fn:endsWith(pm.imageUrl, '.webp') or fn:endsWith(pm.imageUrl, '.gif') or fn:endsWith(pm.imageUrl, '.bmp') or fn:endsWith(pm.imageUrl, '.svg'))}">
+                    <img src="${ctx}/uploads/product-images/${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb" onerror="this.onerror=null;this.src='${ctx}/uploads/download.jpg';">
                   </c:when>
                   <c:otherwise>
-                    <img src="https://via.placeholder.com/42x42?text=IMG" class="thumb-img me-3 shadow-sm border" alt="thumb">
+                    <img src="${ctx}/uploads/download.jpg" class="thumb-img me-3 shadow-sm border" alt="thumb">
                   </c:otherwise>
                 </c:choose>
 
