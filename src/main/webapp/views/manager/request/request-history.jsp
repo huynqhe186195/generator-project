@@ -441,7 +441,7 @@
             <div class="mb-3">
               <label class="form-label">File Excel thông tin sản phẩm <span class="text-danger">*</span></label>
               <input type="file" name="productExcelFile" class="form-control" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
-              <div class="form-text">Mẫu cột theo thứ tự: name, brandName, categoryName, origin, fuelType, power, description, specifications, manualUrl, imageUrl, status.</div>
+              <div class="form-text">Mẫu cột theo thứ tự: name, brandName, categoryName, origin, fuelType, power, description, specifications, manualUrl, imageUrl, status. Cột imageUrl có thể chứa nhiều link, ngăn cách bằng dấu ; hoặc xuống dòng.</div>
             </div>
           </div>
 

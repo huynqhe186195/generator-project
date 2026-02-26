@@ -3,6 +3,7 @@ package com.generatorproject.controller.it.product;
 import com.generatorproject.dao.BrandDAO;
 import com.generatorproject.dao.CategoryDAO;
 import com.generatorproject.dao.ProductModelDAO;
+import com.generatorproject.dao.ProductImageDAO;
 import com.generatorproject.model.Brand;
 import com.generatorproject.model.Category;
 import com.generatorproject.model.ProductModel;
@@ -29,10 +30,13 @@ import java.net.URLEncoder;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.UUID;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +49,7 @@ import java.util.regex.Pattern;
 public class ProductModelImportExcelController extends HttpServlet {
 
     private final ProductModelDAO productModelDAO = new ProductModelDAO();
+    private final ProductImageDAO productImageDAO = new ProductImageDAO();
     private final BrandDAO brandDAO = new BrandDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
 
@@ -96,7 +101,15 @@ public class ProductModelImportExcelController extends HttpServlet {
                 String specifications = trim(readByKey(row, col, "specifications", 7, formatter));
                 String manualUrl = trim(readByKey(row, col, "manualurl", 8, formatter));
                 String imageUrlRaw = trim(readByKey(row, col, "imageurl", 9, formatter));
-                String imageUrl = normalizeAndPersistImageUrl(req, imageUrlRaw);
+                java.util.List<String> imageCandidates = parseImageCandidates(imageUrlRaw);
+                java.util.List<String> normalizedImages = new ArrayList<>();
+                for (String candidate : imageCandidates) {
+                    String normalizedImage = normalizeAndPersistImageUrl(req, candidate);
+                    if (normalizedImage != null && !normalizedImage.isEmpty()) {
+                        normalizedImages.add(normalizedImage);
+                    }
+                }
+                String imageUrl = normalizedImages.isEmpty() ? null : normalizedImages.get(0);
                 String status = normalizeStatus(readByKey(row, col, "status", 10, formatter));
 
                 if (name == null || brandRaw == null || categoryRaw == null) {
@@ -134,7 +147,16 @@ public class ProductModelImportExcelController extends HttpServlet {
                         .build();
 
                 Long newId = productModelDAO.insertProductModel(model);
-                if (newId != null) createdCount++;
+                if (newId != null) {
+                    createdCount++;
+                    int modelId = newId.intValue();
+                    Set<String> inserted = new HashSet<>();
+                    for (String image : normalizedImages) {
+                        if (inserted.add(image)) {
+                            productImageDAO.insertImage(modelId, image);
+                        }
+                    }
+                }
             }
 
         } catch (Exception e) {
@@ -287,6 +309,37 @@ public class ProductModelImportExcelController extends HttpServlet {
         return null;
     }
 
+
+    private java.util.List<String> parseImageCandidates(String rawImageUrl) {
+        java.util.List<String> result = new ArrayList<>();
+        String value = trim(rawImageUrl);
+        if (value == null) return result;
+
+        if (value.toLowerCase(Locale.ROOT).contains("<img")) {
+            Matcher matcher = IMG_SRC_PATTERN.matcher(value);
+            while (matcher.find()) {
+                String src = trim(matcher.group(1));
+                if (src != null) {
+                    result.add(src);
+                }
+            }
+            if (!result.isEmpty()) return result;
+        }
+
+        String normalized = value.replace("\r", "\n");
+        String[] parts = normalized.split("\n|;|\\|");
+        for (String part : parts) {
+            String item = trim(part);
+            if (item != null) {
+                result.add(item);
+            }
+        }
+
+        if (result.isEmpty()) {
+            result.add(value);
+        }
+        return result;
+    }
 
     private String normalizeAndPersistImageUrl(HttpServletRequest req, String rawImageUrl) {
         String value = trim(rawImageUrl);

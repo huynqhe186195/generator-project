@@ -25,7 +25,7 @@
   </c:if>
   <c:if test="${param.msg == 'import_empty'}">
     <div class="alert alert-warning">Không import được dòng nào từ file Excel (kiểm tra dữ liệu). <c:if test="${not empty param.detail}">Chi tiết: ${param.detail}</c:if></div>
-    <div class="alert alert-info">Mẹo ảnh: cột <b>imageUrl</b> nên là URL ảnh public (https://...) để hệ thống có thể tải về và lưu vào <code>/uploads/product-images</code>.</div>
+    <div class="alert alert-info">Mẹo ảnh: cột <b>imageUrl</b> hỗ trợ nhiều ảnh (ngăn cách bằng <code>;</code> hoặc xuống dòng). Ảnh đầu tiên sẽ làm thumbnail ở <code>product_models.image_url</code>, tất cả ảnh sẽ lưu vào <code>product_images</code>.</div>
   </c:if>
   <c:if test="${param.msg == 'import_invalid_file'}">
     <div class="alert alert-warning">Vui lòng chọn file Excel hợp lệ (.xlsx/.xls).</div>
