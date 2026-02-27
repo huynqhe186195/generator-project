@@ -81,6 +81,34 @@
         </div>
     </c:if>
 
+    <c:if test="${param.msg == 'delete_blocked_user_exists'}">
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fa fa-ban"></i> Không thể xóa mềm hợp đồng vì khách hàng vẫn còn tồn tại trong hệ thống.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </c:if>
+
+    <c:if test="${param.msg == 'already_terminated'}">
+        <div class="alert alert-info alert-dismissible fade show">
+            <i class="fa fa-info-circle"></i> Hợp đồng này đã ở trạng thái Đã hủy trước đó.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </c:if>
+
+    <c:if test="${param.msg == 'not_found'}">
+        <div class="alert alert-secondary alert-dismissible fade show">
+            <i class="fa fa-search"></i> Không tìm thấy hợp đồng cần thao tác.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </c:if>
+
+    <c:if test="${param.msg == 'terminated_no_actions'}">
+        <div class="alert alert-warning alert-dismissible fade show">
+            <i class="fa fa-lock"></i> Hợp đồng đã ở trạng thái Đã hủy nên không thể xem chi tiết hoặc chỉnh sửa.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </c:if>
+
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-center">
@@ -163,22 +191,28 @@
                             </c:choose>
                         </td>
                         <td class="text-center">
-                            <a href="${pageContext.request.contextPath}/manager/contracts?action=detail&id=${c.id}"
-                               class="btn btn-sm btn-info" title="Xem chi tiết">
-                                <i class="fa fa-eye"></i>
-                            </a>
+                            <c:if test="${c.status != 'TERMINATED'}">
+                                <a href="${pageContext.request.contextPath}/manager/contracts?action=detail&id=${c.id}"
+                                   class="btn btn-sm btn-info" title="Xem chi tiết">
+                                    <i class="fa fa-eye"></i>
+                                </a>
 
-                            <a href="${pageContext.request.contextPath}/manager/contracts?action=edit_view&id=${c.id}"
-                               class="btn btn-sm btn-warning" title="Sửa thông tin">
-                                <i class="fa fa-edit"></i>
-                            </a>
+                                <a href="${pageContext.request.contextPath}/manager/contracts?action=edit_view&id=${c.id}"
+                                   class="btn btn-sm btn-warning" title="Sửa thông tin">
+                                    <i class="fa fa-edit"></i>
+                                </a>
 
-                            <a href="${pageContext.request.contextPath}/manager/contracts?action=delete&id=${c.id}"
-                               class="btn btn-sm btn-danger"
-                               onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa Hợp đồng số ${c.contractNumber}?\\nDữ liệu sẽ không thể khôi phục!');"
-                               title="Xóa hợp đồng">
-                                <i class="fa fa-trash"></i>
-                            </a>
+                                <a href="${pageContext.request.contextPath}/manager/contracts?action=delete&id=${c.id}"
+                                   class="btn btn-sm btn-danger"
+                                   onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa Hợp đồng số ${c.contractNumber}?\\nDữ liệu sẽ không thể khôi phục!');"
+                                   title="Xóa hợp đồng">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </c:if>
+
+                            <c:if test="${c.status == 'TERMINATED'}">
+                                <span class="text-muted fst-italic">Không khả dụng</span>
+                            </c:if>
                         </td>
                     </tr>
                 </c:forEach>

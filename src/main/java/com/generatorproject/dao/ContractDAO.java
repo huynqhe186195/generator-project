@@ -350,7 +350,7 @@ public class ContractDAO extends GenericDAO<Contract> {
     }
 
     public void delete(Long id) {
-        String sql = "DELETE FROM contracts WHERE id = ?";
+        String sql = "UPDATE contracts SET status = 'TERMINATED' WHERE id = ?";
         update(sql, id);
     }
 
