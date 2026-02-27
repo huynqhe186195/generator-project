@@ -354,7 +354,7 @@
               <span class="stat-number">
                 <c:choose>
                   <c:when test="${not empty stats}">
-                    ${stats.totalProducts}
+                   ${stats.totalProductModels}
                   </c:when>
                   <c:otherwise>150</c:otherwise>
                 </c:choose>
