@@ -211,5 +211,8 @@ public class ProductModelDAO extends GenericDAO<ProductModel> {
         String sql = "DELETE FROM product_models WHERE id = ?";
         update(sql, id);
     }
-
+    public int countAll() {
+        String sql = "SELECT COUNT(*) FROM product_models";
+        return count(sql); // dùng method count có sẵn trong GenericDAO
+    }
 }

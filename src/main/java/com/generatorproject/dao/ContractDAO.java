@@ -121,13 +121,13 @@ public class ContractDAO extends GenericDAO<Contract> {
 
 
     public boolean isContractNumberExists(String contractNumber) {
-        String sql = "SELECT count(*) FROM contracts WHERE contract_number = ?";
+        String sql = "SELECT count(*) FROM contracts WHERE contract_number = ? AND status <> 'DELETED'";
         int count = count(sql, contractNumber);
         return count > 0;
     }
 
     public Contract findByContractNumber(String contractNumber) {
-        String sql = "SELECT * FROM contracts WHERE contract_number = ?";
+        String sql = "SELECT * FROM contracts WHERE contract_number = ? AND status <> 'DELETED'";
 
         List<Contract> results = query(sql, new ContractMapper(), contractNumber);
         return results.isEmpty() ? null : results.get(0);
@@ -366,7 +366,7 @@ public class ContractDAO extends GenericDAO<Contract> {
 
     // Phần tổng quan
     public int countByStatus(String status) {
-        String sql = "SELECT COUNT(*) FROM contracts WHERE status = ?";
+        String sql = "SELECT COUNT(*) FROM contracts WHERE status = ? AND status <> 'DELETED'";
         return count(sql, status);
     }
 
@@ -374,7 +374,7 @@ public class ContractDAO extends GenericDAO<Contract> {
     public int countExpiringSoon(int days) {
         // Logic: Ngày kết thúc nằm trong khoảng từ (Hôm nay) đến (Hôm nay + days)
         String sql = "SELECT COUNT(*) FROM contracts " +
-                "WHERE status = 'ACTIVE' " +
+                "WHERE status = 'ACTIVE' AND status <> 'DELETED' " +
                 "AND end_date BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL ? DAY)";
         return count(sql, days);
     }

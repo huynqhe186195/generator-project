@@ -124,21 +124,29 @@ public class TechnicalController extends HttpServlet {
                     }
                 }
                 if ("REPAIR".equals(task.getType())) {
-                    // nếu đã gửi quote thì phải APPROVED mới cho complete
-                    String asg = task.getAssignmentStatus(); // DRAFT/QUOTE_PENDING/APPROVED/REJECTED
 
-                    if ("QUOTE_PENDING".equals(asg)) {
+                    // bắt buộc có vật tư (bạn đã check ở trên rồi thì đoạn này có thể bỏ, nhưng giữ cũng ok)
+                    MaintenanceSparePartDAO mspDAO = new MaintenanceSparePartDAO();
+                    if (!mspDAO.hasMaterials(id)) {
+                        resp.sendRedirect(req.getContextPath()
+                                + "/technical/repair-report?id=" + id + "&error=nomaterial");
+                        return;
+                    }
+
+                    SystemRequestDAO srDAO = new SystemRequestDAO();
+                    String quoteStatus = srDAO.getRepairQuoteStatus(id); // hàm mình đưa ở dưới
+
+                    if ("WAITING_STAFF".equals(quoteStatus)) {
                         resp.sendRedirect(req.getContextPath()
                                 + "/technical/repair-report?id=" + id + "&error=quote_pending");
                         return;
                     }
-                    if ("REJECTED".equals(asg)) {
+                    if ("REJECTED".equals(quoteStatus)) {
                         resp.sendRedirect(req.getContextPath()
                                 + "/technical/repair-report?id=" + id + "&error=quote_rejected");
                         return;
                     }
-                    // nếu bạn bắt buộc REPAIR phải được duyệt báo giá:
-                    if (!"APPROVED".equals(asg)) {
+                    if (!"APPROVED".equals(quoteStatus)) {
                         resp.sendRedirect(req.getContextPath()
                                 + "/technical/repair-report?id=" + id + "&error=quote_not_approved");
                         return;
@@ -200,6 +208,11 @@ public class TechnicalController extends HttpServlet {
                 req.setAttribute("task", task);
                 req.setAttribute("parts", parts);
                 req.setAttribute("materials", materials); // 👈 QUAN TRỌNG
+
+
+                SystemRequestDAO srDAO = new SystemRequestDAO();
+                String quoteStatus = srDAO.getRepairQuoteStatus(id);
+                req.setAttribute("quoteStatus", quoteStatus);
 
                 req.getRequestDispatcher("/views/Technical/repair-report.jsp")
                         .forward(req, resp);
@@ -413,13 +426,12 @@ public class TechnicalController extends HttpServlet {
             SystemRequestDAO srDAO = new SystemRequestDAO();
             srDAO.createRequest(
                     currentUser.getId(),
-                    "MANAGER",
+                    "STAFF",
                     "REPAIR_QUOTE",
                     json.toString()
             );
 
-            // (tuỳ bạn) update status task để khóa nghiệp vụ chờ duyệt
-            maintenanceDAO.updateStatus(id, "QUOTE_PENDING");
+
 
             resp.sendRedirect(req.getContextPath()
                     + "/technical/repair-report?id=" + id + "&msg=quote_sent");
@@ -505,21 +517,29 @@ public class TechnicalController extends HttpServlet {
 
 
             if ("REPAIR".equals(task.getType())) {
-                // nếu đã gửi quote thì phải APPROVED mới cho complete
-                String asg = task.getAssignmentStatus(); // DRAFT/QUOTE_PENDING/APPROVED/REJECTED
 
-                if ("QUOTE_PENDING".equals(asg)) {
+                // bắt buộc có vật tư (bạn đã check ở trên rồi thì đoạn này có thể bỏ, nhưng giữ cũng ok)
+                MaintenanceSparePartDAO mspDAO = new MaintenanceSparePartDAO();
+                if (!mspDAO.hasMaterials(id)) {
+                    resp.sendRedirect(req.getContextPath()
+                            + "/technical/repair-report?id=" + id + "&error=nomaterial");
+                    return;
+                }
+
+                SystemRequestDAO srDAO = new SystemRequestDAO();
+                String quoteStatus = srDAO.getRepairQuoteStatus(id); // hàm mình đưa ở dưới
+
+                if ("WAITING_STAFF".equals(quoteStatus)) {
                     resp.sendRedirect(req.getContextPath()
                             + "/technical/repair-report?id=" + id + "&error=quote_pending");
                     return;
                 }
-                if ("REJECTED".equals(asg)) {
+                if ("REJECTED".equals(quoteStatus)) {
                     resp.sendRedirect(req.getContextPath()
                             + "/technical/repair-report?id=" + id + "&error=quote_rejected");
                     return;
                 }
-                // nếu bạn bắt buộc REPAIR phải được duyệt báo giá:
-                if (!"APPROVED".equals(asg)) {
+                if (!"APPROVED".equals(quoteStatus)) {
                     resp.sendRedirect(req.getContextPath()
                             + "/technical/repair-report?id=" + id + "&error=quote_not_approved");
                     return;
