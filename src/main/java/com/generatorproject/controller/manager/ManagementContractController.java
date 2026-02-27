@@ -483,7 +483,11 @@ public class ManagementContractController extends HttpServlet {
             }
 
             Users customer = userServices.findUserById(contract.getCustomerId());
-            if (customer != null) {
+            boolean customerStillActive = customer != null
+                    && customer.getStatus() == 1
+                    && (customer.getFullName() == null || !customer.getFullName().startsWith("DELETED_USER_"));
+
+            if (customerStillActive) {
                 resp.sendRedirect("contracts?msg=delete_blocked_user_exists");
                 return;
             }
