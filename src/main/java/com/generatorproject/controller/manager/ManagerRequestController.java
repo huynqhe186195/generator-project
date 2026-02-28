@@ -119,7 +119,7 @@ public class ManagerRequestController extends HttpServlet {
             long approverId = currentUser.getId();
 
             // Approve request
-            requestService.approve(requestId, approverId, "Staff", "Đã duyệt");
+            requestService.approve(requestId, approverId, "STAFF", "Đã duyệt");
 
             resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=success");
 
