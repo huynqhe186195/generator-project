@@ -26,6 +26,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             </c:if>
+            <c:if test="${param.msg == 'not_found'}">
+                <div class="alert alert-warning alert-dismissible fade show">
+                    <i class="fas fa-file-excel"></i> Không tìm thấy file Excel của request này.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </c:if>
 
             <div class="table-responsive">
                 <table class="table table-hover table-bordered align-middle">
@@ -61,6 +67,11 @@
                                                 <i class="fas fa-user-plus"></i> Tạo tài khoản
                                             </span>
                                         </c:when>
+                                        <c:when test="${req.requestType == 'NEW_USER'}">
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-file-excel"></i> Import user từ Excel
+                                            </span>
+                                        </c:when>
                                         <c:otherwise>
                                             <span class="badge bg-secondary">${req.requestType}</span>
                                         </c:otherwise>
@@ -73,12 +84,29 @@
                                     <i class="far fa-clock me-1"></i> ${req.createdAt}
                                 </td>
                                 <td class="text-center">
+                                    <c:if test="${req.requestType == 'NEW_USER'}">
+                                        <a class="btn btn-outline-primary btn-sm mb-1"
+                                           href="<c:url value='/admin/requests?action=download&id=${req.id}'/>">
+                                            <i class="fas fa-download"></i> Tải file
+                                        </a>
+                                        <br>
+                                    </c:if>
+
                                     <form action="<c:url value='/admin/requests'/>" method="post" class="d-inline">
                                         <input type="hidden" name="action" value="approve">
                                         <input type="hidden" name="requestId" value="${req.id}">
-                                        <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Bạn có chắc chắn muốn duyệt và tạo tài khoản?')">
-                                            <i class="fas fa-check"></i> Duyệt
-                                        </button>
+                                        <c:choose>
+                                            <c:when test="${req.requestType == 'NEW_USER'}">
+                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Xác nhận import user từ file Excel và duyệt request?')">
+                                                    <i class="fas fa-check"></i> Import &amp; Duyệt
+                                                </button>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Bạn có chắc chắn muốn duyệt và tạo tài khoản?')">
+                                                    <i class="fas fa-check"></i> Duyệt
+                                                </button>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </form>
 
                                     <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal(${req.id})">

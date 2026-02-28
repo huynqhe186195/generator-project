@@ -63,7 +63,7 @@
     <div class="alert alert-danger">Có lỗi xảy ra, vui lòng thử lại.</div>
 </c:if>
 <c:if test="${param.msg == 'invalid_file'}">
-    <div class="alert alert-warning">Vui lòng tải đúng file Excel (.xlsx/.xls) chứa thông tin NEW_PRODUCT.</div>
+    <div class="alert alert-warning">Vui lòng tải đúng file Excel (.xlsx/.xls) cho yêu cầu import.</div>
 </c:if>
 
 <div class="card shadow-sm">
@@ -134,6 +134,9 @@
                                 </c:when>
                                 <c:when test="${r.requestType == 'NEW_PRODUCT'}">
                                     <span class="badge bg-primary">NEW_PRODUCT</span>
+                                </c:when>
+                                <c:when test="${r.requestType == 'NEW_USER'}">
+                                    <span class="badge bg-primary">NEW_USER</span>
                                 </c:when>
                                 <c:otherwise>
                                     <span class="badge bg-secondary"><c:out value="${r.requestType}"/></span>
@@ -256,24 +259,6 @@
             </div>
           </div>
 
-          <!-- GROUP: CUSTOMER_REMINDER -->
-          <div class="req-group d-none" data-type="CUSTOMER_REMINDER">
-            <div class="mb-3">
-              <label class="form-label">Customer ID <span class="text-danger">*</span></label>
-              <input type="number" name="customerId" class="form-control" placeholder="39">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Nội dung nhắc <span class="text-danger">*</span></label>
-              <textarea name="content" class="form-control" rows="3" placeholder="Nhắc khách hàng..."></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Hạn xử lý</label>
-              <input type="date" name="dueDate" class="form-control">
-            </div>
-          </div>
-
           <div class="alert alert-info small mb-0">
             <i class="fa fa-info-circle"></i>
             Role nhận sẽ xử lý theo <b>requestType</b> và cập nhật trạng thái.
@@ -348,9 +333,8 @@
             <label class="form-label">Loại yêu cầu <span class="text-danger">*</span></label>
             <select name="requestType" id="requestType" class="form-select" required>
               <option value="CREATE_USER">CREATE_USER - Tạo tài khoản</option>
-              <option value="INCIDENT_REPORT">INCIDENT_REPORT - Báo sự cố</option>
-              <option value="CUSTOMER_REMINDER">CUSTOMER_REMINDER - Nhắc khách hàng</option>
               <option value="NEW_PRODUCT">NEW_PRODUCT - Yêu cầu thêm sản phẩm mới</option>
+              <option value="NEW_USER">NEW_USER - Yêu cầu import users từ Excel</option>
             </select>
             <div class="form-text">Form sẽ thay đổi theo loại yêu cầu.</div>
           </div>
@@ -414,35 +398,26 @@
             </div>
           </div>
 
-          <!-- GROUP: CUSTOMER_REMINDER -->
-          <div class="req-group d-none" data-type="CUSTOMER_REMINDER">
-            <div class="mb-3">
-              <label class="form-label">Customer ID <span class="text-danger">*</span></label>
-              <input type="number" name="customerId" class="form-control" placeholder="39">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Nội dung nhắc <span class="text-danger">*</span></label>
-              <textarea name="content" class="form-control" rows="3" placeholder="Nhắc khách hàng..."></textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Hạn xử lý</label>
-              <input type="date" name="dueDate" class="form-control">
-            </div>
-          </div>
-
           <!-- GROUP: NEW_PRODUCT -->
           <div class="req-group d-none" data-type="NEW_PRODUCT">
             <div class="mb-3">
               <label class="form-label">File Excel thông tin sản phẩm <span class="text-danger">*</span></label>
               <input type="file" name="productExcelFile" class="form-control" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
-              <div class="form-text">Mẫu cột theo thứ tự: name, brandName, categoryName, origin, fuelType, power, description, specifications, manualUrl, imageUrl, status.</div>
+              <div class="form-text">Mẫu cột theo thứ tự: name, brandName, categoryName, origin, fuelType, power, description, specifications, manualUrl, imageUrl, status. Cột imageUrl có thể chứa nhiều link, ngăn cách bằng dấu ; hoặc xuống dòng.</div>
+            </div>
+          </div>
+
+          <!-- GROUP: NEW_USER -->
+          <div class="req-group d-none" data-type="NEW_USER">
+            <div class="mb-3">
+              <label class="form-label">File Excel thông tin users <span class="text-danger">*</span></label>
+              <input type="file" name="userExcelFile" class="form-control" accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+              <div class="form-text">Mẫu cột theo thứ tự: email, fullName, phone, roleId (optional), status (optional).</div>
             </div>
           </div>
           <div class="alert alert-info small mb-0">
             <i class="fa fa-info-circle"></i>
-            Với <b>NEW_PRODUCT</b>, hệ thống sẽ tự gửi request xuống role <b>IT</b> để tạo sản phẩm mới.
+            Với <b>NEW_PRODUCT</b>, hệ thống tự gửi cho <b>IT</b>. Với <b>NEW_USER</b>, hệ thống tự gửi cho <b>ADMIN</b> để import users.
           </div>
         </div>
 
@@ -474,6 +449,9 @@
     if (receiverRoleEl) {
       if (type === "NEW_PRODUCT") {
         receiverRoleEl.value = "IT";
+        receiverRoleEl.setAttribute("disabled", "disabled");
+      } else if (type === "NEW_USER") {
+        receiverRoleEl.value = "ADMIN";
         receiverRoleEl.setAttribute("disabled", "disabled");
       } else {
         receiverRoleEl.removeAttribute("disabled");
@@ -524,6 +502,11 @@
         if (reqType === "NEW_PRODUCT") {
             const excelFileName = obj.excelFileName || "(không có tên file)";
             return `Tạo product từ file Excel: ${excelFileName}`;
+        }
+
+        if (reqType === "NEW_USER") {
+            const excelFileName = obj.excelFileName || "(không có tên file)";
+            return `Import users từ file Excel: ${excelFileName}`;
         }
 
         const keys = Object.keys(obj);
