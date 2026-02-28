@@ -86,6 +86,11 @@
                     <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Xem danh sách khách hàng
                 </a>
             </c:if>
+            <c:if test="${currentUser.roleId == 3 }">
+                <a href="<c:url value='/staff/repair-request-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Xem danh sách yêu cầu sửa chữa
+                </a>
+            </c:if>
              <a href="<c:url value='/admin/admin-profile'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                 <i class="fas fa-id-card me-2" style="width: 20px;"></i> Hồ sơ cá nhân
             </a>
