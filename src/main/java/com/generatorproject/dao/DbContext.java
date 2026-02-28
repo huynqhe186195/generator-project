@@ -5,30 +5,26 @@ import java.sql.DriverManager;
 
 public class DbContext {
 
-    private final String serverName = "localhost";
-    private final String dbName = "generator_cms";
-    private final String portNumber = "3306";
-
-    private final String userID = "root";
-    private final String password = "123456789";
+    private static final String DEFAULT_URL =
+            "jdbc:mysql://localhost:3306/generator_cms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+    private static final String DEFAULT_USER = "root";
+    private static final String DEFAULT_PASS = "123456789";
 
     public Connection getConnection() throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
 
-        String url = "jdbc:mysql://" + serverName + ":" + portNumber + "/" + dbName + "?useSSL=false&allowPublicKeyRetrieval=true";
+        String url  = System.getenv().getOrDefault("DB_URL", DEFAULT_URL);
+        String user = System.getenv().getOrDefault("DB_USER", DEFAULT_USER);
+        String pass = System.getenv().getOrDefault("DB_PASS", DEFAULT_PASS);
 
-        return DriverManager.getConnection(url, userID, password);
+        return DriverManager.getConnection(url, user, pass);
     }
 
     public static void main(String[] args) {
         try {
             DbContext db = new DbContext();
             Connection conn = db.getConnection();
-            if (conn != null) {
-                System.out.println("Kết nối thành công! (Success)");
-            } else {
-                System.out.println("Kết nối thất bại!");
-            }
+            System.out.println(conn != null ? "Kết nối thành công! (Success)" : "Kết nối thất bại!");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Lỗi kết nối: " + e.getMessage());
