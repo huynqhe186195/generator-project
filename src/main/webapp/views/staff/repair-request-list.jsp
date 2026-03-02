@@ -110,10 +110,20 @@
                                     </td>
 
                                     <td class="text-end pe-4">
-                                        <a href="<c:url value='/staff/repair-request/view?requestId=${req.id}'/>"
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-eye me-1"></i> Xem chi tiết
-                                        </a>
+                                        <c:choose>
+                                            <c:when test="${req.status == 'APPROVED'}">
+                                                <a href="<c:url value='/staff/repair-request/send-quote?requestId=${req.id}'/>"
+                                                   class="btn btn-sm btn-success">
+                                                    <i class="fas fa-paper-plane me-1"></i> Gửi báo giá
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="<c:url value='/staff/repair-request/view?requestId=${req.id}'/>"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i> Xem chi tiết
+                                                </a>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
                                 </tr>
                             </c:forEach>

@@ -61,6 +61,34 @@ public class StaffManagementController extends HttpServlet {
             case "/repair-request/view":
                 handleViewRepairRequest(req, resp);
                 break;
+            case "/repair-request/send-quote":
+                handleSendQuoteToCustomer(req, resp);
+                break;
+        }
+    }
+    private void handleSendQuoteToCustomer(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String reqIdParam = req.getParameter("requestId");
+
+        if (reqIdParam == null || reqIdParam.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=missing_id");
+            return;
+        }
+
+        try {
+            Long requestId = Long.parseLong(reqIdParam);
+
+            // TODO: Lấy staffId từ session người dùng đang đăng nhập
+            Long staffId = 10L; // Mock ID tạm thời
+
+            // Gọi service để đổi trạng thái và chuyển Request cho Khách hàng
+            repairWorkflowService.processStaffSendToCustomer(requestId, staffId);
+
+            // Xử lý xong thì quay ngược lại trang Danh sách kèm thông báo thành công trên URL
+            resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=send_success");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=error");
         }
     }
     private void handleViewRepairRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -96,7 +124,7 @@ public class StaffManagementController extends HttpServlet {
         try {
             // Giả sử requestServices của bạn có gọi xuống hàm findInboxByRole của RequestDAO
             // Lấy tất cả các Request được gửi cho STAFF
-            List<SystemRequest> listRequests = requestServices.findInboxByRole("STAFF", "WAITING_STAFF");
+            List<SystemRequest> listRequests = requestServices.findByRoleAndType("STAFF", "REPAIR_QUOTE");
 
             // Gửi dữ liệu sang JSP
             req.setAttribute("listRequests", listRequests);

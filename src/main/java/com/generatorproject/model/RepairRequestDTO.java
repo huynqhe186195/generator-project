@@ -1,9 +1,12 @@
 package com.generatorproject.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.math.BigDecimal;
 import java.util.List;
 
 public class RepairRequestDTO {
+
     private Integer maintenanceId;
     private Integer technicianId;
     private String actualDescription;
