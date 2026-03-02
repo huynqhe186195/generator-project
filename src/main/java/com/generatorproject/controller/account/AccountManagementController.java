@@ -13,7 +13,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.http.Part;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.UUID;
 
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024,
+        maxFileSize = 5 * 1024 * 1024,
+        maxRequestSize = 10 * 1024 * 1024
+)
 @WebServlet(urlPatterns = { "/account/*" })
 public class AccountManagementController extends HttpServlet {
 
@@ -114,4 +124,107 @@ public class AccountManagementController extends HttpServlet {
 
         req.getRequestDispatcher("/views/account/profile.jsp").forward(req, resp);
     }
-}
+
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            resp.setContentType("text/html; charset=UTF-8");
+            req.setCharacterEncoding("UTF-8");
+
+            String path = req.getPathInfo();
+            if (path == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            switch (path) {
+                case "/user-profile":
+                    handleUpdateUserProfile(req, resp);
+                    break;
+                default:
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }
+
+        private void handleUpdateUserProfile(HttpServletRequest req, HttpServletResponse resp)
+                throws ServletException, IOException {
+
+            HttpSession session = req.getSession();
+            Users sessionUser = (Users) session.getAttribute("USERMODEL");
+
+            if (sessionUser == null) {
+                resp.sendRedirect(req.getContextPath() + "/account/login?message=login_required");
+                return;
+            }
+
+            String fullName = req.getParameter("fullName");
+            String phone = req.getParameter("phone");
+
+            if (fullName == null || fullName.trim().isEmpty()) {
+                req.setAttribute("error", "Họ tên không được để trống!");
+                // load lại profile để render
+                Users currentUser = userServices.findUserById(sessionUser.getId());
+                if (currentUser.getRoleName() == null) currentUser.setRoleName(sessionUser.getRoleName());
+                req.setAttribute("myProfile", currentUser);
+                req.getRequestDispatcher("/views/account/profile.jsp").forward(req, resp);
+                return;
+            }
+
+            // Lấy user hiện tại từ DB
+            Users currentUser = userServices.findUserById(sessionUser.getId());
+            if (currentUser == null) {
+                resp.sendRedirect(req.getContextPath() + "/account/login?message=login_required");
+                return;
+            }
+
+            // Upload avatar (nếu có)
+            Part avatarPart = req.getPart("avatar");
+            String newAvatarPath = null;
+
+            if (avatarPart != null && avatarPart.getSize() > 0) {
+                String submitted = Paths.get(avatarPart.getSubmittedFileName()).getFileName().toString();
+                String ext = "";
+                int dot = submitted.lastIndexOf(".");
+                if (dot >= 0) ext = submitted.substring(dot).toLowerCase();
+
+                if (!ext.matches("\\.(png|jpg|jpeg|webp|gif)")) {
+                    req.setAttribute("error", "Avatar chỉ nhận png/jpg/jpeg/webp/gif!");
+                    if (currentUser.getRoleName() == null) currentUser.setRoleName(sessionUser.getRoleName());
+                    req.setAttribute("myProfile", currentUser);
+                    req.getRequestDispatcher("/views/account/profile.jsp").forward(req, resp);
+                    return;
+                }
+
+                String uploadDir = getServletContext().getRealPath("/uploads/avatars");
+                File dir = new File(uploadDir);
+                if (!dir.exists()) dir.mkdirs();
+
+                String fileName = UUID.randomUUID() + ext;
+                avatarPart.write(uploadDir + File.separator + fileName);
+
+                newAvatarPath = "uploads/avatars/" + fileName;
+            }
+
+            // Set lại dữ liệu cần update
+            currentUser.setFullName(fullName.trim());
+            currentUser.setPhone(phone != null ? phone.trim() : null);
+            if (newAvatarPath != null) currentUser.setAvatarUrl(newAvatarPath);
+
+            try {
+                // ✅ CẦN có hàm updateProfile ở service/dao (mình hướng dẫn ở dưới)
+                userServices.updateProfile(currentUser);
+
+                // cập nhật session USERMODEL để navbar/avatar update ngay
+                sessionUser.setFullName(currentUser.getFullName());
+                sessionUser.setPhone(currentUser.getPhone());
+                if (newAvatarPath != null) sessionUser.setAvatarUrl(newAvatarPath);
+                session.setAttribute("USERMODEL", sessionUser);
+
+                resp.sendRedirect(req.getContextPath() + "/account/user-profile?success=1");
+            } catch (Exception e) {
+                req.setAttribute("error", e.getMessage());
+                if (currentUser.getRoleName() == null) currentUser.setRoleName(sessionUser.getRoleName());
+                req.setAttribute("myProfile", currentUser);
+                req.getRequestDispatcher("/views/account/profile.jsp").forward(req, resp);
+            }
+        }
+    }
+

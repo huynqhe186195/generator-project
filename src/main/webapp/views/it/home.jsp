@@ -130,6 +130,4 @@
       </div>
     </div>
   </div>
-
-  <!-- Bỏ hẳn phần Thông báo / Công việc gần đây -->
 </div>
