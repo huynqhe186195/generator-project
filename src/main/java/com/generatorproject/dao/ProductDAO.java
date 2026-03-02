@@ -48,7 +48,16 @@ public class ProductDAO extends GenericDAO<Product> {
 
         return count(sql.toString(), params.toArray());
     }
+    public void updateStatusByMaintenanceId(int maintenanceId, String newStatus) {
+        // Cập nhật bảng products dựa vào liên kết với bảng maintenances
+        String sql = "UPDATE products p " +
+                "JOIN maintenances m ON p.id = m.product_id " +
+                "SET p.status = ? " +
+                "WHERE m.id = ?";
 
+        // Giả sử DAO này của bạn kế thừa GenericDAO
+        update(sql, newStatus, maintenanceId);
+    }
 
     public List<Product> filterProductsPaged(long customerId,
                                              Integer brandId,

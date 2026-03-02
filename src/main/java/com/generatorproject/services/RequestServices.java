@@ -72,5 +72,10 @@ public class RequestServices implements IRequestServices {
         requestDAO.reject(id, responseMessage);
     }
 
+    @Override
+    public List<SystemRequest> findByRoleAndType(String role, String type) {
+        return requestDAO.findByRoleAndType(role,type);
+    }
+
 
 }
