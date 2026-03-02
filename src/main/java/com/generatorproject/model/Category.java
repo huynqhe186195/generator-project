@@ -17,4 +17,12 @@ public class Category {
     public void setName(String name) {
         this.name = name;
     }
+    private String slug;
+    private Integer parentId;
+
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
+
+    public Integer getParentId() { return parentId; }
+    public void setParentId(Integer parentId) { this.parentId = parentId; }
 }
