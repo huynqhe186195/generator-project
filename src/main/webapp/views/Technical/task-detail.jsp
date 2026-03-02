@@ -68,7 +68,7 @@
             <thead class="table-light">
               <tr>
                 <th>#</th>
-                <th>Mã vật tư</th>
+                <th>Tên vật tư</th>
                 <th>Số lượng</th>
                 <th>Chi phí</th>
               </tr>
@@ -77,7 +77,7 @@
               <c:forEach var="m" items="${materials}" varStatus="st">
                 <tr>
                   <td>${st.index + 1}</td>
-                  <td>${m.sparePartId}</td>
+                  <td>${m.sparePartName}</td>
                   <td>${m.quantityUsed}</td>
                   <td>
                     <fmt:formatNumber value="${m.costAtTime}" type="number"/> đ
@@ -86,6 +86,17 @@
               </c:forEach>
             </tbody>
           </table>
+          <c:set var="partsTotal" value="0" />
+          <c:forEach var="m" items="${materials}">
+              <c:set var="partsTotal" value="${partsTotal + m.costAtTime}" />
+          </c:forEach>
+
+          <div class="d-flex justify-content-end mt-2">
+              <div class="fw-bold">
+                  Tổng giá vật tư:
+                  <fmt:formatNumber value="${partsTotal}" type="number"/> đ
+              </div>
+          </div>
         </div>
       </c:if>
 
@@ -99,16 +110,16 @@
         <!-- CHỈ SCHEDULED MỚI CÓ HÀNH ĐỘNG -->
         <c:if test="${task.status == 'SCHEDULED'}">
           <div>
-            <c:if test="${task.status == 'SCHEDULED' && task.type != 'REPAIR'}">
-                <button class="btn btn-primary">💾 Lưu báo cáo</button>
-            </c:if>
+            <!-- ✅ REPAIR cũng được lưu báo cáo -->
+            <button type="submit" class="btn btn-primary">💾 Lưu báo cáo</button>
 
-
-            <a href="<c:url value='/technical/task-complete?id=${task.id}'/>"
-               class="btn btn-success ms-2"
-               onclick="return confirm('Xác nhận hoàn thành công việc?')">
+            <!-- ✅ Hoàn thành bằng POST (không dùng link GET nữa) -->
+            <button type="submit"
+                    class="btn btn-success ms-2"
+                    formaction="<c:url value='/technical/task-complete'/>"
+                    onclick="return confirm('Xác nhận hoàn thành công việc?')">
               ✅ Hoàn thành
-            </a>
+            </button>
           </div>
         </c:if>
       </div>

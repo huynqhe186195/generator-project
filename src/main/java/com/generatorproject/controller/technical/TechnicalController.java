@@ -31,6 +31,7 @@ import java.util.List;
         "/technical/spare-part-create",
         "/technical/spare-part-update",
         "/technical/spare-part-delete",
+        "/technical/delete-material",
 
 })
 public class TechnicalController extends HttpServlet {
@@ -367,9 +368,7 @@ public class TechnicalController extends HttpServlet {
 
         if ("/technical/send-quote".equals(path)) {
             int id = Integer.parseInt(req.getParameter("id"));
-            String laborRaw = req.getParameter("laborCost");
-            double laborCost = 0;
-            try { laborCost = Double.parseDouble(laborRaw); } catch (Exception ignore) {}
+
 
             Maintenance task = maintenanceDAO.getById(id);
 
@@ -398,7 +397,7 @@ public class TechnicalController extends HttpServlet {
                 partsTotal += m.getCostAtTime(); // KHÔNG nhân lại
             }
 
-            double grandTotal = partsTotal + laborCost;
+
 
             // Tạo JSON request_data (không phụ thuộc lib)
             StringBuilder json = new StringBuilder();
@@ -406,9 +405,9 @@ public class TechnicalController extends HttpServlet {
             json.append("\"maintenanceId\":").append(id).append(",");
             json.append("\"technicianId\":").append(currentUser.getId()).append(",");
             json.append("\"actualDescription\":").append(toJsonString(task.getActualDescription())).append(",");
-            json.append("\"laborCost\":").append(laborCost).append(",");
+
             json.append("\"partsTotal\":").append(partsTotal).append(",");
-            json.append("\"grandTotal\":").append(grandTotal).append(",");
+
             json.append("\"materials\":[");
             for (int i = 0; i < materials.size(); i++) {
                 MaintenanceSparePart m = materials.get(i);
@@ -595,7 +594,36 @@ public class TechnicalController extends HttpServlet {
             maintenanceDAO.updateStatus(id, status);
             resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
         }
+        if ("/technical/delete-material".equals(path)) {
+
+            int maintenanceId = Integer.parseInt(req.getParameter("maintenanceId"));
+            int sparePartId   = Integer.parseInt(req.getParameter("sparePartId"));
+
+            Maintenance task = maintenanceDAO.getById(maintenanceId);
+
+            if (task == null
+                    || task.getTechnicianId() != currentUser.getId()
+                    || !"SCHEDULED".equals(task.getStatus())) {
+                resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
+                return;
+            }
+
+            MaintenanceSparePartDAO mspDAO = new MaintenanceSparePartDAO();
+            try {
+                mspDAO.deleteMaterial(maintenanceId, sparePartId);
+            } catch (Exception e) {
+                e.printStackTrace();
+                resp.sendRedirect(req.getContextPath()
+                        + "/technical/repair-report?id=" + maintenanceId + "&error=delete_material");
+                return;
+            }
+
+            resp.sendRedirect(req.getContextPath()
+                    + "/technical/repair-report?id=" + maintenanceId);
+            return;
+        }
     }
+
 
 
     private String toJsonString(String s) {
