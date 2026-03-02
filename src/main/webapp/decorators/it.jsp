@@ -67,7 +67,7 @@
             </a>
 
             <!-- ✅ Quản lý danh mục (category) -->
-            <a href="<c:url value='/it/categories'/>"
+            <a href="<c:url value='/it/categories/list'/>"
                class="list-group-item list-group-item-action bg-transparent text-white p-3">
                 <i class="fas fa-tags me-2" style="width: 20px;"></i> Quản lý danh mục
             </a>

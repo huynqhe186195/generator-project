@@ -58,7 +58,7 @@
             <i class="fa fa-tags fs-2 text-secondary"></i>
           </div>
           <a class="btn btn-sm btn-outline-primary mt-3"
-             href="${pageContext.request.contextPath}/it/categories">
+             href="${pageContext.request.contextPath}/it/categories/list">
             Quản lý danh mục
           </a>
         </div>
