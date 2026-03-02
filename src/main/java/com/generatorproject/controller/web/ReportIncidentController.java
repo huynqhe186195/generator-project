@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-// URL này phải khớp với action trong form: <form action="<c:url value='/customer/incident/create'/>" ...>
+// URL này phải khớp với action trong form: <form action="<c:url value='/customer/incident/create.jsp'/>" ...>
 @WebServlet(urlPatterns = {"/report-incident"})
 public class ReportIncidentController extends HttpServlet {
 

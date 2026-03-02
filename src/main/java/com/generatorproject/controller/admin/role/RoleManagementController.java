@@ -30,7 +30,7 @@ public class RoleManagementController extends HttpServlet {
             case "/role-list":
                 handleRoleList(req, resp);
                 break;
-            case "/role-create":
+            case "/role-create.jsp":
                 handleRoleAdd(req, resp);
                 break;
             case "/role-update":
@@ -70,7 +70,7 @@ public class RoleManagementController extends HttpServlet {
         resp.setContentType("text/html; charset=UTF-8");
         req.setCharacterEncoding("UTF-8");
 
-        req.getRequestDispatcher("/views/admin/role/Role-create.jsp")
+        req.getRequestDispatcher("/views/admin/role/Role-create.jsp.jsp")
                 .forward(req, resp);
     }
 

@@ -87,10 +87,10 @@
                                             <span class="badge bg-secondary rounded-pill px-3">${mat.quantityUsed}</span>
                                         </td>
                                         <td class="text-end">
-                                            <fmt:formatNumber value="${mat.costAtTime}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                                            <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> đ
                                         </td>
                                         <td class="text-end pe-4 fw-bold text-primary">
-                                            <fmt:formatNumber value="${mat.costAtTime * mat.quantityUsed}" type="currency" currencySymbol="đ" maxFractionDigits="0"/>
+                                            <fmt:formatNumber value="${mat.costAtTime * mat.quantityUsed}" pattern="#,###"/> đ
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -114,20 +114,20 @@
                     <div class="d-flex justify-content-between mb-3">
                         <span class="text-muted">Tổng tiền vật tư:</span>
                         <span class="fw-bold text-dark">
-                            <fmt:formatNumber value="${repairRequest.partsTotal}" type="currency" currencySymbol="VNĐ" maxFractionDigits="0"/>
+                            <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ
                         </span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span class="text-muted">Phí nhân công:</span>
                         <span class="fw-bold text-dark">
-                            <fmt:formatNumber value="${repairRequest.laborCost}" type="currency" currencySymbol="VNĐ" maxFractionDigits="0"/>
+                            <fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> VNĐ
                         </span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <span class="text-uppercase fw-bold text-secondary">Thành tiền:</span>
                         <h4 class="fw-bold text-danger mb-0">
-                            <fmt:formatNumber value="${repairRequest.grandTotal}" type="currency" currencySymbol="VNĐ" maxFractionDigits="0"/>
+                            <fmt:formatNumber value="${repairRequest.grandTotal}" pattern="#,###"/> VNĐ
                         </h4>
                     </div>
 
