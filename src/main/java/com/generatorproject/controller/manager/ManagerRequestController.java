@@ -31,8 +31,8 @@ import java.util.UUID;
 )
 public class ManagerRequestController extends HttpServlet {
 
-    private IRequestServices requestService;
-    private IUserServices userService;
+    private final IRequestServices requestService;
+    private final IUserServices userService;
 
     public ManagerRequestController() {
         requestService = new RequestServices();
@@ -54,12 +54,10 @@ public class ManagerRequestController extends HttpServlet {
             String status = req.getParameter("status");
             if (status == null || status.isBlank()) status = "WAITING_MANAGER";
 
-            // Lấy inbox theo role + status (bạn đang dùng findInboxByRole ở local, nhưng trong repo có sẵn findByReceiverRole)
             List<SystemRequest> inbox = requestService.findByReceiverRole("Manager", status);
             req.setAttribute("requests", inbox);
             req.setAttribute("box", "inbox");
 
-            // ✅ Map senderId -> fullName
             Map<Long, String> senderNames = new HashMap<>();
             for (SystemRequest r : inbox) {
                 if (r.getSenderId() != null && !senderNames.containsKey(r.getSenderId())) {
@@ -110,12 +108,21 @@ public class ManagerRequestController extends HttpServlet {
                 return;
             }
 
-            long id = Long.parseLong(idStr);
+            long requestId = Long.parseLong(idStr);
 
-            // cập nhật: WAITING_MANAGER -> APPROVED
-            requestService.approve(id, "Đã duyệt");
+            Users currentUser = (Users) req.getSession().getAttribute("USERMODEL");
+            if (currentUser == null) {
+                resp.sendRedirect(req.getContextPath() + "/login");
+                return;
+            }
+
+            long approverId = currentUser.getId();
+
+            // Approve request
+            requestService.approve(requestId, approverId, "STAFF", "Đã duyệt");
 
             resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=success");
+
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");

@@ -155,11 +155,16 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
         return query(sql.toString(), new SystemRequestMapper(), params.toArray());
     }
 
-    public void approve(long id, String responseMessage) {
+    public void approve(long requestId, long approverId, String approverRole, String responseMessage) {
         String sql = "UPDATE system_requests " +
-                "SET status = 'APPROVED', response_message = ?, updated_at = NOW() " +
+                "SET status = 'APPROVED', " +
+                "    response_message = ?, " +
+                "    sender_id = ?, " +
+                "    receiver_role = ?, " +
+                "    updated_at = NOW() " +
                 "WHERE id = ?";
-        update(sql, responseMessage, id);
+
+        update(sql, responseMessage, approverId, approverRole, requestId);
     }
 
     public void reject(long id, String responseMessage) {

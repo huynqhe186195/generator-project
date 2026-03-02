@@ -28,7 +28,7 @@ public interface IRequestServices {
 
     List<SystemRequest> findInboxByRole(String role, String status);
 
-    void approve(long id, String responseMessage);
+    void approve(long requestId, long approverId, String approverRole, String responseMessage);
 
     void reject(long id, String responseMessage);
 
