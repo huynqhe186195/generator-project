@@ -71,7 +71,7 @@ public class ManagementContractController extends HttpServlet {
             case "import":
                 handleImportFile(req, resp);
                 break;
-            case "create":
+            case "create.jsp":
                 handleCreateManual(req, resp);
                 break;
             case "update":

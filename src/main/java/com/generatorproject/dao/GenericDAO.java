@@ -88,6 +88,8 @@ public class GenericDAO<T> extends DbContext{
             conn.commit();
             return id;
         } catch (Exception e) {
+            System.out.println("====> [LỖI GENERIC_DAO INSERT] Câu SQL bị lỗi: " + sql);
+            e.printStackTrace();
             try { if (conn != null) conn.rollback(); } catch (SQLException ex) {}
             return null;
         } finally {

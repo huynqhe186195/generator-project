@@ -28,7 +28,7 @@ import java.util.List;
         "/technical/add-material",
         "/technical/profile",
         "/technical/send-quote",
-        "/technical/spare-part-create",
+        "/technical/spare-part-create.jsp",
         "/technical/spare-part-update",
         "/technical/spare-part-delete",
 
@@ -441,7 +441,7 @@ public class TechnicalController extends HttpServlet {
         // =========================
 // CRUD SPARE PART
 // =========================
-        if ("/technical/spare-part-create".equals(path)) {
+        if ("/technical/spare-part-create.jsp".equals(path)) {
 
             SparePartDAO spareDAO = new SparePartDAO();
 

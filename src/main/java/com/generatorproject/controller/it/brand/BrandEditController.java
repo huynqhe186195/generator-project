@@ -14,13 +14,13 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.UUID;
 
-@WebServlet("/it/brands/create.jsp")
+@WebServlet("/it/brands/edit")
 @MultipartConfig(
-        fileSizeThreshold = 1024 * 1024,      // 1MB
-        maxFileSize = 10 * 1024 * 1024,       // 10MB
-        maxRequestSize = 20 * 1024 * 1024     // 20MB
+        fileSizeThreshold = 1024 * 1024,
+        maxFileSize = 10 * 1024 * 1024,
+        maxRequestSize = 20 * 1024 * 1024
 )
-public class BrandAddController extends HttpServlet {
+public class BrandEditController extends HttpServlet {
 
     private final BrandDAO brandDAO = new BrandDAO();
 
@@ -28,7 +28,21 @@ public class BrandAddController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
-        req.getRequestDispatcher("/views/it/brand/create.jsp.jsp").forward(req, resp);
+
+        int id = parseInt(req.getParameter("id"), -1);
+        if (id <= 0) {
+            resp.sendRedirect(req.getContextPath() + "/it/brands?msg=invalid_id");
+            return;
+        }
+
+        Brand brand = brandDAO.findById(id);
+        if (brand == null) {
+            resp.sendRedirect(req.getContextPath() + "/it/brands?msg=not_found");
+            return;
+        }
+
+        req.setAttribute("brand", brand);
+        req.getRequestDispatcher("/views/it/brand/edit.jsp").forward(req, resp);
     }
 
     @Override
@@ -36,39 +50,50 @@ public class BrandAddController extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
 
-        String name = trim(req.getParameter("name"));
-        String slug = trim(req.getParameter("slug"));
-        String logoUrlInput = trim(req.getParameter("logoUrl")); // link (optional)
-
-        if (name == null) {
-            resp.sendRedirect(req.getContextPath() + "/it/brands/create.jsp?msg=name_required");
+        int id = parseInt(req.getParameter("id"), -1);
+        if (id <= 0) {
+            resp.sendRedirect(req.getContextPath() + "/it/brands?msg=invalid_id");
             return;
         }
 
-        if (brandDAO.findByName(name) != null) {
-            resp.sendRedirect(req.getContextPath() + "/it/brands/create.jsp?msg=exists");
+        Brand old = brandDAO.findById(id);
+        if (old == null) {
+            resp.sendRedirect(req.getContextPath() + "/it/brands?msg=not_found");
+            return;
+        }
+
+        String name = trim(req.getParameter("name"));
+        String slug = trim(req.getParameter("slug"));
+        String logoUrlInput = trim(req.getParameter("logoUrl")); // link (optional)
+        String keepLogo = trim(req.getParameter("keepLogo"));    // "1" nếu muốn giữ
+
+        if (name == null) {
+            resp.sendRedirect(req.getContextPath() + "/it/brands/edit?id=" + id + "&msg=name_required");
+            return;
+        }
+
+        if (brandDAO.existsNameExceptId(name, id)) {
+            resp.sendRedirect(req.getContextPath() + "/it/brands/edit?id=" + id + "&msg=exists");
             return;
         }
 
         if (slug == null) slug = toSlug(name);
 
-        // ====== handle upload file ======
-        String logoPathToSave = null; // lưu vào DB (relative path)
+        // ===== Upload logo nếu có =====
+        String finalLogo = old.getLogoUrl(); // mặc định giữ logo cũ
+
         Part logoFilePart = null;
-        try {
-            logoFilePart = req.getPart("logoFile");
-        } catch (Exception ignore) {}
+        try { logoFilePart = req.getPart("logoFile"); } catch (Exception ignore) {}
 
         if (logoFilePart != null && logoFilePart.getSize() > 0) {
             String submitted = Paths.get(logoFilePart.getSubmittedFileName()).getFileName().toString();
             String ext = getFileExt(submitted);
 
             if (!isAllowedImageExt(ext)) {
-                resp.sendRedirect(req.getContextPath() + "/it/brands/create.jsp?msg=invalid_image");
+                resp.sendRedirect(req.getContextPath() + "/it/brands/edit?id=" + id + "&msg=invalid_image");
                 return;
             }
 
-            // folder uploads/brands trong webapp
             String uploadDirAbs = req.getServletContext().getRealPath("/uploads/brands");
             File dir = new File(uploadDirAbs);
             if (!dir.exists()) dir.mkdirs();
@@ -80,25 +105,31 @@ public class BrandAddController extends HttpServlet {
             File saved = new File(dir, fileName);
             logoFilePart.write(saved.getAbsolutePath());
 
-            // đường dẫn lưu DB (để JSP <img src="${ctx}/${logo_url}">)
-            logoPathToSave = "uploads/brands/" + fileName;
-        } else if (logoUrlInput != null) {
-            // nếu không upload file thì dùng link nhập tay
-            logoPathToSave = logoUrlInput;
+            finalLogo = "uploads/brands/" + fileName;
+        } else {
+            // không upload file
+            if ("1".equals(keepLogo)) {
+                finalLogo = old.getLogoUrl(); // giữ
+            } else if (logoUrlInput != null) {
+                finalLogo = logoUrlInput;     // đổi sang link / path nhập tay
+            } else {
+                finalLogo = null;             // clear logo
+            }
         }
 
-        Brand b = new Brand();
-        b.setName(name);
-        b.setSlug(slug);
-        b.setLogoUrl(logoPathToSave);
+        Brand updated = new Brand();
+        updated.setId(id);
+        updated.setName(name);
+        updated.setSlug(slug);
+        updated.setLogoUrl(finalLogo);
 
-        int newId = brandDAO.insert(b);
-        if (newId <= 0) {
-            resp.sendRedirect(req.getContextPath() + "/it/brands/create.jsp?msg=failed");
+        boolean ok = brandDAO.update(updated);
+        if (!ok) {
+            resp.sendRedirect(req.getContextPath() + "/it/brands/edit?id=" + id + "&msg=failed");
             return;
         }
 
-        resp.sendRedirect(req.getContextPath() + "/it/brands?msg=brand_add_success");
+        resp.sendRedirect(req.getContextPath() + "/it/brands/detail?id=" + id + "&msg=updated");
     }
 
     // ===== helpers =====
@@ -106,6 +137,10 @@ public class BrandAddController extends HttpServlet {
         if (s == null) return null;
         s = s.trim();
         return s.isEmpty() ? null : s;
+    }
+
+    private int parseInt(String s, int def) {
+        try { return Integer.parseInt(s); } catch (Exception e) { return def; }
     }
 
     private String toSlug(String input) {

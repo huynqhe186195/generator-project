@@ -35,7 +35,34 @@ public class SparePartDAO extends DbContext {
         }
         return list;
     }
+    // =========================
+    // Lấy tên và mã vật tư theo ID (Dùng cho Form Báo giá)
+    // =========================
+    public String getPartNameById(int id) {
+        // Sử dụng hàm CONCAT của SQL để nối chuỗi luôn ở dưới DB
+        String sql = "SELECT CONCAT(name, ' (', part_code, ')') AS full_name FROM spare_parts WHERE id = ?";
+        String partName = "Vật tư không xác định";
 
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                partName = rs.getString("full_name");
+            }
+
+            rs.close();
+            ps.close();
+            conn.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return partName;
+    }
     // =========================
     // Tìm theo tên / mã
     // =========================

@@ -65,13 +65,16 @@ public class RequestServices implements IRequestServices {
     }
 
     @Override
-    public void approve(long id, String responseMessage) {
-        requestDAO.approve(id, responseMessage);
-    }
+    public void approve(long requestId, long approverId, String approverRole, String responseMessage){requestDAO.approve(requestId, approverId, approverRole, responseMessage);}
 
     @Override
     public void reject(long id, String responseMessage) {
         requestDAO.reject(id, responseMessage);
+    }
+
+    @Override
+    public List<SystemRequest> findByRoleAndType(String role, String type) {
+        return requestDAO.findByRoleAndType(role,type);
     }
 
 

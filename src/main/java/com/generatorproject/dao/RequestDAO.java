@@ -139,7 +139,31 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
         String sql = "UPDATE system_requests SET status = ?, updated_at = NOW() WHERE id = ?";
         update(sql, status, id);
     }
+    // =========================================
+    // Tìm báo giá đang chờ Khách hàng duyệt theo Product ID
+    // =========================================
+    public SystemRequest findPendingQuoteByProductId(int productId) {
+        // Dùng LIKE để bóc maintenanceId từ chuỗi JSON và JOIN với bảng maintenances
+        String sql = "SELECT r.* FROM system_requests r " +
+                "JOIN maintenances m ON r.request_data LIKE CONCAT('%\"maintenanceId\":', m.id, '%') " +
+                "WHERE m.product_id = ? AND r.status = 'WAITING_CUSTOMER' AND r.receiver_role = 'USER'";
 
+        List<SystemRequest> list = query(sql, new SystemRequestMapper(), productId);
+        return (list != null && !list.isEmpty()) ? list.get(0) : null;
+    }
+    public List<SystemRequest> findByRoleAndType(String role, String type) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM system_requests WHERE receiver_role = ? ");
+        List<Object> params = new ArrayList<>();
+        params.add(role);
+
+        if (type != null && !type.trim().isEmpty()) {
+            sql.append("AND request_type = ? ");
+            params.add(type.trim());
+        }
+
+        sql.append("ORDER BY created_at DESC");
+        return query(sql.toString(), new SystemRequestMapper(), params.toArray());
+    }
     //lấy tất cả request gửi cho role (status có thể null/blank)
     public List<SystemRequest> findInboxByRole(String role, String status) {
         StringBuilder sql = new StringBuilder("SELECT * FROM system_requests WHERE receiver_role = ? ");
@@ -155,11 +179,16 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
         return query(sql.toString(), new SystemRequestMapper(), params.toArray());
     }
 
-    public void approve(long id, String responseMessage) {
+    public void approve(long requestId, long approverId, String approverRole, String responseMessage) {
         String sql = "UPDATE system_requests " +
-                "SET status = 'APPROVED', response_message = ?, updated_at = NOW() " +
+                "SET status = 'APPROVED', " +
+                "    response_message = ?, " +
+                "    sender_id = ?, " +
+                "    receiver_role = ?, " +
+                "    updated_at = NOW() " +
                 "WHERE id = ?";
-        update(sql, responseMessage, id);
+
+        update(sql, responseMessage, approverId, approverRole, requestId);
     }
 
     public void reject(long id, String responseMessage) {

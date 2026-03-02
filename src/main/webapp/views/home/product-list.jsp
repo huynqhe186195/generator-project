@@ -402,9 +402,9 @@
                             <td>
                                 <c:choose>
                                     <c:when test="${p.status == 'MAINTENANCE'}">
-                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
-                            <i class="fas fa-clock me-1"></i>Chờ phản hồi
-                        </span>
+                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                                            <i class="fas fa-clock me-1"></i>Chờ phản hồi
+                                        </span>
                                     </c:when>
                                     <c:when test="${p.status == 'RUNNING'}">
                                         <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">Đang hoạt động</span>
@@ -412,9 +412,14 @@
                                     <c:when test="${p.status == 'BROKEN'}">
                                         <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">Hỏng hóc</span>
                                     </c:when>
-<%--                                    <c:when test="${p.status == 'MAINTENANCE'}">--%>
-<%--                                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">Đang bảo trì</span>--%>
-<%--                                    </c:when>--%>
+
+                                    <%-- THÊM MỚI: Trạng thái Đã nhận báo giá --%>
+                                    <c:when test="${p.status == 'RECEIVED_QUOTE'}">
+                                        <span class="badge bg-primary text-white rounded-pill px-3 py-2 shadow-sm">
+                                            <i class="fas fa-file-invoice-dollar me-1"></i>Có báo giá mới
+                                        </span>
+                                    </c:when>
+
                                     <c:otherwise>
                                         <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">${p.status}</span>
                                     </c:otherwise>
@@ -423,7 +428,15 @@
 
                             <td class="text-end pe-3">
                                 <c:choose>
-                                    <%-- Trường hợp 1: Đang chờ xử lý -> Nút xám, Disable --%>
+                                    <%-- THÊM MỚI: Nếu có báo giá -> Hiện nút Xem báo giá --%>
+                                    <c:when test="${p.status == 'RECEIVED_QUOTE'}">
+                                        <a href="<c:url value='/user/view-quote?productId=${p.id}'/>"
+                                           class="btn btn-sm btn-primary btn-pill px-3 shadow-sm">
+                                            <i class="fas fa-eye me-1"></i>Xem báo giá
+                                        </a>
+                                    </c:when>
+
+                                    <%-- Đang chờ xử lý -> Nút xám, Disable --%>
                                     <c:when test="${p.status == 'MAINTENANCE'}">
                                         <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled
                                                 title="Bạn đã gửi báo cáo cho máy này rồi">
@@ -431,8 +444,7 @@
                                         </button>
                                     </c:when>
 
-                                    <%-- Trường hợp 2: Máy đang bảo trì/hỏng -> Disable (Tuỳ chọn logic của bạn) --%>
-                                    <%-- Nếu bạn muốn máy đang hỏng vẫn báo cáo tiếp được thì bỏ đoạn when này đi --%>
+                                    <%-- Máy đang hỏng -> Báo tiếp --%>
                                     <c:when test="${p.status == 'BROKEN'}">
                                         <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3"
                                                 onclick="openReportModal('${p.id}', '${p.modelName}', '${p.serialNumber}')">
@@ -440,7 +452,7 @@
                                         </button>
                                     </c:when>
 
-                                    <%-- Trường hợp 3: Bình thường -> Cho phép báo lỗi --%>
+                                    <%-- Bình thường -> Báo sự cố --%>
                                     <c:otherwise>
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-danger btn-pill px-3"
@@ -452,6 +464,17 @@
                             </td>
                         </tr>
                     </c:forEach>
+
+                    <c:if test="${empty products}">
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-box-open fa-3x mb-3 opacity-50"></i>
+                                <p class="mb-1 fw-bold">Không có máy phù hợp bộ lọc.</p>
+                                <small>Hãy thử bỏ bớt điều kiện hoặc nhấn “Xóa”.</small>
+                            </td>
+                        </tr>
+                    </c:if>
+                    </tbody>
 
                     <c:if test="${empty products}">
                         <tr>
