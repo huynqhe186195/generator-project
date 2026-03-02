@@ -2,6 +2,7 @@ package com.generatorproject.controller.staff;
 
 import com.generatorproject.model.*;
 import com.generatorproject.services.*;
+import com.google.gson.Gson;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -21,12 +22,14 @@ public class StaffManagementController extends HttpServlet {
     private final IUserServices userServices;
     private final IContractServices contractServices;
     private final IProductServices productServices;
+    private final IRepairWorkflowService repairWorkflowService;
 
     public StaffManagementController() {
         userServices = new UserServices();
         contractServices = new ContractServices();
         requestServices = new RequestServices();
         productServices = new ProductServices();
+        repairWorkflowService = new RepairWorkflowService();
     }
 
     @Override
@@ -52,9 +55,61 @@ public class StaffManagementController extends HttpServlet {
             case "/incident/escalate":
                 handleIncidentEscalate(req, resp);
                 break;
+            case "/repair-request-list":
+                handleRepairRequestList(req, resp);
+                break;
+            case "/repair-request/view":
+                handleViewRepairRequest(req, resp);
+                break;
         }
     }
+    private void handleViewRepairRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String reqIdParam = req.getParameter("requestId");
 
+        if (reqIdParam == null || reqIdParam.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=missing_id");
+            return;
+        }
+
+        try {
+            Long requestId = Long.parseLong(reqIdParam);
+
+            // Gọi Service để lấy dữ liệu DTO đã được map tên vật tư
+            RepairRequestDTO dto = repairWorkflowService.getRepairRequestDetails(requestId);
+
+            // Đẩy DTO sang JSP để in ra màn hình
+            req.setAttribute("repairRequest", dto);
+            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit (Approve)
+            req.setAttribute("rawJsonData", new Gson().toJson(dto));
+
+            // Chuyển hướng sang trang chi tiết
+            req.getRequestDispatcher("/views/staff/view-repair-request.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=error");
+        }
+    }
+    private void handleRepairRequestList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+
+        try {
+            // Giả sử requestServices của bạn có gọi xuống hàm findInboxByRole của RequestDAO
+            // Lấy tất cả các Request được gửi cho STAFF
+            List<SystemRequest> listRequests = requestServices.findInboxByRole("STAFF", "WAITING_STAFF");
+
+            // Gửi dữ liệu sang JSP
+            req.setAttribute("listRequests", listRequests);
+
+
+            // Chuyển hướng sang trang giao diện hiển thị bảng (danh sách)
+            req.getRequestDispatcher("/views/staff/repair-request-list.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
     private void handleCustomerList(HttpServletRequest req, HttpServletResponse resp)
             throws IOException, ServletException {
         String keyword = req.getParameter("keyword");

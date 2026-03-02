@@ -129,6 +129,11 @@ public class ManagementContractController extends HttpServlet {
                 return;
             }
 
+            if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
+                resp.sendRedirect("contracts?msg=terminated_no_actions");
+                return;
+            }
+
             Users customer = userServices.findUserById(contract.getCustomerId());
 
             List<Product> products = productServices.findByContractId(contractId);
@@ -166,6 +171,16 @@ public class ManagementContractController extends HttpServlet {
     private void showEditForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Long id = Long.parseLong(req.getParameter("id"));
         Contract c = contractService.findContractDetail(id);
+
+        if (c == null) {
+            resp.sendRedirect("contracts?msg=not_found");
+            return;
+        }
+
+        if ("TERMINATED".equalsIgnoreCase(c.getStatus())) {
+            resp.sendRedirect("contracts?msg=terminated_no_actions");
+            return;
+        }
 
         req.setAttribute("contract", c);
         req.setAttribute("customers", userServices.getUsersByRole(5));
@@ -455,6 +470,28 @@ public class ManagementContractController extends HttpServlet {
     private void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             Long id = Long.parseLong(req.getParameter("id"));
+
+            Contract contract = contractService.findContractById(id);
+            if (contract == null) {
+                resp.sendRedirect("contracts?msg=not_found");
+                return;
+            }
+
+            if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
+                resp.sendRedirect("contracts?msg=already_terminated");
+                return;
+            }
+
+            Users customer = userServices.findUserById(contract.getCustomerId());
+            boolean customerStillActive = customer != null
+                    && customer.getStatus() == 1
+                    && (customer.getFullName() == null || !customer.getFullName().startsWith("DELETED_USER_"));
+
+            if (customerStillActive) {
+                resp.sendRedirect("contracts?msg=delete_blocked_user_exists");
+                return;
+            }
+
             contractService.deleteContract(id);
             resp.sendRedirect("contracts?msg=delete_success");
         } catch (Exception e) {

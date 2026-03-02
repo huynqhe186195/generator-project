@@ -23,6 +23,28 @@
                         ${task.status}
                     </span>
                 </p>
+
+                <p>
+                    <strong>Trạng thái báo giá:</strong>
+
+                    <c:choose>
+                        <c:when test="${quoteStatus == 'APPROVED'}">
+                            <span class="badge bg-success">APPROVED</span>
+                        </c:when>
+
+                        <c:when test="${quoteStatus == 'REJECTED'}">
+                            <span class="badge bg-danger">REJECTED</span>
+                        </c:when>
+
+                        <c:when test="${quoteStatus == 'WAITING_MANAGER'}">
+                            <span class="badge bg-warning">WAITING_MANAGER</span>
+                        </c:when>
+
+                        <c:otherwise>
+                            <span class="badge bg-secondary">CHƯA GỬI</span>
+                        </c:otherwise>
+                    </c:choose>
+                </p>
             </div>
         </div>
 
@@ -49,7 +71,7 @@
             <table class="table table-bordered">
                 <thead>
                 <tr>
-                    <th>Spare Part ID</th>
+                    <th>Vật tư</th>
                     <th>Số lượng</th>
                     <th>Chi phí</th>
                 </tr>
@@ -57,8 +79,18 @@
                 <tbody>
                 <c:forEach var="m" items="${materials}">
                     <tr>
-                        <td>${m.sparePartId}</td>
-                        <td>${m.quantityUsed}</td>
+                        <td>
+                            ${m.sparePartName}
+                            <c:if test="${not empty m.partCode}">
+                                (${m.partCode})
+                            </c:if>
+                        </td>
+                        <td>
+                            ${m.quantityUsed}
+                            <c:if test="${not empty m.unit}">
+                                ${m.unit}
+                            </c:if>
+                        </td>
                         <td>${m.costAtTime}</td>
                     </tr>
                 </c:forEach>
@@ -66,7 +98,7 @@
             </table>
         </c:if>
 
-        <c:if test="${task.status == 'SCHEDULED'}">
+        <c:if test="${task.status == 'SCHEDULED' && task.assignmentStatus != 'PENDING_APPROVAL'}">
             <hr/>
             <h5 class="mt-3">💰 Báo giá sửa chữa</h5>
 

@@ -59,8 +59,8 @@
                                     <select name="type" class="form-select">
                                         <option value="REPAIR">Sửa chữa (Repair)</option>
                                         <option value="INSPECTION">Kiểm tra hiện trường (Inspection)</option>
-                                        <option value="MAINTENANCE">Bảo trì định kỳ (Maintenance)</option>
-                                        <option value="REPLACEMENT">Thay thế linh kiện (Replacement)</option>
+                                        <option value="PERIODIC">Bảo trì định kỳ (Maintenance)</option>
+
                                     </select>
                                 </div>
 

@@ -1,5 +1,7 @@
 package com.generatorproject.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.sql.Timestamp;
 import java.sql.Date;
 
@@ -10,7 +12,8 @@ public class Maintenance {
     private int technicianId;     // technician_id
     private Integer incidentId;   // incident_id (nullable)
 
-    private Date maintenanceDate; // maintenance_date
+    private Date maintenanceDate;
+    @SerializedName("issueType")// maintenance_date
     private String type;          // PERIODIC | REPAIR | INSPECTION
     private String description;   // description
     private double totalCost;     // total_cost
