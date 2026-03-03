@@ -276,4 +276,16 @@ public class UserDao extends GenericDAO<Users> {
                         "WHERE id = ?";
         update(sql, id);
     }
+
+    public void updateProfile(Users user) throws Exception {
+        if (user.getPhone() != null && !user.getPhone().isEmpty()) {
+            Users owner = findByPhone(user.getPhone());
+            if (owner != null && owner.getId() != user.getId()) {
+                throw new Exception("Số điện thoại này đã thuộc về tài khoản khác!");
+            }
+        }
+
+        String sql = "UPDATE users SET full_name = ?, phone = ?, avatar_url = ? WHERE id = ?";
+        update(sql, user.getFullName(), user.getPhone(), user.getAvatarUrl(), user.getId());
+    }
 }

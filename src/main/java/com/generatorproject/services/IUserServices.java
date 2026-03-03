@@ -45,4 +45,5 @@ public interface IUserServices {
     List<Users> findUserByRoleId(int id);
 
     List<Users> getUsersByRole(int roleId);
+    void updateProfile(Users user) throws Exception;
 }

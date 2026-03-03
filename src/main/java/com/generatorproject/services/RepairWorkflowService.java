@@ -113,7 +113,6 @@ public class RepairWorkflowService implements IRepairWorkflowService {
 
             // Bước 2: Bóc tách dữ liệu từ JSON
             RepairRequestDTO dto = new Gson().fromJson(req.getRequestData(), RepairRequestDTO.class);
-
             if (dto != null && dto.getMaintenanceId() != null && dto.getMaintenanceId() > 0) {
 
                 // Bước 3: Đổi trạng thái máy thành ĐANG SỬA CHỮA

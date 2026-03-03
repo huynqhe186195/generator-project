@@ -112,11 +112,6 @@
                                     <i class="fa fa-chart-line me-2"></i> Báo cáo
                                 </a>
                             </li>
-                            <li>
-                                  <a href="${pageContext.request.contextPath}/manager/reports">
-                                     <i class="fa fa-chart-line me-2"></i> Yêu cầu Product_Model
-                                 </a>
-                            </li>
                         </ul>
                     </nav>
 
