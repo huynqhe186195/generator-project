@@ -289,7 +289,7 @@ public class ManagerRequestController extends HttpServlet {
         try {
             Users manager = (Users) req.getSession().getAttribute("USERMODEL");
 
-            String receiverRole = req.getParameter("receiverRole"); // ADMIN / IT / ...
+            String receiverRole = req.getParameter("receiverRole");
             if (receiverRole == null || receiverRole.isBlank()) receiverRole = "ADMIN";
             receiverRole = receiverRole.trim().toUpperCase();
 

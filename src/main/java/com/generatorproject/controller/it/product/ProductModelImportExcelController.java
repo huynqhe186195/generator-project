@@ -30,13 +30,7 @@ import java.net.URLEncoder;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.UUID;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,8 +65,8 @@ public class ProductModelImportExcelController extends HttpServlet {
         int invalidRequiredCount = 0;
         int invalidBrandCategoryCount = 0;
         int duplicateCount = 0;
-        java.util.List<String> errorDetails = new ArrayList<>();
-        java.util.List<String> persistedFiles = new ArrayList<>();
+        List<String> errorDetails = new ArrayList<>();
+        List<String> persistedFiles = new ArrayList<>();
         try (InputStream is = excelPart.getInputStream();
                 Workbook workbook = WorkbookFactory.create(is)) {
 

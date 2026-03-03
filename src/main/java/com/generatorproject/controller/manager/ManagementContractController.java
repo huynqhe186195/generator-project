@@ -247,9 +247,6 @@ public class ManagementContractController extends HttpServlet {
             dataPayload.put("fullName", fullName);
             dataPayload.put("phone", phone);
 
-            // Sau này muốn thêm field gì cứ put vào đây, ví dụ:
-            // dataPayload.put("phone", "09123...");
-
             // 2. Biến Map thành chuỗi JSON
             Gson gson = new Gson();
             String jsonData = gson.toJson(dataPayload);
