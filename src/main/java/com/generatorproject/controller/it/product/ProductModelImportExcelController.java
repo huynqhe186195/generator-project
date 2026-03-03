@@ -71,6 +71,7 @@ public class ProductModelImportExcelController extends HttpServlet {
         int invalidRequiredCount = 0;
         int invalidBrandCategoryCount = 0;
         int duplicateCount = 0;
+        java.util.List<String> errorDetails = new ArrayList<>();
         try (InputStream is = excelPart.getInputStream();
                 Workbook workbook = WorkbookFactory.create(is)) {
 
@@ -112,6 +113,7 @@ public class ProductModelImportExcelController extends HttpServlet {
 
                 if (name == null || brandRaw == null || categoryRaw == null) {
                     invalidRequiredCount++;
+                    addImportError(errorDetails, i, "Thiếu cột bắt buộc (name/brand/category).");
                     continue;
                 }
                 if (fuelType == null)
@@ -121,12 +123,14 @@ public class ProductModelImportExcelController extends HttpServlet {
                 Category category = resolveCategory(categoryRaw);
                 if (brand == null || category == null) {
                     invalidBrandCategoryCount++;
+                    addImportError(errorDetails, i, "Brand hoặc Category không tồn tại trong hệ thống.");
                     continue;
                 }
 
                 ProductModel existed = productModelDAO.findByName(name);
                 if (existed != null) {
                     duplicateCount++;
+                    addImportError(errorDetails, i, "Tên product model đã tồn tại: " + name);
                     continue;
                 }
 
@@ -160,20 +164,54 @@ public class ProductModelImportExcelController extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_error");
+            String detail = URLEncoder.encode(safeErrorMessage(e), StandardCharsets.UTF_8.name());
+            resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_error&detail=" + detail);
             return;
         }
 
         if (createdCount == 0) {
-            String detail = "required=" + invalidRequiredCount
-                    + ",brandCategory=" + invalidBrandCategoryCount
-                    + ",duplicate=" + duplicateCount;
+            String detail = buildImportDetail(invalidRequiredCount, invalidBrandCategoryCount, duplicateCount, errorDetails);
             String encoded = URLEncoder.encode(detail, StandardCharsets.UTF_8.name());
             resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_empty&detail=" + encoded);
             return;
         }
 
         resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_success&count=" + createdCount);
+    }
+
+
+    private void addImportError(java.util.List<String> errorDetails, int rowIndexZeroBased, String reason) {
+        if (errorDetails == null || errorDetails.size() >= 8) {
+            return;
+        }
+        errorDetails.add("Dòng " + (rowIndexZeroBased + 1) + ": " + reason);
+    }
+
+    private String buildImportDetail(int invalidRequiredCount, int invalidBrandCategoryCount, int duplicateCount,
+            java.util.List<String> errorDetails) {
+        String summary = "Thiếu dữ liệu bắt buộc: " + invalidRequiredCount
+                + "; Brand/Category không hợp lệ: " + invalidBrandCategoryCount
+                + "; Trùng tên model: " + duplicateCount + ".";
+
+        if (errorDetails == null || errorDetails.isEmpty()) {
+            return summary;
+        }
+
+        StringBuilder details = new StringBuilder(summary).append(" Lỗi chi tiết: ");
+        for (int i = 0; i < errorDetails.size(); i++) {
+            if (i > 0) {
+                details.append(" | ");
+            }
+            details.append(errorDetails.get(i));
+        }
+        return details.toString();
+    }
+
+    private String safeErrorMessage(Exception e) {
+        if (e == null || e.getMessage() == null || e.getMessage().trim().isEmpty()) {
+            return "Lỗi không xác định khi import Excel.";
+        }
+        return e.getMessage().trim();
     }
 
     private Map<String, Integer> buildColumnMap(Sheet sheet, DataFormatter formatter) {
