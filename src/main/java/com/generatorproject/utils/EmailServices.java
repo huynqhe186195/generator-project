@@ -39,7 +39,7 @@ public class EmailServices {
             message.setSubject("Thông báo tài khoản mới - Generator Project", "UTF-8");
 
             String htmlContent = "<!DOCTYPE html>"
-                    + "<html><head><meta charset='UTF-8'></head><body>" // <--- QUAN TRỌNG
+                    + "<html><head><meta charset='UTF-8'></head><body>" //
                     + "<div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;'>"
                     + "<h2 style='color: #28a745;'>Xin chào " + fullName + "!</h2>"
                     + "<p>Tài khoản của bạn tại hệ thống <b>Generator Project</b> đã được khởi tạo thành công.</p>"
