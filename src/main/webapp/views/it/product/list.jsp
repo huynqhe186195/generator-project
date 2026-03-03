@@ -62,15 +62,23 @@
           <div class="alert alert-success">Import Excel thành công. Đã tạo <b>${param.count}</b> product model.</div>
         </c:if>
         <c:if test="${param.msg == 'import_empty'}">
-          <div class="alert alert-warning">Không import được dòng nào từ file Excel (kiểm tra dữ liệu). <c:if
-              test="${not empty param.detail}">Chi tiết: ${param.detail}</c:if>
+          <div class="alert alert-warning">
+            <div>Không import được dòng nào từ file Excel (kiểm tra dữ liệu).</div>
+            <c:if test="${not empty param.detail}">
+              <div class="small mt-1" style="white-space: pre-line;"><b>Chi tiết lỗi:</b> ${param.detail}</div>
+            </c:if>
           </div>
         </c:if>
         <c:if test="${param.msg == 'import_invalid_file'}">
           <div class="alert alert-warning">Vui lòng chọn file Excel hợp lệ (.xlsx/.xls).</div>
         </c:if>
         <c:if test="${param.msg == 'import_error'}">
-          <div class="alert alert-danger">Lỗi khi import Excel, vui lòng thử lại.</div>
+          <div class="alert alert-danger">
+          <div>Lỗi khi import Excel, vui lòng thử lại.</div>
+          <c:if test="${not empty param.detail}">
+            <div class="small mt-1" style="white-space: pre-line;"><b>Chi tiết lỗi:</b> ${param.detail}</div>
+          </c:if>
+        </div>
         </c:if>
 
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">

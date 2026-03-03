@@ -83,7 +83,8 @@ public class ITProductRequestController extends HttpServlet {
             } else if ("reject".equalsIgnoreCase(action)) {
                 String reason = req.getParameter("responseMessage");
                 if (reason == null || reason.isBlank()) {
-                    reason = "IT từ chối thêm sản phẩm.";
+                    resp.sendRedirect(req.getContextPath() + "/it/requests?msg=reject_reason_required");
+                    return;
                 }
                 request.setStatus("REJECTED");
                 request.setResponseMessage(reason.trim());
