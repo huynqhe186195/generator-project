@@ -14,7 +14,7 @@ public class EmailServices {
     private static final String APP_EMAIL = "huyasus2852@gmail.com";
     private static final String APP_PASSWORD = "fmqj ctiy tthb vgac";
 
-    public static void sendWelcomeEmail(String toEmail, String fullName, String rawPassword) {
+    public static boolean sendWelcomeEmail(String toEmail, String fullName, String rawPassword) {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
@@ -42,7 +42,7 @@ public class EmailServices {
                     + "<html><head><meta charset='UTF-8'></head><body>" //
                     + "<div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;'>"
                     + "<h2 style='color: #28a745;'>Xin chào " + fullName + "!</h2>"
-                    + "<p>Tài khoản của bạn tại hệ thống <b>Generator Project</b> đã được khởi tạo thành công.</p>"
+                    + "<p>Tài khoản của bạn tại hệ thống <b>Generator CMS</b> đã được khởi tạo thành công.</p>"
                     + "<p>Dưới đây là thông tin đăng nhập của bạn:</p>"
                     + "<ul>"
                     + "<li><b>Email:</b> " + toEmail + "</li>"
@@ -58,10 +58,12 @@ public class EmailServices {
 
             Transport.send(message);
             System.out.println("Email sent successfully to " + toEmail);
+            return true;
 
         } catch (MessagingException | UnsupportedEncodingException e) {
             e.printStackTrace();
             System.out.println("Gửi email thất bại: " + e.getMessage());
+            return false;
         }
     }
 

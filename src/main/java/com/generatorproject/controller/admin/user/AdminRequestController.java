@@ -5,6 +5,7 @@ import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.UserServices;
+import com.generatorproject.utils.EmailServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -142,8 +143,12 @@ public class AdminRequestController extends HttpServlet {
         newUser.setPhone(phone);
 
         userServices.createUser(newUser);
+        boolean emailSent = sendAccountInformationEmail(email.trim(), fullName.trim(), randomPassword);
 
-        return "Đã duyệt và tạo tài khoản thành công!";
+        if (emailSent) {
+            return "Đã duyệt, tạo tài khoản và gửi email thông tin đăng nhập thành công!";
+        }
+        return "Đã duyệt và tạo tài khoản thành công, nhưng gửi email thông tin đăng nhập thất bại.";
     }
 
     private String approveNewUserExcelRequest(SystemRequest request) throws Exception {
@@ -219,6 +224,7 @@ public class AdminRequestController extends HttpServlet {
                 newUser.setAvatarUrl(avatarUrl);
 
                 userServices.createUser(newUser);
+                sendAccountInformationEmail(email, fullName, randomPassword);
                 created++;
             }
         }
@@ -282,6 +288,10 @@ public class AdminRequestController extends HttpServlet {
 
     private String generateRandomPassword() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+    }
+
+    private boolean sendAccountInformationEmail(String email, String fullName, String rawPassword) {
+        return EmailServices.sendWelcomeEmail(email, fullName, rawPassword);
     }
 
     private String asText(Object value) {
