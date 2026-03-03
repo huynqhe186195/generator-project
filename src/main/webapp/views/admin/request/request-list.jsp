@@ -22,7 +22,7 @@
             </c:if>
             <c:if test="${param.msg == 'error'}">
                 <div class="alert alert-danger alert-dismissible fade show">
-                    <i class="fas fa-exclamation-circle"></i> Đã xảy ra lỗi: ${param.detail}
+                    <i class="fas fa-exclamation-circle"></i> Đã xảy ra lỗi: ${not empty flashError ? flashError : "Có lỗi xảy ra trong quá trình xử lý yêu cầu."}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             </c:if>

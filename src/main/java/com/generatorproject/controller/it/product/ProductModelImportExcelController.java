@@ -71,6 +71,8 @@ public class ProductModelImportExcelController extends HttpServlet {
         int invalidRequiredCount = 0;
         int invalidBrandCategoryCount = 0;
         int duplicateCount = 0;
+        java.util.List<String> errorDetails = new ArrayList<>();
+        java.util.List<String> persistedFiles = new ArrayList<>();
         try (InputStream is = excelPart.getInputStream();
                 Workbook workbook = WorkbookFactory.create(is)) {
 
@@ -100,18 +102,11 @@ public class ProductModelImportExcelController extends HttpServlet {
                 String manualUrl = trim(readByKey(row, col, "manualurl", 8, formatter));
                 String imageUrlRaw = trim(readByKey(row, col, "imageurl", 9, formatter));
                 java.util.List<String> imageCandidates = parseImageCandidates(imageUrlRaw);
-                java.util.List<String> normalizedImages = new ArrayList<>();
-                for (String candidate : imageCandidates) {
-                    String normalizedImage = normalizeAndPersistImageUrl(req, candidate);
-                    if (normalizedImage != null && !normalizedImage.isEmpty()) {
-                        normalizedImages.add(normalizedImage);
-                    }
-                }
-                String imageUrl = normalizedImages.isEmpty() ? null : normalizedImages.get(0);
                 String status = normalizeStatus(readByKey(row, col, "status", 10, formatter));
 
                 if (name == null || brandRaw == null || categoryRaw == null) {
                     invalidRequiredCount++;
+                    addImportError(errorDetails, i, "Thiếu cột bắt buộc (name/brand/category).");
                     continue;
                 }
                 if (fuelType == null)
@@ -121,12 +116,14 @@ public class ProductModelImportExcelController extends HttpServlet {
                 Category category = resolveCategory(categoryRaw);
                 if (brand == null || category == null) {
                     invalidBrandCategoryCount++;
+                    addImportError(errorDetails, i, "Brand hoặc Category không tồn tại trong hệ thống.");
                     continue;
                 }
 
                 ProductModel existed = productModelDAO.findByName(name);
                 if (existed != null) {
                     duplicateCount++;
+                    addImportError(errorDetails, i, "Tên product model đã tồn tại: " + name);
                     continue;
                 }
 
@@ -141,7 +138,7 @@ public class ProductModelImportExcelController extends HttpServlet {
                         .setDescription(description)
                         .setSpecifications(specifications)
                         .setManualUrl(manualUrl)
-                        .setImageUrl(imageUrl)
+                         .setImageUrl(null)
                         .setStatus(status != null ? status : "COMING_SOON")
                         .build();
 
@@ -150,9 +147,25 @@ public class ProductModelImportExcelController extends HttpServlet {
                     createdCount++;
                     int modelId = newId.intValue();
                     Set<String> inserted = new HashSet<>();
-                    for (String image : normalizedImages) {
-                        if (inserted.add(image)) {
-                            productImageDAO.insertImage(modelId, image);
+                    String primaryImage = null;
+                    for (String candidate : imageCandidates) {
+                        String storedImage = resolveImageForStorage(req, candidate, persistedFiles);
+                        if (storedImage == null || storedImage.isEmpty()) {
+                            continue;
+                        }
+                        if (primaryImage == null) {
+                            primaryImage = storedImage;
+                        }
+                        if (inserted.add(storedImage)) {
+                            productImageDAO.insertImage(modelId, storedImage);
+                        }
+                    }
+
+                    if (primaryImage != null) {
+                        ProductModel createdModel = productModelDAO.findById(modelId);
+                        if (createdModel != null) {
+                            createdModel.setImageUrl(primaryImage);
+                            productModelDAO.updateProductModel(createdModel);
                         }
                     }
                 }
@@ -160,20 +173,56 @@ public class ProductModelImportExcelController extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_error");
+            cleanupPersistedFiles(req, persistedFiles);
+            String detail = URLEncoder.encode(safeErrorMessage(e), StandardCharsets.UTF_8.name());
+            resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_error&detail=" + detail);
             return;
         }
 
         if (createdCount == 0) {
-            String detail = "required=" + invalidRequiredCount
-                    + ",brandCategory=" + invalidBrandCategoryCount
-                    + ",duplicate=" + duplicateCount;
+            cleanupPersistedFiles(req, persistedFiles);
+            String detail = buildImportDetail(invalidRequiredCount, invalidBrandCategoryCount, duplicateCount, errorDetails);
             String encoded = URLEncoder.encode(detail, StandardCharsets.UTF_8.name());
             resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_empty&detail=" + encoded);
             return;
         }
 
         resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_success&count=" + createdCount);
+    }
+
+
+    private void addImportError(java.util.List<String> errorDetails, int rowIndexZeroBased, String reason) {
+        if (errorDetails == null || errorDetails.size() >= 8) {
+            return;
+        }
+        errorDetails.add("Dòng " + (rowIndexZeroBased + 1) + ": " + reason);
+    }
+
+    private String buildImportDetail(int invalidRequiredCount, int invalidBrandCategoryCount, int duplicateCount,
+            java.util.List<String> errorDetails) {
+        String summary = "Thiếu dữ liệu bắt buộc: " + invalidRequiredCount
+                + "; Brand/Category không hợp lệ: " + invalidBrandCategoryCount
+                + "; Trùng tên model: " + duplicateCount + ".";
+
+        if (errorDetails == null || errorDetails.isEmpty()) {
+            return summary;
+        }
+
+        StringBuilder details = new StringBuilder(summary).append(" Lỗi chi tiết: ");
+        for (int i = 0; i < errorDetails.size(); i++) {
+            if (i > 0) {
+                details.append(" | ");
+            }
+            details.append(errorDetails.get(i));
+        }
+        return details.toString();
+    }
+
+    private String safeErrorMessage(Exception e) {
+        if (e == null || e.getMessage() == null || e.getMessage().trim().isEmpty()) {
+            return "Lỗi không xác định khi import Excel.";
+        }
+        return e.getMessage().trim();
     }
 
     private Map<String, Integer> buildColumnMap(Sheet sheet, DataFormatter formatter) {
@@ -376,7 +425,7 @@ public class ProductModelImportExcelController extends HttpServlet {
         return result;
     }
 
-    private String normalizeAndPersistImageUrl(HttpServletRequest req, String rawImageUrl) {
+    private String resolveImageForStorage(HttpServletRequest req, String rawImageUrl, java.util.List<String> persistedFiles) {
         String value = trim(rawImageUrl);
         if (value == null)
             return null;
@@ -390,12 +439,18 @@ public class ProductModelImportExcelController extends HttpServlet {
 
         if (value.startsWith("http://") || value.startsWith("https://")) {
             String downloaded = downloadImageToUploads(req, value);
+            if (downloaded != null && persistedFiles != null) {
+                persistedFiles.add(downloaded);
+            }
             return downloaded != null ? downloaded : value;
         }
 
         if (value.startsWith("//")) {
             String httpUrl = "https:" + value;
             String downloaded = downloadImageToUploads(req, httpUrl);
+            if (downloaded != null && persistedFiles != null) {
+                persistedFiles.add(downloaded);
+            }
             return downloaded != null ? downloaded : httpUrl;
         }
 
@@ -416,6 +471,28 @@ public class ProductModelImportExcelController extends HttpServlet {
         }
 
         return null;
+    }
+
+
+    private void cleanupPersistedFiles(HttpServletRequest req, java.util.List<String> persistedFiles) {
+        if (persistedFiles == null || persistedFiles.isEmpty()) {
+            return;
+        }
+        Set<String> unique = new HashSet<>(persistedFiles);
+        for (String relativePath : unique) {
+            if (relativePath == null || relativePath.trim().isEmpty()) {
+                continue;
+            }
+            String webPath = relativePath.startsWith("/") ? relativePath : "/" + relativePath;
+            String absolutePath = req.getServletContext().getRealPath(webPath);
+            if (absolutePath == null) {
+                continue;
+            }
+            File file = new File(absolutePath);
+            if (file.exists()) {
+                file.delete();
+            }
+        }
     }
 
     private String extractSrcIfHtml(String value) {
