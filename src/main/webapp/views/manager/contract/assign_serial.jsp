@@ -46,7 +46,7 @@
             </div>
 
             <div class="alert alert-info mt-3 mb-0">
-                Import xong hợp đồng sẽ ở <b>PENDING_SERIAL</b>. Khi gán serial thành công (tạo Product),
+                Import xong hợp đồng sẽ ở <b>PENDING_SERIAL</b>. Khi gán serial thành công,
                 hệ thống chuyển hợp đồng sang <b>ACTIVE</b>.
             </div>
         </div>
