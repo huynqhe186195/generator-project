@@ -64,7 +64,7 @@
                                 <th class="py-3 ps-4 text-center">STT</th>
                                 <th class="py-3">Tên Vật tư</th>
                                 <th class="py-3 text-center">Số lượng</th>
-                                <th class="py-3 text-end">Đơn giá</th>
+
                                 <th class="py-3 text-end pe-4">Thành tiền</th>
                             </tr>
                             </thead>
@@ -86,11 +86,9 @@
                                         <td class="text-center">
                                             <span class="badge bg-secondary rounded-pill px-3">${mat.quantityUsed}</span>
                                         </td>
-                                        <td class="text-end">
-                                            <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> đ
-                                        </td>
+
                                         <td class="text-end pe-4 fw-bold text-primary">
-                                            <fmt:formatNumber value="${mat.costAtTime * mat.quantityUsed}" pattern="#,###"/> đ
+                                            <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> đ
                                         </td>
                                     </tr>
                                 </c:forEach>

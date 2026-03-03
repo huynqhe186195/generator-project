@@ -427,40 +427,52 @@
                             </td>
 
                             <td class="text-end pe-3">
-                                <c:choose>
-                                    <%-- THÊM MỚI: Nếu có báo giá -> Hiện nút Xem báo giá --%>
-                                    <c:when test="${p.status == 'RECEIVED_QUOTE'}">
-                                        <a href="<c:url value='/user/view-quote?productId=${p.id}'/>"
-                                           class="btn btn-sm btn-primary btn-pill px-3 shadow-sm">
-                                            <i class="fas fa-eye me-1"></i>Xem báo giá
-                                        </a>
-                                    </c:when>
+                                <div class="d-flex justify-content-end gap-2 align-items-center">
 
-                                    <%-- Đang chờ xử lý -> Nút xám, Disable --%>
-                                    <c:when test="${p.status == 'MAINTENANCE'}">
-                                        <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled
-                                                title="Bạn đã gửi báo cáo cho máy này rồi">
-                                            <i class="fas fa-hourglass-half me-1"></i>Đã gửi báo cáo
-                                        </button>
-                                    </c:when>
+                                        <%-- NÚT XEM LỊCH SỬ BÁO GIÁ (Luôn hiển thị cho mọi máy) --%>
+                                    <a href="<c:url value='/user/quote-history?productId=${p.id}'/>"
+                                       class="btn btn-sm btn-outline-info btn-pill px-3 shadow-sm"
+                                       title="Xem lịch sử các báo giá trước đây">
+                                        <i class="fas fa-history me-1"></i>Lịch sử
+                                    </a>
 
-                                    <%-- Máy đang hỏng -> Báo tiếp --%>
-                                    <c:when test="${p.status == 'BROKEN'}">
-                                        <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3"
-                                                onclick="openReportModal('${p.id}', '${p.modelName}', '${p.serialNumber}')">
-                                            <i class="fas fa-triangle-exclamation me-1"></i>Báo tiếp
-                                        </button>
-                                    </c:when>
+                                        <%-- CÁC NÚT HÀNH ĐỘNG CHÍNH (Dựa theo trạng thái) --%>
+                                    <c:choose>
+                                        <%-- Có báo giá mới -> Nút nổi bật --%>
+                                        <c:when test="${p.status == 'RECEIVED_QUOTE'}">
+                                            <a href="<c:url value='/user/view-quote?productId=${p.id}'/>"
+                                               class="btn btn-sm btn-primary btn-pill px-3 shadow-sm">
+                                                <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
+                                            </a>
+                                        </c:when>
 
-                                    <%-- Bình thường -> Báo sự cố --%>
-                                    <c:otherwise>
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-danger btn-pill px-3"
-                                                onclick="openReportModal('${p.id}', '${p.modelName}', '${p.serialNumber}')">
-                                            <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
-                                        </button>
-                                    </c:otherwise>
-                                </c:choose>
+                                        <%-- Đang chờ xử lý -> Nút Disable --%>
+                                        <c:when test="${p.status == 'MAINTENANCE'}">
+                                            <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled
+                                                    title="Bạn đã gửi báo cáo cho máy này rồi">
+                                                <i class="fas fa-hourglass-half me-1"></i>Đã báo cáo
+                                            </button>
+                                        </c:when>
+
+                                        <%-- Máy đang hỏng -> Báo tiếp (Nút đỏ) --%>
+                                        <c:when test="${p.status == 'BROKEN'}">
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3"
+                                                    onclick="openReportModal('${p.id}', '${p.modelName}', '${p.serialNumber}')">
+                                                <i class="fas fa-triangle-exclamation me-1"></i>Báo tiếp
+                                            </button>
+                                        </c:when>
+
+                                        <%-- Máy bình thường -> Báo sự cố --%>
+                                        <c:otherwise>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger btn-pill px-3"
+                                                    onclick="openReportModal('${p.id}', '${p.modelName}', '${p.serialNumber}')">
+                                                <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
+                                            </button>
+                                        </c:otherwise>
+                                    </c:choose>
+
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>
