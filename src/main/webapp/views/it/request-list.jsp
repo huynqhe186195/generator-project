@@ -11,7 +11,6 @@
         <a href="${pageContext.request.contextPath}/it/home" class="btn btn-outline-secondary btn-sm">Về dashboard</a>
     </div>
 </div>
-<div class="alert alert-info py-2">Duyệt request = chỉ xác nhận tiếp nhận (KHÔNG auto tạo product). Sau đó IT tải Excel và vào trang Quản lý Product Model để Import.</div>
 
 <c:if test="${param.msg == 'success'}">
     <div class="alert alert-success">Xử lý yêu cầu thành công.</div>
