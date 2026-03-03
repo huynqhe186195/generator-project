@@ -91,6 +91,7 @@ public class ProductModel {
         }
     }
     public void setDescription(String description) { this.description = description; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public void setStatus(String status) { this.status = status; }
 
 }
