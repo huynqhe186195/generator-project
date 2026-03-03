@@ -113,8 +113,6 @@ public class RepairWorkflowService implements IRepairWorkflowService {
 
             // Bước 2: Bóc tách dữ liệu từ JSON
             RepairRequestDTO dto = new Gson().fromJson(req.getRequestData(), RepairRequestDTO.class);
-            System.out.println("====> [DEBUG JSON] Chuỗi JSON trong DB là: " + req.getRequestData());
-            System.out.println("====> [DEBUG DTO] Maintenance ID lấy ra được là: " + (dto != null ? dto.getMaintenanceId() : "DTO NULL"));
             if (dto != null && dto.getMaintenanceId() != null && dto.getMaintenanceId() > 0) {
 
                 // Bước 3: Đổi trạng thái máy thành ĐANG SỬA CHỮA
@@ -129,7 +127,9 @@ public class RepairWorkflowService implements IRepairWorkflowService {
                 Long newQuoteId = quoteDAO.insertQuote(
                         dto.getMaintenanceId(),
                         userId,
-                        dto.getGrandTotal().doubleValue()
+                        dto.getGrandTotal().doubleValue(),
+                        dto.getTechnicianId()
+
                 );
 
                 // 4.2 Lấy danh sách vật tư lưu vào bảng 'quote_details'
