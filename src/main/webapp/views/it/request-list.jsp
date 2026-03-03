@@ -11,13 +11,15 @@
         <a href="${pageContext.request.contextPath}/it/home" class="btn btn-outline-secondary btn-sm">Về dashboard</a>
     </div>
 </div>
-<div class="alert alert-info py-2">Duyệt request = chỉ xác nhận tiếp nhận (KHÔNG auto tạo product). Sau đó IT tải Excel và vào trang Quản lý Product Model để Import.</div>
 
 <c:if test="${param.msg == 'success'}">
     <div class="alert alert-success">Xử lý yêu cầu thành công.</div>
 </c:if>
 <c:if test="${param.msg == 'error'}">
     <div class="alert alert-danger">Có lỗi xảy ra khi xử lý yêu cầu.</div>
+</c:if>
+<c:if test="${param.msg == 'reject_reason_required'}">
+    <div class="alert alert-warning">Bạn cần nhập lý do từ chối để Manager biết nguyên nhân và xử lý.</div>
 </c:if>
 
 <div class="card shadow-sm">
@@ -59,12 +61,12 @@
                                 </button>
                             </form>
 
-                            <form action="${pageContext.request.contextPath}/it/requests" method="post" class="d-inline ms-1">
+                            <form action="${pageContext.request.contextPath}/it/requests" method="post" class="d-inline ms-1"
+                                  onsubmit="return submitRejectReason(this, ${r.id});">
                                 <input type="hidden" name="action" value="reject"/>
                                 <input type="hidden" name="requestId" value="${r.id}"/>
-                                <input type="hidden" name="responseMessage" value="IT từ chối tạo sản phẩm mới"/>
-                                <button type="submit" class="btn btn-danger btn-sm"
-                                        onclick="return confirm('Từ chối yêu cầu #${r.id}?');">
+                                <input type="hidden" name="responseMessage" value=""/>
+                                <button type="submit" class="btn btn-danger btn-sm">
                                     <i class="fa fa-times"></i> Từ chối
                                 </button>
                             </form>
@@ -81,3 +83,19 @@
         </div>
     </div>
 </div>
+
+<script>
+function submitRejectReason(form, requestId) {
+    const reason = prompt("Nhập lý do từ chối cho request #" + requestId + ":");
+    if (reason === null) {
+        return false;
+    }
+    const trimmed = reason.trim();
+    if (!trimmed) {
+        alert("Vui lòng nhập lý do từ chối để Manager biết lỗi cần xử lý.");
+        return false;
+    }
+    form.querySelector("input[name='responseMessage']").value = trimmed;
+    return confirm("Xác nhận từ chối request #" + requestId + "?");
+}
+</script>

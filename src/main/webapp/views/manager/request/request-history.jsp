@@ -252,22 +252,6 @@
                 </div>
                 <pre class="json-pretty border rounded p-3 bg-light" id="detailJson"></pre>
             </div>
-
-            <div class="mb-3">
-              <label class="form-label">Ngày mong muốn</label>
-              <input type="date" name="preferredDate" class="form-control">
-            </div>
-          </div>
-
-          <div class="alert alert-info small mb-0">
-            <i class="fa fa-info-circle"></i>
-            Role nhận sẽ xử lý theo <b>requestType</b> và cập nhật trạng thái.
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-          <button type="submit" class="btn btn-primary">Gửi ngay</button>
         </div>
       </form>
     </div>

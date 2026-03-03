@@ -5,6 +5,7 @@ import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.UserServices;
+import com.generatorproject.utils.EmailServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -19,6 +20,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -51,6 +53,15 @@ public class AdminRequestController extends HttpServlet {
         if ("download".equalsIgnoreCase(action)) {
             handleDownload(req, resp);
             return;
+        }
+
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            Object flashError = session.getAttribute("flashError");
+            if (flashError != null) {
+                req.setAttribute("flashError", flashError.toString());
+                session.removeAttribute("flashError");
+            }
         }
 
         List<SystemRequest> pendingRequests = requestDAO.findByReceiverRole("ADMIN", "PENDING");
@@ -97,7 +108,8 @@ public class AdminRequestController extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/requests?msg=error&detail=" + e.getMessage());
+            req.getSession().setAttribute("flashError", safeMessage(e));
+            resp.sendRedirect(req.getContextPath() + "/admin/requests?msg=error");
         }
     }
 
@@ -142,8 +154,12 @@ public class AdminRequestController extends HttpServlet {
         newUser.setPhone(phone);
 
         userServices.createUser(newUser);
+        boolean emailSent = sendAccountInformationEmail(email.trim(), fullName.trim(), randomPassword);
 
-        return "Đã duyệt và tạo tài khoản thành công!";
+        if (emailSent) {
+            return "Đã duyệt, tạo tài khoản và gửi email thông tin đăng nhập thành công!";
+        }
+        return "Đã duyệt và tạo tài khoản thành công, nhưng gửi email thông tin đăng nhập thất bại.";
     }
 
     private String approveNewUserExcelRequest(SystemRequest request) throws Exception {
@@ -219,6 +235,7 @@ public class AdminRequestController extends HttpServlet {
                 newUser.setAvatarUrl(avatarUrl);
 
                 userServices.createUser(newUser);
+                sendAccountInformationEmail(email, fullName, randomPassword);
                 created++;
             }
         }
@@ -284,6 +301,10 @@ public class AdminRequestController extends HttpServlet {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 10);
     }
 
+    private boolean sendAccountInformationEmail(String email, String fullName, String rawPassword) {
+        return EmailServices.sendWelcomeEmail(email, fullName, rawPassword);
+    }
+
     private String asText(Object value) {
         return value == null ? null : String.valueOf(value);
     }
@@ -294,6 +315,14 @@ public class AdminRequestController extends HttpServlet {
         } catch (Exception e) {
             return null;
         }
+    }
+
+
+    private String safeMessage(Exception e) {
+        if (e == null || e.getMessage() == null || e.getMessage().trim().isEmpty()) {
+            return "Có lỗi xảy ra trong quá trình xử lý yêu cầu.";
+        }
+        return e.getMessage().trim();
     }
 
     private int parseIntegerOrDefault(String value, int defaultValue) {

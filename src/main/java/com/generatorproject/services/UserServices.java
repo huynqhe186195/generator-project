@@ -16,7 +16,10 @@ public class UserServices implements IUserServices {
         this.userDao = new UserDao();
         this.tokenDao = new TokenDao();
     }
-
+    @Override
+    public void updateProfile(Users user) throws Exception {
+        userDao.updateProfile(user);
+    }
     @Override
     public List<Users> getAllUsers() {
         return userDao.getAllUsers();
