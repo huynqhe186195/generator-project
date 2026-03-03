@@ -20,6 +20,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -52,6 +53,15 @@ public class AdminRequestController extends HttpServlet {
         if ("download".equalsIgnoreCase(action)) {
             handleDownload(req, resp);
             return;
+        }
+
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            Object flashError = session.getAttribute("flashError");
+            if (flashError != null) {
+                req.setAttribute("flashError", flashError.toString());
+                session.removeAttribute("flashError");
+            }
         }
 
         List<SystemRequest> pendingRequests = requestDAO.findByReceiverRole("ADMIN", "PENDING");
@@ -98,7 +108,8 @@ public class AdminRequestController extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendRedirect(req.getContextPath() + "/admin/requests?msg=error&detail=" + e.getMessage());
+            req.getSession().setAttribute("flashError", safeMessage(e));
+            resp.sendRedirect(req.getContextPath() + "/admin/requests?msg=error");
         }
     }
 
@@ -304,6 +315,14 @@ public class AdminRequestController extends HttpServlet {
         } catch (Exception e) {
             return null;
         }
+    }
+
+
+    private String safeMessage(Exception e) {
+        if (e == null || e.getMessage() == null || e.getMessage().trim().isEmpty()) {
+            return "Có lỗi xảy ra trong quá trình xử lý yêu cầu.";
+        }
+        return e.getMessage().trim();
     }
 
     private int parseIntegerOrDefault(String value, int defaultValue) {
