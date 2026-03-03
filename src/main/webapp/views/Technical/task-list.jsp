@@ -82,7 +82,9 @@
 
 
                 <!-- REPAIR: BÁO CÁO -->
-                <c:if test="${t.type == 'REPAIR' && t.status != 'COMPLETED'}">
+                <c:if test="${t.type == 'REPAIR'
+                             && t.status != 'COMPLETED'
+                             && not empty t.actualDescription}">
                     <a class="btn btn-sm btn-warning"
                        href="<c:url value='/technical/repair-report?id=${t.id}'/>">
                         Báo cáo sửa chữa
