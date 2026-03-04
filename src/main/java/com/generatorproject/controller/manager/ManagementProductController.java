@@ -1,7 +1,10 @@
 package com.generatorproject.controller.manager;
 
 import com.generatorproject.model.Product;
+import com.generatorproject.model.ProductModel;
+import com.generatorproject.services.IProductModelServices;
 import com.generatorproject.services.IProductServices;
+import com.generatorproject.services.ProductModelServices;
 import com.generatorproject.services.ProductServices;
 
 import javax.servlet.ServletException;
@@ -19,9 +22,11 @@ import java.util.Map;
 public class ManagementProductController extends HttpServlet {
 
     private final IProductServices productService;
+    private final IProductModelServices productModelService;
 
     public ManagementProductController() {
         productService = new ProductServices();
+        productModelService = new ProductModelServices();
     }
 
     @Override
@@ -89,53 +94,106 @@ public class ManagementProductController extends HttpServlet {
 
         List<Product> products = productService.findAllWithPagination(offset, pageSize, keyword);
         int totalItems = productService.countAll(keyword);
-        List<Product> allMatchedProducts = productService.findAllWithPagination(0, totalItems == 0 ? 1 : totalItems, keyword);
 
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
 
         req.setAttribute("products", products);
-        req.setAttribute("modelCustomerSummaries", buildModelCustomerSummaries(allMatchedProducts));
         req.setAttribute("currentPage", page);
         req.setAttribute("totalPages", totalPages);
-
         req.setAttribute("currentKeyword", keyword);
+
+        List<ProductModelOwnership> ownerships = buildProductModelOwnerships(
+                productModelService.findAll(),
+                productService.findAll()
+        );
+
+        Integer selectedModelId = parseInt(req.getParameter("selectedModelId"));
+        ProductModelOwnership selectedOwnership = null;
+        if (selectedModelId != null) {
+            for (ProductModelOwnership ownership : ownerships) {
+                if (ownership.getModelId() == selectedModelId) {
+                    selectedOwnership = ownership;
+                    break;
+                }
+            }
+        }
+
+        req.setAttribute("productModelOwnerships", ownerships);
+        req.setAttribute("selectedModelId", selectedModelId);
+        req.setAttribute("selectedOwnership", selectedOwnership);
 
         req.getRequestDispatcher("/views/manager/asset/asset-list.jsp").forward(req, resp);
     }
 
-    private List<ModelCustomerSummary> buildModelCustomerSummaries(List<Product> products) {
-        Map<String, ModelCustomerSummary> summaryByModel = new LinkedHashMap<>();
-
-        for (Product product : products) {
-            String modelName = (product.getModelName() == null || product.getModelName().trim().isEmpty())
-                    ? "Chưa xác định model"
-                    : product.getModelName().trim();
-
-            ModelCustomerSummary summary = summaryByModel.computeIfAbsent(modelName,
-                    key -> new ModelCustomerSummary(modelName));
-
-            String customerName = (product.getCustomerName() == null || product.getCustomerName().trim().isEmpty())
-                    ? "Khách hàng chưa xác định"
-                    : product.getCustomerName().trim();
-
-            summary.addProduct(customerName);
+    private Integer parseInt(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
         }
-
-        return new ArrayList<>(summaryByModel.values());
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
-    public static class ModelCustomerSummary {
-        private final String modelName;
-        private final Map<String, Integer> customerAssetCount = new LinkedHashMap<>();
-        private int totalAssets;
+    private List<ProductModelOwnership> buildProductModelOwnerships(List<ProductModel> models, List<Product> products) {
+        Map<Integer, ProductModelOwnership> ownershipMap = new LinkedHashMap<>();
 
-        public ModelCustomerSummary(String modelName) {
+        for (ProductModel model : models) {
+            ownershipMap.put(model.getId(), new ProductModelOwnership(model.getId(), model.getName()));
+        }
+
+        ProductModelOwnership unassignedModel = new ProductModelOwnership(-1, "Chưa gán Product Model");
+
+        for (Product product : products) {
+            if (product == null) {
+                continue;
+            }
+
+            Integer modelId = product.getModelId() == null ? null : product.getModelId().intValue();
+            ProductModelOwnership ownership = modelId == null ? null : ownershipMap.get(modelId);
+
+            if (ownership == null) {
+                ownership = unassignedModel;
+            }
+
+            String customerName = normalizeValue(product.getCustomerName(), "Khách hàng chưa xác định");
+            String customerEmail = normalizeValue(product.getCustomerEmail(), "-");
+            String serialNumber = normalizeValue(product.getSerialNumber(), "-");
+            String location = normalizeValue(product.getCurrentLocation(), "Chưa cập nhật");
+
+            ownership.addAsset(new AssetOwnershipItem(serialNumber, customerName, customerEmail, location));
+        }
+
+        List<ProductModelOwnership> result = new ArrayList<>(ownershipMap.values());
+        if (unassignedModel.getTotalAssets() > 0) {
+            result.add(unassignedModel);
+        }
+        return result;
+    }
+
+    private String normalizeValue(String value, String fallback) {
+        return (value == null || value.trim().isEmpty()) ? fallback : value.trim();
+    }
+
+    public static class ProductModelOwnership {
+        private final int modelId;
+        private final String modelName;
+        private final Map<String, Integer> customerCounts = new LinkedHashMap<>();
+        private final List<AssetOwnershipItem> assets = new ArrayList<>();
+
+        public ProductModelOwnership(int modelId, String modelName) {
+            this.modelId = modelId;
             this.modelName = modelName;
         }
 
-        public void addProduct(String customerName) {
-            totalAssets++;
-            customerAssetCount.put(customerName, customerAssetCount.getOrDefault(customerName, 0) + 1);
+        public void addAsset(AssetOwnershipItem item) {
+            assets.add(item);
+            customerCounts.put(item.getCustomerName(), customerCounts.getOrDefault(item.getCustomerName(), 0) + 1);
+        }
+
+        public int getModelId() {
+            return modelId;
         }
 
         public String getModelName() {
@@ -143,15 +201,49 @@ public class ManagementProductController extends HttpServlet {
         }
 
         public int getTotalAssets() {
-            return totalAssets;
+            return assets.size();
         }
 
-        public Map<String, Integer> getCustomerAssetCount() {
-            return customerAssetCount;
+        public int getOwnerCount() {
+            return customerCounts.size();
         }
 
-        public int getCustomerCount() {
-            return customerAssetCount.size();
+        public Map<String, Integer> getCustomerCounts() {
+            return customerCounts;
+        }
+
+        public List<AssetOwnershipItem> getAssets() {
+            return assets;
+        }
+    }
+
+    public static class AssetOwnershipItem {
+        private final String serialNumber;
+        private final String customerName;
+        private final String customerEmail;
+        private final String location;
+
+        public AssetOwnershipItem(String serialNumber, String customerName, String customerEmail, String location) {
+            this.serialNumber = serialNumber;
+            this.customerName = customerName;
+            this.customerEmail = customerEmail;
+            this.location = location;
+        }
+
+        public String getSerialNumber() {
+            return serialNumber;
+        }
+
+        public String getCustomerName() {
+            return customerName;
+        }
+
+        public String getCustomerEmail() {
+            return customerEmail;
+        }
+
+        public String getLocation() {
+            return location;
         }
     }
 
