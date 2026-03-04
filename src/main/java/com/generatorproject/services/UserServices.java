@@ -9,12 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 public class UserServices implements IUserServices {
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_SUPER_ADMIN = "SUPER_ADMIN";
+
     private final UserDao userDao;
     private final TokenDao tokenDao;
+    private final RoleServices roleServices;
 
     public UserServices() {
         this.userDao = new UserDao();
         this.tokenDao = new TokenDao();
+        this.roleServices = new RoleServices();
     }
     @Override
     public void updateProfile(Users user) throws Exception {
@@ -92,15 +97,29 @@ public class UserServices implements IUserServices {
     }
 
     public void deleteUser(int targetUserId, Users actor) throws Exception {
-        if (actor != null && actor.getId() == targetUserId) {
+        if (actor == null) {
+            throw new Exception("Không xác định được người thực hiện thao tác.");
+        }
+
+        if (actor.getId() == targetUserId) {
             throw new Exception("Không thể tự xóa chính mình.");
         }
 
         Users target = userDao.findUserById(targetUserId);
-        if (target == null) throw new Exception("User không tồn tại.");
+        if (target == null) {
+            throw new Exception("User không tồn tại.");
+        }
 
-        if (target.getRoleId() == 1) {
-            throw new Exception("Không thể xóa tài khoản ADMIN.");
+        boolean actorIsSuperAdmin = isSuperAdminRole(actor.getRoleId());
+        boolean actorIsAdmin = isAdminRole(actor.getRoleId());
+        boolean targetIsAdmin = isAdminRole(target.getRoleId());
+
+        if (targetIsAdmin && !actorIsSuperAdmin) {
+            throw new Exception("Chỉ SUPER_ADMIN mới được xóa tài khoản ADMIN.");
+        }
+
+        if (!actorIsAdmin && !actorIsSuperAdmin) {
+            throw new Exception("Bạn không có quyền xóa người dùng.");
         }
 
         boolean hasContracts = userDao.hasContracts(targetUserId);
@@ -143,4 +162,25 @@ public class UserServices implements IUserServices {
     public List<Users> getCustomerByFilter(String keyword, int page, int pageSize) {
         return userDao.getCustomerByFilter(keyword, page, pageSize);
     }
+
+    @Override
+    public String getRoleName(int roleId) {
+        if (roleId <= 0) {
+            return "";
+        }
+
+        com.generatorproject.model.Role role = roleServices.getRoleById(roleId);
+        return role != null && role.getName() != null ? role.getName().trim() : "";
+    }
+
+    @Override
+    public boolean isAdminRole(int roleId) {
+        return ROLE_ADMIN.equalsIgnoreCase(getRoleName(roleId));
+    }
+
+    @Override
+    public boolean isSuperAdminRole(int roleId) {
+        return ROLE_SUPER_ADMIN.equalsIgnoreCase(getRoleName(roleId));
+    }
+
 }
