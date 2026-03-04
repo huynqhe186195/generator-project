@@ -27,6 +27,104 @@
             </form>
         </div>
 
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold text-primary mb-1"><i class="fa fa-sitemap"></i> Product Model Ownership</h5>
+                    <small class="text-muted">Chọn model để xem đúng danh sách serial và người sở hữu.</small>
+                </div>
+                <span class="badge rounded-pill text-bg-light border">${empty productModelOwnerships ? 0 : productModelOwnerships.size()} models</span>
+            </div>
+            <div class="card-body pt-2">
+                <div class="row g-3">
+                    <div class="col-12 col-xl-5">
+                        <div class="table-responsive border rounded-3 overflow-hidden">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Product Model</th>
+                                        <th class="text-center">Khách hàng</th>
+                                        <th class="text-center">Tài sản</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <c:forEach var="ownership" items="${productModelOwnerships}">
+                                        <tr class="${selectedModelId == ownership.modelId ? 'table-primary' : ''}">
+                                            <td class="ps-3">
+                                                <a class="fw-semibold text-decoration-none"
+                                                   href="assets?action=list&selectedModelId=${ownership.modelId}&keyword=${currentKeyword}">
+                                                    ${ownership.modelName}
+                                                </a>
+                                            </td>
+                                            <td class="text-center"><span class="badge text-bg-info">${ownership.ownerCount}</span></td>
+                                            <td class="text-center"><span class="badge text-bg-secondary">${ownership.totalAssets}</span></td>
+                                        </tr>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-7">
+                        <div class="border rounded-3 p-3 h-100" style="background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);">
+                            <c:choose>
+                                <c:when test="${selectedOwnership == null}">
+                                    <div class="d-flex align-items-center justify-content-center h-100 text-muted" style="min-height: 210px;">
+                                        <div class="text-center">
+                                            <i class="fa fa-hand-pointer fa-2x mb-2 text-primary"></i>
+                                            <div>Hãy chọn một <b>Product Model</b> ở bên trái để hiển thị danh sách serial và chủ sở hữu.</div>
+                                        </div>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold text-dark">${selectedOwnership.modelName}</h6>
+                                            <small class="text-muted">${selectedOwnership.ownerCount} khách hàng • ${selectedOwnership.totalAssets} tài sản</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="table-responsive border rounded-3 overflow-hidden">
+                                        <table class="table table-sm align-middle mb-0 bg-white">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="ps-3">Serial Number</th>
+                                                    <th>Khách hàng</th>
+                                                    <th>Email</th>
+                                                    <th>Vị trí</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <c:if test="${empty selectedOwnership.assets}">
+                                                    <tr>
+                                                        <td colspan="4" class="text-center text-muted py-3">Model này hiện chưa có tài sản.</td>
+                                                    </tr>
+                                                </c:if>
+                                                <c:forEach var="asset" items="${selectedOwnership.assets}">
+                                                    <tr>
+                                                        <td class="font-monospace ps-3">
+                                                            <a href="assets?action=detail&id=${asset.productId}" class="fw-semibold text-decoration-none">${asset.serialNumber}</a>
+                                                        </td>
+                                                        <td><span class="fw-semibold text-dark">${asset.customerName}</span></td>
+                                                        <td><span class="text-muted">${asset.customerEmail}</span></td>
+                                                        <td>${asset.location}</td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="small text-muted mt-2">
+                                        <i class="fa fa-info-circle"></i> Bấm vào <b>Serial Number</b> để mở hồ sơ tài sản chi tiết của khách hàng đó.
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card shadow border-0">
             <div class="card-body p-0">
                 <div class="table-responsive">
