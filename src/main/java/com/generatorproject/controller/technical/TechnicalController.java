@@ -143,7 +143,7 @@ public class TechnicalController extends HttpServlet {
                     }
 
                     SystemRequestDAO srDAO = new SystemRequestDAO();
-                    String customerQuoteStatus = srDAO.getCustomerResponseStatus(id);
+                    String customerQuoteStatus = srDAO.getQuoteStatus(id);
 
                     if (!"APPROVED_BY_CUSTOMER".equals(customerQuoteStatus)) {
                         resp.sendRedirect(req.getContextPath()
@@ -212,11 +212,9 @@ public class TechnicalController extends HttpServlet {
 
 
                 SystemRequestDAO srDAO = new SystemRequestDAO();
-                String staffQuoteStatus = srDAO.getStaffQuoteStatus(id);
-                String customerQuoteStatus = srDAO.getCustomerResponseStatus(id);
+                String quoteStatus = srDAO.getQuoteStatus(id);
 
-                req.setAttribute("staffQuoteStatus", staffQuoteStatus);
-                req.setAttribute("customerQuoteStatus", customerQuoteStatus);
+                req.setAttribute("quoteStatus", quoteStatus);
 
                 MaintenanceImageDAO imgDAO = new MaintenanceImageDAO();
                 req.setAttribute("images", imgDAO.getByMaintenanceId(id));
@@ -559,9 +557,9 @@ public class TechnicalController extends HttpServlet {
                 }
 
                 SystemRequestDAO srDAO = new SystemRequestDAO();
-                String customerQuoteStatus = srDAO.getCustomerResponseStatus(id);
+                String quoteStatus = srDAO.getQuoteStatus(id);
 
-                if (!"APPROVED_BY_CUSTOMER".equals(customerQuoteStatus)) {
+                if (!"APPROVED_BY_CUSTOMER".equals(quoteStatus)) {
                     resp.sendRedirect(req.getContextPath()
                             + "/technical/repair-report?id=" + id + "&error=customer_not_approved");
                     return;

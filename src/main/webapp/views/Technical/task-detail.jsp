@@ -142,14 +142,30 @@
         <!-- CHỈ SCHEDULED MỚI CÓ HÀNH ĐỘNG -->
         <c:if test="${task.status == 'SCHEDULED'}">
           <div>
-            <button type="submit" class="btn btn-primary">💾 Lưu báo cáo</button>
 
-            <button type="submit"
-                    class="btn btn-success ms-2"
-                    formaction="<c:url value='/technical/task-complete'/>"
-                    onclick="return confirm('Xác nhận hoàn thành công việc?')">
-              ✅ Hoàn thành
+            <!-- LƯU BÁO CÁO -->
+            <button type="submit" class="btn btn-primary">
+              💾 Lưu báo cáo
             </button>
+
+            <!-- ===== REPAIR ===== -->
+            <c:if test="${task.type == 'REPAIR'}">
+              <a href="<c:url value='/technical/repair-report?id=${task.id}'/>"
+                 class="btn btn-warning ms-2">
+                🔧 Chọn vật tư
+              </a>
+            </c:if>
+
+            <!-- ===== PERIODIC / INSPECTION ===== -->
+            <c:if test="${task.type != 'REPAIR'}">
+              <button type="submit"
+                      class="btn btn-success ms-2"
+                      formaction="<c:url value='/technical/task-complete'/>"
+                      onclick="return confirm('Xác nhận hoàn thành công việc?')">
+                ✅ Hoàn thành
+              </button>
+            </c:if>
+
           </div>
         </c:if>
       </div>

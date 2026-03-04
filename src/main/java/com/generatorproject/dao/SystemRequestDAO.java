@@ -8,12 +8,12 @@ import java.sql.ResultSet;
 
 public class SystemRequestDAO extends DbContext {
 
-    public String getStaffQuoteStatus(int maintenanceId) {
+    public String getQuoteStatus(int maintenanceId) {
+
         String sql = """
         SELECT status
         FROM system_requests
         WHERE request_type = 'REPAIR_QUOTE'
-          AND receiver_role = 'STAFF'
           AND request_data LIKE ?
         ORDER BY id DESC
         LIMIT 1
@@ -23,41 +23,19 @@ public class SystemRequestDAO extends DbContext {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, "%\"maintenanceId\":" + maintenanceId + "%");
+
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) return rs.getString("status");
+            if (rs.next()) {
+                return rs.getString("status");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null; // chưa gửi staff
+
+        return null; // chưa gửi
     }
-
-    public String getCustomerResponseStatus(int maintenanceId) {
-        String sql = """
-        SELECT status
-        FROM system_requests
-        WHERE request_type = 'REPAIR_QUOTE'
-          AND receiver_role = 'TECHNICAL'
-          AND request_data LIKE ?
-        ORDER BY id DESC
-        LIMIT 1
-    """;
-
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, "%\"maintenanceId\":" + maintenanceId + "%");
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) return rs.getString("status");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null; // staff chưa gửi phản hồi customer về technical
-    }
-
     public boolean createRequest(int senderId,
                                  String receiverRole,
                                  String requestType,

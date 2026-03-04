@@ -25,38 +25,42 @@
                 </p>
 
                 <p>
-                  <strong>Trạng thái gửi STAFF:</strong>
+                  <strong>Trạng thái báo giá:</strong>
+
                   <c:choose>
-                    <c:when test="${staffQuoteStatus == 'WAITING_STAFF'}">
-                      <span class="badge bg-warning">WAITING_STAFF</span>
+
+                    <c:when test="${quoteStatus == 'WAITING_STAFF'}">
+                      <span class="badge bg-warning">WAITING STAFF</span>
                     </c:when>
-                    <c:when test="${staffQuoteStatus == 'TASK_CREATED'}">
-                      <span class="badge bg-success">APPROVED</span>
+
+                    <c:when test="${quoteStatus == 'WAITING_MANAGER'}">
+                      <span class="badge bg-info">WAITING MANAGER</span>
                     </c:when>
-                    <c:when test="${staffQuoteStatus == 'REJECTED'}">
+
+                    <c:when test="${quoteStatus == 'WAITING_CUSTOMER'}">
+                      <span class="badge bg-primary">WAITING CUSTOMER</span>
+                    </c:when>
+
+                    <c:when test="${quoteStatus == 'APPROVED'}">
+                      <span class="badge bg-success">APPROVED BY MANAGER</span>
+                    </c:when>
+
+                    <c:when test="${quoteStatus == 'APPROVED_BY_CUSTOMER'}">
+                      <span class="badge bg-success">CUSTOMER APPROVED</span>
+                    </c:when>
+
+                    <c:when test="${quoteStatus == 'REJECTED'}">
                       <span class="badge bg-danger">REJECTED</span>
                     </c:when>
+
+                    <c:when test="${quoteStatus == 'REJECTED_BY_CUSTOMER'}">
+                      <span class="badge bg-danger">CUSTOMER REJECTED</span>
+                    </c:when>
+
                     <c:otherwise>
                       <span class="badge bg-secondary">CHƯA GỬI</span>
                     </c:otherwise>
-                  </c:choose>
-                </p>
 
-                <p>
-                  <strong>Customer phản hồi:</strong>
-                  <c:choose>
-                    <c:when test="${customerQuoteStatus == 'WAITING_CUSTOMER'}">
-                      <span class="badge bg-warning">WAITING CUSTOMER</span>
-                    </c:when>
-                    <c:when test="${customerQuoteStatus == 'APPROVED_BY_CUSTOMER'}">
-                      <span class="badge bg-success">CUSTOMER APPROVED</span>
-                    </c:when>
-                    <c:when test="${customerQuoteStatus == 'REJECTED_BY_CUSTOMER'}">
-                      <span class="badge bg-danger">CUSTOMER REJECTED</span>
-                    </c:when>
-                    <c:otherwise>
-                      <span class="badge bg-secondary">CHƯA CÓ PHẢN HỒI</span>
-                    </c:otherwise>
                   </c:choose>
                 </p>
             </div>
