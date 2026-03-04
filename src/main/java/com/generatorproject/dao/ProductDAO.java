@@ -321,7 +321,7 @@ public class ProductDAO extends GenericDAO<Product> {
     }
 
     public List<Product> findAllWithPagination(int offset, int limit) {
-        String sql = "SELECT p.*, u.full_name AS customer_name, pm.name AS model_name " +
+        String sql = "SELECT p.*, u.full_name AS customer_name, u.email AS customer_email, pm.name AS model_name " +
                 "FROM products p " +
                 "LEFT JOIN users u ON p.customer_id = u.id " +
                 "LEFT JOIN product_models pm ON p.model_id = pm.id " +
@@ -433,7 +433,7 @@ public class ProductDAO extends GenericDAO<Product> {
     public List<Product> findByKeywordWithPagination(String keyword, int offset, int limit) {
         String searchPattern = "%" + keyword + "%";
 
-        String sql = "SELECT p.*, u.full_name AS customer_name, pm.name AS model_name " +
+        String sql = "SELECT p.*, u.full_name AS customer_name, u.email AS customer_email, pm.name AS model_name " +
                 "FROM products p " +
                 "LEFT JOIN users u ON p.customer_id = u.id " +
                 "LEFT JOIN product_models pm ON p.model_id = pm.id " +
