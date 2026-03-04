@@ -59,6 +59,16 @@ public class ContractServices implements IContractServices {
     }
 
     @Override
+    public void terminateContract(Long contractId,
+                                  String reasonCode,
+                                  String terminatedReason,
+                                  String decisionDoc,
+                                  String note,
+                                  Long actorId) {
+        contractDAO.terminateContract(contractId, reasonCode, terminatedReason, decisionDoc, note, actorId);
+    }
+
+    @Override
     public List<Contract> getContractByCustomerId(int id) {
         return contractDAO.getContractByCustomerId(id);
     }

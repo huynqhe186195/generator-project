@@ -124,11 +124,26 @@ public class UserServices implements IUserServices {
 
         boolean hasContracts = userDao.hasContracts(targetUserId);
         boolean hasProducts  = userDao.hasProducts(targetUserId);
+        boolean isCustomer = target.getRoleId() == 5;
+
+        if (isCustomer) {
+            disableCustomerAccess(targetUserId, hasContracts || hasProducts);
+            return;
+        }
 
         if (!hasContracts && !hasProducts) {
             userDao.deleteUser(targetUserId);
         } else {
             userDao.anonymizeAndDeactivate(targetUserId);
+        }
+    }
+
+    @Override
+    public void disableCustomerAccess(int userId, boolean anonymize) {
+        userDao.changeStatus(userId, 0);
+        tokenDao.revokeTokensByUserId(userId);
+        if (anonymize) {
+            userDao.anonymizePii(userId);
         }
     }
 

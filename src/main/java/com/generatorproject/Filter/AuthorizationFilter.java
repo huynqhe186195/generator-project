@@ -1,6 +1,8 @@
 package com.generatorproject.Filter;
 
 import com.generatorproject.model.Users;
+import com.generatorproject.services.IUserServices;
+import com.generatorproject.services.UserServices;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -17,6 +19,8 @@ import java.io.IOException;
         "/it/*"
 })
 public class AuthorizationFilter implements Filter {
+
+    private final IUserServices userServices = new UserServices();
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -54,6 +58,15 @@ public class AuthorizationFilter implements Filter {
 
         if (user == null) {
             resp.sendRedirect(contextPath + "/account/login?message=not_login");
+            return;
+        }
+
+        Users latestUser = userServices.findUserById(user.getId());
+        if (latestUser == null || latestUser.getStatus() != 1) {
+            if (session != null) {
+                session.invalidate();
+            }
+            resp.sendRedirect(contextPath + "/account/login?message=account_disabled");
             return;
         }
 
