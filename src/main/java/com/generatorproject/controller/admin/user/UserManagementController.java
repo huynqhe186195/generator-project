@@ -61,7 +61,15 @@ public class UserManagementController extends HttpServlet {
         try {
             if (idParam != null && !idParam.isEmpty()) {
                 int id = Integer.parseInt(idParam);
-                userServices.deleteUser(id, actor);
+                String anonymizeParam = req.getParameter("anonymize");
+                boolean anonymize = "1".equals(anonymizeParam) || "true".equalsIgnoreCase(anonymizeParam);
+
+                Users target = userServices.findUserById(id);
+                if (target != null && target.getRoleId() == 5) {
+                    userServices.disableCustomerAccess(id, anonymize);
+                } else {
+                    userServices.deleteUser(id, actor);
+                }
             }
 
             resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=delete_success");

@@ -52,4 +52,6 @@ public interface IUserServices {
     boolean isAdminRole(int roleId);
 
     boolean isSuperAdminRole(int roleId);
+
+    void disableCustomerAccess(int userId, boolean anonymize);
 }
