@@ -27,6 +27,47 @@
             </form>
         </div>
 
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="fw-bold text-primary mb-3">
+                    <i class="fa fa-layer-group"></i> Tài sản theo từng Product Model và Khách hàng
+                </h5>
+
+                <c:choose>
+                    <c:when test="${empty modelCustomerSummaries}">
+                        <p class="text-muted mb-0">Chưa có dữ liệu tài sản để tổng hợp theo model.</p>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="row g-3">
+                            <c:forEach var="summary" items="${modelCustomerSummaries}">
+                                <div class="col-12 col-lg-6">
+                                    <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <div class="fw-bold text-dark">${summary.modelName}</div>
+                                                <small class="text-muted">Tổng tài sản: ${summary.totalAssets}</small>
+                                            </div>
+                                            <span class="badge text-bg-primary">${summary.customerCount} KH</span>
+                                        </div>
+
+                                        <ul class="list-group list-group-flush">
+                                            <c:forEach var="entry" items="${summary.customerAssetCount}">
+                                                <li class="list-group-item px-0 py-2 d-flex justify-content-between bg-transparent">
+                                                    <span><i class="fa fa-user text-primary"></i> ${entry.key}</span>
+                                                    <span class="badge rounded-pill text-bg-secondary">${entry.value} tài sản</span>
+                                                </li>
+                                            </c:forEach>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+
         <div class="card shadow border-0">
             <div class="card-body p-0">
                 <div class="table-responsive">

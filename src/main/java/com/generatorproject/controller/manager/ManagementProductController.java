@@ -10,7 +10,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "ManagementProductController", urlPatterns = "/manager/assets")
 public class ManagementProductController extends HttpServlet {
@@ -86,16 +89,70 @@ public class ManagementProductController extends HttpServlet {
 
         List<Product> products = productService.findAllWithPagination(offset, pageSize, keyword);
         int totalItems = productService.countAll(keyword);
+        List<Product> allMatchedProducts = productService.findAllWithPagination(0, totalItems == 0 ? 1 : totalItems, keyword);
 
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
 
         req.setAttribute("products", products);
+        req.setAttribute("modelCustomerSummaries", buildModelCustomerSummaries(allMatchedProducts));
         req.setAttribute("currentPage", page);
         req.setAttribute("totalPages", totalPages);
 
         req.setAttribute("currentKeyword", keyword);
 
         req.getRequestDispatcher("/views/manager/asset/asset-list.jsp").forward(req, resp);
+    }
+
+    private List<ModelCustomerSummary> buildModelCustomerSummaries(List<Product> products) {
+        Map<String, ModelCustomerSummary> summaryByModel = new LinkedHashMap<>();
+
+        for (Product product : products) {
+            String modelName = (product.getModelName() == null || product.getModelName().trim().isEmpty())
+                    ? "Chưa xác định model"
+                    : product.getModelName().trim();
+
+            ModelCustomerSummary summary = summaryByModel.computeIfAbsent(modelName,
+                    key -> new ModelCustomerSummary(modelName));
+
+            String customerName = (product.getCustomerName() == null || product.getCustomerName().trim().isEmpty())
+                    ? "Khách hàng chưa xác định"
+                    : product.getCustomerName().trim();
+
+            summary.addProduct(customerName);
+        }
+
+        return new ArrayList<>(summaryByModel.values());
+    }
+
+    public static class ModelCustomerSummary {
+        private final String modelName;
+        private final Map<String, Integer> customerAssetCount = new LinkedHashMap<>();
+        private int totalAssets;
+
+        public ModelCustomerSummary(String modelName) {
+            this.modelName = modelName;
+        }
+
+        public void addProduct(String customerName) {
+            totalAssets++;
+            customerAssetCount.put(customerName, customerAssetCount.getOrDefault(customerName, 0) + 1);
+        }
+
+        public String getModelName() {
+            return modelName;
+        }
+
+        public int getTotalAssets() {
+            return totalAssets;
+        }
+
+        public Map<String, Integer> getCustomerAssetCount() {
+            return customerAssetCount;
+        }
+
+        public int getCustomerCount() {
+            return customerAssetCount.size();
+        }
     }
 
     private void showAssetDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
