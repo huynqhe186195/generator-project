@@ -154,11 +154,14 @@ public class UserManagementController extends HttpServlet {
 
             boolean canDelete = false;
             if (currentUser != null) {
-                boolean hasPermission = (currentUser.getRoleId() == 1 || currentUser.hasPermission("USER_MANAGE"));
-                boolean targetIsAdmin = user.getRoleId() == 1;
-                boolean targetIsSelf  = user.getId() == currentUser.getId();
+                boolean hasPermission = userServices.isAdminRole(currentUser.getRoleId()) ||
+                        userServices.isSuperAdminRole(currentUser.getRoleId()) ||
+                        currentUser.hasPermission("USER_MANAGE");
+                boolean currentIsSuperAdmin = userServices.isSuperAdminRole(currentUser.getRoleId());
+                boolean targetIsAdmin = userServices.isAdminRole(user.getRoleId());
+                boolean targetIsSelf = user.getId() == currentUser.getId();
 
-                canDelete = hasPermission && !targetIsAdmin && !targetIsSelf;
+                canDelete = hasPermission && !targetIsSelf && (!targetIsAdmin || currentIsSuperAdmin);
             }
 
             req.setAttribute("user", user);
