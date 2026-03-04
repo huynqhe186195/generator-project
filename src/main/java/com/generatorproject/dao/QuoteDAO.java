@@ -1,5 +1,7 @@
 package com.generatorproject.dao;
 
+import com.generatorproject.mapper.QuoteMapper;
+import com.generatorproject.model.Quote;
 import com.generatorproject.model.RepairRequestDTO;
 import java.util.List;
 
@@ -9,7 +11,7 @@ public class QuoteDAO extends GenericDAO<Object> {
      * LƯU BẢNG CHA: quotes
      * Đã cập nhật đúng các cột: customer_id, maintenance_id, total_amount, status, created_at, approved_at
      */
-    public Long insertQuote(int maintenanceId, Long customerId, double totalAmount) {
+    public Long insertQuote(int maintenanceId, Long customerId, double totalAmount,int createdBy) {
         System.out.println("====> [DAO] Bắt đầu gọi GenericDAO để chèn vào bảng quotes...");
 
         // Truyền rõ ràng NULL vào các cột chưa dùng tới để tránh lỗi "doesn't have a default value"
@@ -51,5 +53,16 @@ public class QuoteDAO extends GenericDAO<Object> {
                     unitPrice,
                     totalPrice);
         }
+    }
+
+    public List<Quote> findQuotesByProductId(int productId) {
+        // JOIN bảng quotes với bảng maintenances để tìm theo product_id
+        String sql = "SELECT q.* FROM quotes q " +
+                "JOIN maintenances m ON q.maintenance_id = m.id " +
+                "WHERE m.product_id = ? " +
+                "ORDER BY q.created_at DESC";
+
+        // Cần có QuoteMapper để map dữ liệu (Giống như SystemRequestMapper của bạn)
+        return query(sql, new QuoteMapper(), productId);
     }
 }
