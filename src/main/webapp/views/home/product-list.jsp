@@ -191,6 +191,16 @@
             max-width: 320px;
             text-align: right;
         }
+        .contract-terminated-toggle{
+            border: none;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+        }
+        .contract-terminated-toggle:focus-visible .badge{
+            outline: 2px solid rgba(59,130,246,.45);
+            outline-offset: 2px;
+        }
         .terminated-meta{
             background: #fff5f5;
             border: 1px solid #fecaca;
@@ -459,24 +469,33 @@
                                     <c:choose>
                                         <c:when test="${p.contractStatus == 'TERMINATED'}">
                                             <div class="contract-terminated-box">
-                                                <span class="badge bg-danger rounded-pill px-3 py-2"
-                                                      data-bs-toggle="tooltip"
-                                                      data-bs-placement="top"
-                                                      title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
-                                                    Contract terminated
-                                                </span>
+                                                <button type="button"
+                                                        class="contract-terminated-toggle"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#terminatedDetail-${p.id}"
+                                                        aria-expanded="false"
+                                                        aria-controls="terminatedDetail-${p.id}">
+                                                    <span class="badge bg-danger rounded-pill px-3 py-2"
+                                                          data-bs-toggle="tooltip"
+                                                          data-bs-placement="top"
+                                                          title="Ấn để xem chi tiết lý do hủy hợp đồng.">
+                                                        Contract terminated <i class="fas fa-chevron-down ms-1"></i>
+                                                    </span>
+                                                </button>
 
-                                                <div class="terminated-meta">
-                                                    <div><strong>Notice:</strong> Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.</div>
-                                                    <c:if test="${not empty p.latestTerminatedEvent}">
-                                                        <div><strong>Lý do:</strong> ${p.latestTerminatedEvent}</div>
-                                                    </c:if>
-                                                    <c:if test="${not empty p.terminatedAt}">
-                                                        <div>
-                                                            <strong>Hủy lúc:</strong>
-                                                            <fmt:formatDate value="${p.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/>
-                                                        </div>
-                                                    </c:if>
+                                                <div class="collapse" id="terminatedDetail-${p.id}">
+                                                    <div class="terminated-meta">
+                                                        <div><strong>Notice:</strong> Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.</div>
+                                                        <c:if test="${not empty p.latestTerminatedEvent}">
+                                                            <div><strong>Lý do:</strong> ${p.latestTerminatedEvent}</div>
+                                                        </c:if>
+                                                        <c:if test="${not empty p.terminatedAt}">
+                                                            <div>
+                                                                <strong>Hủy lúc:</strong>
+                                                                <fmt:formatDate value="${p.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                            </div>
+                                                        </c:if>
+                                                    </div>
                                                 </div>
 
                                                 <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
