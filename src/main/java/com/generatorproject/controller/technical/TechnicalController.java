@@ -40,6 +40,7 @@ import javax.servlet.http.Part;
         "/technical/spare-part-update",
         "/technical/spare-part-delete",
         "/technical/delete-material",
+        "/technical/history",
 
 })
 public class TechnicalController extends HttpServlet {
@@ -247,7 +248,40 @@ public class TechnicalController extends HttpServlet {
 
 
 
+            case "/technical/history": {
 
+                String serial = req.getParameter("serial");
+                String customer = req.getParameter("customer");
+                String dateFrom = req.getParameter("dateFrom");
+                String dateTo = req.getParameter("dateTo");
+
+                int page = 1;
+                int pageSize = 10;
+
+                String pageRaw = req.getParameter("page");
+                if (pageRaw != null) page = Integer.parseInt(pageRaw);
+
+                // chỉ lịch sử của technician hiện tại
+                List<Maintenance> list = maintenanceDAO.getHistoryCompletedPaging(
+                        currentUser.getId(),
+                        serial, customer, dateFrom, dateTo,
+                        page, pageSize
+                );
+
+                int totalRecords = maintenanceDAO.countHistoryCompleted(
+                        currentUser.getId(),
+                        serial, customer, dateFrom, dateTo
+                );
+
+                int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+
+                req.setAttribute("tasks", list);
+                req.setAttribute("currentPage", page);
+                req.setAttribute("totalPages", totalPages);
+
+                req.getRequestDispatcher("/views/Technical/history.jsp").forward(req, resp);
+                break;
+            }
             // =========================
 // Kho vật tư
 // =========================
@@ -526,7 +560,7 @@ public class TechnicalController extends HttpServlet {
         if ("/technical/task-complete".equals(path)) {
 
             int id = Integer.parseInt(req.getParameter("id"));
-            String actualDescription = req.getParameter("actualDescription");
+            String actualDescription = maintenanceDAO.getById(id).getActualDescription();
 
             Maintenance task = maintenanceDAO.getById(id);
 
@@ -567,8 +601,7 @@ public class TechnicalController extends HttpServlet {
             }
 
 
-            // 🔥 LƯU BÁO CÁO
-            maintenanceDAO.updateActualReport(id, actualDescription);
+
 
             // 🔥 NẾU REPAIR → PHẢI CÓ VẬT TƯ
             if ("REPAIR".equals(task.getType())) {
