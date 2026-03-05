@@ -438,6 +438,16 @@
 
                                         <%-- CÁC NÚT HÀNH ĐỘNG CHÍNH (Dựa theo trạng thái) --%>
                                     <c:choose>
+                                        <c:when test="${p.contractStatus == 'TERMINATED'}">
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">Contract terminated</span>
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3" disabled>
+                                                <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled>
+                                                <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
+                                            </button>
+                                        </c:when>
+
                                         <%-- Có báo giá mới -> Nút nổi bật --%>
                                         <c:when test="${p.status == 'RECEIVED_QUOTE'}">
                                             <a href="<c:url value='/user/view-quote?productId=${p.id}'/>"

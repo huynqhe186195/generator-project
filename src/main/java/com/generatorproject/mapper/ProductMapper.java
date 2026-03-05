@@ -29,7 +29,10 @@ public class ProductMapper implements RowMapper<Product> {
             try { builder.brandName(rs.getString("brand_name")); } catch (Exception ignored) {}
             try { builder.categoryName(rs.getString("category_name")); } catch (Exception ignored) {}
             try { builder.customerEmail(rs.getString("customer_email")); } catch (Exception ignored) {}
-
+            try { builder.contractStatus(rs.getString("contract_status")); } catch (Exception ignored) {}
+            try { builder.contractEndDate(rs.getDate("contract_end_date")); } catch (Exception ignored) {}
+            try { builder.latestTerminatedEvent(rs.getString("latest_terminated_event")); } catch (Exception ignored) {}
+            try { builder.terminatedAt(rs.getTimestamp("terminated_at")); } catch (Exception ignored) {}
 
             return builder.build();
         } catch (Exception e) {
