@@ -183,6 +183,24 @@
             font-weight: 800;
         }
 
+        .contract-terminated-box{
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            max-width: 320px;
+            text-align: right;
+        }
+        .terminated-meta{
+            background: #fff5f5;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            border-radius: 12px;
+            padding: 8px 10px;
+            font-size: .78rem;
+            line-height: 1.35;
+        }
+
         /* TABLE */
         .table thead th{
             background: #f8fafc;
@@ -440,28 +458,38 @@
                                         <%-- CÁC NÚT HÀNH ĐỘNG CHÍNH (Dựa theo trạng thái) --%>
                                     <c:choose>
                                         <c:when test="${p.contractStatus == 'TERMINATED'}">
-                                            <span class="badge bg-danger rounded-pill px-3 py-2"
-                                                  title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
-                                                Contract terminated
-                                            </span>
-                                            <c:if test="${not empty p.terminatedAt}">
-                                                <span class="text-muted small" title="Thời điểm hợp đồng bị chấm dứt">
-                                                    Terminated at:
-                                                    <fmt:formatDate value="${p.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                            <div class="contract-terminated-box">
+                                                <span class="badge bg-danger rounded-pill px-3 py-2"
+                                                      data-bs-toggle="tooltip"
+                                                      data-bs-placement="top"
+                                                      title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
+                                                    Contract terminated
                                                 </span>
-                                            </c:if>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger btn-pill px-3"
-                                                    title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH."
-                                                    disabled>
-                                                <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
-                                            </button>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-secondary btn-pill px-3"
-                                                    title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH."
-                                                    disabled>
-                                                <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
-                                            </button>
+
+                                                <div class="terminated-meta">
+                                                    <div><strong>Notice:</strong> Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.</div>
+                                                    <c:if test="${not empty p.latestTerminatedEvent}">
+                                                        <div><strong>Lý do:</strong> ${p.latestTerminatedEvent}</div>
+                                                    </c:if>
+                                                    <c:if test="${not empty p.terminatedAt}">
+                                                        <div>
+                                                            <strong>Hủy lúc:</strong>
+                                                            <fmt:formatDate value="${p.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+
+                                                <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3" disabled>
+                                                        <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
+                                                    </button>
+                                                </span>
+                                                <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
+                                                    <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled>
+                                                        <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
+                                                    </button>
+                                                </span>
+                                            </div>
                                         </c:when>
 
                                         <%-- Có báo giá mới -> Nút nổi bật --%>
@@ -669,6 +697,11 @@
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 <script>
     AOS.init({ duration: 800, once: true });
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 
     // HÀM MỞ MODAL VÀ ĐIỀN DỮ LIỆU TỰ ĐỘNG
     function openReportModal(id, name, serial) {
