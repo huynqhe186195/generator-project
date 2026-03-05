@@ -1,5 +1,6 @@
 package com.generatorproject.controller.web;
 
+import com.generatorproject.dao.ProductDAO;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
@@ -48,12 +49,28 @@ public class ReportIncidentController extends HttpServlet {
 
             // 2. Lấy dữ liệu từ Form Modal
             String productId = req.getParameter("productId");
+            int parsedProductId = Integer.parseInt(productId);
             String issueType = req.getParameter("issueType");
             String preferredDate = req.getParameter("preferredDate");
             String title = req.getParameter("title");
             String description = req.getParameter("description");
 
-            // 3. Đóng gói dữ liệu vào Map để chuyển thành JSON
+            // 3. Validate server-side: product thuộc user login + contract còn cho phép dịch vụ
+            ProductDAO productDAO = new ProductDAO();
+            Product product = productDAO.findCustomerProductWithContract(parsedProductId, user.getId());
+            if (product == null) {
+                resp.sendRedirect(req.getContextPath() + "/product-list?message=unauthorized_product");
+                return;
+            }
+
+            String contractStatus = product.getContractStatus();
+            boolean serviceAllowed = "ACTIVE".equalsIgnoreCase(contractStatus) || "EXPIRED".equalsIgnoreCase(contractStatus);
+            if (!serviceAllowed) {
+                resp.sendRedirect(req.getContextPath() + "/product-list?message=contract_terminated");
+                return;
+            }
+
+            // 4. Đóng gói dữ liệu vào Map để chuyển thành JSON
             // (Lưu tất cả vào JSON giúp bảng system_requests gọn gàng, không cần thêm cột)
             Map<String, String> requestDataMap = new HashMap<>();
             requestDataMap.put("productId", productId);
@@ -70,7 +87,7 @@ public class ReportIncidentController extends HttpServlet {
             // Chuyển Map thành chuỗi JSON
             String jsonData = new Gson().toJson(requestDataMap);
 
-            // 4. Tạo đối tượng SystemRequest
+            // 5. Tạo đối tượng SystemRequest
             SystemRequest request = new SystemRequest();
             request.setSenderId((long) user.getId());     // Người gửi là khách hàng
             request.setReceiverRole("STAFF");         // Người nhận là bộ phận Kỹ thuật (hoặc STAFF)
@@ -78,13 +95,14 @@ public class ReportIncidentController extends HttpServlet {
             request.setRequestData(jsonData);             // Dữ liệu JSON
             request.setStatus("NEW");                 // Trạng thái ban đầu
 
-            // 5. Lưu vào Database
+            // 6. Lưu vào Database
             requestServices.save(request);
-            int pId = Integer.parseInt(productId); // productId lấy từ form
-            Product product= productServices.getProductById(pId);
-            product.setStatus("MAINTENANCE");
-            productServices.update(product);
-            // 6. Chuyển hướng về trang danh sách với thông báo thành công
+            Product productToUpdate = productServices.getProductById(parsedProductId);
+            if (productToUpdate != null) {
+                productToUpdate.setStatus("MAINTENANCE");
+                productServices.update(productToUpdate);
+            }
+            // 7. Chuyển hướng về trang danh sách với thông báo thành công
             resp.sendRedirect(req.getContextPath() + "/product-list?message=success");
 
         } catch (Exception e) {

@@ -72,10 +72,22 @@ public class ProductDAO extends GenericDAO<Product> {
         SELECT
             p.*,
             pm.name AS model_name,
-            b.name  AS brand_name
+            b.name  AS brand_name,
+            c.status AS contract_status,
+            c.end_date AS contract_end_date,
+            c.terminated_at,
+            ce.terminated_reason AS latest_terminated_event
         FROM products p
         LEFT JOIN product_models pm ON p.model_id = pm.id
         LEFT JOIN brands b          ON pm.brand_id = b.id
+        LEFT JOIN contracts c       ON p.contract_id = c.id
+        LEFT JOIN contract_events ce ON ce.id = (
+            SELECT ce2.id
+            FROM contract_events ce2
+            WHERE ce2.contract_id = c.id AND ce2.event_type = 'TERMINATED'
+            ORDER BY ce2.created_at DESC, ce2.id DESC
+            LIMIT 1
+        )
         WHERE p.customer_id = ?
     """);
         params.add(customerId);
@@ -428,6 +440,27 @@ public class ProductDAO extends GenericDAO<Product> {
         String sql = "select p1.*, p2.name as model_name FROM products p1 LEFT JOIN product_models p2 ON p1.model_id = p2.id WHERE p1.customer_id = ?";
         List<Product> list = query(sql, new ProductMapper(), id);
         return list.isEmpty() ? null : list;
+    }
+
+    public Product findCustomerProductWithContract(int productId, long customerId) {
+        String sql = """
+            SELECT p.*, c.status AS contract_status, c.end_date AS contract_end_date,
+                   c.terminated_at, ce.terminated_reason AS latest_terminated_event
+            FROM products p
+            LEFT JOIN contracts c ON p.contract_id = c.id
+            LEFT JOIN contract_events ce ON ce.id = (
+                SELECT ce2.id
+                FROM contract_events ce2
+                WHERE ce2.contract_id = c.id AND ce2.event_type = 'TERMINATED'
+                ORDER BY ce2.created_at DESC, ce2.id DESC
+                LIMIT 1
+            )
+            WHERE p.id = ? AND p.customer_id = ?
+            LIMIT 1
+        """;
+
+        List<Product> list = query(sql, mapper, productId, customerId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
     }
 
     public List<Product> findByKeywordWithPagination(String keyword, int offset, int limit) {
