@@ -1,9 +1,6 @@
 package com.generatorproject.controller.technical;
 
-import com.generatorproject.dao.MaintenanceDAO;
-import com.generatorproject.dao.MaintenanceSparePartDAO;
-import com.generatorproject.dao.SparePartDAO;
-import com.generatorproject.dao.SystemRequestDAO;
+import com.generatorproject.dao.*;
 import com.generatorproject.model.Maintenance;
 import com.generatorproject.model.MaintenanceSparePart;
 import com.generatorproject.model.SparePart;
@@ -14,8 +11,19 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.http.Part;
+
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024,
+        maxFileSize = 10 * 1024 * 1024,
+        maxRequestSize = 50 * 1024 * 1024
+)
 
 @WebServlet(urlPatterns = {
         "/technical/my-tasks",
@@ -31,6 +39,8 @@ import java.util.List;
         "/technical/spare-part-create.jsp",
         "/technical/spare-part-update",
         "/technical/spare-part-delete",
+        "/technical/delete-material",
+        "/technical/history",
 
 })
 public class TechnicalController extends HttpServlet {
@@ -134,21 +144,11 @@ public class TechnicalController extends HttpServlet {
                     }
 
                     SystemRequestDAO srDAO = new SystemRequestDAO();
-                    String quoteStatus = srDAO.getRepairQuoteStatus(id); // hàm mình đưa ở dưới
+                    String customerQuoteStatus = srDAO.getQuoteStatus(id);
 
-                    if ("WAITING_STAFF".equals(quoteStatus)) {
+                    if (!"APPROVED_BY_CUSTOMER".equals(customerQuoteStatus)) {
                         resp.sendRedirect(req.getContextPath()
-                                + "/technical/repair-report?id=" + id + "&error=quote_pending");
-                        return;
-                    }
-                    if ("REJECTED".equals(quoteStatus)) {
-                        resp.sendRedirect(req.getContextPath()
-                                + "/technical/repair-report?id=" + id + "&error=quote_rejected");
-                        return;
-                    }
-                    if (!"APPROVED".equals(quoteStatus)) {
-                        resp.sendRedirect(req.getContextPath()
-                                + "/technical/repair-report?id=" + id + "&error=quote_not_approved");
+                                + "/technical/repair-report?id=" + id + "&error=customer_not_approved");
                         return;
                     }
                 }
@@ -179,6 +179,8 @@ public class TechnicalController extends HttpServlet {
                         mspDAO.getByMaintenanceId(id));
 
                 req.setAttribute("task", task);
+                MaintenanceImageDAO imgDAO = new MaintenanceImageDAO();
+                req.setAttribute("images", imgDAO.getByMaintenanceId(id));
                 req.getRequestDispatcher("/views/Technical/task-detail.jsp")
                         .forward(req, resp);
                 break;
@@ -211,8 +213,12 @@ public class TechnicalController extends HttpServlet {
 
 
                 SystemRequestDAO srDAO = new SystemRequestDAO();
-                String quoteStatus = srDAO.getRepairQuoteStatus(id);
+                String quoteStatus = srDAO.getQuoteStatus(id);
+
                 req.setAttribute("quoteStatus", quoteStatus);
+
+                MaintenanceImageDAO imgDAO = new MaintenanceImageDAO();
+                req.setAttribute("images", imgDAO.getByMaintenanceId(id));
 
                 req.getRequestDispatcher("/views/Technical/repair-report.jsp")
                         .forward(req, resp);
@@ -242,7 +248,40 @@ public class TechnicalController extends HttpServlet {
 
 
 
+            case "/technical/history": {
 
+                String serial = req.getParameter("serial");
+                String customer = req.getParameter("customer");
+                String dateFrom = req.getParameter("dateFrom");
+                String dateTo = req.getParameter("dateTo");
+
+                int page = 1;
+                int pageSize = 10;
+
+                String pageRaw = req.getParameter("page");
+                if (pageRaw != null) page = Integer.parseInt(pageRaw);
+
+                // chỉ lịch sử của technician hiện tại
+                List<Maintenance> list = maintenanceDAO.getHistoryCompletedPaging(
+                        currentUser.getId(),
+                        serial, customer, dateFrom, dateTo,
+                        page, pageSize
+                );
+
+                int totalRecords = maintenanceDAO.countHistoryCompleted(
+                        currentUser.getId(),
+                        serial, customer, dateFrom, dateTo
+                );
+
+                int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+
+                req.setAttribute("tasks", list);
+                req.setAttribute("currentPage", page);
+                req.setAttribute("totalPages", totalPages);
+
+                req.getRequestDispatcher("/views/Technical/history.jsp").forward(req, resp);
+                break;
+            }
             // =========================
 // Kho vật tư
 // =========================
@@ -301,25 +340,52 @@ public class TechnicalController extends HttpServlet {
 
             Maintenance task = maintenanceDAO.getById(id);
 
-            // bảo vệ nghiệp vụ
             if (task == null || task.getTechnicianId() != currentUser.getId()) {
                 resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
                 return;
             }
-            // KHÓA NGHIỆP VỤ
-            if ("COMPLETED".equals(task.getStatus())
-                    || "CANCELLED".equals(task.getStatus())) {
 
-                resp.sendRedirect(req.getContextPath()
-                        + "/technical/task-detail?id=" + id);
+            if ("COMPLETED".equals(task.getStatus()) || "CANCELLED".equals(task.getStatus())) {
+                resp.sendRedirect(req.getContextPath() + "/technical/task-detail?id=" + id);
                 return;
             }
 
-            // CHỈ cập nhật báo cáo hiện trường
+            // 1) update report
             maintenanceDAO.updateActualReport(id, actualReport);
 
-            resp.sendRedirect(req.getContextPath()
-                    + "/technical/task-detail?id=" + id);
+            // 2) upload images
+            String uploadDir = getServletContext().getRealPath("/") + "uploads" + File.separator + "maintenance";
+            File dir = new File(uploadDir);
+            if (!dir.exists()) dir.mkdirs();
+
+            MaintenanceImageDAO imgDAO = new MaintenanceImageDAO();
+
+            Collection<Part> parts = req.getParts();
+            for (Part part : parts) {
+                if (!"siteImages".equals(part.getName())) continue;
+                if (part.getSize() <= 0) continue;
+
+                String ct = part.getContentType();
+                if (ct == null || !ct.startsWith("image/")) continue;
+
+                String submitted = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                if (submitted == null || submitted.trim().isEmpty()) continue;
+
+                String ext = "";
+                int dot = submitted.lastIndexOf('.');
+                if (dot >= 0) ext = submitted.substring(dot);
+
+                String fileName = "m" + id + "_" + System.currentTimeMillis() + ext;
+                String fullPath = uploadDir + File.separator + fileName;
+
+                part.write(fullPath);
+
+                // LƯU ĐÚNG DB: image_path
+                String relativePath = "uploads/maintenance/" + fileName;
+                imgDAO.insert(id, relativePath);
+            }
+
+            resp.sendRedirect(req.getContextPath() + "/technical/task-detail?id=" + id + "&msg=saved");
             return;
         }
         if ("/technical/add-material".equals(path)) {
@@ -367,9 +433,7 @@ public class TechnicalController extends HttpServlet {
 
         if ("/technical/send-quote".equals(path)) {
             int id = Integer.parseInt(req.getParameter("id"));
-            String laborRaw = req.getParameter("laborCost");
-            double laborCost = 0;
-            try { laborCost = Double.parseDouble(laborRaw); } catch (Exception ignore) {}
+
 
             Maintenance task = maintenanceDAO.getById(id);
 
@@ -398,7 +462,7 @@ public class TechnicalController extends HttpServlet {
                 partsTotal += m.getCostAtTime(); // KHÔNG nhân lại
             }
 
-            double grandTotal = partsTotal + laborCost;
+
 
             // Tạo JSON request_data (không phụ thuộc lib)
             StringBuilder json = new StringBuilder();
@@ -406,9 +470,9 @@ public class TechnicalController extends HttpServlet {
             json.append("\"maintenanceId\":").append(id).append(",");
             json.append("\"technicianId\":").append(currentUser.getId()).append(",");
             json.append("\"actualDescription\":").append(toJsonString(task.getActualDescription())).append(",");
-            json.append("\"laborCost\":").append(laborCost).append(",");
+
             json.append("\"partsTotal\":").append(partsTotal).append(",");
-            json.append("\"grandTotal\":").append(grandTotal).append(",");
+
             json.append("\"materials\":[");
             for (int i = 0; i < materials.size(); i++) {
                 MaintenanceSparePart m = materials.get(i);
@@ -496,7 +560,7 @@ public class TechnicalController extends HttpServlet {
         if ("/technical/task-complete".equals(path)) {
 
             int id = Integer.parseInt(req.getParameter("id"));
-            String actualDescription = req.getParameter("actualDescription");
+            String actualDescription = maintenanceDAO.getById(id).getActualDescription();
 
             Maintenance task = maintenanceDAO.getById(id);
 
@@ -527,28 +591,17 @@ public class TechnicalController extends HttpServlet {
                 }
 
                 SystemRequestDAO srDAO = new SystemRequestDAO();
-                String quoteStatus = srDAO.getRepairQuoteStatus(id); // hàm mình đưa ở dưới
+                String quoteStatus = srDAO.getQuoteStatus(id);
 
-                if ("WAITING_STAFF".equals(quoteStatus)) {
+                if (!"APPROVED_BY_CUSTOMER".equals(quoteStatus)) {
                     resp.sendRedirect(req.getContextPath()
-                            + "/technical/repair-report?id=" + id + "&error=quote_pending");
-                    return;
-                }
-                if ("REJECTED".equals(quoteStatus)) {
-                    resp.sendRedirect(req.getContextPath()
-                            + "/technical/repair-report?id=" + id + "&error=quote_rejected");
-                    return;
-                }
-                if (!"APPROVED".equals(quoteStatus)) {
-                    resp.sendRedirect(req.getContextPath()
-                            + "/technical/repair-report?id=" + id + "&error=quote_not_approved");
+                            + "/technical/repair-report?id=" + id + "&error=customer_not_approved");
                     return;
                 }
             }
 
 
-            // 🔥 LƯU BÁO CÁO
-            maintenanceDAO.updateActualReport(id, actualDescription);
+
 
             // 🔥 NẾU REPAIR → PHẢI CÓ VẬT TƯ
             if ("REPAIR".equals(task.getType())) {
@@ -595,7 +648,36 @@ public class TechnicalController extends HttpServlet {
             maintenanceDAO.updateStatus(id, status);
             resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
         }
+        if ("/technical/delete-material".equals(path)) {
+
+            int maintenanceId = Integer.parseInt(req.getParameter("maintenanceId"));
+            int sparePartId   = Integer.parseInt(req.getParameter("sparePartId"));
+
+            Maintenance task = maintenanceDAO.getById(maintenanceId);
+
+            if (task == null
+                    || task.getTechnicianId() != currentUser.getId()
+                    || !"SCHEDULED".equals(task.getStatus())) {
+                resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
+                return;
+            }
+
+            MaintenanceSparePartDAO mspDAO = new MaintenanceSparePartDAO();
+            try {
+                mspDAO.deleteMaterial(maintenanceId, sparePartId);
+            } catch (Exception e) {
+                e.printStackTrace();
+                resp.sendRedirect(req.getContextPath()
+                        + "/technical/repair-report?id=" + maintenanceId + "&error=delete_material");
+                return;
+            }
+
+            resp.sendRedirect(req.getContextPath()
+                    + "/technical/repair-report?id=" + maintenanceId);
+            return;
+        }
     }
+
 
 
     private String toJsonString(String s) {

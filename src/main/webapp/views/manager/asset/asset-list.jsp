@@ -1,155 +1,176 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <head>
-    <title>Quản lý Tài sản Khách hàng</title>
+    <title>Quản lý Product Model Ownership</title>
+    <style>
+        .ownership-shell { background: linear-gradient(180deg, #f8faff 0%, #ffffff 65%); border-radius: 18px; }
+        .ownership-card { border: 1px solid #e8eefc; border-radius: 14px; transition: all .2s ease; background: #fff; }
+        .ownership-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(34,74,169,.08); border-color: #cfe0ff; }
+        .ownership-card.active { border-color: #5b8cff; box-shadow: 0 8px 24px rgba(51,112,255,.15); background: linear-gradient(180deg,#f4f8ff 0%, #ffffff 100%); }
+        .metric-pill { font-size: 12px; border-radius: 999px; padding: .24rem .55rem; font-weight: 600; }
+        .section-title { letter-spacing: .2px; }
+        .serial-link { font-weight: 700; text-decoration: none; }
+        .serial-link:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
-    <div class="container-fluid mt-4">
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid mt-4">
+    <div class="ownership-shell p-3 p-lg-4 border shadow-sm">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
             <div>
-                <h3 class="text-primary fw-bold mb-0"><i class="fa fa-server"></i> TÀI SẢN MÁY PHÁT ĐIỆN</h3>
-                <p class="text-muted mb-0">Quản lý danh sách thiết bị và lịch sử vận hành</p>
+                <h3 class="text-primary fw-bold mb-1 section-title"><i class="fa fa-layer-group"></i> Product Model Ownership</h3>
+                <p class="text-muted mb-0">Quản lý model theo người sở hữu, click model để xem danh sách serial chi tiết.</p>
             </div>
-            <form action="assets" method="get" class="d-flex gap-2">
-                <input type="hidden" name="action" value="list">
-
-                <div class="input-group">
-                    <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-                    <input type="text" name="keyword" class="form-control" placeholder="Nhập Serial, Tên máy..." value="${param.keyword}">
-                </div>
-
-                <button type="submit" class="btn btn-primary px-4">
-                    <i class="fa fa-filter"></i> Lọc
-                </button>
-            </form>
+            <div class="d-flex gap-2">
+                <span class="badge text-bg-light border px-3 py-2">Tổng models: ${ownershipTotalItems}</span>
+                <span class="badge text-bg-primary px-3 py-2">Trang ${ownershipCurrentPage}/${ownershipTotalPages}</span>
+            </div>
         </div>
 
-        <div class="card shadow border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-uppercase text-muted small">
-                            <tr>
-                                <th class="py-3 ps-4">Hình ảnh</th>
-                                <th class="py-3">Thông tin Máy</th>
-                                <th class="py-3">Serial / ID</th>
-                                <th class="py-3">Chủ sở hữu & Vị trí</th>
-                                <th class="py-3 text-center">Giờ chạy</th>
-                                <th class="py-3 text-center">Trạng thái</th>
-                                <th class="py-3 text-end pe-4">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:if test="${empty products}">
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">
-                                        <img src="https://cdn-icons-png.flaticon.com/512/7486/7486754.png" width="80" class="mb-3 opacity-50">
-                                        <p class="text-muted mb-0">Không tìm thấy tài sản nào phù hợp.</p>
-                                    </td>
-                                </tr>
-                            </c:if>
+        <form action="assets" method="get" class="card border-0 shadow-sm mb-3">
+            <div class="card-body py-2 px-3 d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
+                <input type="hidden" name="action" value="list"/>
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+                    <input type="text" name="keyword" class="form-control" placeholder="Lọc theo model, serial, khách hàng, email, vị trí..." value="${currentKeyword}"/>
+                </div>
+                <select name="ownerFilter" class="form-select" style="max-width: 240px;">
+                    <option value="all" ${ownerFilter == 'all' ? 'selected' : ''}>Tất cả Product Models</option>
+                    <option value="has_owner" ${ownerFilter == 'has_owner' ? 'selected' : ''}>Có khách hàng sở hữu</option>
+                    <option value="no_owner" ${ownerFilter == 'no_owner' ? 'selected' : ''}>Chưa có khách hàng sở hữu</option>
+                </select>
+                <button class="btn btn-primary" type="submit"><i class="fa fa-filter"></i> Lọc</button>
+                <a class="btn btn-outline-secondary" href="assets?action=list"><i class="fa fa-undo"></i> Reset</a>
+            </div>
+        </form>
 
-                            <c:forEach var="p" items="${products}">
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center justify-content-center bg-light rounded-3 border"
-                                             style="width: 60px; height: 60px;">
-                                            <i class="fa fa-bolt text-warning fa-2x"></i>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <a href="assets?action=detail&id=${p.id}" class="fw-bold text-decoration-none text-dark">
-                                            ${p.modelName}
+        <div class="row g-3">
+            <div class="col-12 col-xl-5">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h6 class="mb-0 fw-bold"><i class="fa fa-list"></i> Danh sách Product Models</h6>
+                    </div>
+                    <div class="card-body pt-1">
+                        <c:choose>
+                            <c:when test="${empty productModelOwnerships}">
+                                <div class="text-center text-muted py-5">Không có dữ liệu Product Model Ownership.</div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="vstack gap-2">
+                                    <c:forEach var="ownership" items="${productModelOwnerships}">
+                                        <a class="ownership-card p-3 text-decoration-none ${selectedModelId == ownership.modelId ? 'active' : ''}"
+                                           href="assets?action=list&keyword=${currentKeyword}&ownerFilter=${ownerFilter}&ownershipPage=${ownershipCurrentPage}&selectedModelId=${ownership.modelId}">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div class="text-dark fw-semibold">${ownership.modelName}</div>
+                                                <i class="fa fa-chevron-right text-muted"></i>
+                                            </div>
+                                            <div class="mt-2 d-flex gap-2">
+                                                <span class="badge text-bg-info metric-pill">${ownership.ownerCount} khách hàng</span>
+                                                <span class="badge text-bg-secondary metric-pill">${ownership.totalAssets} tài sản</span>
+                                            </div>
                                         </a>
-                                        <div class="small text-muted mt-1">
-                                            <i class="fa fa-calendar-alt"></i> SX: ${p.manufactureYear != null ? p.manufactureYear : 'N/A'}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-light text-dark border px-2 py-1 font-monospace">
-                                            ${p.serialNumber}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold text-primary mb-1">
-                                            <i class="fa fa-user-tie"></i> ${p.customerName}
-                                        </div>
-                                        <small class="text-muted d-block text-truncate" style="max-width: 200px;" title="${p.currentLocation}">
-                                            <i class="fa fa-map-marker-alt text-danger"></i>
-                                            ${p.currentLocation != null ? p.currentLocation : '<span class="fst-italic">Chưa cập nhật</span>'}
-                                        </small>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="fw-bold text-dark">${p.totalRunningHours}</span> <small class="text-muted">giờ</small>
-                                        <div class="progress mt-1" style="height: 4px; width: 80px; margin: 0 auto;">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: 60%"></div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <c:choose>
-                                            <c:when test="${p.status == 'RUNNING' || p.status == 'READY'}">
-                                                <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
-                                                    <i class="fa fa-check-circle"></i> Hoạt động
-                                                </span>
-                                            </c:when>
-                                            <c:when test="${p.status == 'MAINTENANCE'}">
-                                                <span class="badge bg-warning-subtle text-warning border border-warning px-2 py-1">
-                                                    <i class="fa fa-tools"></i> Bảo trì
-                                                </span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">
-                                                    <i class="fa fa-exclamation-triangle"></i> Sự cố
-                                                </span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <a href="assets?action=detail&id=${p.id}" class="btn btn-outline-primary btn-sm" title="Xem hồ sơ máy">
-                                            <i class="fa fa-file-medical-alt"></i> Hồ sơ
-                                        </a>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
+                                    </c:forEach>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="card-footer bg-white border-0 pt-0 pb-3">
+                        <c:if test="${ownershipTotalPages > 1}">
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0 justify-content-end">
+                                    <li class="page-item ${ownershipCurrentPage == 1 ? 'disabled' : ''}">
+                                        <a class="page-link" href="assets?action=list&keyword=${currentKeyword}&ownerFilter=${ownerFilter}&ownershipPage=${ownershipCurrentPage - 1}&selectedModelId=${selectedModelId}"><i class="fa fa-chevron-left"></i></a>
+                                    </li>
+
+                                    <c:if test="${ownershipPageStart > 1}">
+                                        <li class="page-item">
+                                            <a class="page-link" href="assets?action=list&keyword=${currentKeyword}&ownerFilter=${ownerFilter}&ownershipPage=1&selectedModelId=${selectedModelId}">1</a>
+                                        </li>
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    </c:if>
+
+                                    <c:forEach begin="${ownershipPageStart}" end="${ownershipPageEnd}" var="i">
+                                        <li class="page-item ${ownershipCurrentPage == i ? 'active' : ''}">
+                                            <a class="page-link" href="assets?action=list&keyword=${currentKeyword}&ownerFilter=${ownerFilter}&ownershipPage=${i}&selectedModelId=${selectedModelId}">${i}</a>
+                                        </li>
+                                    </c:forEach>
+
+                                    <c:if test="${ownershipPageEnd < ownershipTotalPages}">
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="assets?action=list&keyword=${currentKeyword}&ownerFilter=${ownerFilter}&ownershipPage=${ownershipTotalPages}&selectedModelId=${selectedModelId}">${ownershipTotalPages}</a>
+                                        </li>
+                                    </c:if>
+
+                                    <li class="page-item ${ownershipCurrentPage == ownershipTotalPages ? 'disabled' : ''}">
+                                        <a class="page-link" href="assets?action=list&keyword=${currentKeyword}&ownerFilter=${ownerFilter}&ownershipPage=${ownershipCurrentPage + 1}&selectedModelId=${selectedModelId}"><i class="fa fa-chevron-right"></i></a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </c:if>
+                    </div>
                 </div>
             </div>
 
-            <div class="card-footer bg-white py-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="small text-muted">
-                        Hiển thị trang <b>${currentPage}</b> trên tổng số <b>${totalPages}</b> trang
+            <div class="col-12 col-xl-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h6 class="mb-0 fw-bold"><i class="fa fa-microchip"></i> Chi tiết tài sản theo Product Model</h6>
                     </div>
-
-                    <c:if test="${totalPages > 1}">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination pagination-sm mb-0">
-                                <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                                    <a class="page-link" href="assets?page=${currentPage - 1}&keyword=${param.keyword}">
-                                        <i class="fa fa-chevron-left"></i>
-                                    </a>
-                                </li>
-
-                                <c:forEach begin="1" end="${totalPages}" var="i">
-                                    <li class="page-item ${currentPage == i ? 'active' : ''}">
-                                        <a class="page-link" href="assets?page=${i}&keyword=${param.keyword}">${i}</a>
-                                    </li>
-                                </c:forEach>
-
-                                <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                                    <a class="page-link" href="assets?page=${currentPage + 1}&keyword=${param.keyword}">
-                                        <i class="fa fa-chevron-right"></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </c:if>
+                    <div class="card-body pt-1">
+                        <c:choose>
+                            <c:when test="${selectedOwnership == null}">
+                                <div class="d-flex align-items-center justify-content-center text-muted" style="min-height: 280px;">
+                                    <div class="text-center">
+                                        <i class="fa fa-hand-pointer fa-2x text-primary mb-2"></i>
+                                        <p class="mb-1">Chọn một Product Model bên trái để xem serial và người sở hữu.</p>
+                                        <small>Click vào serial để mở chi tiết tài sản.</small>
+                                    </div>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h5 class="mb-1 fw-bold text-dark">${selectedOwnership.modelName}</h5>
+                                        <small class="text-muted">${selectedOwnership.ownerCount} khách hàng • ${selectedOwnership.totalAssets} tài sản</small>
+                                    </div>
+                                </div>
+                                <div class="table-responsive border rounded-3">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3">Serial Number</th>
+                                            <th>Khách hàng</th>
+                                            <th>Email</th>
+                                            <th>Vị trí</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <c:if test="${empty selectedOwnership.assets}">
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4 text-muted">Model này hiện chưa có tài sản.</td>
+                                            </tr>
+                                        </c:if>
+                                        <c:forEach var="asset" items="${selectedOwnership.assets}">
+                                            <tr>
+                                                <td class="ps-3 font-monospace">
+                                                    <a class="serial-link" href="assets?action=detail&id=${asset.productId}">${asset.serialNumber}</a>
+                                                </td>
+                                                <td class="fw-semibold text-primary">${asset.customerName}</td>
+                                                <td>${asset.customerEmail}</td>
+                                                <td>${asset.location}</td>
+                                            </tr>
+                                        </c:forEach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </body>

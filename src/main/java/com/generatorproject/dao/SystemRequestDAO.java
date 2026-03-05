@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 
 public class SystemRequestDAO extends DbContext {
 
-    public String getRepairQuoteStatus(int maintenanceId) {
+    public String getQuoteStatus(int maintenanceId) {
 
         String sql = """
         SELECT status
@@ -23,19 +23,19 @@ public class SystemRequestDAO extends DbContext {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, "%\"maintenanceId\":" + maintenanceId + "%");
+
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                return rs.getString("status"); // WAITING_MANAGER / APPROVED / REJECTED
+                return rs.getString("status");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return null; // chưa gửi quote
+        return null; // chưa gửi
     }
-
     public boolean createRequest(int senderId,
                                  String receiverRole,
                                  String requestType,

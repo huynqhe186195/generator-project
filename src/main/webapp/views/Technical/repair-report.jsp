@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <h4 class="mb-4">🛠 Báo cáo sửa chữa & vật tư</h4>
 
 <div class="card shadow-sm">
@@ -25,25 +25,43 @@
                 </p>
 
                 <p>
-                    <strong>Trạng thái báo giá:</strong>
+                  <strong>Trạng thái báo giá:</strong>
 
-                    <c:choose>
-                        <c:when test="${quoteStatus == 'APPROVED'}">
-                            <span class="badge bg-success">APPROVED</span>
-                        </c:when>
+                  <c:choose>
 
-                        <c:when test="${quoteStatus == 'REJECTED'}">
-                            <span class="badge bg-danger">REJECTED</span>
-                        </c:when>
+                    <c:when test="${quoteStatus == 'WAITING_STAFF'}">
+                      <span class="badge bg-warning">WAITING STAFF</span>
+                    </c:when>
 
-                        <c:when test="${quoteStatus == 'WAITING_MANAGER'}">
-                            <span class="badge bg-warning">WAITING_MANAGER</span>
-                        </c:when>
+                    <c:when test="${quoteStatus == 'WAITING_MANAGER'}">
+                      <span class="badge bg-info">WAITING MANAGER</span>
+                    </c:when>
 
-                        <c:otherwise>
-                            <span class="badge bg-secondary">CHƯA GỬI</span>
-                        </c:otherwise>
-                    </c:choose>
+                    <c:when test="${quoteStatus == 'WAITING_CUSTOMER'}">
+                      <span class="badge bg-primary">WAITING CUSTOMER</span>
+                    </c:when>
+
+                    <c:when test="${quoteStatus == 'APPROVED'}">
+                      <span class="badge bg-success">APPROVED BY MANAGER</span>
+                    </c:when>
+
+                    <c:when test="${quoteStatus == 'APPROVED_BY_CUSTOMER'}">
+                      <span class="badge bg-success">CUSTOMER APPROVED</span>
+                    </c:when>
+
+                    <c:when test="${quoteStatus == 'REJECTED'}">
+                      <span class="badge bg-danger">REJECTED</span>
+                    </c:when>
+
+                    <c:when test="${quoteStatus == 'REJECTED_BY_CUSTOMER'}">
+                      <span class="badge bg-danger">CUSTOMER REJECTED</span>
+                    </c:when>
+
+                    <c:otherwise>
+                      <span class="badge bg-secondary">CHƯA GỬI</span>
+                    </c:otherwise>
+
+                  </c:choose>
                 </p>
             </div>
         </div>
@@ -74,6 +92,7 @@
                     <th>Vật tư</th>
                     <th>Số lượng</th>
                     <th>Chi phí</th>
+                    <th>Thao tác</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -92,10 +111,34 @@
                             </c:if>
                         </td>
                         <td>${m.costAtTime}</td>
+                        <td class="text-center">
+                            <c:if test="${task.status == 'SCHEDULED'}">
+                                <form method="post" action="<c:url value='/technical/delete-material'/>" style="display:inline;">
+                                    <input type="hidden" name="maintenanceId" value="${task.id}"/>
+                                    <input type="hidden" name="sparePartId" value="${m.sparePartId}"/>
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Xóa vật tư này? Sẽ hoàn kho lại.')">
+                                        🗑 Xóa
+                                    </button>
+                                </form>
+                            </c:if>
+                        </td>
                     </tr>
                 </c:forEach>
                 </tbody>
             </table>
+            <c:set var="partsTotal" value="0" />
+            <c:forEach var="m" items="${materials}">
+                <c:set var="partsTotal" value="${partsTotal + m.costAtTime}" />
+            </c:forEach>
+
+            <div class="d-flex justify-content-end mt-2">
+                <div class="fw-bold">
+                    Tổng giá vật tư:
+                    <fmt:formatNumber value="${partsTotal}" type="number"/> đ
+                </div>
+            </div>
         </c:if>
 
         <c:if test="${task.status == 'SCHEDULED' && task.assignmentStatus != 'PENDING_APPROVAL'}">
@@ -105,15 +148,10 @@
             <form method="post" action="<c:url value='/technical/send-quote'/>" class="row g-3">
                 <input type="hidden" name="id" value="${task.id}"/>
 
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Chi phí công (labor)</label>
-                    <input type="number" step="0.01" min="0" name="laborCost" class="form-control" value="0"/>
-                </div>
-
-                <div class="col-md-8 d-flex align-items-end">
+                <div class="col-md-12 d-flex align-items-end">
                     <button class="btn btn-warning w-100"
-                            onclick="return confirm('Gửi báo giá cho Manager duyệt? Sau khi gửi sẽ chuyển trạng thái chờ duyệt.')">
-                        📩 Gửi báo giá cho Manager duyệt
+                            onclick="return confirm('Gửi báo giá cho Manager duyệt?')">
+                        📩 Gửi báo giá cho STAFF
                     </button>
                 </div>
             </form>
@@ -155,6 +193,35 @@
         </c:if>
 
         <hr/>
+            <c:if test="${task.status == 'SCHEDULED'}">
+
+                <!-- PERIODIC / INSPECTION -->
+                <c:if test="${task.type != 'REPAIR'}">
+                    <form method="post" action="<c:url value='/technical/task-complete'/>" class="mt-3">
+                        <input type="hidden" name="id" value="${task.id}" />
+
+                        <button type="submit"
+                                class="btn btn-success w-100"
+                                onclick="return confirm('Xác nhận hoàn thành công việc?')">
+                            ✅ Hoàn thành công việc
+                        </button>
+                    </form>
+                </c:if>
+
+                <!-- REPAIR -->
+                <c:if test="${task.type == 'REPAIR' && quoteStatus == 'APPROVED_BY_CUSTOMER'}">
+                    <form method="post" action="<c:url value='/technical/task-complete'/>" class="mt-3">
+                        <input type="hidden" name="id" value="${task.id}" />
+                        <input type="hidden" name="actualDescription" value="${task.actualDescription}" />
+                        <button type="submit"
+                                class="btn btn-success w-100"
+                                onclick="return confirm('Customer đã duyệt. Hoàn thành sửa chữa?')">
+                            ✅ Hoàn thành sửa chữa
+                        </button>
+                    </form>
+                </c:if>
+
+            </c:if>
 
         <a href="<c:url value='/technical/my-tasks'/>"
            class="btn btn-secondary mt-3">← Quay lại</a>

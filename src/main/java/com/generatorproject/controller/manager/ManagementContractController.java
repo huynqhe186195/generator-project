@@ -83,6 +83,9 @@ public class ManagementContractController extends HttpServlet {
             case "assignSerialSubmit":
                 submitAssignSerial(req, resp);
                 break;
+            case "terminate":
+                handleTerminate(req, resp);
+                break;
             default:
                 showList(req, resp);
                 break;
@@ -126,11 +129,6 @@ public class ManagementContractController extends HttpServlet {
             if (contract == null) {
                 req.setAttribute("errorMessage", "Không tìm thấy hợp đồng!");
                 showList(req, resp);
-                return;
-            }
-
-            if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
-                resp.sendRedirect("contracts?msg=terminated_no_actions");
                 return;
             }
 
@@ -246,9 +244,6 @@ public class ManagementContractController extends HttpServlet {
             dataPayload.put("email", email);
             dataPayload.put("fullName", fullName);
             dataPayload.put("phone", phone);
-
-            // Sau này muốn thêm field gì cứ put vào đây, ví dụ:
-            // dataPayload.put("phone", "09123...");
 
             // 2. Biến Map thành chuỗi JSON
             Gson gson = new Gson();
@@ -468,6 +463,10 @@ public class ManagementContractController extends HttpServlet {
     }
 
     private void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        handleTerminate(req, resp);
+    }
+
+    private void handleTerminate(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             Long id = Long.parseLong(req.getParameter("id"));
 
@@ -482,18 +481,16 @@ public class ManagementContractController extends HttpServlet {
                 return;
             }
 
-            Users customer = userServices.findUserById(contract.getCustomerId());
-            boolean customerStillActive = customer != null
-                    && customer.getStatus() == 1
-                    && (customer.getFullName() == null || !customer.getFullName().startsWith("DELETED_USER_"));
+            String reasonCode = req.getParameter("reasonCode");
+            String terminatedReason = req.getParameter("terminatedReason");
+            String decisionDoc = req.getParameter("decisionDoc");
+            String note = req.getParameter("note");
 
-            if (customerStillActive) {
-                resp.sendRedirect("contracts?msg=delete_blocked_user_exists");
-                return;
-            }
+            Users actor = (Users) req.getSession().getAttribute("USERMODEL");
+            Long actorId = actor != null ? (long) actor.getId() : null;
 
-            contractService.deleteContract(id);
-            resp.sendRedirect("contracts?msg=delete_success");
+            contractService.terminateContract(id, reasonCode, terminatedReason, decisionDoc, note, actorId);
+            resp.sendRedirect("contracts?msg=terminated_success");
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect("contracts?msg=error");

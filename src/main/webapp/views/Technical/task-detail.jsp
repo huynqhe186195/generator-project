@@ -1,7 +1,6 @@
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-
 <%@ page contentType="text/html; charset=UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <h4 class="mb-4">📝 Báo cáo hiện trường</h4>
 
@@ -28,7 +27,11 @@
       </div>
     </div>
 
-    <form method="post" action="<c:url value='/technical/task-report'/>">
+    <!-- ✅ THÊM enctype để upload ảnh -->
+    <form method="post"
+          action="<c:url value='/technical/task-report'/>"
+          enctype="multipart/form-data">
+
       <input type="hidden" name="id" value="${task.id}"/>
 
       <!-- MÔ TẢ BAN ĐẦU -->
@@ -59,6 +62,35 @@
         </c:choose>
       </div>
 
+      <!-- ✅ ẢNH HIỆN TRƯỜNG (CHỈ CHO SCHEDULED CHỌN THÊM) -->
+      <c:if test="${task.status == 'SCHEDULED'}">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Ảnh hiện trường (chọn nhiều ảnh)</label>
+          <input type="file"
+                 name="siteImages"
+                 class="form-control"
+                 accept="image/*"
+                 multiple />
+          <small class="text-muted">Chọn 1 hoặc nhiều ảnh để upload cùng lúc khi bấm “Lưu báo cáo”.</small>
+        </div>
+      </c:if>
+
+      <!-- ✅ HIỂN THỊ ẢNH ĐÃ UPLOAD -->
+      <c:if test="${not empty images}">
+        <div class="mt-3">
+          <h5 class="fw-bold">📷 Ảnh hiện trường</h5>
+          <div class="row">
+            <c:forEach items="${images}" var="img">
+              <div class="col-md-3 mb-3">
+                <img src="<c:url value='/${img.imagePath}'/>"
+                     class="img-fluid rounded border"
+                     style="height:160px; object-fit:cover; width:100%;" />
+              </div>
+            </c:forEach>
+          </div>
+        </div>
+      </c:if>
+
       <!-- VẬT TƯ ĐÃ SỬ DỤNG -->
       <c:if test="${not empty materials}">
         <div class="mt-4">
@@ -68,7 +100,7 @@
             <thead class="table-light">
               <tr>
                 <th>#</th>
-                <th>Mã vật tư</th>
+                <th>Tên vật tư</th>
                 <th>Số lượng</th>
                 <th>Chi phí</th>
               </tr>
@@ -77,7 +109,7 @@
               <c:forEach var="m" items="${materials}" varStatus="st">
                 <tr>
                   <td>${st.index + 1}</td>
-                  <td>${m.sparePartId}</td>
+                  <td>${m.sparePartName}</td>
                   <td>${m.quantityUsed}</td>
                   <td>
                     <fmt:formatNumber value="${m.costAtTime}" type="number"/> đ
@@ -86,9 +118,20 @@
               </c:forEach>
             </tbody>
           </table>
+
+          <c:set var="partsTotal" value="0" />
+          <c:forEach var="m" items="${materials}">
+              <c:set var="partsTotal" value="${partsTotal + m.costAtTime}" />
+          </c:forEach>
+
+          <div class="d-flex justify-content-end mt-2">
+              <div class="fw-bold">
+                  Tổng giá vật tư:
+                  <fmt:formatNumber value="${partsTotal}" type="number"/> đ
+              </div>
+          </div>
         </div>
       </c:if>
-
 
       <div class="d-flex justify-content-between">
         <a href="<c:url value='/technical/my-tasks'/>"
@@ -99,16 +142,30 @@
         <!-- CHỈ SCHEDULED MỚI CÓ HÀNH ĐỘNG -->
         <c:if test="${task.status == 'SCHEDULED'}">
           <div>
-            <c:if test="${task.status == 'SCHEDULED' && task.type != 'REPAIR'}">
-                <button class="btn btn-primary">💾 Lưu báo cáo</button>
+
+            <!-- LƯU BÁO CÁO -->
+            <button type="submit" class="btn btn-primary">
+              💾 Lưu báo cáo
+            </button>
+
+            <!-- ===== REPAIR ===== -->
+            <c:if test="${task.type == 'REPAIR'}">
+              <a href="<c:url value='/technical/repair-report?id=${task.id}'/>"
+                 class="btn btn-warning ms-2">
+                🔧 Chọn vật tư
+              </a>
             </c:if>
 
+            <!-- ===== PERIODIC / INSPECTION ===== -->
+            <c:if test="${task.type != 'REPAIR'}">
+              <button type="submit"
+                      class="btn btn-success ms-2"
+                      formaction="<c:url value='/technical/task-complete'/>"
+                      onclick="return confirm('Xác nhận hoàn thành công việc?')">
+                ✅ Hoàn thành
+              </button>
+            </c:if>
 
-            <a href="<c:url value='/technical/task-complete?id=${task.id}'/>"
-               class="btn btn-success ms-2"
-               onclick="return confirm('Xác nhận hoàn thành công việc?')">
-              ✅ Hoàn thành
-            </a>
           </div>
         </c:if>
       </div>

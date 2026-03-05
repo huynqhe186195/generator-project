@@ -24,6 +24,13 @@ public interface IContractServices {
 
     void deleteContract(Long id);
 
+    void terminateContract(Long contractId,
+                           String reasonCode,
+                           String terminatedReason,
+                           String decisionDoc,
+                           String note,
+                           Long actorId);
+
     List<Contract> getContractByCustomerId(int id);
 
     int countByStatus(String status);
