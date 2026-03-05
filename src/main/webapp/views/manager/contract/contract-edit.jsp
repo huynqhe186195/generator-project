@@ -52,56 +52,88 @@
                                 </c:forEach>
                             </select>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Tên máy phát điện (*)</label>
-
-                            <input id="inputModelNameField" type="text" class="form-control" name="inputModelName"
-                                   list="modelSuggestions"
-                                   value="${contract.productModelName}"
-                                   required autocomplete="off">
-
-                            <datalist id="modelSuggestions">
-                                <c:forEach items="${models}" var="m">
-                                    <option value="${m.name}"></option>
-                                </c:forEach>
-                            </datalist>
-                            <small class="text-muted">Có thể sửa tên máy nếu trước đó nhập sai.</small>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="alert alert-light border w-100 mb-0">
+                                Nếu hợp đồng có nhiều serial, bạn có thể sửa nhiều máy trong cùng 1 lần lưu.
+                            </div>
                         </div>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Số Serial (*)</label>
-                            <select id="serialNumberSelect" name="serialNumber" class="form-select" required>
-                                <c:forEach var="cp" items="${contractProducts}">
-                                    <option value="${cp.serialNumber}"
-                                            data-model="${cp.modelName}"
-                                            data-year="${cp.manufactureYear}"
-                                            data-location="${cp.currentLocation}"
-                                            ${contract.productSerial == cp.serialNumber ? 'selected' : ''}>
-                                            ${cp.serialNumber}
-                                    </option>
-                                </c:forEach>
-                            </select>
-                            <small class="text-muted">Nếu hợp đồng có nhiều máy, chọn đúng serial cần chỉnh sửa.</small>
-                        </div>
+                    <c:choose>
+                        <c:when test="${not empty contractProducts}">
+                            <div class="table-responsive mb-3">
+                                <table class="table table-bordered align-middle">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 16%">Serial</th>
+                                        <th style="width: 30%">Tên máy phát điện (*)</th>
+                                        <th style="width: 14%">Năm sản xuất</th>
+                                        <th>Vị trí lắp đặt</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach var="cp" items="${contractProducts}">
+                                        <tr>
+                                            <td>
+                                                <input type="hidden" name="serialNumbers" value="${cp.serialNumber}">
+                                                <span class="fw-bold text-primary">${cp.serialNumber}</span>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control" name="inputModelNames"
+                                                       list="modelSuggestions"
+                                                       value="${cp.modelName}"
+                                                       required autocomplete="off">
+                                            </td>
+                                            <td>
+                                                <input type="number" name="manufactureYears" class="form-control"
+                                                       min="1990" max="2100"
+                                                       value="${cp.manufactureYear}">
+                                            </td>
+                                            <td>
+                                                <input type="text" name="currentLocations" class="form-control"
+                                                       value="${cp.currentLocation}">
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Tên máy phát điện (*)</label>
+                                    <input type="text" class="form-control" name="inputModelName"
+                                           list="modelSuggestions"
+                                           value="${contract.productModelName}"
+                                           required autocomplete="off">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Số Serial (*)</label>
+                                    <input type="text" name="serialNumber" class="form-control" required
+                                           value="${contract.productSerial}">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Năm sản xuất</label>
+                                    <input type="number" name="manufactureYear" class="form-control"
+                                           min="1990" max="2100"
+                                           value="${contract.productManufactureYear}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Vị trí lắp đặt</label>
+                                    <input type="text" name="currentLocation" class="form-control" value="">
+                                </div>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Năm sản xuất</label>
-                            <input id="manufactureYearInput" type="number" name="manufactureYear" class="form-control"
-                                   min="1990" max="2100"
-                                   value="${contract.productManufactureYear}">
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <label class="form-label fw-bold">Vị trí lắp đặt</label>
-                            <input id="currentLocationInput" type="text" name="currentLocation" class="form-control"
-                                   value="">
-                        </div>
-                    </div>
+                    <datalist id="modelSuggestions">
+                        <c:forEach items="${models}" var="m">
+                            <option value="${m.name}"></option>
+                        </c:forEach>
+                    </datalist>
 
                     <h6 class="text-muted border-bottom pb-2 mb-3 mt-4"><i class="fa fa-calendar-alt"></i> Thời gian hiệu lực</h6>
 
@@ -138,31 +170,6 @@
         </div>
     </div>
 
-<script>
-    (function () {
-        const serialSelect = document.getElementById('serialNumberSelect');
-        const modelField = document.getElementById('inputModelNameField');
-        const yearField = document.getElementById('manufactureYearInput');
-        const locationField = document.getElementById('currentLocationInput');
-
-        if (!serialSelect) return;
-
-        const syncBySerial = () => {
-            const opt = serialSelect.options[serialSelect.selectedIndex];
-            if (!opt) return;
-
-            const model = opt.getAttribute('data-model');
-            const year = opt.getAttribute('data-year');
-            const location = opt.getAttribute('data-location');
-
-            if (modelField && model) modelField.value = model;
-            if (yearField) yearField.value = (year && year !== 'null') ? year : '';
-            if (locationField) locationField.value = (location && location !== 'null') ? location : '';
-        };
-
-        serialSelect.addEventListener('change', syncBySerial);
-        syncBySerial();
-    })();
-</script>
 
 </body>
+</html>

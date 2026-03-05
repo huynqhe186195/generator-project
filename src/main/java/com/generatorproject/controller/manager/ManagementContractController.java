@@ -406,57 +406,147 @@ public class ManagementContractController extends HttpServlet {
             Date endDate = Date.valueOf(req.getParameter("endDate"));
             String status = req.getParameter("status");
 
-            String serialNumber = req.getParameter("serialNumber").trim();
-            String inputModelName = req.getParameter("inputModelName");
+            int mainProductId = 0;
 
-            if (inputModelName == null || inputModelName.trim().isEmpty()) {
-                req.setAttribute("errorMessage", "Vui lòng nhập tên máy phát điện!");
-                showEditForm(req, resp);
-                return;
-            }
+            String[] serialNumbers = req.getParameterValues("serialNumbers");
+            String[] inputModelNames = req.getParameterValues("inputModelNames");
+            String[] manufactureYears = req.getParameterValues("manufactureYears");
+            String[] currentLocations = req.getParameterValues("currentLocations");
 
-            ProductModel model = productModelServices.findByName(inputModelName);
-            if (model == null) {
-                req.setAttribute("errorMessage", "Lỗi: Dòng máy '" + inputModelName + "' chưa có trong hệ thống! Vui lòng chọn từ gợi ý.");
-                showEditForm(req, resp);
-                return;
-            }
+            if (serialNumbers != null && serialNumbers.length > 0) {
+                for (int i = 0; i < serialNumbers.length; i++) {
+                    String serialNumber = serialNumbers[i] == null ? null : serialNumbers[i].trim();
+                    if (serialNumber == null || serialNumber.isEmpty()) {
+                        continue;
+                    }
 
-            Product product = productServices.findProductBySerial(serialNumber);
-            if (product == null) {
-                product = new Product();
-                product.setSerialNumber(serialNumber);
-                product.setTotalRunningHours(0.0);
-                product.setPurchaseDate(startDate);
-            }
+                    String inputModelName = (inputModelNames != null && i < inputModelNames.length)
+                            ? inputModelNames[i]
+                            : null;
+                    if (inputModelName == null || inputModelName.trim().isEmpty()) {
+                        req.setAttribute("errorMessage", "Vui lòng nhập tên máy phát điện cho serial " + serialNumber + "!");
+                        showEditForm(req, resp);
+                        return;
+                    }
 
-            product.setCustomerId(customerId);
-            product.setModelId((long) model.getId());
-            product.setModelName(model.getName());
-            product.setStatus("RUNNING");
+                    ProductModel model = productModelServices.findByName(inputModelName.trim());
+                    if (model == null) {
+                        req.setAttribute("errorMessage", "Lỗi: Dòng máy '" + inputModelName + "' chưa có trong hệ thống! (Serial " + serialNumber + ")");
+                        showEditForm(req, resp);
+                        return;
+                    }
 
-            String manuYearStr = req.getParameter("manufactureYear");
-            if (manuYearStr != null && !manuYearStr.isEmpty()) {
-                product.setManufactureYear(Integer.parseInt(manuYearStr));
-            }
+                    Product product = productServices.findProductBySerial(serialNumber);
+                    if (product == null) {
+                        product = new Product();
+                        product.setSerialNumber(serialNumber);
+                        product.setTotalRunningHours(0.0);
+                        product.setPurchaseDate(startDate);
+                        product.setContractId(contractId);
+                    }
 
-            String currentLocation = req.getParameter("currentLocation");
-            if (currentLocation != null && !currentLocation.trim().isEmpty()) {
-                product.setCurrentLocation(currentLocation.trim());
-            }
+                    product.setCustomerId(customerId);
+                    product.setContractId(contractId);
+                    product.setModelId((long) model.getId());
+                    product.setModelName(model.getName());
+                    product.setStatus("RUNNING");
 
-            if (product.getId() == 0) {
-                Long newPid = productServices.save(product);
-                product.setId(Math.toIntExact(newPid));
+                    String manuYearStr = (manufactureYears != null && i < manufactureYears.length)
+                            ? manufactureYears[i]
+                            : null;
+                    if (manuYearStr != null && !manuYearStr.trim().isEmpty()) {
+                        product.setManufactureYear(Integer.parseInt(manuYearStr.trim()));
+                    }
+
+                    String currentLocation = (currentLocations != null && i < currentLocations.length)
+                            ? currentLocations[i]
+                            : null;
+                    if (currentLocation != null && !currentLocation.trim().isEmpty()) {
+                        product.setCurrentLocation(currentLocation.trim());
+                    }
+
+                    if (product.getId() == 0) {
+                        Long newPid = productServices.save(product);
+                        product.setId(Math.toIntExact(newPid));
+                    } else {
+                        productServices.update(product);
+                    }
+
+                    if (mainProductId == 0) {
+                        mainProductId = product.getId();
+                    }
+                }
             } else {
-                productServices.update(product);
+                String serialNumber = req.getParameter("serialNumber");
+                String inputModelName = req.getParameter("inputModelName");
+
+                if (serialNumber == null || serialNumber.trim().isEmpty()) {
+                    req.setAttribute("errorMessage", "Vui lòng nhập serial máy phát điện!");
+                    showEditForm(req, resp);
+                    return;
+                }
+                serialNumber = serialNumber.trim();
+
+                if (inputModelName == null || inputModelName.trim().isEmpty()) {
+                    req.setAttribute("errorMessage", "Vui lòng nhập tên máy phát điện!");
+                    showEditForm(req, resp);
+                    return;
+                }
+
+                ProductModel model = productModelServices.findByName(inputModelName.trim());
+                if (model == null) {
+                    req.setAttribute("errorMessage", "Lỗi: Dòng máy '" + inputModelName + "' chưa có trong hệ thống! Vui lòng chọn từ gợi ý.");
+                    showEditForm(req, resp);
+                    return;
+                }
+
+                Product product = productServices.findProductBySerial(serialNumber);
+                if (product == null) {
+                    product = new Product();
+                    product.setSerialNumber(serialNumber);
+                    product.setTotalRunningHours(0.0);
+                    product.setPurchaseDate(startDate);
+                    product.setContractId(contractId);
+                }
+
+                product.setCustomerId(customerId);
+                product.setContractId(contractId);
+                product.setModelId((long) model.getId());
+                product.setModelName(model.getName());
+                product.setStatus("RUNNING");
+
+                String manuYearStr = req.getParameter("manufactureYear");
+                if (manuYearStr != null && !manuYearStr.isEmpty()) {
+                    product.setManufactureYear(Integer.parseInt(manuYearStr));
+                }
+
+                String currentLocation = req.getParameter("currentLocation");
+                if (currentLocation != null && !currentLocation.trim().isEmpty()) {
+                    product.setCurrentLocation(currentLocation.trim());
+                }
+
+                if (product.getId() == 0) {
+                    Long newPid = productServices.save(product);
+                    product.setId(Math.toIntExact(newPid));
+                } else {
+                    productServices.update(product);
+                }
+
+                mainProductId = product.getId();
+            }
+
+            if (mainProductId == 0) {
+                Contract existing = contractService.findContractById(contractId);
+                if (existing != null) {
+                    mainProductId = existing.getProductId();
+                }
             }
 
             Contract c = Contract.builder()
                     .id(contractId)
                     .contractNumber(contractNumber)
                     .customerId(Math.toIntExact(customerId))
-                    .productId(product.getId())
+                    .productId(mainProductId)
                     .startDate(startDate)
                     .endDate(endDate)
                     .status(status)
