@@ -5,6 +5,7 @@ import com.generatorproject.model.Contract;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.ProductModel;
 import com.generatorproject.model.Users;
+import com.google.gson.Gson;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
@@ -16,6 +17,8 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,6 +57,8 @@ public class ContractDAO extends GenericDAO<Contract> {
 
 
     public void update(Contract contract) {
+        Contract oldContract = findById(contract.getId());
+
         String sql = "UPDATE contracts SET contract_number = ?, customer_id = ?, " +
                 "start_date = ?, end_date = ?, status = ?, manager_id = ? WHERE id = ?";
 
@@ -66,6 +71,33 @@ public class ContractDAO extends GenericDAO<Contract> {
                 contract.getManagerId(),
                 contract.getId()
         );
+
+        if (oldContract != null) {
+            String oldStatus = oldContract.getStatus();
+            String newStatus = contract.getStatus();
+
+            boolean statusChanged = !safeEquals(oldStatus, newStatus);
+
+            Map<String, Object> meta = new LinkedHashMap<>();
+            meta.put("action", "EDIT_CONTRACT");
+            meta.put("contract_number", contract.getContractNumber());
+            meta.put("customer_id", contract.getCustomerId());
+            meta.put("start_date", contract.getStartDate() == null ? null : contract.getStartDate().toString());
+            meta.put("end_date", contract.getEndDate() == null ? null : contract.getEndDate().toString());
+
+            contractEventDAO.insertEvent(
+                    contract.getId(),
+                    statusChanged ? "STATUS_CHANGED" : "UPDATED",
+                    statusChanged ? "STATUS_UPDATED" : "CONTRACT_UPDATED",
+                    null,
+                    null,
+                    statusChanged ? "Cập nhật trạng thái hợp đồng" : "Cập nhật thông tin hợp đồng",
+                    (long) contract.getManagerId(),
+                    oldStatus,
+                    newStatus,
+                    new Gson().toJson(meta)
+            );
+        }
     }
 
 
@@ -435,6 +467,11 @@ public class ContractDAO extends GenericDAO<Contract> {
         }
         String trimmed = meta.trim();
         return trimmed.isEmpty() || "{}".equals(trimmed) ? null : trimmed;
+    }
+
+
+    private boolean safeEquals(Object a, Object b) {
+        return a == null ? b == null : a.equals(b);
     }
 
     public List<Contract> findByProductId(Long productId) {
