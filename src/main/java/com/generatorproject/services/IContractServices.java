@@ -1,6 +1,7 @@
 package com.generatorproject.services;
 
 import com.generatorproject.model.Contract;
+import com.generatorproject.model.ContractEvent;
 import com.generatorproject.model.Users;
 
 import java.io.InputStream;
@@ -24,7 +25,19 @@ public interface IContractServices {
 
     void deleteContract(Long id);
 
+    boolean terminateContract(Long contractId,
+                              String reasonCode,
+                              String terminatedReason,
+                              String decisionDoc,
+                              String note,
+                              Long actorId,
+                              String meta);
+
     List<Contract> getContractByCustomerId(int id);
+
+    ContractEvent findLatestTerminatedEvent(Long contractId);
+
+    List<ContractEvent> findEventsByContractId(Long contractId);
 
     int countByStatus(String status);
 

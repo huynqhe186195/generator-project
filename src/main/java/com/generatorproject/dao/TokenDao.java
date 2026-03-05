@@ -103,4 +103,14 @@ public class TokenDao extends DbContext {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    public void revokeTokensByUserId(int userId) {
+        String sql = "UPDATE password_reset_tokens SET is_used = 1 WHERE user_id = ? AND is_used <> 1";
+        try {
+            Connection conn = getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
 }

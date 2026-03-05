@@ -48,7 +48,7 @@ public class ManagementContractController extends HttpServlet {
                 showEditForm(req, resp);
                 break;
             case "delete":
-                handleDelete(req, resp);
+                resp.sendRedirect("contracts?msg=invalid_action");
                 break;
             case "list":
                 showList(req, resp);
@@ -82,6 +82,9 @@ public class ManagementContractController extends HttpServlet {
                 break;
             case "assignSerialSubmit":
                 submitAssignSerial(req, resp);
+                break;
+            case "terminate":
+                handleTerminate(req, resp);
                 break;
             default:
                 showList(req, resp);
@@ -129,11 +132,6 @@ public class ManagementContractController extends HttpServlet {
                 return;
             }
 
-            if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
-                resp.sendRedirect("contracts?msg=terminated_no_actions");
-                return;
-            }
-
             Users customer = userServices.findUserById(contract.getCustomerId());
 
             List<Product> products = productServices.findByContractId(contractId);
@@ -148,11 +146,16 @@ public class ManagementContractController extends HttpServlet {
                 selectedProduct = productServices.findProductDetailBySerial(selectedSerial);
             }
 
+            ContractEvent latestTerminatedEvent = contractService.findLatestTerminatedEvent(contractId);
+            List<ContractEvent> contractEvents = contractService.findEventsByContractId(contractId);
+
             req.setAttribute("c", contract);
             req.setAttribute("u", customer);
             req.setAttribute("products", products);
             req.setAttribute("p", selectedProduct);
             req.setAttribute("selectedSerial", selectedSerial);
+            req.setAttribute("terminatedEvent", latestTerminatedEvent);
+            req.setAttribute("contractEvents", contractEvents);
 
             req.getRequestDispatcher("/views/manager/contract/contract-detail.jsp").forward(req, resp);
 
@@ -464,7 +467,8 @@ public class ManagementContractController extends HttpServlet {
         }
     }
 
-    private void handleDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+    private void handleTerminate(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             Long id = Long.parseLong(req.getParameter("id"));
 
@@ -474,23 +478,46 @@ public class ManagementContractController extends HttpServlet {
                 return;
             }
 
-            if ("TERMINATED".equalsIgnoreCase(contract.getStatus())) {
+            String reasonCode = req.getParameter("reasonCode");
+            if (reasonCode == null || reasonCode.trim().isEmpty()) {
+                reasonCode = "OTHER";
+            }
+
+            String terminatedReason = req.getParameter("terminatedReason");
+            String decisionDoc = req.getParameter("decisionDoc");
+            String note = req.getParameter("note");
+
+            if ("OTHER".equalsIgnoreCase(reasonCode)
+                    && (note == null || note.trim().isEmpty())) {
+                resp.sendRedirect("contracts?action=detail&id=" + id + "&msg=terminate_note_required");
+                return;
+            }
+
+            Users actor = (Users) req.getSession().getAttribute("USERMODEL");
+            Long actorId = actor != null ? (long) actor.getId() : null;
+
+            Map<String, String> extraMeta = new HashMap<>();
+            extraMeta.put("source", "manager_contract_detail");
+            extraMeta.put("ip", req.getRemoteAddr());
+            extraMeta.put("user_agent", req.getHeader("User-Agent"));
+            String metaJson = new Gson().toJson(extraMeta);
+
+            boolean terminated = contractService.terminateContract(
+                    id,
+                    reasonCode,
+                    terminatedReason,
+                    decisionDoc,
+                    note,
+                    actorId,
+                    metaJson
+            );
+
+            if (!terminated) {
                 resp.sendRedirect("contracts?msg=already_terminated");
                 return;
             }
 
-            Users customer = userServices.findUserById(contract.getCustomerId());
-            boolean customerStillActive = customer != null
-                    && customer.getStatus() == 1
-                    && (customer.getFullName() == null || !customer.getFullName().startsWith("DELETED_USER_"));
-
-            if (customerStillActive) {
-                resp.sendRedirect("contracts?msg=delete_blocked_user_exists");
-                return;
-            }
-
-            contractService.deleteContract(id);
-            resp.sendRedirect("contracts?msg=delete_success");
+            resp.sendRedirect("contracts?action=detail&id=" + id + "&msg=terminated_success");
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect("contracts?msg=error");

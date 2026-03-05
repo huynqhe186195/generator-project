@@ -102,6 +102,10 @@
         </div>
     </c:if>
 
+    <c:if test="${param.msg == 'invalid_action'}">
+        <div class="alert alert-warning">Chức năng này chỉ hỗ trợ qua form POST từ màn chi tiết hợp đồng.</div>
+    </c:if>
+
     <c:if test="${param.msg == 'terminated_no_actions'}">
         <div class="alert alert-warning alert-dismissible fade show">
             <i class="fa fa-lock"></i> Hợp đồng đã ở trạng thái Đã hủy nên không thể xem chi tiết hoặc chỉnh sửa.
@@ -191,27 +195,16 @@
                             </c:choose>
                         </td>
                         <td class="text-center">
-                            <c:if test="${c.status != 'TERMINATED'}">
-                                <a href="${pageContext.request.contextPath}/manager/contracts?action=detail&id=${c.id}"
-                                   class="btn btn-sm btn-info" title="Xem chi tiết">
-                                    <i class="fa fa-eye"></i>
-                                </a>
+                            <a href="${pageContext.request.contextPath}/manager/contracts?action=detail&id=${c.id}"
+                               class="btn btn-sm btn-info" title="Xem chi tiết">
+                                <i class="fa fa-eye"></i>
+                            </a>
 
+                            <c:if test="${c.status != 'TERMINATED'}">
                                 <a href="${pageContext.request.contextPath}/manager/contracts?action=edit_view&id=${c.id}"
                                    class="btn btn-sm btn-warning" title="Sửa thông tin">
                                     <i class="fa fa-edit"></i>
                                 </a>
-
-                                <a href="${pageContext.request.contextPath}/manager/contracts?action=delete&id=${c.id}"
-                                   class="btn btn-sm btn-danger"
-                                   onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa Hợp đồng số ${c.contractNumber}?\\nDữ liệu sẽ không thể khôi phục!');"
-                                   title="Xóa hợp đồng">
-                                    <i class="fa fa-trash"></i>
-                                </a>
-                            </c:if>
-
-                            <c:if test="${c.status == 'TERMINATED'}">
-                                <span class="text-muted fst-italic">Không khả dụng</span>
                             </c:if>
                         </td>
                     </tr>

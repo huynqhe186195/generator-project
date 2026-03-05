@@ -2,6 +2,7 @@ package com.generatorproject.services;
 
 import com.generatorproject.dao.ContractDAO;
 import com.generatorproject.model.Contract;
+import com.generatorproject.model.ContractEvent;
 import com.generatorproject.model.Users;
 
 import java.io.InputStream;
@@ -56,6 +57,27 @@ public class ContractServices implements IContractServices {
     @Override
     public void deleteContract(Long id) {
         contractDAO.delete(id);
+    }
+
+    @Override
+    public boolean terminateContract(Long contractId,
+                                     String reasonCode,
+                                     String terminatedReason,
+                                     String decisionDoc,
+                                     String note,
+                                     Long actorId,
+                                     String meta) {
+        return contractDAO.terminateContract(contractId, reasonCode, terminatedReason, decisionDoc, note, actorId, meta);
+    }
+
+    @Override
+    public ContractEvent findLatestTerminatedEvent(Long contractId) {
+        return contractDAO.getContractEventDAO().findLatestTerminatedEvent(contractId);
+    }
+
+    @Override
+    public List<ContractEvent> findEventsByContractId(Long contractId) {
+        return contractDAO.getContractEventDAO().findByContractId(contractId);
     }
 
     @Override

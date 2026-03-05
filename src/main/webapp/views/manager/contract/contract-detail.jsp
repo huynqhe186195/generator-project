@@ -9,6 +9,13 @@
 <body>
 <div class="container mt-4">
 
+    <c:if test="${param.msg == 'terminated_success'}">
+        <div class="alert alert-success">Hợp đồng đã được chấm dứt và ghi nhận lịch sử sự kiện.</div>
+    </c:if>
+    <c:if test="${param.msg == 'terminate_note_required'}">
+        <div class="alert alert-warning">Lý do OTHER yêu cầu nhập ghi chú chi tiết.</div>
+    </c:if>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="mb-0 text-primary">
@@ -24,10 +31,12 @@
                 <i class="fa fa-arrow-left"></i> Danh sách
             </a>
 
-            <a class="btn btn-primary"
-               href="${pageContext.request.contextPath}/manager/contracts?action=assignSerialForm&id=${c.id}">
-                <i class="fa fa-plus"></i> Gán serial
-            </a>
+            <c:if test="${c.status != 'TERMINATED'}">
+                <a class="btn btn-primary"
+                   href="${pageContext.request.contextPath}/manager/contracts?action=assignSerialForm&id=${c.id}">
+                    <i class="fa fa-plus"></i> Gán serial
+                </a>
+            </c:if>
         </div>
     </div>
 
@@ -70,12 +79,62 @@
                             <td class="text-muted">Ngày kết thúc:</td>
                             <td class="fw-bold text-danger"><fmt:formatDate value="${c.endDate}" pattern="dd/MM/yyyy"/></td>
                         </tr>
+                        <c:if test="${c.terminatedAt != null}">
+                            <tr>
+                                <td class="text-muted">Thời điểm chấm dứt:</td>
+                                <td class="fw-bold text-secondary"><fmt:formatDate value="${c.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/></td>
+                            </tr>
+                        </c:if>
                     </table>
 
                     <c:if test="${c.status == 'PENDING_SERIAL'}">
                         <div class="alert alert-warning mt-3 mb-0">
                             Hợp đồng đã import nhưng chưa có thiết bị (serial). Hãy bấm <b>Gán serial</b> để tạo tài sản cho khách hàng.
                         </div>
+                    </c:if>
+
+                    <c:if test="${c.status == 'TERMINATED' && terminatedEvent != null}">
+                        <div class="alert alert-secondary mt-3 mb-0">
+                            <div><b>Lý do mã:</b> ${terminatedEvent.reasonCode}</div>
+                            <div><b>Lý do chi tiết:</b> ${terminatedEvent.terminatedReason}</div>
+                            <div><b>Decision Doc:</b> ${empty terminatedEvent.decisionDoc ? '—' : terminatedEvent.decisionDoc}</div>
+                            <div><b>Ghi chú:</b> ${empty terminatedEvent.note ? '—' : terminatedEvent.note}</div>
+                            <div><b>Người chấm dứt:</b> #${terminatedEvent.actorId}</div>
+                            <div><b>Meta:</b> ${empty terminatedEvent.meta ? '—' : terminatedEvent.meta}</div>
+                        </div>
+                    </c:if>
+
+                    <c:if test="${c.status != 'TERMINATED'}">
+                        <form class="mt-3" method="post" action="${pageContext.request.contextPath}/manager/contracts">
+                            <input type="hidden" name="action" value="terminate"/>
+                            <input type="hidden" name="id" value="${c.id}"/>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Reason code</label>
+                                    <select name="reasonCode" class="form-select">
+                                        <option value="CONTRACT_VIOLATION">CONTRACT_VIOLATION</option>
+                                        <option value="NON_PAYMENT">NON_PAYMENT</option>
+                                        <option value="OTHER">OTHER</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Decision doc</label>
+                                    <input type="text" name="decisionDoc" class="form-control" placeholder="QĐ-123/2026"/>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Lý do vi phạm/chấm dứt</label>
+                                    <input type="text" name="terminatedReason" class="form-control" placeholder="Nhập lý do"/>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Ghi chú (bắt buộc nếu OTHER)</label>
+                                    <textarea name="note" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-danger btn-sm mt-2"
+                                    onclick="return confirm('Bạn chắc chắn muốn chấm dứt hợp đồng này?');">
+                                <i class="fa fa-ban"></i> Chấm dứt hợp đồng
+                            </button>
+                        </form>
                     </c:if>
                 </div>
             </div>
@@ -138,6 +197,40 @@
                         </c:otherwise>
                     </c:choose>
 
+                </div>
+            </div>
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light fw-bold">
+                    <i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Event</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                                <th>Actor</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="ev" items="${contractEvents}">
+                                <tr>
+                                    <td><fmt:formatDate value="${ev.createdAt}" pattern="dd/MM/yyyy HH:mm"/></td>
+                                    <td>${ev.eventType}</td>
+                                    <td>${ev.oldStatus} → ${ev.newStatus}</td>
+                                    <td>${empty ev.reasonCode ? '—' : ev.reasonCode}</td>
+                                    <td>${empty ev.actorId ? '—' : ev.actorId}</td>
+                                </tr>
+                            </c:forEach>
+                            <c:if test="${empty contractEvents}">
+                                <tr><td colspan="5" class="text-center text-muted">Chưa có sự kiện.</td></tr>
+                            </c:if>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

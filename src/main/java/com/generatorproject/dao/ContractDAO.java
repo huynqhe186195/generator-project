@@ -9,7 +9,10 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
 import java.io.InputStream;
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,11 +25,18 @@ public class ContractDAO extends GenericDAO<Contract> {
     private final UserDao userDao;
     private final ProductDAO productDAO;
     private final ProductModelDAO productModelDAO;
+    private final ContractEventDAO contractEventDAO;
 
     public ContractDAO() {
         userDao = new UserDao();
         productDAO = new ProductDAO();
         productModelDAO = new ProductModelDAO();
+        contractEventDAO = new ContractEventDAO();
+    }
+
+
+    public ContractEventDAO getContractEventDAO() {
+        return contractEventDAO;
     }
 
     public Long save(Contract contract) {
@@ -60,7 +70,7 @@ public class ContractDAO extends GenericDAO<Contract> {
 
 
     public Contract findById(Long id) {
-        String sql = "SELECT * FROM contracts WHERE id = ? AND status <> 'TERMINATED'";
+        String sql = "SELECT * FROM contracts WHERE id = ?";
         List<Contract> results = query(sql, new ContractMapper(), id);
         return results.isEmpty() ? null : results.get(0);
     }
@@ -71,7 +81,7 @@ public class ContractDAO extends GenericDAO<Contract> {
         String sql = "SELECT c.*, u.full_name " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
-                "WHERE c.id = ? AND c.status <> 'TERMINATED'";
+                "WHERE c.id = ?";
 
         List<Contract> results = query(sql, new ContractMapper(), id);
         return results.isEmpty() ? null : results.get(0);
@@ -80,7 +90,7 @@ public class ContractDAO extends GenericDAO<Contract> {
     public Contract findContractByProductId(Long productId) {
         String sql = "SELECT c.* FROM contracts c " +
                 "JOIN products p ON p.contract_id = c.id " +
-                "WHERE p.id = ? AND c.status <> 'TERMINATED'";
+                "WHERE p.id = ?";
         List<Contract> results = query(sql, new ContractMapper(), productId);
         return results.isEmpty() ? null : results.get(0);
     }
@@ -96,7 +106,7 @@ public class ContractDAO extends GenericDAO<Contract> {
                         "  LIMIT 1) AS serial_number " +
                         "FROM contracts c " +
                         "JOIN users u ON c.customer_id = u.id " +
-                        "WHERE c.status <> 'TERMINATED' ");
+                        "WHERE 1=1 ");
 
         List<Object> params = new ArrayList<>();
 
@@ -350,17 +360,87 @@ public class ContractDAO extends GenericDAO<Contract> {
     }
 
     public void delete(Long id) {
-        String sql = "UPDATE contracts SET status = 'TERMINATED' WHERE id = ?";
+        String sql = "UPDATE contracts SET status = 'TERMINATED', terminated_at = NOW() WHERE id = ? AND status <> 'TERMINATED'";
         update(sql, id);
     }
 
+    public boolean terminateContract(Long contractId,
+                                     String reasonCode,
+                                     String terminatedReason,
+                                     String decisionDoc,
+                                     String note,
+                                     Long actorId,
+                                     String meta) {
+        String safeReasonCode = normalizeReasonCode(reasonCode);
+
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+
+            String oldStatus;
+            try (PreparedStatement lockPs = conn.prepareStatement(
+                    "SELECT status FROM contracts WHERE id = ? FOR UPDATE")) {
+                lockPs.setLong(1, contractId);
+                try (ResultSet rs = lockPs.executeQuery()) {
+                    if (!rs.next()) {
+                        conn.rollback();
+                        throw new RuntimeException("Không tìm thấy hợp đồng để chấm dứt");
+                    }
+                    oldStatus = rs.getString("status");
+                }
+            }
+
+            if ("TERMINATED".equalsIgnoreCase(oldStatus)) {
+                conn.rollback();
+                return false;
+            }
+
+            try (PreparedStatement updatePs = conn.prepareStatement(
+                    "UPDATE contracts SET status = 'TERMINATED', terminated_at = NOW() WHERE id = ?")) {
+                updatePs.setLong(1, contractId);
+                updatePs.executeUpdate();
+            }
+
+            contractEventDAO.insertEvent(conn,
+                    contractId,
+                    "TERMINATED",
+                    safeReasonCode,
+                    terminatedReason,
+                    decisionDoc,
+                    note,
+                    actorId,
+                    oldStatus,
+                    "TERMINATED",
+                    sanitizeMeta(meta));
+
+            conn.commit();
+            return true;
+        } catch (Exception ex) {
+            throw new RuntimeException("Chấm dứt hợp đồng thất bại", ex);
+        }
+    }
+
+    private String normalizeReasonCode(String reasonCode) {
+        if (reasonCode == null || reasonCode.trim().isEmpty()) {
+            return "OTHER";
+        }
+        return reasonCode.trim().toUpperCase();
+    }
+
+    private String sanitizeMeta(String meta) {
+        if (meta == null) {
+            return null;
+        }
+        String trimmed = meta.trim();
+        return trimmed.isEmpty() || "{}".equals(trimmed) ? null : trimmed;
+    }
+
     public List<Contract> findByProductId(Long productId) {
-        String sql = "SELECT * FROM contracts WHERE product_id = ? AND status <> 'TERMINATED'";
+        String sql = "SELECT * FROM contracts WHERE product_id = ?";
         return query(sql, new ContractMapper(), productId);
     }
 
     public List<Contract> getContractByCustomerId(int id) {
-        String sql = "SELECT * FROM contracts WHERE customer_id = ? AND status <> 'TERMINATED'";
+        String sql = "SELECT * FROM contracts WHERE customer_id = ?";
         return query(sql, new ContractMapper(), id);
     }
 
@@ -384,7 +464,6 @@ public class ContractDAO extends GenericDAO<Contract> {
                 "(SELECT p.serial_number FROM products p WHERE p.contract_id = c.id ORDER BY p.created_at DESC LIMIT 1) AS serial_number " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
-                "WHERE c.status <> 'TERMINATED' " +
                 "ORDER BY c.created_at DESC LIMIT ?";
         return query(sql, new ContractMapper(), limit);
     }
