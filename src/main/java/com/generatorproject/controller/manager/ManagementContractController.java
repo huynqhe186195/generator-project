@@ -188,7 +188,7 @@ public class ManagementContractController extends HttpServlet {
 
         req.setAttribute("contract", c);
         req.setAttribute("customers", userServices.getUsersByRole(5));
-        req.setAttribute("products", productServices.findAll());
+        req.setAttribute("models", productModelServices.findAll());
 
         req.getRequestDispatcher("/views/manager/contract/contract-edit.jsp").forward(req, resp);
     }

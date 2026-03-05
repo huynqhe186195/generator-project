@@ -78,13 +78,16 @@ public class ContractDAO extends GenericDAO<Contract> {
 
 
     public Contract findByIdWithDetails(Long id) {
-        String sql = "SELECT c.*, u.full_name " +
+        String sql = "SELECT c.*, u.full_name, p.serial_number, p.manufacture_year, pm.name AS model_name " +
                 "FROM contracts c " +
                 "JOIN users u ON c.customer_id = u.id " +
-                "WHERE c.id = ?";
+                "LEFT JOIN products p ON p.contract_id = c.id " +
+                "LEFT JOIN product_models pm ON p.model_id = pm.id " +
+                "WHERE c.id = ? " +
+                "ORDER BY p.created_at DESC LIMIT 1";
 
         List<Contract> results = query(sql, new ContractMapper(), id);
-        return results.isEmpty() ? null : results.get(0);
+        return results == null || results.isEmpty() ? null : results.get(0);
     }
 
     public Contract findContractByProductId(Long productId) {
