@@ -212,7 +212,12 @@
   <div class="row g-5">
     <div class="col-lg-7" data-aos="fade-right">
       <div class="contact-form">
-        <h3 class="fw-bold mb-4"><i class="fas fa-paper-plane me-2 text-primary"></i>Gửi yêu cầu hỗ trợ</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold mb-0"><i class="fas fa-paper-plane me-2 text-primary"></i>Gửi yêu cầu hỗ trợ</h3>
+          <a href="<c:url value='/customer/support-requests'/>" class="btn btn-outline-primary btn-sm rounded-pill">
+            <i class="fas fa-clock-rotate-left me-1"></i>Kết quả phản hồi
+          </a>
+        </div>
         <form action="<c:url value='/customer/support-request'/>" method="POST">
           <div class="row g-3">
             <div class="col-md-6">
