@@ -81,7 +81,7 @@ public class ManagementProductController extends HttpServlet {
         String ownerFilter = normalizeOwnerFilter(req.getParameter("ownerFilter"));
 
         int ownershipPage = parseIntOrDefault(req.getParameter("ownershipPage"), 1);
-        int ownershipPageSize = 8;
+        int ownershipPageSize = 6;
 
         int allProductCount = productService.countAll();
         List<Product> allProducts = productService.findAllWithPagination(0, allProductCount == 0 ? 1 : allProductCount);
