@@ -93,8 +93,31 @@
                               </td>
 
                               <td>
-                                <div class="fw-bold text-dark">${contract.productName}</div>
-                                <small class="text-muted">ID: ${contract.productId}</small>
+                                  <%-- Tìm tên máy và serial từ listProducts dựa vào contractId --%>
+                                <c:set var="machineName" value="Chưa xác định / Đang chờ máy" />
+                                <c:set var="machineSerial" value="" />
+
+                                <c:forEach items="${listProducts}" var="prod">
+                                  <%-- ĐẢO NGƯỢC ĐIỀU KIỆN TẠI ĐÂY: So sánh contractId của máy với id của hợp đồng --%>
+                                  <c:if test="${prod.contractId == contract.id}">
+                                    <c:set var="machineName" value="${prod.modelName}" />
+                                    <c:set var="machineSerial" value="${prod.serialNumber}" />
+                                  </c:if>
+                                </c:forEach>
+
+                                <div class="fw-bold text-dark">
+                                  <i class="fas fa-server me-1 text-secondary"></i>${machineName}
+                                </div>
+                                <small class="text-muted">
+                                  <c:choose>
+                                    <c:when test="${not empty machineSerial}">
+                                      Serial: <span class="font-monospace">${machineSerial}</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                      <span class="fst-italic">Chưa cấp Serial</span>
+                                    </c:otherwise>
+                                  </c:choose>
+                                </small>
                               </td>
                               <td>
                                 <div class="small">

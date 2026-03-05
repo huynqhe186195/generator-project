@@ -1,7 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<style>
+    .name-link {
+        color: inherit; /* Kế thừa màu đen/tối mặc định của khung chứa */
+        text-decoration: none; /* Bỏ gạch chân mặc định của thẻ a */
+        transition: color 0.2s ease-in-out; /* Đổi màu mượt */
+    }
 
+    .name-link:hover {
+        color: #0d6efd; /* Chuyển sang màu xanh dương khi trỏ chuột vào */
+        text-decoration: none; /* Vẫn không gạch chân khi hover */
+    }
+</style>
             <title>Danh sách Yêu cầu Bảo trì</title>
 
             <div class="container-fluid">
@@ -113,9 +124,17 @@
 
                                             <td>
                                                 <div class="small">
-                                                    <div class="fw-bold">${req.info.reporterName}</div>
-                                                    <div class="text-muted"><i class="fas fa-phone-alt me-1"></i>
-                                                        ${req.info.reporterPhone}</div>
+                                                    <div class="fw-bold">
+                                                            <%-- Thẻ a bọc lấy tên người báo --%>
+                                                        <a href="<c:url value='/staff/user-information?id=${prod.customerId}'/>"
+                                                           class="name-link"
+                                                           title="Xem chi tiết hồ sơ khách hàng">
+                                                                ${req.info.reporterName}
+                                                        </a>
+                                                    </div>
+                                                    <div class="text-muted mt-1">
+                                                        <i class="fas fa-phone-alt me-1"></i> ${req.info.reporterPhone}
+                                                    </div>
                                                 </div>
                                             </td>
 
@@ -132,6 +151,9 @@
                                                     <c:when test="${req.status == 'APPROVED'}"><span
                                                             class="badge bg-primary rounded-pill">Đã duyệt</span>
                                                     </c:when>
+                                                    <c:when test="${req.status == 'TASK_CREATED'}"><span
+                                                            class="badge bg-secondary rounded-pill">Đã giao task</span>
+                                                    </c:when>
                                                     <c:otherwise><span
                                                             class="badge bg-secondary rounded-pill">${req.status}</span>
                                                     </c:otherwise>
@@ -139,28 +161,39 @@
                                             </td>
 
                                             <td class="text-end pe-4">
-                                                <c:choose>
-                                                    <c:when test="${req.status == 'NEW'}">
-                                                        <a href="<c:url value='/staff/incident/verify?id=${req.id}'/>"
-                                                            class="btn btn-sm btn-outline-danger">
-                                                            <i class="fas fa-check-circle me-1"></i> Xác minh
-                                                        </a>
-                                                    </c:when>
-                                                    <c:when test="${req.status == 'VERIFIED'}">
-                                                        <a href="<c:url value='/staff/incident/escalate?id=${req.id}'/>"
-                                                            class="btn btn-sm btn-primary">
-                                                            <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu
-                                                        </a>
-                                                    </c:when>
-                                                    <c:when test="${req.status == 'APPROVED'}">
-                                                        <form action="<c:url value='/staff/assign-task'/>" method="post" style="display: inline;">
-                                                            <input type="hidden" name="id" value="${req.id}">
-                                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận tạo task bảo trì cho yêu cầu này?')">
-                                                                <i class="fas fa-tools me-1"></i> Gửi task
-                                                            </button>
-                                                        </form>
-                                                    </c:when>
-                                                </c:choose>
+                                                <div class="d-flex justify-content-end gap-2">
+
+                                                        <%-- THÊM MỚI: Nút Xem chi tiết (Luôn hiển thị) --%>
+                                                    <a href="<c:url value='/staff/incident-view?id=${req.id}'/>"
+                                                       class="btn btn-sm btn-outline-info" title="Xem chi tiết yêu cầu">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+
+                                                        <%-- Các nút thao tác theo trạng thái (Giữ nguyên logic cũ) --%>
+                                                    <c:choose>
+                                                        <c:when test="${req.status == 'NEW'}">
+                                                            <a href="<c:url value='/staff/incident/verify?id=${req.id}'/>"
+                                                               class="btn btn-sm btn-outline-danger">
+                                                                <i class="fas fa-check-circle me-1"></i> Xác minh
+                                                            </a>
+                                                        </c:when>
+                                                        <c:when test="${req.status == 'VERIFIED'}">
+                                                            <a href="<c:url value='/staff/incident/escalate?id=${req.id}'/>"
+                                                               class="btn btn-sm btn-primary">
+                                                                <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu
+                                                            </a>
+                                                        </c:when>
+                                                        <c:when test="${req.status == 'APPROVED'}">
+                                                            <form action="<c:url value='/staff/assign-task'/>" method="post" style="display: inline;">
+                                                                <input type="hidden" name="id" value="${req.id}">
+                                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận tạo task bảo trì cho yêu cầu này?')">
+                                                                    <i class="fas fa-tools me-1"></i> Gửi task
+                                                                </button>
+                                                            </form>
+                                                        </c:when>
+                                                    </c:choose>
+
+                                                </div>
                                             </td>
                                         </tr>
                                     </c:forEach>
