@@ -193,6 +193,35 @@
         </c:if>
 
         <hr/>
+            <c:if test="${task.status == 'SCHEDULED'}">
+
+                <!-- PERIODIC / INSPECTION -->
+                <c:if test="${task.type != 'REPAIR'}">
+                    <form method="post" action="<c:url value='/technical/task-complete'/>" class="mt-3">
+                        <input type="hidden" name="id" value="${task.id}" />
+
+                        <button type="submit"
+                                class="btn btn-success w-100"
+                                onclick="return confirm('Xác nhận hoàn thành công việc?')">
+                            ✅ Hoàn thành công việc
+                        </button>
+                    </form>
+                </c:if>
+
+                <!-- REPAIR -->
+                <c:if test="${task.type == 'REPAIR' && quoteStatus == 'APPROVED_BY_CUSTOMER'}">
+                    <form method="post" action="<c:url value='/technical/task-complete'/>" class="mt-3">
+                        <input type="hidden" name="id" value="${task.id}" />
+                        <input type="hidden" name="actualDescription" value="${task.actualDescription}" />
+                        <button type="submit"
+                                class="btn btn-success w-100"
+                                onclick="return confirm('Customer đã duyệt. Hoàn thành sửa chữa?')">
+                            ✅ Hoàn thành sửa chữa
+                        </button>
+                    </form>
+                </c:if>
+
+            </c:if>
 
         <a href="<c:url value='/technical/my-tasks'/>"
            class="btn btn-secondary mt-3">← Quay lại</a>
