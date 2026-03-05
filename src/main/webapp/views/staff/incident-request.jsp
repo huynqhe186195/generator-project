@@ -9,6 +9,15 @@
                     <h3 class="text-secondary">Quản lý Yêu cầu Bảo trì</h3>
                 </div>
 
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <a href="<c:url value='/staff/customer-requests'/>" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-inbox me-1"></i>Xem yêu cầu từ khách hàng
+                    </a>
+                    <a href="<c:url value='/staff/contracts'/>" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-file-contract me-1"></i>Danh sách hợp đồng
+                    </a>
+                </div>
+
                 <div class="card shadow mb-4 border-0">
                     <div class="card-body bg-light rounded">
                         <form action="<c:url value='/staff/incident-list'/>" method="get" class="row g-3">
