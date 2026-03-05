@@ -48,11 +48,12 @@
             <i class="fas fa-warehouse me-2"></i> Kho vật tư
         </a>
 
-        <!-- Hồ sơ cá nhân -->
+        <!-- Lịch sử sửa chữa -->
         <a class="d-block p-2 rounded mb-2"
-           href="${pageContext.request.contextPath}/technical/profile">
-            <i class="fas fa-user me-2"></i> Hồ sơ cá nhân
+           href="${pageContext.request.contextPath}/technical/history">
+            <i class="fas fa-history me-2"></i> Lịch sử sửa chữa
         </a>
+
 
         <hr class="text-secondary">
 

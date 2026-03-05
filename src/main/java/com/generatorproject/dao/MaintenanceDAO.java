@@ -354,5 +354,165 @@ public class MaintenanceDAO extends DbContext {
         return false;
     }
 
+    public List<Maintenance> getHistoryCompletedPaging(
+            int technicianId,
+            String serial,
+            String customer,
+            String dateFrom,
+            String dateTo,
+            int page,
+            int pageSize
+    ) {
+        List<Maintenance> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT m.*,
+               p.serial_number AS product_serial_number,
+               pm.name AS product_name,
+               cu.full_name AS customer_name,
+               cu.phone AS customer_phone
+        FROM maintenances m
+        JOIN products p ON m.product_id = p.id
+        LEFT JOIN product_models pm ON p.model_id = pm.id
+        LEFT JOIN users cu ON p.customer_id = cu.id
+        WHERE m.technician_id = ?
+          AND m.status = 'COMPLETED'
+    """);
+
+        if (serial != null && !serial.trim().isEmpty()) {
+            sql.append(" AND p.serial_number LIKE ? ");
+        }
+
+        if (customer != null && !customer.trim().isEmpty()) {
+            sql.append(" AND (cu.full_name LIKE ? OR cu.phone LIKE ?) ");
+        }
+
+        if (dateFrom != null && !dateFrom.isEmpty()) {
+            sql.append(" AND m.maintenance_date >= ? ");
+        }
+
+        if (dateTo != null && !dateTo.isEmpty()) {
+            sql.append(" AND m.maintenance_date <= ? ");
+        }
+
+        sql.append("""
+        ORDER BY m.maintenance_date DESC
+        LIMIT ? OFFSET ?
+    """);
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int idx = 1;
+            ps.setInt(idx++, technicianId);
+
+            if (serial != null && !serial.trim().isEmpty()) {
+                ps.setString(idx++, "%" + serial.trim() + "%");
+            }
+
+            if (customer != null && !customer.trim().isEmpty()) {
+                String kw = "%" + customer.trim() + "%";
+                ps.setString(idx++, kw);
+                ps.setString(idx++, kw);
+            }
+
+            if (dateFrom != null && !dateFrom.isEmpty()) {
+                ps.setString(idx++, dateFrom);
+            }
+            if (dateTo != null && !dateTo.isEmpty()) {
+                ps.setString(idx++, dateTo);
+            }
+
+            ps.setInt(idx++, pageSize);
+            ps.setInt(idx++, (page - 1) * pageSize);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Maintenance m = mapRow(rs);
+
+                // các field show ra list
+                m.setProductSerialNumber(rs.getString("product_serial_number"));
+                m.setProductName(rs.getString("product_name"));
+
+                // nếu mày đã thêm 2 field này trong Maintenance model:
+                m.setCustomerName(rs.getString("customer_name"));
+                m.setCustomerPhone(rs.getString("customer_phone"));
+
+                list.add(m);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public int countHistoryCompleted(
+            int technicianId,
+            String serial,
+            String customer,
+            String dateFrom,
+            String dateTo
+    ) {
+        StringBuilder sql = new StringBuilder("""
+        SELECT COUNT(*)
+        FROM maintenances m
+        JOIN products p ON m.product_id = p.id
+        LEFT JOIN users cu ON p.customer_id = cu.id
+        WHERE m.technician_id = ?
+          AND m.status = 'COMPLETED'
+    """);
+
+        if (serial != null && !serial.trim().isEmpty()) {
+            sql.append(" AND p.serial_number LIKE ? ");
+        }
+
+        if (customer != null && !customer.trim().isEmpty()) {
+            sql.append(" AND (cu.full_name LIKE ? OR cu.phone LIKE ?) ");
+        }
+
+        if (dateFrom != null && !dateFrom.isEmpty()) {
+            sql.append(" AND m.maintenance_date >= ? ");
+        }
+
+        if (dateTo != null && !dateTo.isEmpty()) {
+            sql.append(" AND m.maintenance_date <= ? ");
+        }
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int idx = 1;
+            ps.setInt(idx++, technicianId);
+
+            if (serial != null && !serial.trim().isEmpty()) {
+                ps.setString(idx++, "%" + serial.trim() + "%");
+            }
+
+            if (customer != null && !customer.trim().isEmpty()) {
+                String kw = "%" + customer.trim() + "%";
+                ps.setString(idx++, kw);
+                ps.setString(idx++, kw);
+            }
+
+            if (dateFrom != null && !dateFrom.isEmpty()) {
+                ps.setString(idx++, dateFrom);
+            }
+
+            if (dateTo != null && !dateTo.isEmpty()) {
+                ps.setString(idx++, dateTo);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt(1);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
 
 }
