@@ -305,9 +305,6 @@
 <section class="hero-section">
     <div class="container position-relative" data-aos="fade-right">
         <h1 class="hero-title">Danh sách Máy phát điện</h1>
-        <p class="hero-desc">
-            Quản lý, theo dõi và tra cứu thiết bị nhanh — lọc theo thương hiệu hoặc tìm theo tên máy / serial.
-        </p>
     </div>
 </section>
 

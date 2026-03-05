@@ -109,23 +109,23 @@
                     </h6>
                 </div>
                 <div class="card-body bg-light">
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Tổng tiền vật tư:</span>
-                        <span class="fw-bold text-dark">
-                            <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ
-                        </span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Phí nhân công:</span>
-                        <span class="fw-bold text-dark">
-                            <fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> VNĐ
-                        </span>
-                    </div>
-                    <hr>
+<%--                    <div class="d-flex justify-content-between mb-3">--%>
+<%--                        <span class="text-muted">Tổng tiền vật tư:</span>--%>
+<%--                        <span class="fw-bold text-dark">--%>
+<%--                            <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ--%>
+<%--                        </span>--%>
+<%--                    </div>--%>
+<%--                    <div class="d-flex justify-content-between mb-3">--%>
+<%--                        <span class="text-muted">Phí nhân công:</span>--%>
+<%--                        <span class="fw-bold text-dark">--%>
+<%--                            <fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> VNĐ--%>
+<%--                        </span>--%>
+<%--                    </div>--%>
+<%--                    <hr>--%>
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <span class="text-uppercase fw-bold text-secondary">Thành tiền:</span>
                         <h4 class="fw-bold text-danger mb-0">
-                            <fmt:formatNumber value="${repairRequest.grandTotal}" pattern="#,###"/> VNĐ
+                            <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ
                         </h4>
                     </div>
 

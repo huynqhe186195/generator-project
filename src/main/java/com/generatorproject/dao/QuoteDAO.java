@@ -65,4 +65,14 @@ public class QuoteDAO extends GenericDAO<Object> {
         // Cần có QuoteMapper để map dữ liệu (Giống như SystemRequestMapper của bạn)
         return query(sql, new QuoteMapper(), productId);
     }
+    // Trong file QuoteDAO.java
+
+    /**
+     * Tìm kiếm Báo giá theo ID
+     */
+    public Quote findById(Long id) {
+        String sql = "SELECT * FROM quotes WHERE id = ?";
+        List<Quote> list = query(sql, new QuoteMapper(), id);
+        return list.isEmpty() ? null : list.get(0);
+    }
 }
