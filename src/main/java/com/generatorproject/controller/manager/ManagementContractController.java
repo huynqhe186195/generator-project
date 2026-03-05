@@ -497,10 +497,12 @@ public class ManagementContractController extends HttpServlet {
             Long actorId = actor != null ? (long) actor.getId() : null;
 
             Map<String, String> extraMeta = new HashMap<>();
-            extraMeta.put("source", "manager_contract_detail");
+            String source = req.getParameter("source");
+            if (source != null && !source.trim().isEmpty()) {
+                extraMeta.put("source", source.trim());
+            }
             extraMeta.put("ip", req.getRemoteAddr());
-            extraMeta.put("user_agent", req.getHeader("User-Agent"));
-            String metaJson = new Gson().toJson(extraMeta);
+            String metaJson = extraMeta.isEmpty() ? null : new Gson().toJson(extraMeta);
 
             boolean terminated = contractService.terminateContract(
                     id,
