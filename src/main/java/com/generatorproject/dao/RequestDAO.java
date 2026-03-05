@@ -151,6 +151,21 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
         List<SystemRequest> list = query(sql, new SystemRequestMapper(), productId);
         return (list != null && !list.isEmpty()) ? list.get(0) : null;
     }
+    public Integer findQuoteProductIdByRequestId(Long requestId) {
+        String sql = "SELECT m.product_id FROM system_requests r " +
+                "JOIN maintenances m ON r.request_data LIKE CONCAT('%\"maintenanceId\":', m.id, '%') " +
+                "WHERE r.id = ? LIMIT 1";
+
+        List<Integer> list = query(sql, rs -> {
+            try {
+                return rs.getInt("product_id");
+            } catch (Exception e) {
+                return null;
+            }
+        }, requestId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
+    }
+
     public List<SystemRequest> findByRoleAndType(String role, String type) {
         StringBuilder sql = new StringBuilder("SELECT * FROM system_requests WHERE receiver_role = ? ");
         List<Object> params = new ArrayList<>();
