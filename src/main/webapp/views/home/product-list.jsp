@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <c:set var="user" value="${sessionScope.USERMODEL}" />
 
@@ -439,11 +440,26 @@
                                         <%-- CÁC NÚT HÀNH ĐỘNG CHÍNH (Dựa theo trạng thái) --%>
                                     <c:choose>
                                         <c:when test="${p.contractStatus == 'TERMINATED'}">
-                                            <span class="badge bg-danger rounded-pill px-3 py-2">Contract terminated</span>
-                                            <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3" disabled>
+                                            <span class="badge bg-danger rounded-pill px-3 py-2"
+                                                  title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
+                                                Contract terminated
+                                            </span>
+                                            <c:if test="${not empty p.terminatedAt}">
+                                                <span class="text-muted small" title="Thời điểm hợp đồng bị chấm dứt">
+                                                    Terminated at:
+                                                    <fmt:formatDate value="${p.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                </span>
+                                            </c:if>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger btn-pill px-3"
+                                                    title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH."
+                                                    disabled>
                                                 <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-secondary btn-pill px-3"
+                                                    title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH."
+                                                    disabled>
                                                 <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
                                             </button>
                                         </c:when>
