@@ -1,5 +1,6 @@
 package com.generatorproject.controller.staff;
 
+import com.generatorproject.dao.MaintenanceDAO;
 import com.generatorproject.model.*;
 import com.generatorproject.services.*;
 import com.google.gson.Gson;
@@ -23,6 +24,9 @@ public class StaffManagementController extends HttpServlet {
     private final IContractServices contractServices;
     private final IProductServices productServices;
     private final IRepairWorkflowService repairWorkflowService;
+    private final IInvoiceService invoiceService;
+    private final MaintenanceDAO maintenanceDAO;
+
 
     public StaffManagementController() {
         userServices = new UserServices();
@@ -30,6 +34,9 @@ public class StaffManagementController extends HttpServlet {
         requestServices = new RequestServices();
         productServices = new ProductServices();
         repairWorkflowService = new RepairWorkflowService();
+        invoiceService = new InvoiceService();
+        maintenanceDAO = new MaintenanceDAO();
+
     }
 
     @Override
@@ -86,6 +93,47 @@ public class StaffManagementController extends HttpServlet {
         }
         resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
+    private void listInvoices(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Lấy tham số lọc
+        String keyword = req.getParameter("keyword");
+        String status = req.getParameter("status");
+
+        // 2. Xử lý Page
+        int page = 1;
+        try {
+            String pageParam = req.getParameter("page");
+            if (pageParam != null && !pageParam.isEmpty()) page = Integer.parseInt(pageParam);
+        } catch (NumberFormatException e) { page = 1; }
+
+        // 3. Xử lý PageSize
+        int pageSize = 10;
+        try {
+            String pageSizeParam = req.getParameter("pageSize");
+            if (pageSizeParam != null && !pageSizeParam.isEmpty()) pageSize = Integer.parseInt(pageSizeParam);
+        } catch (NumberFormatException e) { pageSize = 10; }
+
+        // 4. Gọi Service
+        int totalRecords = invoiceService.countInvoices(keyword, status);
+        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+
+        if (page > totalPages && totalPages > 0) page = 1;
+
+        List<Invoice> invoices = invoiceService.getAllInvoices(keyword, status, page, pageSize);
+
+        // 5. Đẩy dữ liệu ra JSP
+        req.setAttribute("invoices", invoices);
+
+        // Truyền lại các biến để giữ trạng thái trên giao diện
+        req.setAttribute("currentPage", page);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("totalRecords", totalRecords);
+        req.setAttribute("keyword", keyword);
+        req.setAttribute("status", status);
+
+        // Forward về đúng file JSP cũ
+        req.getRequestDispatcher("/views/staff/invoice-list.jsp").forward(req, resp);
+    }
     private void handleSendQuoteToCustomer(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String reqIdParam = req.getParameter("requestId");
 
@@ -139,18 +187,85 @@ public class StaffManagementController extends HttpServlet {
         }
     }
     private void handleRepairRequestList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 1. Lấy tham số bộ lọc từ URL
+        String fromDateParam = req.getParameter("fromDate");
+        String toDateParam = req.getParameter("toDate");
+        String status = req.getParameter("status");
 
+        // 2. Xử lý chuỗi Date
+        Date fromDate = null;
+        Date toDate = null;
+        try {
+            if (fromDateParam != null && !fromDateParam.isEmpty())
+                fromDate = Date.valueOf(fromDateParam);
+            if (toDateParam != null && !toDateParam.isEmpty())
+                toDate = Date.valueOf(toDateParam);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+
+        // 3. Xử lý Phân trang
+        int page = 1;
+        int pageSize = 5;
+        if (req.getParameter("page") != null) {
+            try {
+                page = Integer.parseInt(req.getParameter("page"));
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
 
         try {
-            // Giả sử requestServices của bạn có gọi xuống hàm findInboxByRole của RequestDAO
-            // Lấy tất cả các Request được gửi cho STAFF
-            List<SystemRequest> listRequests = requestServices.findByRoleAndType("STAFF", "REPAIR_QUOTE");
+            String requestType = "REPAIR_QUOTE";
 
-            // Gửi dữ liệu sang JSP
+            // Lấy tổng số lượng và tính toán trang
+            int totalRequests = requestServices.countByFilter(fromDate, toDate, status, requestType);
+            int totalPages = (int) Math.ceil((double) totalRequests / pageSize);
+
+            if (page > totalPages && totalPages > 0) page = 1;
+
+            // Lấy danh sách Request từ DB
+            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
+
+            Map<Long, Product> relatedProducts = new HashMap<>();
+
+            // 4. DUYỆT DANH SÁCH ĐỂ CẬP NHẬT TRẠNG THÁI VÀ LẤY PRODUCT
+            for (SystemRequest sysReq : listRequests) {
+
+                // 1. Tận dụng hàm mới để lấy maintenanceId cực nhanh
+                Long maintenanceId = extractIdFromRequestInfo(sysReq, "maintenanceId");
+
+                if (maintenanceId != null) {
+                    Maintenance maintenance = maintenanceDAO.getById(maintenanceId.intValue());
+
+                    if (maintenance != null && "COMPLETED".equalsIgnoreCase(maintenance.getStatus())) {
+                        if (!"COMPLETED".equalsIgnoreCase(sysReq.getStatus())) {
+                            requestServices.updateStatus(sysReq.getId().intValue(), "COMPLETED");
+                            sysReq.setStatus("COMPLETED"); // Cập nhật trên UI
+                        }
+                    }
+                }
+                // ---------------------------------------------------------
+
+                // Lấy thông tin máy (Product) liên kết với từng Request
+                Product p = getProductFromRequest(sysReq);
+                if (p != null) {
+                    relatedProducts.put(sysReq.getId(), p);
+                }
+            }
+
+            // 5. Gửi toàn bộ dữ liệu sang JSP
             req.setAttribute("listRequests", listRequests);
+            req.setAttribute("relatedProducts", relatedProducts);
 
+            req.setAttribute("totalPages", totalPages);
+            req.setAttribute("currentPage", page);
 
-            // Chuyển hướng sang trang giao diện hiển thị bảng (danh sách)
+            req.setAttribute("fromDate", fromDateParam);
+            req.setAttribute("toDate", toDateParam);
+            req.setAttribute("status", status);
+
             req.getRequestDispatcher("/views/staff/repair-request-list.jsp").forward(req, resp);
 
         } catch (Exception e) {
@@ -195,9 +310,17 @@ public class StaffManagementController extends HttpServlet {
                 Users user = userServices.findUserById(userId);
                 List<Contract> listContracts = contractServices.getContractByCustomerId(userId);
 
+                // THÊM MỚI: Lấy danh sách máy phát điện (Products) của khách hàng này
+                // Giả sử bạn đã khởi tạo productServices ở đầu class Controller
+                List<Product> listProducts = productServices.getAllProductByCustomerId(userId);
+
                 if (user != null) {
                     req.setAttribute("user", user);
                     req.setAttribute("listContracts", listContracts);
+
+                    // THÊM MỚI: Đẩy danh sách máy ra JSP
+                    req.setAttribute("listProducts", listProducts);
+
                     req.getRequestDispatcher("/views/staff/user-information.jsp").forward(req, resp);
                 } else {
                     req.setAttribute("errorMessage", "Không tìm thấy người dùng này!");
@@ -248,7 +371,7 @@ public class StaffManagementController extends HttpServlet {
 
         List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
 
-        // --- ĐOẠN CODE BẠN BỊ THIẾU ĐÃ ĐƯỢC THÊM LẠI Ở ĐÂY ---
+
         Map<Long, Product> relatedProducts = new HashMap<>();
 
         for (SystemRequest sysReq : listRequests) {
@@ -455,6 +578,26 @@ public class StaffManagementController extends HttpServlet {
                 return productServices.getProductById(pId);
             } catch (Exception e) {
                 System.err.println("Error parsing Product ID for Request ID: " + sysReq.getId());
+            }
+        }
+        return null;
+    }
+    private Long extractIdFromRequestInfo(SystemRequest sysReq, String keyName) {
+        if (sysReq == null || sysReq.getInfo() == null) {
+            return null;
+        }
+
+        Map<String, Object> info = sysReq.getInfo();
+        if (info.containsKey(keyName) && info.get(keyName) != null) {
+            try {
+                String idStr = String.valueOf(info.get(keyName));
+                // Xử lý trường hợp Gson/Jackson tự động parse số thành Double (VD: "1.0")
+                if (idStr.contains(".")) {
+                    idStr = idStr.substring(0, idStr.indexOf("."));
+                }
+                return Long.parseLong(idStr);
+            } catch (Exception e) {
+                System.err.println("Lỗi khi parse key '" + keyName + "' cho Request ID: " + sysReq.getId());
             }
         }
         return null;
