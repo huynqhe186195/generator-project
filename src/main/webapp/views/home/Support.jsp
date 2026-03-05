@@ -173,6 +173,18 @@
 </section>
 
 <div class="container my-5">
+  <c:if test="${param.message == 'request_sent'}">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fas fa-check-circle me-2"></i>Yêu cầu của bạn đã được gửi tới bộ phận Staff. Chúng tôi sẽ phản hồi sớm.
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </c:if>
+  <c:if test="${param.message == 'missing_fields'}">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <i class="fas fa-triangle-exclamation me-2"></i>Vui lòng chọn loại yêu cầu và nhập nội dung chi tiết.
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </c:if>
   <div class="row g-4 mb-5 justify-content-center">
     <div class="col-md-5" data-aos="fade-up">
       <div class="feature-card text-center">
@@ -200,30 +212,40 @@
   <div class="row g-5">
     <div class="col-lg-7" data-aos="fade-right">
       <div class="contact-form">
-        <h3 class="fw-bold mb-4"><i class="fas fa-paper-plane me-2 text-primary"></i>Gửi yêu cầu hỗ trợ</h3>
-        <form action="#" method="POST">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold mb-0"><i class="fas fa-paper-plane me-2 text-primary"></i>Gửi yêu cầu hỗ trợ</h3>
+          <a href="<c:url value='/customer/support-requests'/>" class="btn btn-outline-primary btn-sm rounded-pill">
+            <i class="fas fa-clock-rotate-left me-1"></i>Kết quả phản hồi
+          </a>
+        </div>
+        <form action="<c:url value='/customer/support-request'/>" method="POST">
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label small fw-bold">Họ và tên</label>
-              <input type="text" class="form-control border-0 bg-light p-3" placeholder="Nhập họ tên..." required>
+              <input type="text" class="form-control border-0 bg-light p-3" value="${user.fullName}" readonly>
             </div>
             <div class="col-md-6">
               <label class="form-label small fw-bold">Email</label>
-              <input type="email" class="form-control border-0 bg-light p-3" placeholder="name@example.com" required>
+              <input type="email" class="form-control border-0 bg-light p-3" value="${user.email}" readonly>
             </div>
             <div class="col-md-12">
-              <label class="form-label small fw-bold">Loại vấn đề</label>
-              <select class="form-select border-0 bg-light p-3">
-                <option>Lỗi tài khoản & Đăng nhập</option>
-                <option>Sửa đổi thông tin máy phát điện</option>
-                <option>Báo cáo sự cố kỹ thuật</option>
-                <option>Góp ý tính năng</option>
-                <option>Khác</option>
+              <label class="form-label small fw-bold">Loại yêu cầu</label>
+              <select class="form-select border-0 bg-light p-3" name="requestKind" required>
+                <option value="">-- Chọn loại yêu cầu --</option>
+                <option value="CONTRACT_TERMINATION_EXPLANATION">Giải thích lý do hủy hợp đồng</option>
+                <option value="ACCOUNT_DELETE_REQUEST">Yêu cầu xóa tài khoản</option>
+                <option value="ACCOUNT_LOCK_REQUEST">Yêu cầu khóa tài khoản</option>
+                <option value="CONTRACT_RELATED_REQUEST">Yêu cầu liên quan hợp đồng</option>
+                <option value="OTHER">Khác</option>
               </select>
             </div>
             <div class="col-md-12">
+              <label class="form-label small fw-bold">Tiêu đề</label>
+              <input type="text" class="form-control border-0 bg-light p-3" name="subject" placeholder="Ví dụ: Xin giải thích quyết định chấm dứt hợp đồng">
+            </div>
+            <div class="col-md-12">
               <label class="form-label small fw-bold">Nội dung chi tiết</label>
-              <textarea class="form-control border-0 bg-light p-3" rows="5" placeholder="Mô tả vấn đề bạn đang gặp phải..."></textarea>
+              <textarea class="form-control border-0 bg-light p-3" name="message" rows="5" placeholder="Mô tả vấn đề bạn đang gặp phải..." required></textarea>
             </div>
             <div class="col-md-12 mt-4">
               <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow">

@@ -64,7 +64,27 @@ public class StaffManagementController extends HttpServlet {
             case "/repair-request/send-quote":
                 handleSendQuoteToCustomer(req, resp);
                 break;
+            case "/customer-requests":
+                handleCustomerRequestList(req, resp);
+                break;
+            case "/contracts":
+                handleContractList(req, resp);
+                break;
+            case "/contract/detail":
+                handleContractDetail(req, resp);
+                break;
         }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.setCharacterEncoding("UTF-8");
+        String path = req.getPathInfo();
+        if ("/customer-request/respond".equals(path)) {
+            handleCustomerRequestResponse(req, resp);
+            return;
+        }
+        resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
     private void handleSendQuoteToCustomer(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String reqIdParam = req.getParameter("requestId");
@@ -315,6 +335,107 @@ public class StaffManagementController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
+
+    private void handleCustomerRequestList(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        List<SystemRequest> requests = requestServices.findByRoleAndType("STAFF", "CUSTOMER_SUPPORT");
+
+        Map<Long, Users> senders = new HashMap<>();
+        Map<Long, Map<String, Object>> requestPayloads = new HashMap<>();
+
+        for (SystemRequest systemRequest : requests) {
+            Users sender = userServices.findUserById(Math.toIntExact(systemRequest.getSenderId()));
+            if (sender != null) {
+                senders.put(systemRequest.getId(), sender);
+            }
+            requestPayloads.put(systemRequest.getId(), systemRequest.getInfo());
+        }
+
+        req.setAttribute("customerRequests", requests);
+        req.setAttribute("requestSenders", senders);
+        req.setAttribute("requestPayloads", requestPayloads);
+
+        req.getRequestDispatcher("/views/staff/customer-request-list.jsp").forward(req, resp);
+    }
+
+    private void handleCustomerRequestResponse(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            Users staff = (Users) req.getSession().getAttribute("USERMODEL");
+            if (staff == null || (staff.getRoleId() != 3 && staff.getRoleId() != 1)) {
+                resp.sendRedirect(req.getContextPath() + "/account/login");
+                return;
+            }
+
+            long requestId = Long.parseLong(req.getParameter("requestId"));
+            String responseMessage = req.getParameter("responseMessage");
+            String action = req.getParameter("action");
+
+            SystemRequest systemRequest = requestServices.findById(requestId);
+            if (systemRequest == null || !"CUSTOMER_SUPPORT".equals(systemRequest.getRequestType())) {
+                resp.sendRedirect(req.getContextPath() + "/staff/customer-requests?message=not_found");
+                return;
+            }
+
+            if (responseMessage == null || responseMessage.trim().isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/staff/customer-requests?message=missing_response");
+                return;
+            }
+
+            String newStatus = "RESPONDED";
+            if ("REJECT".equalsIgnoreCase(action)) {
+                newStatus = "REJECTED";
+            }
+
+            systemRequest.setStatus(newStatus);
+            systemRequest.setResponseMessage(responseMessage.trim());
+            systemRequest.setReceiverRole("USER");
+            requestServices.update(systemRequest);
+
+            resp.sendRedirect(req.getContextPath() + "/staff/customer-requests?message=responded");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/customer-requests?message=error");
+        }
+    }
+
+    private void handleContractList(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String keyword = req.getParameter("keyword");
+        String status = req.getParameter("status");
+
+        List<Contract> contracts = contractServices.searchAndFilterContracts(keyword, status);
+        req.setAttribute("contracts", contracts);
+        req.setAttribute("keyword", keyword);
+        req.setAttribute("status", status);
+
+        req.getRequestDispatcher("/views/staff/contract-list.jsp").forward(req, resp);
+    }
+
+    private void handleContractDetail(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            Long contractId = Long.parseLong(req.getParameter("id"));
+            Contract contract = contractServices.findContractDetail(contractId);
+            if (contract == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/contracts?message=not_found");
+                return;
+            }
+
+            Users customer = userServices.findUserById(contract.getCustomerId());
+            List<Product> products = productServices.findByContractId(contractId);
+            List<ContractEvent> contractEvents = contractServices.findEventsByContractId(contractId);
+
+            req.setAttribute("c", contract);
+            req.setAttribute("u", customer);
+            req.setAttribute("products", products);
+            req.setAttribute("contractEvents", contractEvents);
+
+            req.getRequestDispatcher("/views/staff/contract-detail.jsp").forward(req, resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/contracts?message=error");
         }
     }
 

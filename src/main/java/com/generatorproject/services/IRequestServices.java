@@ -28,6 +28,8 @@ public interface IRequestServices {
 
     List<SystemRequest> findInboxByRole(String role, String status);
 
+    List<SystemRequest> findCustomerSupportHistory(Long userId, String customerEmail);
+
     void approve(long requestId, long approverId, String approverRole, String responseMessage);
 
     void reject(long id, String responseMessage);
