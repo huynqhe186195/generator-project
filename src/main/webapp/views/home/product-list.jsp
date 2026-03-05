@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="user" value="${sessionScope.USERMODEL}" />
 
@@ -180,6 +182,16 @@
             border-radius: 999px;
             padding: 10px 16px;
             font-weight: 800;
+        }
+
+        .terminated-modal-note{
+            background: #fff5f5;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: .9rem;
+            line-height: 1.5;
         }
 
         /* TABLE */
@@ -435,6 +447,28 @@
 
                                         <%-- CÁC NÚT HÀNH ĐỘNG CHÍNH (Dựa theo trạng thái) --%>
                                     <c:choose>
+                                        <c:when test="${p.contractStatus == 'TERMINATED'}">
+                                            <fmt:formatDate value="${p.terminatedAt}" pattern="dd/MM/yyyy HH:mm" var="terminatedAtText"/>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger btn-pill px-3"
+                                                    onclick="openTerminatedContractModal(this)"
+                                                    data-reason="${fn:escapeXml(p.latestTerminatedEvent)}"
+                                                    data-terminated-at="${terminatedAtText}">
+                                                Contract terminated <i class="fas fa-circle-info ms-1"></i>
+                                            </button>
+
+                                            <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3" disabled>
+                                                    <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
+                                                </button>
+                                            </span>
+                                            <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
+                                                <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled>
+                                                    <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
+                                                </button>
+                                            </span>
+                                        </c:when>
+
                                         <%-- Có báo giá mới -> Nút nổi bật --%>
                                         <c:when test="${p.status == 'RECEIVED_QUOTE'}">
                                             <a href="<c:url value='/user/view-quote?productId=${p.id}'/>"
@@ -570,6 +604,25 @@
     </div>
 </footer>
 
+
+<div class="modal fade" id="terminatedContractModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-file-circle-xmark me-2"></i>Chi tiết hủy hợp đồng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="terminated-modal-note">
+                    <div><strong>Notice:</strong> Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.</div>
+                    <div class="mt-2"><strong>Lý do:</strong> <span id="terminatedReasonText">Không có thông tin.</span></div>
+                    <div class="mt-1"><strong>Hủy lúc:</strong> <span id="terminatedAtText">Không rõ thời điểm.</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg">
@@ -640,6 +693,26 @@
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 <script>
     AOS.init({ duration: 800, once: true });
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+        function openTerminatedContractModal(trigger) {
+        const reason = trigger.getAttribute('data-reason');
+        const terminatedAt = trigger.getAttribute('data-terminated-at');
+
+        document.getElementById('terminatedReasonText').innerText = reason && reason.trim()
+            ? reason
+            : 'Không có thông tin.';
+        document.getElementById('terminatedAtText').innerText = terminatedAt && terminatedAt.trim()
+            ? terminatedAt
+            : 'Không rõ thời điểm.';
+
+        const modal = new bootstrap.Modal(document.getElementById('terminatedContractModal'));
+        modal.show();
+    }
 
     // HÀM MỞ MODAL VÀ ĐIỀN DỮ LIỆU TỰ ĐỘNG
     function openReportModal(id, name, serial) {
