@@ -1,5 +1,6 @@
 package com.generatorproject.controller.web;
 
+import com.generatorproject.dao.ProductDAO;
 import com.generatorproject.model.RepairRequestDTO;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.SystemRequest;
@@ -38,11 +39,22 @@ public class UserQuoteController extends HttpServlet {
         }
 
         try {
+            Users currentUser = (Users) req.getSession().getAttribute("USERMODEL");
+            if (currentUser == null) {
+                resp.sendRedirect(req.getContextPath() + "/account/login");
+                return;
+            }
+
             int productId = Integer.parseInt(productIdParam);
-            Product product = productServices.getProductById(productId);
+            ProductDAO productDAO = new ProductDAO();
+            Product product = productDAO.findCustomerProductWithContract(productId, currentUser.getId());
             SystemRequest systemReq = requestDAO.findPendingQuoteByProductId(productId);
 
             if (product != null && systemReq != null) {
+                if ("TERMINATED".equalsIgnoreCase(product.getContractStatus())) {
+                    resp.sendRedirect(req.getContextPath() + "/product-list?message=contract_terminated");
+                    return;
+                }
                 RepairRequestDTO repairRequest = new Gson().fromJson(systemReq.getRequestData(), RepairRequestDTO.class);
 
                 req.setAttribute("product", product);
@@ -77,6 +89,26 @@ public class UserQuoteController extends HttpServlet {
                 return;
             }
             Long userId = (long) currentUser.getId();
+
+            Integer productId = requestDAO.findQuoteProductIdByRequestId(requestId);
+            if (productId == null) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                resp.getWriter().write("Không tìm thấy báo giá tương ứng sản phẩm.");
+                return;
+            }
+
+            ProductDAO productDAO = new ProductDAO();
+            Product product = productDAO.findCustomerProductWithContract(productId, userId);
+            if (product == null) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                resp.getWriter().write("Bạn không có quyền thao tác với báo giá này.");
+                return;
+            }
+            if ("TERMINATED".equalsIgnoreCase(product.getContractStatus())) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                resp.getWriter().write("Hợp đồng đã bị chấm dứt, không thể phản hồi báo giá.");
+                return;
+            }
 
             // GỌI HÀM TỪ REPAIR_WORKFLOW_SERVICE
             if ("ACCEPT".equalsIgnoreCase(action)) {
