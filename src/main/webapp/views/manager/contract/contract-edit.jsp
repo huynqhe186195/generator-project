@@ -56,7 +56,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Tên máy phát điện (*)</label>
 
-                            <input type="text" class="form-control" name="inputModelName"
+                            <input id="inputModelNameField" type="text" class="form-control" name="inputModelName"
                                    list="modelSuggestions"
                                    value="${contract.productModelName}"
                                    required autocomplete="off">
@@ -73,15 +73,33 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Số Serial (*)</label>
-                            <input type="text" name="serialNumber" class="form-control" required
-                                   value="${contract.productSerial}">
+                            <select id="serialNumberSelect" name="serialNumber" class="form-select" required>
+                                <c:forEach var="cp" items="${contractProducts}">
+                                    <option value="${cp.serialNumber}"
+                                            data-model="${cp.modelName}"
+                                            data-year="${cp.manufactureYear}"
+                                            data-location="${cp.currentLocation}"
+                                            ${contract.productSerial == cp.serialNumber ? 'selected' : ''}>
+                                            ${cp.serialNumber}
+                                    </option>
+                                </c:forEach>
+                            </select>
+                            <small class="text-muted">Nếu hợp đồng có nhiều máy, chọn đúng serial cần chỉnh sửa.</small>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Năm sản xuất</label>
-                            <input type="number" name="manufactureYear" class="form-control"
+                            <input id="manufactureYearInput" type="number" name="manufactureYear" class="form-control"
                                    min="1990" max="2100"
                                    value="${contract.productManufactureYear}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Vị trí lắp đặt</label>
+                            <input id="currentLocationInput" type="text" name="currentLocation" class="form-control"
+                                   value="">
                         </div>
                     </div>
 
@@ -119,4 +137,32 @@
             </div>
         </div>
     </div>
+
+<script>
+    (function () {
+        const serialSelect = document.getElementById('serialNumberSelect');
+        const modelField = document.getElementById('inputModelNameField');
+        const yearField = document.getElementById('manufactureYearInput');
+        const locationField = document.getElementById('currentLocationInput');
+
+        if (!serialSelect) return;
+
+        const syncBySerial = () => {
+            const opt = serialSelect.options[serialSelect.selectedIndex];
+            if (!opt) return;
+
+            const model = opt.getAttribute('data-model');
+            const year = opt.getAttribute('data-year');
+            const location = opt.getAttribute('data-location');
+
+            if (modelField && model) modelField.value = model;
+            if (yearField) yearField.value = (year && year !== 'null') ? year : '';
+            if (locationField) locationField.value = (location && location !== 'null') ? location : '';
+        };
+
+        serialSelect.addEventListener('change', syncBySerial);
+        syncBySerial();
+    })();
+</script>
+
 </body>

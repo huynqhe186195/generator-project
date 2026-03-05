@@ -189,6 +189,7 @@ public class ManagementContractController extends HttpServlet {
         req.setAttribute("contract", c);
         req.setAttribute("customers", userServices.getUsersByRole(5));
         req.setAttribute("models", productModelServices.findAll());
+        req.setAttribute("contractProducts", productServices.findByContractId(id));
 
         req.getRequestDispatcher("/views/manager/contract/contract-edit.jsp").forward(req, resp);
     }
@@ -437,6 +438,11 @@ public class ManagementContractController extends HttpServlet {
             String manuYearStr = req.getParameter("manufactureYear");
             if (manuYearStr != null && !manuYearStr.isEmpty()) {
                 product.setManufactureYear(Integer.parseInt(manuYearStr));
+            }
+
+            String currentLocation = req.getParameter("currentLocation");
+            if (currentLocation != null && !currentLocation.trim().isEmpty()) {
+                product.setCurrentLocation(currentLocation.trim());
             }
 
             if (product.getId() == 0) {
