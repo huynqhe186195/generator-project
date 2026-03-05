@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(urlPatterns = { "/customer/support-requests" })
@@ -27,14 +26,9 @@ public class CustomerSupportRequestHistoryController extends HttpServlet {
             return;
         }
 
-        List<SystemRequest> allRequests = requestServices.findBySenderId((long) user.getId());
-        List<SystemRequest> supportRequests = new ArrayList<>();
-
-        for (SystemRequest request : allRequests) {
-            if ("CUSTOMER_SUPPORT".equalsIgnoreCase(request.getRequestType())) {
-                supportRequests.add(request);
-            }
-        }
+        List<SystemRequest> supportRequests = requestServices.findCustomerSupportHistory(
+                (long) user.getId(),
+                user.getEmail() == null ? "" : user.getEmail());
 
         req.setAttribute("supportRequests", supportRequests);
         req.getRequestDispatcher("/views/home/support-request-history.jsp").forward(req, resp);

@@ -390,7 +390,6 @@ public class StaffManagementController extends HttpServlet {
 
             systemRequest.setStatus(newStatus);
             systemRequest.setResponseMessage(responseMessage.trim());
-            systemRequest.setSenderId((long) staff.getId());
             systemRequest.setReceiverRole("USER");
             requestServices.update(systemRequest);
 

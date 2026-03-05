@@ -151,6 +151,14 @@ public class RequestDAO extends GenericDAO<SystemRequest> {
         List<SystemRequest> list = query(sql, new SystemRequestMapper(), productId);
         return (list != null && !list.isEmpty()) ? list.get(0) : null;
     }
+    public List<SystemRequest> findCustomerSupportHistory(Long userId, String customerEmail) {
+        String sql = "SELECT * FROM system_requests WHERE request_type = 'CUSTOMER_SUPPORT' " +
+                "AND (sender_id = ? OR (receiver_role = 'USER' AND request_data LIKE ?)) " +
+                "ORDER BY created_at DESC";
+
+        return query(sql, new SystemRequestMapper(), userId, "%" + customerEmail + "%");
+    }
+
     public Integer findQuoteProductIdByRequestId(Long requestId) {
         String sql = "SELECT m.product_id FROM system_requests r " +
                 "JOIN maintenances m ON r.request_data LIKE CONCAT('%\"maintenanceId\":', m.id, '%') " +
