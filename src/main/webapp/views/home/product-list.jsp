@@ -485,7 +485,6 @@
 
                                                 <div class="collapse" id="terminatedDetail-${p.id}">
                                                     <div class="terminated-meta">
-                                                        <div><strong>Notice:</strong> Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.</div>
                                                         <c:if test="${not empty p.latestTerminatedEvent}">
                                                             <div><strong>Lý do:</strong> ${p.latestTerminatedEvent}</div>
                                                         </c:if>
