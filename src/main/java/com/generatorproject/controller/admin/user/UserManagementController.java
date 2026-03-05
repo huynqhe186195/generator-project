@@ -61,7 +61,15 @@ public class UserManagementController extends HttpServlet {
         try {
             if (idParam != null && !idParam.isEmpty()) {
                 int id = Integer.parseInt(idParam);
-                userServices.deleteUser(id, actor);
+                String anonymizeParam = req.getParameter("anonymize");
+                boolean anonymize = "1".equals(anonymizeParam) || "true".equalsIgnoreCase(anonymizeParam);
+
+                Users target = userServices.findUserById(id);
+                if (target != null && target.getRoleId() == 5) {
+                    userServices.disableCustomerAccess(id, anonymize);
+                } else {
+                    userServices.deleteUser(id, actor);
+                }
             }
 
             resp.sendRedirect(req.getContextPath() + "/admin/user/user-list?message=delete_success");
@@ -154,11 +162,14 @@ public class UserManagementController extends HttpServlet {
 
             boolean canDelete = false;
             if (currentUser != null) {
-                boolean hasPermission = (currentUser.getRoleId() == 1 || currentUser.hasPermission("USER_MANAGE"));
-                boolean targetIsAdmin = user.getRoleId() == 1;
-                boolean targetIsSelf  = user.getId() == currentUser.getId();
+                boolean hasPermission = userServices.isAdminRole(currentUser.getRoleId()) ||
+                        userServices.isSuperAdminRole(currentUser.getRoleId()) ||
+                        currentUser.hasPermission("USER_MANAGE");
+                boolean currentIsSuperAdmin = userServices.isSuperAdminRole(currentUser.getRoleId());
+                boolean targetIsAdmin = userServices.isAdminRole(user.getRoleId());
+                boolean targetIsSelf = user.getId() == currentUser.getId();
 
-                canDelete = hasPermission && !targetIsAdmin && !targetIsSelf;
+                canDelete = hasPermission && !targetIsSelf && (!targetIsAdmin || currentIsSuperAdmin);
             }
 
             req.setAttribute("user", user);

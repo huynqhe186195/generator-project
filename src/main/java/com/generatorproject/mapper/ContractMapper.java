@@ -21,6 +21,22 @@ public class ContractMapper implements RowMapper<Contract> {
                     .createdAt(rs.getTimestamp("created_at"));
 
             try {
+                builder.terminatedAt(rs.getTimestamp("terminated_at"));
+            } catch (SQLException ignored) { }
+
+            try {
+                builder.terminatedReason(rs.getString("terminated_reason"));
+            } catch (SQLException ignored) { }
+
+            try {
+                builder.decisionDoc(rs.getString("decision_doc"));
+            } catch (SQLException ignored) { }
+
+            try {
+                builder.note(rs.getString("note"));
+            } catch (SQLException ignored) { }
+
+            try {
                 builder.productId(rs.getInt("product_id"));
             } catch (SQLException ignored) { }
 

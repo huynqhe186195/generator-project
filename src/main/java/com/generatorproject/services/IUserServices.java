@@ -46,4 +46,12 @@ public interface IUserServices {
 
     List<Users> getUsersByRole(int roleId);
     void updateProfile(Users user) throws Exception;
+
+    String getRoleName(int roleId);
+
+    boolean isAdminRole(int roleId);
+
+    boolean isSuperAdminRole(int roleId);
+
+    void disableCustomerAccess(int userId, boolean anonymize);
 }
