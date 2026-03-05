@@ -183,32 +183,21 @@
             font-weight: 800;
         }
 
-        .contract-terminated-box{
-            display: inline-flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
-            max-width: 320px;
-            text-align: right;
-        }
-        .contract-terminated-toggle{
-            border: none;
-            background: transparent;
-            padding: 0;
-            cursor: pointer;
-        }
-        .contract-terminated-toggle:focus-visible .badge{
-            outline: 2px solid rgba(59,130,246,.45);
-            outline-offset: 2px;
-        }
-        .terminated-meta{
-            background: #fff5f5;
+        .terminated-dropdown .dropdown-menu{
+            min-width: 320px;
+            max-width: 360px;
             border: 1px solid #fecaca;
+            background: #fff5f5;
             color: #991b1b;
             border-radius: 12px;
-            padding: 8px 10px;
-            font-size: .78rem;
-            line-height: 1.35;
+            padding: 10px 12px;
+        }
+        .terminated-dropdown .dropdown-item-text{
+            white-space: normal;
+            color: #991b1b;
+            font-size: .82rem;
+            line-height: 1.4;
+            padding: 0;
         }
 
         /* TABLE */
@@ -468,47 +457,40 @@
                                         <%-- CÁC NÚT HÀNH ĐỘNG CHÍNH (Dựa theo trạng thái) --%>
                                     <c:choose>
                                         <c:when test="${p.contractStatus == 'TERMINATED'}">
-                                            <div class="contract-terminated-box">
-                                                <button type="button"
-                                                        class="contract-terminated-toggle"
-                                                        data-bs-toggle="collapse"
-                                                        data-bs-target="#terminatedDetail-${p.id}"
-                                                        aria-expanded="false"
-                                                        aria-controls="terminatedDetail-${p.id}">
-                                                    <span class="badge bg-danger rounded-pill px-3 py-2"
-                                                          data-bs-toggle="tooltip"
-                                                          data-bs-placement="top"
-                                                          title="Ấn để xem chi tiết lý do hủy hợp đồng.">
-                                                        Contract terminated <i class="fas fa-chevron-down ms-1"></i>
-                                                    </span>
+                                            <div class="dropdown terminated-dropdown">
+                                                <button class="btn btn-sm btn-danger btn-pill px-3 dropdown-toggle"
+                                                        type="button"
+                                                        data-bs-toggle="dropdown"
+                                                        data-bs-auto-close="outside"
+                                                        title="Ấn để xem chi tiết lý do hủy hợp đồng.">
+                                                    Contract terminated
                                                 </button>
-
-                                                <div class="collapse" id="terminatedDetail-${p.id}">
-                                                    <div class="terminated-meta">
+                                                <div class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                    <div class="dropdown-item-text">
                                                         <div><strong>Notice:</strong> Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.</div>
                                                         <c:if test="${not empty p.latestTerminatedEvent}">
-                                                            <div><strong>Lý do:</strong> ${p.latestTerminatedEvent}</div>
+                                                            <div class="mt-1"><strong>Lý do:</strong> ${p.latestTerminatedEvent}</div>
                                                         </c:if>
                                                         <c:if test="${not empty p.terminatedAt}">
-                                                            <div>
+                                                            <div class="mt-1">
                                                                 <strong>Hủy lúc:</strong>
                                                                 <fmt:formatDate value="${p.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/>
                                                             </div>
                                                         </c:if>
                                                     </div>
                                                 </div>
-
-                                                <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
-                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3" disabled>
-                                                        <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
-                                                    </button>
-                                                </span>
-                                                <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
-                                                    <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled>
-                                                        <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
-                                                    </button>
-                                                </span>
                                             </div>
+
+                                            <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-pill px-3" disabled>
+                                                    <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
+                                                </button>
+                                            </span>
+                                            <span data-bs-toggle="tooltip" title="Hợp đồng đã chấm dứt, vui lòng liên hệ quản trị/CSKH.">
+                                                <button type="button" class="btn btn-sm btn-secondary btn-pill px-3" disabled>
+                                                    <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
+                                                </button>
+                                            </span>
                                         </c:when>
 
                                         <%-- Có báo giá mới -> Nút nổi bật --%>
