@@ -64,12 +64,31 @@
 
             <body>
 
-                <div class="d-flex" id="wrapper">
-                    <div class="border-end bg-dark text-white" id="sidebar-wrapper" style="width: 250px;">
-                        <div
-                            class="sidebar-heading text-center py-4 fs-4 fw-bold text-warning border-bottom border-secondary">
-                            <i class="fas fa-bolt"></i> GEN-CMS
-                        </div>
+            <c:if test="${currentUser.roleId == 3 }">
+                <a href="<c:url value='/staff/customer-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Xem danh sách khách hàng
+                </a>
+            </c:if>
+            <c:if test="${currentUser.roleId == 3 }">
+                <a href="<c:url value='/staff/repair-request-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> Xem danh sách yêu cầu sửa chữa
+                </a>
+            </c:if>
+            <c:if test="${currentUser.roleId == 3 }">
+                <a href="<c:url value='/staff/invoice-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-user-shield me-2" style="width: 20px;"></i> xem hóa đơn
+                <a href="<c:url value='/staff/customer-requests'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-inbox me-2" style="width: 20px;"></i> Yêu cầu từ khách hàng
+                </a>
+            </c:if>
+            <c:if test="${currentUser.roleId == 3 }">
+                <a href="<c:url value='/staff/contracts'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-file-contract me-2" style="width: 20px;"></i> Danh sách hợp đồng
+                </a>
+            </c:if>
+             <a href="<c:url value='/admin/admin-profile'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <i class="fas fa-id-card me-2" style="width: 20px;"></i> Hồ sơ cá nhân
+            </a>
 
                         <div class="list-group list-group-flush">
                             <c:if test="${currentUser.roleId == 2}">
