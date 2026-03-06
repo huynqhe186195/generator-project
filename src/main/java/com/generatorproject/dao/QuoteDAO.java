@@ -15,10 +15,10 @@ public class QuoteDAO extends GenericDAO<Object> {
         System.out.println("====> [DAO] Bắt đầu gọi GenericDAO để chèn vào bảng quotes...");
 
         // Truyền rõ ràng NULL vào các cột chưa dùng tới để tránh lỗi "doesn't have a default value"
-        String sql = "INSERT INTO quotes (maintenance_id, customer_id, total_amount, status, created_at, approved_at, incident_id, created_by, approved_by) " +
-                "VALUES (?, ?, ?, 'APPROVED', NOW(), NOW(), NULL, ?, NULL)";
+        String sql = "INSERT INTO quotes (maintenance_id, customer_id, total_amount, status, created_at, approved_at, created_by) " +
+                "VALUES (?, ?, ?, 'APPROVED', NOW(), NOW(), ?)";
 
-        Long newId = insert(sql, maintenanceId, customerId, totalAmount,customerId);
+        Long newId = insert(sql, maintenanceId, customerId, totalAmount,createdBy);
 
         System.out.println("====> [DAO] GenericDAO chạy xong. ID báo giá vừa tạo là: " + newId);
 
