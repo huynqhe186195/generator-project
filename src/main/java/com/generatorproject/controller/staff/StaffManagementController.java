@@ -80,6 +80,9 @@ public class StaffManagementController extends HttpServlet {
             case "/contract/detail":
                 handleContractDetail(req, resp);
                 break;
+            case "/incident-view":
+                showIncidentDetail(req, resp);
+                break;
         }
     }
 
@@ -93,6 +96,45 @@ public class StaffManagementController extends HttpServlet {
         }
         resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
+    private void showIncidentDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            // 1. Lấy ID từ URL
+            String idParam = req.getParameter("id");
+            if (idParam == null || idParam.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list");
+                return;
+            }
+            int incidentId = Integer.parseInt(idParam);
+
+
+            SystemRequest incident = requestServices.findById((long)incidentId);
+
+            if (incident == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?error=notfound");
+                return;
+            }
+
+
+            Product product = null;
+            if (incident.getInfo() != null && getProductFromRequest(incident).getId()> 0) {
+                product = productServices.getProductById(getProductFromRequest(incident).getId());
+            }
+
+            // 4. Truyền ra JSP
+            req.setAttribute("incident", incident);
+            req.setAttribute("product", product);
+
+            req.getRequestDispatcher("/views/staff/incident-detail.jsp").forward(req, resp);
+
+        } catch (NumberFormatException e) {
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list");
+        }
+
+    }
+
     private void listInvoices(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // 1. Lấy tham số lọc
         String keyword = req.getParameter("keyword");
@@ -171,6 +213,8 @@ public class StaffManagementController extends HttpServlet {
             Long requestId = Long.parseLong(reqIdParam);
 
             // Gọi Service để lấy dữ liệu DTO đã được map tên vật tư
+            SystemRequest sysReq = requestServices.findById(requestId);
+            req.setAttribute("currentStatus", sysReq != null ? sysReq.getStatus() : "");
             RepairRequestDTO dto = repairWorkflowService.getRepairRequestDetails(requestId);
 
             // Đẩy DTO sang JSP để in ra màn hình
