@@ -94,6 +94,13 @@
             <c:if test="${currentUser.roleId == 3 }">
                 <a href="<c:url value='/staff/invoice-list'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
                     <i class="fas fa-user-shield me-2" style="width: 20px;"></i> xem hóa đơn
+                <a href="<c:url value='/staff/customer-requests'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-inbox me-2" style="width: 20px;"></i> Yêu cầu từ khách hàng
+                </a>
+            </c:if>
+            <c:if test="${currentUser.roleId == 3 }">
+                <a href="<c:url value='/staff/contracts'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                    <i class="fas fa-file-contract me-2" style="width: 20px;"></i> Danh sách hợp đồng
                 </a>
             </c:if>
              <a href="<c:url value='/admin/admin-profile'/>" class="list-group-item list-group-item-action bg-transparent text-white p-3">

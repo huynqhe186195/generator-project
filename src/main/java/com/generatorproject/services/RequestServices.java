@@ -65,6 +65,11 @@ public class RequestServices implements IRequestServices {
     }
 
     @Override
+    public List<SystemRequest> findCustomerSupportHistory(Long userId, String customerEmail) {
+        return requestDAO.findCustomerSupportHistory(userId, customerEmail);
+    }
+
+    @Override
     public void approve(long requestId, long approverId, String approverRole, String responseMessage){requestDAO.approve(requestId, approverId, approverRole, responseMessage);}
 
     @Override
