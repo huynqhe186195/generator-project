@@ -129,14 +129,30 @@
                         </h4>
                     </div>
 
-                    <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-success btn-lg" onclick="submitToManager()">
-                            <i class="fas fa-check-circle me-1"></i> Tạo Báo Giá & Trình Manager
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" onclick="rejectRequest()">
-                            <i class="fas fa-times-circle me-1"></i> Từ chối / Báo lại KTV
-                        </button>
-                    </div>
+    <div class="d-grid gap-2 mt-4">
+        <c:choose>
+            <%-- Sửa lại thành currentStatus --%>
+            <c:when test="${currentStatus == 'WAITING_STAFF'}">
+                <button type="button" class="btn btn-success btn-lg" onclick="submitToManager()">
+                    <i class="fas fa-check-circle me-1"></i> Tạo Báo Giá & Trình Manager
+                </button>
+                <button type="button" class="btn btn-outline-danger" onclick="rejectRequest()">
+                    <i class="fas fa-times-circle me-1"></i> Từ chối / Báo lại KTV
+                </button>
+            </c:when>
+
+            <%-- NẾU LÀ TRẠNG THÁI KHÁC THÌ HIỂN THỊ THÔNG BÁO --%>
+<%--            <c:otherwise>--%>
+<%--                <div class="alert alert-info text-center mb-0">--%>
+<%--                    <i class="fas fa-info-circle me-2"></i>Yêu cầu này đang ở trạng thái:--%>
+<%--                    <strong class="text-danger">${currentStatus}</strong>--%>
+<%--                </div>--%>
+<%--                <button type="button" class="btn btn-secondary disabled" disabled>--%>
+<%--                    <i class="fas fa-lock me-1"></i> Đã khóa thao tác--%>
+<%--                </button>--%>
+<%--            </c:otherwise>--%>
+        </c:choose>
+    </div>
                 </div>
             </div>
         </div>

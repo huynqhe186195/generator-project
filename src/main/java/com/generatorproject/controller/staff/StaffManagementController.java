@@ -27,7 +27,6 @@ public class StaffManagementController extends HttpServlet {
     private final IInvoiceService invoiceService;
     private final MaintenanceDAO maintenanceDAO;
 
-
     public StaffManagementController() {
         userServices = new UserServices();
         contractServices = new ContractServices();
@@ -93,6 +92,45 @@ public class StaffManagementController extends HttpServlet {
         }
         resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
+
+    private void showIncidentDetail(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            // 1. Lấy ID từ URL
+            String idParam = req.getParameter("id");
+            if (idParam == null || idParam.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list");
+                return;
+            }
+            int incidentId = Integer.parseInt(idParam);
+
+            SystemRequest incident = requestServices.findById((long) incidentId);
+
+            if (incident == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?error=notfound");
+                return;
+            }
+
+            Product product = null;
+            if (incident.getInfo() != null && getProductFromRequest(incident).getId() > 0) {
+                product = productServices.getProductById(getProductFromRequest(incident).getId());
+            }
+
+            // 4. Truyền ra JSP
+            req.setAttribute("incident", incident);
+            req.setAttribute("product", product);
+
+            req.getRequestDispatcher("/views/staff/incident-detail.jsp").forward(req, resp);
+
+        } catch (NumberFormatException e) {
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list");
+        }
+
+    }
+
     private void listInvoices(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         // 1. Lấy tham số lọc
         String keyword = req.getParameter("keyword");
@@ -102,21 +140,28 @@ public class StaffManagementController extends HttpServlet {
         int page = 1;
         try {
             String pageParam = req.getParameter("page");
-            if (pageParam != null && !pageParam.isEmpty()) page = Integer.parseInt(pageParam);
-        } catch (NumberFormatException e) { page = 1; }
+            if (pageParam != null && !pageParam.isEmpty())
+                page = Integer.parseInt(pageParam);
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
 
         // 3. Xử lý PageSize
         int pageSize = 10;
         try {
             String pageSizeParam = req.getParameter("pageSize");
-            if (pageSizeParam != null && !pageSizeParam.isEmpty()) pageSize = Integer.parseInt(pageSizeParam);
-        } catch (NumberFormatException e) { pageSize = 10; }
+            if (pageSizeParam != null && !pageSizeParam.isEmpty())
+                pageSize = Integer.parseInt(pageSizeParam);
+        } catch (NumberFormatException e) {
+            pageSize = 10;
+        }
 
         // 4. Gọi Service
         int totalRecords = invoiceService.countInvoices(keyword, status);
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
 
-        if (page > totalPages && totalPages > 0) page = 1;
+        if (page > totalPages && totalPages > 0)
+            page = 1;
 
         List<Invoice> invoices = invoiceService.getAllInvoices(keyword, status, page, pageSize);
 
@@ -134,6 +179,7 @@ public class StaffManagementController extends HttpServlet {
         // Forward về đúng file JSP cũ
         req.getRequestDispatcher("/views/staff/invoice-list.jsp").forward(req, resp);
     }
+
     private void handleSendQuoteToCustomer(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String reqIdParam = req.getParameter("requestId");
 
@@ -151,7 +197,8 @@ public class StaffManagementController extends HttpServlet {
             // Gọi service để đổi trạng thái và chuyển Request cho Khách hàng
             repairWorkflowService.processStaffSendToCustomer(requestId, staffId);
 
-            // Xử lý xong thì quay ngược lại trang Danh sách kèm thông báo thành công trên URL
+            // Xử lý xong thì quay ngược lại trang Danh sách kèm thông báo thành công trên
+            // URL
             resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=send_success");
 
         } catch (Exception e) {
@@ -159,7 +206,9 @@ public class StaffManagementController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=error");
         }
     }
-    private void handleViewRepairRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    private void handleViewRepairRequest(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         String reqIdParam = req.getParameter("requestId");
 
         if (reqIdParam == null || reqIdParam.isEmpty()) {
@@ -171,11 +220,14 @@ public class StaffManagementController extends HttpServlet {
             Long requestId = Long.parseLong(reqIdParam);
 
             // Gọi Service để lấy dữ liệu DTO đã được map tên vật tư
+            SystemRequest sysReq = requestServices.findById(requestId);
+            req.setAttribute("currentStatus", sysReq != null ? sysReq.getStatus() : "");
             RepairRequestDTO dto = repairWorkflowService.getRepairRequestDetails(requestId);
 
             // Đẩy DTO sang JSP để in ra màn hình
             req.setAttribute("repairRequest", dto);
-            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit (Approve)
+            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit
+            // (Approve)
             req.setAttribute("rawJsonData", new Gson().toJson(dto));
 
             // Chuyển hướng sang trang chi tiết
@@ -186,7 +238,9 @@ public class StaffManagementController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=error");
         }
     }
-    private void handleRepairRequestList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    private void handleRepairRequestList(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         // 1. Lấy tham số bộ lọc từ URL
         String fromDateParam = req.getParameter("fromDate");
         String toDateParam = req.getParameter("toDate");
@@ -210,7 +264,8 @@ public class StaffManagementController extends HttpServlet {
         if (req.getParameter("page") != null) {
             try {
                 page = Integer.parseInt(req.getParameter("page"));
-                if (page < 1) page = 1;
+                if (page < 1)
+                    page = 1;
             } catch (NumberFormatException e) {
                 page = 1;
             }
@@ -223,10 +278,12 @@ public class StaffManagementController extends HttpServlet {
             int totalRequests = requestServices.countByFilter(fromDate, toDate, status, requestType);
             int totalPages = (int) Math.ceil((double) totalRequests / pageSize);
 
-            if (page > totalPages && totalPages > 0) page = 1;
+            if (page > totalPages && totalPages > 0)
+                page = 1;
 
             // Lấy danh sách Request từ DB
-            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
+            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page,
+                    pageSize);
 
             Map<Long, Product> relatedProducts = new HashMap<>();
 
@@ -273,6 +330,7 @@ public class StaffManagementController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
         }
     }
+
     private void handleCustomerList(HttpServletRequest req, HttpServletResponse resp)
             throws IOException, ServletException {
         String keyword = req.getParameter("keyword");
@@ -334,7 +392,8 @@ public class StaffManagementController extends HttpServlet {
         }
     }
 
-    private void handleIncidentList(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+    private void handleIncidentList(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, ServletException {
         // 1. Lấy tham số từ URL
         String fromDateParam = req.getParameter("fromDate");
         String toDateParam = req.getParameter("toDate");
@@ -358,7 +417,8 @@ public class StaffManagementController extends HttpServlet {
         if (req.getParameter("page") != null) {
             try {
                 page = Integer.parseInt(req.getParameter("page"));
-                if (page < 1) page = 1;
+                if (page < 1)
+                    page = 1;
             } catch (NumberFormatException e) {
                 page = 1;
             }
@@ -369,8 +429,8 @@ public class StaffManagementController extends HttpServlet {
         int totalRequests = requestServices.countByFilter(fromDate, toDate, status, requestType);
         int totalPages = (int) Math.ceil((double) totalRequests / pageSize);
 
-        List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
-
+        List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page,
+                pageSize);
 
         Map<Long, Product> relatedProducts = new HashMap<>();
 
@@ -394,12 +454,14 @@ public class StaffManagementController extends HttpServlet {
         req.setAttribute("toDate", toDateParam);
         req.setAttribute("status", status);
 
-        // Chú ý: Đảm bảo tên file JSP khớp với file bạn đã tạo (incident-list.jsp hoặc incident-request.jsp)
+        // Chú ý: Đảm bảo tên file JSP khớp với file bạn đã tạo (incident-list.jsp hoặc
+        // incident-request.jsp)
         RequestDispatcher rd = req.getRequestDispatcher("/views/staff/incident-request.jsp");
         rd.forward(req, resp);
     }
 
-    private void handleIncidentVerify(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleIncidentVerify(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         try {
             long requestId = Long.parseLong(req.getParameter("id"));
             SystemRequest sysReq = requestServices.findById(requestId);
@@ -429,7 +491,8 @@ public class StaffManagementController extends HttpServlet {
         }
     }
 
-    private void handleIncidentEscalate(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void handleIncidentEscalate(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         try {
             // 1. Lấy ID từ URL
             long requestId = Long.parseLong(req.getParameter("id"));
@@ -582,6 +645,7 @@ public class StaffManagementController extends HttpServlet {
         }
         return null;
     }
+
     private Long extractIdFromRequestInfo(SystemRequest sysReq, String keyName) {
         if (sysReq == null || sysReq.getInfo() == null) {
             return null;
