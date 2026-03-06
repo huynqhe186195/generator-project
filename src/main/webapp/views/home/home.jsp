@@ -306,10 +306,7 @@
             </li>
           </c:otherwise>
         </c:choose>
-
-        <li class="nav-item"><a class="nav-link nav-pill px-3" href="#features">Tính năng</a></li>
         <li class="nav-item"><a class="nav-link nav-pill px-3" href="#brands">Thương hiệu</a></li>
-
         <c:if test="${not empty user}">
           <li class="nav-item">
             <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách hàng</a>

@@ -31,9 +31,16 @@ public class ProductShowcaseController extends HttpServlet {
         Integer brandId = parseIntOrNull(req.getParameter("brandId"));
         Integer categoryId = parseIntOrNull(req.getParameter("categoryId"));
         String fuelType = trim(req.getParameter("fuelType"));
-        Integer power = parseIntOrNull(req.getParameter("power"));
 
-        // Public page chỉ nên hiện ACTIVE
+        Integer powerMin = parseIntOrNull(req.getParameter("powerMin"));
+        Integer powerMax = parseIntOrNull(req.getParameter("powerMax"));
+
+        if (powerMin != null && powerMax != null && powerMin > powerMax) {
+            int temp = powerMin;
+            powerMin = powerMax;
+            powerMax = temp;
+        }
+
         String status = "ACTIVE";
 
         int pageSize = 9;
@@ -46,7 +53,7 @@ public class ProductShowcaseController extends HttpServlet {
         List<Category> categories = categoryDAO.getAllCategories();
 
         int totalItems = productModelDAO.countFilteredProductModels(
-                brandId, categoryId, fuelType, power, status, keyword
+                brandId, categoryId, fuelType, powerMin, powerMax, status, keyword
         );
 
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
@@ -58,7 +65,7 @@ public class ProductShowcaseController extends HttpServlet {
         }
 
         List<ProductModel> listModels = productModelDAO.filterProductModelsPaged(
-                brandId, categoryId, fuelType, power, status, keyword, pageSize, offset
+                brandId, categoryId, fuelType, powerMin, powerMax, status, keyword, pageSize, offset
         );
 
         req.setAttribute("listModels", listModels);

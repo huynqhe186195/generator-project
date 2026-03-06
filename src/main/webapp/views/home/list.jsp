@@ -499,10 +499,20 @@
                             <label class="filter-label">Công suất từ</label>
                             <input type="number"
                                    min="0"
-                                   name="power"
+                                   name="powerMin"
                                    class="form-control"
                                    placeholder="VD: 100"
-                                   value="${param.power}">
+                                   value="${param.powerMin}">
+                        </div>
+
+                        <div class="col-md-6 col-lg-2">
+                            <label class="filter-label">Đến</label>
+                            <input type="number"
+                                   min="0"
+                                   name="powerMax"
+                                   class="form-control"
+                                   placeholder="VD: 500"
+                                   value="${param.powerMax}">
                         </div>
 
                         <div class="col-12 d-flex flex-wrap gap-2 mt-2">
@@ -536,20 +546,35 @@
                     <c:forEach var="item" items="${listModels}">
                         <div class="col-sm-6 col-lg-4">
                             <div class="product-card">
-                                <div class="product-thumb">
-                                    <span class="product-badge">
-                                        <c:choose>
-                                            <c:when test="${not empty item.status}">
-                                                ${item.status}
-                                            </c:when>
-                                            <c:otherwise>Mẫu trưng bày</c:otherwise>
-                                        </c:choose>
-                                    </span>
+                               <div class="product-thumb">
+                                   <span class="product-badge">
+                                       <c:choose>
+                                           <c:when test="${not empty item.status}">
+                                               ${item.status}
+                                           </c:when>
+                                           <c:otherwise>Mẫu trưng bày</c:otherwise>
+                                       </c:choose>
+                                   </span>
 
-                                    <img src="${not empty item.imageUrl ? item.imageUrl : 'https://via.placeholder.com/600x420?text=Gen-CMS+Product'}"
-                                         alt="${item.name}"
-                                         onerror="this.src='https://via.placeholder.com/600x420?text=Gen-CMS+Product'">
-                                </div>
+                                   <c:choose>
+                                       <c:when test="${not empty item.imageUrl}">
+                                           <img src="${item.imageUrl}"
+                                                alt="${item.name}"
+                                                loading="lazy"
+                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                           <div class="no-image" style="display:none;">
+                                               <i class="fas fa-image"></i>
+                                               <span>Không có ảnh</span>
+                                           </div>
+                                       </c:when>
+                                       <c:otherwise>
+                                           <div class="no-image">
+                                               <i class="fas fa-image"></i>
+                                               <span>Không có ảnh</span>
+                                           </div>
+                                       </c:otherwise>
+                                   </c:choose>
+                               </div>
 
                                 <div class="product-body">
                                     <div class="product-name">${item.name}</div>
