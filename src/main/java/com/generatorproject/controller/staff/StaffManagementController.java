@@ -79,6 +79,9 @@ public class StaffManagementController extends HttpServlet {
             case "/contract/detail":
                 handleContractDetail(req, resp);
                 break;
+            case "/incident-view":
+                showIncidentDetail(req, resp);
+                break;
         }
     }
 
