@@ -291,11 +291,14 @@
           <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a>
         </li>
 
+        <li class="nav-item">
+                      <a class="nav-link nav-pill px-3" href="#news">Tin tức</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-pill px-3" href="<c:url value='/products'/>">Sản phẩm mẫu</a>
+                    </li>
         <c:choose>
           <c:when test="${empty user}">
-            <li class="nav-item">
-              <a class="nav-link nav-pill px-3" href="#news">Tin tức</a>
-            </li>
           </c:when>
           <c:otherwise>
             <li class="nav-item">
