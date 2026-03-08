@@ -290,10 +290,10 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center gap-lg-1">
+
         <li class="nav-item">
-          <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a>
-        </li>
-        <li class="nav-item"><a class="nav-link nav-pill px-3" href="#news">Tin tức</a></li>
+                  <a class="nav-link nav-pill px-3" href="<c:url value='/news'/>">Tin tức</a>
+                </li>
         <li class="nav-item"><a class="nav-link nav-pill px-3" href="<c:url value='/products'/>">Sản phẩm mẫu</a></li>
 
         <c:choose>
@@ -305,9 +305,6 @@
             </li>
           </c:otherwise>
         </c:choose>
-
-        <li class="nav-item"><a class="nav-link nav-pill px-3" href="<c:url value='/?#features'/>">Tính năng</a></li>
-        <li class="nav-item"><a class="nav-link nav-pill px-3" href="<c:url value='/?#brands'/>">Thương hiệu</a></li>
 
         <c:if test="${not empty user}">
           <li class="nav-item">

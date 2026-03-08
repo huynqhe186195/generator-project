@@ -402,7 +402,7 @@
         </li>
 
         <li class="nav-item">
-          <a class="nav-link nav-pill px-3" href="#news">Tin tức</a>
+          <a class="nav-link nav-pill px-3" href="<c:url value='/news'/>">Tin tức</a>
         </li>
 
         <li class="nav-item">

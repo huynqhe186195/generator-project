@@ -475,9 +475,7 @@
                             </a>
 
                             <c:if test="${not empty pm.manualUrl}">
-                                <a href="${pm.manualUrl}" target="_blank" class="btn-primary-custom">
-                                    <i class="fas fa-file-pdf me-2"></i>Xem tài liệu
-                                </a>
+
                             </c:if>
                         </div>
                     </div>

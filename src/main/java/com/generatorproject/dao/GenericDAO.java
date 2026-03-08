@@ -150,4 +150,33 @@ public class GenericDAO<T> extends DbContext{
         }
         return 0;
     }
+    public List<String> queryString(String sql, Object... parameters) {
+        List<String> results = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            setParameter(ps, parameters);
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                results.add(rs.getString(1));
+            }
+            return results;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return results;
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
