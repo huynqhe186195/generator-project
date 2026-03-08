@@ -387,14 +387,12 @@
         <div class="collapse navbar-collapse" id="navbarMain">
             <ul class="navbar-nav ms-auto align-items-center gap-lg-1">
                 <li class="nav-item">
-                    <a class="nav-link nav-pill" href="<c:url value='/'/>">Trang chủ</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link nav-pill" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link nav-pill" href="<c:url value='/products'/>">Sản phẩm mẫu</a>
-                </li>
+                          <a class="nav-link nav-pill px-3" href="<c:url value='/news'/>">Tin tức</a>
+                        </li>
+
 
                 <c:choose>
                     <c:when test="${empty user}">
