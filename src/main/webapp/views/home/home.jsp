@@ -100,12 +100,12 @@
     .hero-slide::before{
       content:"";
       position:absolute;
-      inset:-2px;
+      inset:0;
       background:
-        linear-gradient(135deg, rgba(78,115,223,.72) 0%, rgba(34,74,190,.76) 55%, rgba(22,45,111,.80) 100%),
-        radial-gradient(800px 300px at 15% 20%, rgba(255,255,255,.10), transparent 60%),
-        radial-gradient(700px 250px at 80% 15%, rgba(255,255,255,.06), transparent 60%);
-      opacity: .95;
+        linear-gradient(115deg, rgba(15,23,42,.38) 0%, rgba(37,99,235,.30) 45%, rgba(15,23,42,.50) 100%),
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.10), transparent 30%),
+        radial-gradient(circle at 80% 18%, rgba(255,255,255,.08), transparent 28%);
+      backdrop-filter: blur(1px);
       pointer-events:none;
     }
 
@@ -116,84 +116,96 @@
 
     .hero-title{
       font-weight: 900;
-      font-size: clamp(2.2rem, 4vw, 3.6rem);
-      line-height: 1.12;
+      font-size: clamp(2.4rem, 5vw, 4.5rem);
+      line-height: 1.05;
       margin-bottom: 18px;
+      letter-spacing: -1.6px;
+      max-width: 12ch;
+      text-shadow: 0 10px 30px rgba(0,0,0,.22);
     }
 
     .hero-desc{
-      font-size: 1.12rem;
-      opacity: .92;
-      max-width: 46ch;
+      font-size: 1.08rem;
+      opacity: .96;
+      max-width: 58ch;
       margin-bottom: 34px;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 6px 18px rgba(0,0,0,.18);
     }
 
-    /* Stats */
     .stat-badge{
-      background: rgba(255,255,255,.14);
-      padding: 18px 16px;
-      border-radius: 18px;
-      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.12);
+      padding: 22px 18px;
+      border-radius: 22px;
+      backdrop-filter: blur(16px);
       border: 1px solid rgba(255,255,255,.22);
       text-align:center;
-      transition: .28s ease;
-      box-shadow: 0 12px 30px rgba(0,0,0,.10);
+      transition: all .35s ease;
+      box-shadow: 0 18px 45px rgba(15,23,42,.18);
     }
     .stat-badge:hover{
-      background: rgba(255,255,255,.22);
-      transform: translateY(-6px);
-    }
-    .stat-number{
-      font-size: 2rem;
-      font-weight: 900;
-      display:block;
-      letter-spacing: .2px;
-    }
-    .stat-label{
-      font-size: .78rem;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      opacity:.9;
+      background: rgba(255,255,255,.18);
+      transform: translateY(-8px);
+      box-shadow: 0 24px 55px rgba(15,23,42,.24);
     }
 
-    /* Buttons */
-    .btn-white{
-      background: #fff;
-      color: var(--primary);
-      font-weight: 800;
-      border-radius: 999px;
-      padding: 12px 28px;
-      border: none;
-      transition: .25s;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      box-shadow: 0 14px 30px rgba(0,0,0,.18);
-    }
-    .btn-white:hover{
-      transform: translateY(-2px);
-      box-shadow: 0 18px 40px rgba(0,0,0,.22);
-      color: var(--secondary);
-    }
-    .btn-ghost{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      border-radius: 999px;
-      padding: 12px 22px;
-      font-weight: 700;
-      color: rgba(255,255,255,.95);
-      border: 1px solid rgba(255,255,255,.35);
-      background: rgba(255,255,255,.10);
-      text-decoration:none;
-      transition:.25s;
-    }
-    .btn-ghost:hover{
-      transform: translateY(-2px);
-      background: rgba(255,255,255,.16);
+    .stat-number{
+      font-size: 2.2rem;
+      font-weight: 900;
+      display:block;
+      letter-spacing: -.5px;
       color: #fff;
+      line-height: 1;
+      margin-bottom: 8px;
     }
+   .stat-label{
+     font-size: .82rem;
+     text-transform: uppercase;
+     letter-spacing: 1.5px;
+     opacity:.92;
+     color: rgba(255,255,255,.86);
+   }
+
+   .btn-white{
+     background: #fff;
+     color: var(--primary);
+     font-weight: 800;
+     border-radius: 999px;
+     padding: 13px 30px;
+     border: none;
+     transition: all .28s ease;
+     text-decoration:none;
+     display:inline-flex;
+     align-items:center;
+     gap:10px;
+     box-shadow: 0 16px 35px rgba(0,0,0,.18);
+   }
+   .btn-white:hover{
+     transform: translateY(-3px);
+     box-shadow: 0 22px 45px rgba(0,0,0,.22);
+     color: var(--secondary);
+   }
+   .btn-ghost{
+     display:inline-flex;
+     align-items:center;
+     gap:10px;
+     border-radius: 999px;
+     padding: 13px 24px;
+     font-weight: 700;
+     color: rgba(255,255,255,.96);
+     border: 1px solid rgba(255,255,255,.28);
+     background: rgba(255,255,255,.08);
+     backdrop-filter: blur(12px);
+     text-decoration:none;
+     transition: all .28s ease;
+   }
+
+   .btn-ghost:hover{
+     transform: translateY(-3px);
+     background: rgba(255,255,255,.14);
+     color: #fff;
+   }
+
 
     .user-dropdown-toggle{
       border-radius: 999px;
@@ -276,26 +288,53 @@
       box-shadow: 0 16px 40px rgba(15,23,42,.10);
     }
 
-    /* Carousel */
     .carousel-item{
-      transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+      transition: transform 1.2s ease-in-out, opacity 1.2s ease-in-out;
     }
+    .carousel-fade .carousel-item{
+      opacity: 0;
+      transition-property: opacity;
+      transform: none;
+    }
+    .carousel-fade .carousel-item.active,
+    .carousel-fade .carousel-item-next.carousel-item-start,
+    .carousel-fade .carousel-item-prev.carousel-item-end{
+      opacity: 1;
+    }
+
 
     .carousel-control-prev,
     .carousel-control-next{
-      width: 6%;
+      width: 7%;
       z-index: 5;
+      opacity: .9;
+    }
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon{
+      width: 2.8rem;
+      height: 2.8rem;
+      border-radius: 50%;
+      background-color: rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+      background-size: 45% 45%;
     }
 
     .carousel-indicators{
       z-index: 6;
-      margin-bottom: 2rem;
+      margin-bottom: 1.4rem;
+    }
+    .carousel-indicators .active{
+      background-color: #fff;
+      transform: scale(1.15);
     }
 
     .carousel-indicators [data-bs-target]{
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
+      border: 0;
+      margin: 0 5px;
+      background-color: rgba(255,255,255,.45);
     }
 
     /* Footer */
@@ -313,16 +352,32 @@
     @media (max-width: 991.98px){
       .hero-slide{
         min-height: 88vh;
-        padding: 140px 0 90px;
-        clip-path: none;
+        padding: 130px 0 85px;
+      }
+
+      .hero-title{
+        font-size: 2.5rem;
+        max-width: 100%;
+        line-height: 1.12;
+      }
+
+      .hero-desc{
+        font-size: 1rem;
+        max-width: 100%;
       }
 
       .stat-number{
         font-size: 1.5rem;
       }
 
-      .hero-desc{
-        font-size: 1rem;
+      .stat-badge{
+        padding: 16px 12px;
+        border-radius: 18px;
+      }
+
+      .carousel-control-prev,
+      .carousel-control-next{
+        display: none;
       }
     }
   </style>
@@ -403,7 +458,7 @@
 </nav>
 
 <section class="hero-section p-0">
-  <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+<div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="false">
 
     <div class="carousel-indicators">
       <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
@@ -422,7 +477,7 @@
                 <h1 class="hero-title">Quản lý hệ thống máy phát điện thông minh</h1>
                 <p class="hero-desc">Theo dõi, cảnh báo và tối ưu hóa quy trình bảo trì chuyên nghiệp với công nghệ IoT thời gian thực.</p>
 
-                <div class="row g-3 mb-4">
+               <div class="row g-3 mb-5 mt-1">
                   <div class="col-4">
                     <div class="stat-badge">
                       <span class="stat-number">
