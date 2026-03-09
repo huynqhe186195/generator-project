@@ -6,9 +6,9 @@ import java.sql.DriverManager;
 public class DbContext {
 
     private static final String DEFAULT_URL =
-            "jdbc:mysql://localhost:3306/generator_cms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+            "jdbc:mysql://localhost:3306/generator_cms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh";
     private static final String DEFAULT_USER = "root";
-    private static final String DEFAULT_PASS = "123456789";
+    private static final String DEFAULT_PASS = "123456";
 
     public Connection getConnection() throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
