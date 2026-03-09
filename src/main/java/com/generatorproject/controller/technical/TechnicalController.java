@@ -5,6 +5,7 @@ import com.generatorproject.model.Maintenance;
 import com.generatorproject.model.MaintenanceSparePart;
 import com.generatorproject.model.SparePart;
 import com.generatorproject.model.Users;
+import com.generatorproject.dao.TechnicalStatsDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -41,6 +42,7 @@ import javax.servlet.http.Part;
         "/technical/spare-part-delete",
         "/technical/delete-material",
         "/technical/history",
+        "/technical/stats",
 
 })
 public class TechnicalController extends HttpServlet {
@@ -107,6 +109,16 @@ public class TechnicalController extends HttpServlet {
 
                 req.getRequestDispatcher("/views/Technical/task-list.jsp")
                         .forward(req, resp);
+                break;
+            }
+            case "/technical/stats": {
+                TechnicalStatsDAO statsDAO = new TechnicalStatsDAO();
+
+                req.setAttribute("stats", statsDAO.getOverview(currentUser.getId()));
+                req.setAttribute("topParts", statsDAO.getTopUsedSpareParts(currentUser.getId(), 5));
+                req.setAttribute("recentCompleted", statsDAO.getRecentCompletedTasks(currentUser.getId(), 5));
+
+                req.getRequestDispatcher("/views/Technical/stats.jsp").forward(req, resp);
                 break;
             }
             case "/technical/task-complete": {
@@ -286,21 +298,43 @@ public class TechnicalController extends HttpServlet {
 // Kho vật tư
 // =========================
             case "/technical/materials": {
-                final SparePartDAO sparePartDAO = new SparePartDAO();
 
+                final SparePartDAO sparePartDAO = new SparePartDAO();
 
                 String keyword = req.getParameter("keyword");
 
+                int page = 1;
+                int pageSize = 10;
+
+                try {
+                    page = Integer.parseInt(req.getParameter("page"));
+                } catch (Exception ignored) {}
+
                 List<SparePart> parts;
+                int total;
+
                 if (keyword != null && !keyword.trim().isEmpty()) {
-                    parts = sparePartDAO.search(keyword);
+
+                    parts = sparePartDAO.searchPaging(keyword, page, pageSize);
+                    total = sparePartDAO.countSearch(keyword);
+
                 } else {
-                    parts = sparePartDAO.getAll();
+
+                    parts = sparePartDAO.getPaging(page, pageSize);
+                    total = sparePartDAO.countAll();
+
                 }
 
+                int totalPages = (int) Math.ceil((double) total / pageSize);
+
                 req.setAttribute("parts", parts);
+                req.setAttribute("currentPage", page);
+                req.setAttribute("totalPages", totalPages);
+                req.setAttribute("keyword", keyword);
+
                 req.getRequestDispatcher("/views/Technical/materials.jsp")
                         .forward(req, resp);
+
                 break;
             }
 
@@ -476,9 +510,14 @@ public class TechnicalController extends HttpServlet {
             json.append("\"materials\":[");
             for (int i = 0; i < materials.size(); i++) {
                 MaintenanceSparePart m = materials.get(i);
+                double unitPrice = 0;
+                if (m.getQuantityUsed() > 0) {
+                    unitPrice = m.getCostAtTime() / m.getQuantityUsed();
+                }
                 json.append("{")
                         .append("\"sparePartId\":").append(m.getSparePartId()).append(",")
                         .append("\"quantityUsed\":").append(m.getQuantityUsed()).append(",")
+                        .append("\"unitPrice\":").append(unitPrice).append(",")
                         .append("\"costAtTime\":").append(m.getCostAtTime())
                         .append("}");
                 if (i < materials.size() - 1) json.append(",");
