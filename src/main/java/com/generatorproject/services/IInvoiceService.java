@@ -7,7 +7,8 @@ import java.util.List;
 public interface IInvoiceService {
 
     // Tạo hóa đơn mới từ Báo giá
-    boolean createInvoice(Long quoteId, double taxRate, Users currentUser) throws Exception;
+    public boolean createInvoiceFromRequest(Long requestId, Integer staffId, double taxRate);
+    public boolean hasInvoiceByRequest(Long requestId);
 
     // Lấy chi tiết hóa đơn
     Invoice getInvoiceById(Long id);

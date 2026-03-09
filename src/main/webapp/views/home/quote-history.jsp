@@ -34,7 +34,7 @@
                 <thead class="bg-primary text-white">
                 <tr>
                     <th class="ps-4 py-3">Mã Báo Giá</th>
-                    <th class="py-3">Ngày tạo</th>
+
                     <th class="py-3">Ngày duyệt</th>
                     <th class="py-3 text-end">Tổng tiền</th>
                     <th class="py-3 text-center">Trạng thái</th>
@@ -55,10 +55,7 @@
                         <c:forEach items="${quoteHistory}" var="q">
                             <tr>
                                 <td class="ps-4 fw-bold text-secondary">#QUOTE-${q.id}</td>
-                                <td>
-                                        <%-- Thêm timeZone vào đây --%>
-                                    <fmt:formatDate value="${q.createdAt}" pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
-                                </td>
+
                                 <td>
                                     <c:choose>
                                         <c:when test="${not empty q.approvedAt}">
@@ -85,10 +82,10 @@
                                     </c:choose>
                                 </td>
                                 <td class="pe-4 text-center">
-                                        <%-- Bạn có thể viết thêm chức năng xem chi tiết báo giá cũ sau này --%>
-                                    <button class="btn btn-sm btn-light border btn-pill px-3" onclick="alert('Tính năng xem chi tiết hóa đơn cũ đang phát triển!')">
+                                        <%-- Gọi đến Controller xem chi tiết báo giá và truyền id --%>
+                                    <a href="<c:url value='/user/quote-detail?id=${q.id}'/>" class="btn btn-sm btn-light border btn-pill px-3" title="Xem chi tiết">
                                         <i class="fas fa-eye text-primary"></i>
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                         </c:forEach>

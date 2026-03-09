@@ -10,44 +10,38 @@ import java.util.Random;
 
 public class InvoiceDAO extends GenericDAO<Invoice> {
 
-    // Hàm sinh mã hóa đơn ngẫu nhiên: INV-20260304-1234
-    private String generateInvoiceCode() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        String dateStr = sdf.format(new Date());
-        int randomNum = new Random().nextInt(9000) + 1000; // Số từ 1000-9999
-        return "INV-" + dateStr + "-" + randomNum;
-    }
-
-    /**
-     * TẠO HÓA ĐƠN TỪ BÁO GIÁ
-     * @param quoteId: ID của báo giá đã được duyệt
-     * @param staffId: ID của nhân viên tạo hóa đơn
-     * @param taxRate: Thuế VAT (VD: 8.0 cho 8%)
-     */
-    public boolean createInvoiceFromQuote(Long quoteId, Integer staffId, double taxRate) {
 
 
-        // Để code ngắn gọn, tôi viết logic query lồng vào insert luôn:
-        // Lấy dữ liệu từ bảng quotes insert thẳng sang invoices
+    public boolean createInvoiceFromRequest(Long requestId, Integer staffId, double taxRate) {
+
         String sqlSmartInsert =
-                "INSERT INTO invoices (invoice_code, customer_id, quote_id, maintenance_id, created_by, subtotal, tax_rate, tax_amount, total_amount, payment_status, issued_date, due_date) " +
+                "INSERT INTO invoices (invoice_code, customer_id, maintenance_id, created_by, subtotal, tax_rate, tax_amount, total_amount, payment_status, issued_date, due_date) " +
                         "SELECT " +
-                        "   CONCAT('INV-', DATE_FORMAT(NOW(), '%Y%m%d'), '-', FLOOR(RAND()*(9999-1000)+1000)), " + // Sinh mã
-                        "   q.customer_id, " +
-                        "   q.id, " +
-                        "   q.maintenance_id, " +
-                        "   ?, " +   // Staff ID
-                        "   q.total_amount, " + // Subtotal
-                        "   ?, " +   // Tax Rate (VD: 8)
-                        "   (q.total_amount * ? / 100), " + // Tax Amount
-                        "   (q.total_amount + (q.total_amount * ? / 100)), " + // Total Amount
-                        "   'UNPAID', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY) " +
-                        "FROM quotes q WHERE q.id = ?";
+                        "   CONCAT('INV-', DATE_FORMAT(NOW(), '%Y%m%d'), '-', FLOOR(RAND()*(9999-1000)+1000)), " +
+                        "   p.customer_id, " +
+                        "   m.id, " +
+                        "   ?, " +  // Tham số 1: Staff ID
 
-        // Gọi hàm update của GenericDAO
-        // Thứ tự tham số: staffId, taxRate, taxRate, taxRate, quoteId
+                        // Lấy tổng tiền (Ưu tiên grandTotal, nếu không có thì lấy partsTotal)
+                        "   CAST(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.partsTotal')), JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.partsTotal')), 0) AS DECIMAL(15,2)), " +
+
+                        "   ?, " +  // Tham số 2: Tax Rate
+
+                        // Tính Tiền Thuế = Tổng tiền * (taxRate / 100)
+                        "   (CAST(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.partsTotal')), JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.partsTotal')), 0) AS DECIMAL(15,2)) * ? / 100), " +
+
+                        // Tính Tổng Thanh Toán = Tổng tiền * (1 + taxRate / 100)
+                        "   (CAST(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.partsTotal')), JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.partsTotal')), 0) AS DECIMAL(15,2)) * (1 + ? / 100)), " +
+
+                        "   'UNPAID', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY) " +
+                        "FROM system_requests sr " +
+                        // Bóc mã maintenanceId từ JSON để nối bảng
+                        "JOIN maintenances m ON m.id = CAST(JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.maintenanceId')) AS UNSIGNED) " +
+                        "JOIN products p ON p.id = m.product_id " +
+                        "WHERE sr.id = ?"; // Tham số 5: Request ID
         try {
-            update(sqlSmartInsert, staffId, taxRate, taxRate, taxRate, quoteId);
+            // Thứ tự truyền param: staffId, taxRate, taxRate, taxRate, requestId
+            update(sqlSmartInsert, staffId, taxRate, taxRate, taxRate, requestId);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,10 +49,15 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
         }
     }
 
-    // Hàm kiểm tra xem báo giá này đã có hóa đơn chưa
-    public boolean hasInvoice(Long quoteId) {
-        String sql = "SELECT COUNT(*) FROM invoices WHERE quote_id = ?";
-        return count(sql, quoteId) > 0;
+    /**
+     * Hàm kiểm tra xem Yêu cầu này đã được xuất hóa đơn chưa
+     */
+    public boolean hasInvoiceByRequest(Long requestId) {
+        String sql = "SELECT COUNT(*) FROM invoices i " +
+                "JOIN quotes q ON i.quote_id = q.id " +
+                "JOIN system_requests sr ON q.maintenance_id = CAST(JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.maintenanceId')) AS UNSIGNED) " +
+                "WHERE sr.id = ?";
+        return count(sql, requestId) > 0;
     }
     // Trong InvoiceDAO.java
 

@@ -28,6 +28,12 @@
                         <option value="PENDING" ${status == 'PENDING' ? 'selected' : '' }>Đã trình Manager</option>
                         <option value="APPROVED" ${status == 'APPROVED' ? 'selected' : '' }>Manager đã duyệt</option>
                         <option value="REJECTED" ${status == 'REJECTED' ? 'selected' : '' }>Bị từ chối</option>
+
+
+                        <option value="WAITING_CUSTOMER" ${status == 'WAITING_CUSTOMER' ? 'selected' : '' }>Chờ khách duyệt</option>
+                        <option value="APPROVED_BY_CUSTOMER" ${status == 'APPROVED_BY_CUSTOMER' ? 'selected' : '' }>Khách đã duyệt</option>
+                        <option value="REJECTED_BY_CUSTOMER" ${status == 'REJECTED_BY_CUSTOMER' ? 'selected' : '' }>Khách từ chối</option>
+
                         <option value="COMPLETED" ${status == 'COMPLETED' ? 'selected' : '' }>Đã hoàn thành</option>
                     </select>
                 </div>
@@ -118,6 +124,18 @@
                                             <c:when test="${req.status == 'APPROVED'}">
                                                 <span class="badge bg-success rounded-pill px-3">Đã duyệt</span>
                                             </c:when>
+
+
+                                            <c:when test="${req.status == 'WAITING_CUSTOMER'}">
+                                                <span class="badge bg-info text-dark rounded-pill px-3"><i class="fas fa-hourglass-half me-1"></i>Chờ khách duyệt</span>
+                                            </c:when>
+                                            <c:when test="${req.status == 'APPROVED_BY_CUSTOMER'}">
+                                                <span class="badge bg-primary rounded-pill px-3"><i class="fas fa-check-double me-1"></i>Khách đã duyệt</span>
+                                            </c:when>
+                                            <c:when test="${req.status == 'REJECTED_BY_CUSTOMER'}">
+                                                <span class="badge bg-dark rounded-pill px-3"><i class="fas fa-times me-1"></i>Khách từ chối</span>
+                                            </c:when>
+
                                             <c:when test="${req.status == 'COMPLETED'}">
                                                 <span class="badge bg-info rounded-pill px-3">Hoàn thành</span>
                                             </c:when>
@@ -136,10 +154,14 @@
                                                 </a>
                                             </c:when>
                                             <c:when test="${req.status == 'COMPLETED'}">
-                                                <a href="<c:url value='/staff/invoice/create?requestId=${req.id}'/>"
-                                                   class="btn btn-sm btn-warning text-dark">
-                                                    <i class="fas fa-file-invoice-dollar me-1"></i> Tạo hóa đơn
-                                                </a>
+                                                <%-- Thay thẻ <a> bằng thẻ <form> method="POST" --%>
+                                                <form action="<c:url value='/staff/invoice/create'/>" method="POST" class="d-inline">
+                                                    <input type="hidden" name="requestId" value="${req.id}">
+                                                    <button type="submit" class="btn btn-sm btn-warning text-dark"
+                                                            onclick="return confirm('Bạn có chắc chắn muốn xuất hóa đơn cho yêu cầu #${req.id} này?');">
+                                                        <i class="fas fa-file-invoice-dollar me-1"></i> Tạo hóa đơn
+                                                    </button>
+                                                </form>
                                             </c:when>
                                             <c:otherwise>
                                                 <a href="<c:url value='/staff/repair-request/view?requestId=${req.id}'/>"
