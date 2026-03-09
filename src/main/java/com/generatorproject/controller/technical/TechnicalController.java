@@ -653,7 +653,13 @@ public class TechnicalController extends HttpServlet {
             }
 
             maintenanceDAO.updateStatus(id, "COMPLETED");
+            // update product -> READY
+            ProductDAO productDAO = new ProductDAO();
+            productDAO.updateStatus(task.getProductId(), "READY");
 
+            // update system_request -> CUSTOMER / COMPLETED
+            SystemRequestDAO srDAO = new SystemRequestDAO();
+            srDAO.markCompletedForCustomer(id);
             resp.sendRedirect(req.getContextPath()
                     + "/technical/repair-report?id=" + id);
             return;
