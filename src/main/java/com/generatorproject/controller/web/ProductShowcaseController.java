@@ -1,4 +1,4 @@
-package com.generatorproject.controller.it.product;
+package com.generatorproject.controller.web;
 
 import com.generatorproject.dao.BrandDAO;
 import com.generatorproject.dao.CategoryDAO;
@@ -15,8 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/it/products")
-public class ProductModelListController extends HttpServlet {
+@WebServlet("/products")
+public class ProductShowcaseController extends HttpServlet {
 
     private final ProductModelDAO productModelDAO = new ProductModelDAO();
     private final BrandDAO brandDAO = new BrandDAO();
@@ -24,7 +24,6 @@ public class ProductModelListController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
 
@@ -32,9 +31,9 @@ public class ProductModelListController extends HttpServlet {
         Integer brandId = parseIntOrNull(req.getParameter("brandId"));
         Integer categoryId = parseIntOrNull(req.getParameter("categoryId"));
         String fuelType = trim(req.getParameter("fuelType"));
+
         Integer powerMin = parseIntOrNull(req.getParameter("powerMin"));
         Integer powerMax = parseIntOrNull(req.getParameter("powerMax"));
-        String status = trim(req.getParameter("status"));
 
         if (powerMin != null && powerMax != null && powerMin > powerMax) {
             int temp = powerMin;
@@ -42,9 +41,12 @@ public class ProductModelListController extends HttpServlet {
             powerMax = temp;
         }
 
-        int pageSize = 10;
+        String status = "ACTIVE";
+
+        int pageSize = 9;
         int page = parseIntOrDefault(req.getParameter("page"), 1);
         if (page < 1) page = 1;
+
         int offset = (page - 1) * pageSize;
 
         List<Brand> brands = brandDAO.getAllBrands();
@@ -74,7 +76,7 @@ public class ProductModelListController extends HttpServlet {
         req.setAttribute("pageSize", pageSize);
         req.setAttribute("totalItems", totalItems);
 
-        req.getRequestDispatcher("/views/it/product/list.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/home/list.jsp").forward(req, resp);
     }
 
     private String trim(String s) {
