@@ -68,6 +68,28 @@ public class SystemRequestDAO extends DbContext {
             return false;
         }
     }
+
+    public boolean markCompletedForCustomer(int maintenanceId) {
+        String sql = """
+        UPDATE system_requests
+        SET receiver_role = 'CUSTOMER',
+            status = 'COMPLETED'
+        WHERE request_type = 'REPAIR_QUOTE'
+          AND request_data LIKE ?
+    """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%\"maintenanceId\":" + maintenanceId + "%");
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public SystemRequest getSystemRequestById(long id) {
         String sql = "SELECT * FROM system_requests WHERE id = ?";
 
