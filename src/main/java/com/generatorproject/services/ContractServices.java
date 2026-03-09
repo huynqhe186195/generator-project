@@ -2,6 +2,7 @@ package com.generatorproject.services;
 
 import com.generatorproject.dao.ContractDAO;
 import com.generatorproject.model.Contract;
+import com.generatorproject.model.ContractEvent;
 import com.generatorproject.model.Users;
 
 import java.io.InputStream;
@@ -59,13 +60,25 @@ public class ContractServices implements IContractServices {
     }
 
     @Override
-    public void terminateContract(Long contractId,
-                                  String reasonCode,
-                                  String terminatedReason,
-                                  String decisionDoc,
-                                  String note,
-                                  Long actorId) {
-        contractDAO.terminateContract(contractId, reasonCode, terminatedReason, decisionDoc, note, actorId);
+    public boolean terminateContract(Long contractId,
+            String reasonCode,
+            String terminatedReason,
+            String decisionDoc,
+            String note,
+            Long actorId,
+            String meta) {
+        return contractDAO.terminateContract(contractId, reasonCode, terminatedReason, decisionDoc, note, actorId,
+                meta);
+    }
+
+    @Override
+    public ContractEvent findLatestTerminatedEvent(Long contractId) {
+        return contractDAO.getContractEventDAO().findLatestTerminatedEvent(contractId);
+    }
+
+    @Override
+    public List<ContractEvent> findEventsByContractId(Long contractId) {
+        return contractDAO.getContractEventDAO().findByContractId(contractId);
     }
 
     @Override
@@ -89,7 +102,9 @@ public class ContractServices implements IContractServices {
     }
 
     @Override
-    public Long assignSerialToContract(Long contractId, String serialNumber, Long modelId, Date purchaseDate, Integer manufactureYear, String currentLocation) throws Exception {
-        return contractDAO.assignSerialToContract(contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
+    public Long assignSerialToContract(Long contractId, String serialNumber, Long modelId, Date purchaseDate,
+            Integer manufactureYear, String currentLocation) throws Exception {
+        return contractDAO.assignSerialToContract(contractId, serialNumber, modelId, purchaseDate, manufactureYear,
+                currentLocation);
     }
 }

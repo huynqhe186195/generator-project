@@ -15,10 +15,10 @@ public class QuoteDAO extends GenericDAO<Object> {
         System.out.println("====> [DAO] Bắt đầu gọi GenericDAO để chèn vào bảng quotes...");
 
         // Truyền rõ ràng NULL vào các cột chưa dùng tới để tránh lỗi "doesn't have a default value"
-        String sql = "INSERT INTO quotes (maintenance_id, customer_id, total_amount, status, created_at, approved_at, incident_id, created_by, approved_by) " +
-                "VALUES (?, ?, ?, 'APPROVED', NOW(), NOW(), NULL, ?, NULL)";
+        String sql = "INSERT INTO quotes (maintenance_id, customer_id, total_amount, status, created_at, approved_at, created_by) " +
+                "VALUES (?, ?, ?, 'APPROVED', NOW(), NOW(), ?)";
 
-        Long newId = insert(sql, maintenanceId, customerId, totalAmount,customerId);
+        Long newId = insert(sql, maintenanceId, customerId, totalAmount,createdBy);
 
         System.out.println("====> [DAO] GenericDAO chạy xong. ID báo giá vừa tạo là: " + newId);
 
@@ -64,5 +64,15 @@ public class QuoteDAO extends GenericDAO<Object> {
 
         // Cần có QuoteMapper để map dữ liệu (Giống như SystemRequestMapper của bạn)
         return query(sql, new QuoteMapper(), productId);
+    }
+    // Trong file QuoteDAO.java
+
+    /**
+     * Tìm kiếm Báo giá theo ID
+     */
+    public Quote findById(Long id) {
+        String sql = "SELECT * FROM quotes WHERE id = ?";
+        List<Quote> list = query(sql, new QuoteMapper(), id);
+        return list.isEmpty() ? null : list.get(0);
     }
 }

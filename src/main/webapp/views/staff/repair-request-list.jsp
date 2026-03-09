@@ -13,13 +13,22 @@
         <div class="card-body bg-light rounded">
             <form action="<c:url value='/staff/repair-request-list'/>" method="get" class="row g-3">
                 <div class="col-md-3">
+                    <label class="form-label small text-muted mb-1">Từ ngày:</label>
+                    <input type="date" class="form-control" name="fromDate" value="${fromDate}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted mb-1">Đến ngày:</label>
+                    <input type="date" class="form-control" name="toDate" value="${toDate}">
+                </div>
+                <div class="col-md-4">
                     <label class="form-label small text-muted mb-1">Trạng thái Báo giá:</label>
                     <select class="form-select" name="status">
                         <option value="">-- Tất cả --</option>
-                        <option value="WAITING_STAFF" ${currentStatus == 'WAITING_STAFF' ? 'selected' : '' }>Mới (Chờ xử lý)</option>
-                        <option value="PENDING" ${currentStatus == 'PENDING' ? 'selected' : '' }>Đã trình Manager</option>
-                        <option value="APPROVED" ${currentStatus == 'APPROVED' ? 'selected' : '' }>Manager đã duyệt</option>
-                        <option value="REJECTED" ${currentStatus == 'REJECTED' ? 'selected' : '' }>Bị từ chối</option>
+                        <option value="WAITING_STAFF" ${status == 'WAITING_STAFF' ? 'selected' : '' }>Mới (Chờ xử lý)</option>
+                        <option value="PENDING" ${status == 'PENDING' ? 'selected' : '' }>Đã trình Manager</option>
+                        <option value="APPROVED" ${status == 'APPROVED' ? 'selected' : '' }>Manager đã duyệt</option>
+                        <option value="REJECTED" ${status == 'REJECTED' ? 'selected' : '' }>Bị từ chối</option>
+                        <option value="COMPLETED" ${status == 'COMPLETED' ? 'selected' : '' }>Đã hoàn thành</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -62,7 +71,16 @@
 
                                     <td>
                                         <div class="fw-bold text-dark mb-1">
-                                            Mã bảo trì: <span class="text-primary">#${req.info.maintenanceId}</span>
+                                            Máy: <span class="text-primary">
+                                                <c:choose>
+                                                    <c:when test="${not empty relatedProducts[req.id]}">
+                                                        ${relatedProducts[req.id].name} </c:when>
+                                                    <c:otherwise>Không xác định</c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                        </div>
+                                        <div class="small text-muted mb-1">
+                                            Mã bảo trì: <strong>#${req.info.maintenanceId}</strong>
                                         </div>
                                         <div class="small text-muted mt-1">
                                             <i class="far fa-clock me-1"></i>
@@ -73,17 +91,14 @@
                                     <td>
                                         <div class="small">
                                             <div class="fw-bold text-dark"><i class="fas fa-user-cog me-1"></i> KTV ID: ${req.senderId}</div>
-                                            <c:if test="${not empty req.info.technicianId}">
-                                                <div class="text-muted">Mã NV: ${req.info.technicianId}</div>
-                                            </c:if>
                                         </div>
                                     </td>
 
                                     <td class="text-end">
                                         <c:choose>
-                                            <c:when test="${not empty req.info.grandTotal}">
+                                            <c:when test="${not empty req.info.partsTotal}">
                                                 <div class="fw-bold text-danger">
-                                                    <fmt:formatNumber value="${req.info.grandTotal}" type="currency" currencySymbol="VNĐ" maxFractionDigits="0"/>
+                                                    <fmt:formatNumber value="${req.info.partsTotal}" pattern="#,###"/> VNĐ
                                                 </div>
                                             </c:when>
                                             <c:otherwise>
@@ -103,6 +118,9 @@
                                             <c:when test="${req.status == 'APPROVED'}">
                                                 <span class="badge bg-success rounded-pill px-3">Đã duyệt</span>
                                             </c:when>
+                                            <c:when test="${req.status == 'COMPLETED'}">
+                                                <span class="badge bg-info rounded-pill px-3">Hoàn thành</span>
+                                            </c:when>
                                             <c:otherwise>
                                                 <span class="badge bg-secondary rounded-pill px-3">${req.status}</span>
                                             </c:otherwise>
@@ -115,6 +133,12 @@
                                                 <a href="<c:url value='/staff/repair-request/send-quote?requestId=${req.id}'/>"
                                                    class="btn btn-sm btn-success">
                                                     <i class="fas fa-paper-plane me-1"></i> Gửi báo giá
+                                                </a>
+                                            </c:when>
+                                            <c:when test="${req.status == 'COMPLETED'}">
+                                                <a href="<c:url value='/staff/invoice/create?requestId=${req.id}'/>"
+                                                   class="btn btn-sm btn-warning text-dark">
+                                                    <i class="fas fa-file-invoice-dollar me-1"></i> Tạo hóa đơn
                                                 </a>
                                             </c:when>
                                             <c:otherwise>
@@ -141,7 +165,9 @@
                         <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
                             <a class="page-link" href="<c:url value='/staff/repair-request-list'>
                                 <c:param name='page' value='${currentPage - 1}'/>
-                                <c:param name='status' value='${currentStatus}'/>
+                                <c:param name='status' value='${status}'/>
+                                <c:param name='fromDate' value='${fromDate}'/>
+                                <c:param name='toDate' value='${toDate}'/>
                             </c:url>" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
@@ -151,7 +177,9 @@
                             <li class="page-item ${currentPage == i ? 'active' : ''}">
                                 <a class="page-link" href="<c:url value='/staff/repair-request-list'>
                                     <c:param name='page' value='${i}'/>
-                                    <c:param name='status' value='${currentStatus}'/>
+                                    <c:param name='status' value='${status}'/>
+                                    <c:param name='fromDate' value='${fromDate}'/>
+                                    <c:param name='toDate' value='${toDate}'/>
                                 </c:url>">${i}</a>
                             </li>
                         </c:forEach>
@@ -159,7 +187,9 @@
                         <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
                             <a class="page-link" href="<c:url value='/staff/repair-request-list'>
                                 <c:param name='page' value='${currentPage + 1}'/>
-                                <c:param name='status' value='${currentStatus}'/>
+                                <c:param name='status' value='${status}'/>
+                                <c:param name='fromDate' value='${fromDate}'/>
+                                <c:param name='toDate' value='${toDate}'/>
                             </c:url>" aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                             </a>
