@@ -89,20 +89,20 @@
       </div>
     </div>
 
-    <!-- Cấu hình -->
+    <!-- Quản lý bài viết -->
     <div class="col-md-3">
       <div class="card shadow-sm">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <div class="text-muted small">Cấu hình</div>
-              <div class="fs-6 fw-semibold">System Settings</div>
+              <div class="text-muted small">Bài viết</div>
+              <div class="fs-6 fw-semibold">Quản lý bài viết</div>
             </div>
-            <i class="fa fa-gear fs-2 text-secondary"></i>
+            <i class="fa fa-newspaper fs-2 text-secondary"></i>
           </div>
           <a class="btn btn-sm btn-outline-primary mt-3"
-             href="${pageContext.request.contextPath}/it/settings">
-            Mở cấu hình
+             href="${pageContext.request.contextPath}/it/news/list">
+            Mở quản lý
           </a>
         </div>
       </div>

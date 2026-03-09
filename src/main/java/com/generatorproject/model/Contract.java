@@ -14,10 +14,6 @@ public class Contract {
     private int managerId;
     private Timestamp createdAt;
     private Timestamp terminatedAt;
-    private String terminatedReason;
-    private String decisionDoc;
-    private String note;
-
     private String customerName;
     private String tempCustomerEmail;
 
@@ -39,9 +35,6 @@ public class Contract {
         this.managerId = builder.managerId;
         this.createdAt = builder.createdAt;
         this.terminatedAt = builder.terminatedAt;
-        this.terminatedReason = builder.terminatedReason;
-        this.decisionDoc = builder.decisionDoc;
-        this.note = builder.note;
 
         this.customerName = builder.customerName;
         this.productSerial = builder.productSerial;
@@ -49,60 +42,125 @@ public class Contract {
         this.productManufactureYear = builder.productManufactureYear;
     }
 
+    public Long getId() {
+        return id;
+    }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getContractNumber() { return contractNumber; }
-    public void setContractNumber(String contractNumber) { this.contractNumber = contractNumber; }
+    public String getContractNumber() {
+        return contractNumber;
+    }
 
-    public int getCustomerId() { return customerId; }
-    public void setCustomerId(int customerId) { this.customerId = customerId; }
+    public void setContractNumber(String contractNumber) {
+        this.contractNumber = contractNumber;
+    }
 
-    public int getProductId() { return productId; }
-    public void setProductId(int productId) { this.productId = productId; }
+    public int getCustomerId() {
+        return customerId;
+    }
 
-    public Date getStartDate() { return startDate; }
-    public void setStartDate(Date startDate) { this.startDate = startDate; }
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
+    }
 
-    public Date getEndDate() { return endDate; }
-    public void setEndDate(Date endDate) { this.endDate = endDate; }
+    public int getProductId() {
+        return productId;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
 
-    public int getManagerId() { return managerId; }
-    public void setManagerId(int managerId) { this.managerId = managerId; }
+    public Date getStartDate() {
+        return startDate;
+    }
 
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
 
-    public Timestamp getTerminatedAt() { return terminatedAt; }
-    public void setTerminatedAt(Timestamp terminatedAt) { this.terminatedAt = terminatedAt; }
+    public Date getEndDate() {
+        return endDate;
+    }
 
-    public String getTerminatedReason() { return terminatedReason; }
-    public void setTerminatedReason(String terminatedReason) { this.terminatedReason = terminatedReason; }
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
 
-    public String getDecisionDoc() { return decisionDoc; }
-    public void setDecisionDoc(String decisionDoc) { this.decisionDoc = decisionDoc; }
+    public String getStatus() {
+        return status;
+    }
 
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-    public String getCustomerName() { return customerName; }
-    public void setCustomerName(String customerName) { this.customerName = customerName; }
+    public int getManagerId() {
+        return managerId;
+    }
 
-    public String getProductSerial() { return productSerial; }
-    public void setProductSerial(String productSerial) { this.productSerial = productSerial; }
+    public void setManagerId(int managerId) {
+        this.managerId = managerId;
+    }
 
-    public String getProductModelName() { return productModelName; }
-    public void setProductModelName(String productModelName) { this.productModelName = productModelName; }
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
 
-    public Integer getProductManufactureYear() { return productManufactureYear; }
-    public void setProductManufactureYear(Integer productManufactureYear) { this.productManufactureYear = productManufactureYear; }
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
 
-    public String getTempCustomerEmail() { return tempCustomerEmail; }
-    public void setTempCustomerEmail(String tempCustomerEmail) { this.tempCustomerEmail = tempCustomerEmail; }
+    public Timestamp getTerminatedAt() {
+        return terminatedAt;
+    }
+
+    public void setTerminatedAt(Timestamp terminatedAt) {
+        this.terminatedAt = terminatedAt;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getProductSerial() {
+        return productSerial;
+    }
+
+    public void setProductSerial(String productSerial) {
+        this.productSerial = productSerial;
+    }
+
+    public String getProductModelName() {
+        return productModelName;
+    }
+
+    public void setProductModelName(String productModelName) {
+        this.productModelName = productModelName;
+    }
+
+    public Integer getProductManufactureYear() {
+        return productManufactureYear;
+    }
+
+    public void setProductManufactureYear(Integer productManufactureYear) {
+        this.productManufactureYear = productManufactureYear;
+    }
+
+    public String getTempCustomerEmail() {
+        return tempCustomerEmail;
+    }
+
+    public void setTempCustomerEmail(String tempCustomerEmail) {
+        this.tempCustomerEmail = tempCustomerEmail;
+    }
 
     public static Builder builder() {
         return new Builder();
@@ -119,34 +177,76 @@ public class Contract {
         private int managerId;
         private Timestamp createdAt;
         private Timestamp terminatedAt;
-        private String terminatedReason;
-        private String decisionDoc;
-        private String note;
         private String customerName;
         private String productSerial;
         private String productModelName;
         private Integer productManufactureYear;
 
-        public Builder id(Long id) { this.id = id; return this; }
-        public Builder contractNumber(String contractNumber) { this.contractNumber = contractNumber; return this; }
-        public Builder customerId(int customerId) { this.customerId = customerId; return this; }
-        public Builder productId(int productId) { this.productId = productId; return this; }
-        public Builder startDate(Date startDate) { this.startDate = startDate; return this; }
-        public Builder endDate(Date endDate) { this.endDate = endDate; return this; }
-        public Builder status(String status) { this.status = status; return this; }
-        public Builder managerId(int managerId) { this.managerId = managerId; return this; }
-        public Builder createdAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
-        public Builder terminatedAt(Timestamp terminatedAt) { this.terminatedAt = terminatedAt; return this; }
-        public Builder terminatedReason(String terminatedReason) { this.terminatedReason = terminatedReason; return this; }
-        public Builder decisionDoc(String decisionDoc) { this.decisionDoc = decisionDoc; return this; }
-        public Builder note(String note) { this.note = note; return this; }
-        public Builder customerName(String customerName) { this.customerName = customerName; return this; }
-        public Builder productSerial(String productSerial) { this.productSerial = productSerial; return this; }
+        public Builder id(Long id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder contractNumber(String contractNumber) {
+            this.contractNumber = contractNumber;
+            return this;
+        }
+
+        public Builder customerId(int customerId) {
+            this.customerId = customerId;
+            return this;
+        }
+
+        public Builder productId(int productId) {
+            this.productId = productId;
+            return this;
+        }
+
+        public Builder startDate(Date startDate) {
+            this.startDate = startDate;
+            return this;
+        }
+
+        public Builder endDate(Date endDate) {
+            this.endDate = endDate;
+            return this;
+        }
+
+        public Builder status(String status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder managerId(int managerId) {
+            this.managerId = managerId;
+            return this;
+        }
+
+        public Builder createdAt(Timestamp createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder terminatedAt(Timestamp terminatedAt) {
+            this.terminatedAt = terminatedAt;
+            return this;
+        }
+
+        public Builder customerName(String customerName) {
+            this.customerName = customerName;
+            return this;
+        }
+
+        public Builder productSerial(String productSerial) {
+            this.productSerial = productSerial;
+            return this;
+        }
 
         public Builder productModelName(String productModelName) {
             this.productModelName = productModelName;
             return this;
         }
+
         public Builder productManufactureYear(Integer productManufactureYear) {
             this.productManufactureYear = productManufactureYear;
             return this;

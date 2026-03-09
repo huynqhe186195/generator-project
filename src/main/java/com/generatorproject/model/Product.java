@@ -19,6 +19,10 @@ public class Product {
     private Long contractId;
     private String categoryName;
     private String customerEmail;
+    private String contractStatus;
+    private Date contractEndDate;
+    private String latestTerminatedEvent;
+    private Timestamp terminatedAt;
 
     private String modelName;
     private String customerName;
@@ -44,6 +48,10 @@ public class Product {
         this.contractId = builder.contractId;
         this.categoryName = builder.categoryName;
         this.customerEmail = builder.customerEmail;
+        this.contractStatus = builder.contractStatus;
+        this.contractEndDate = builder.contractEndDate;
+        this.latestTerminatedEvent = builder.latestTerminatedEvent;
+        this.terminatedAt = builder.terminatedAt;
     }
 
     public String getCustomerEmail() { return customerEmail; }
@@ -102,6 +110,38 @@ public class Product {
     public String getBrandName() { return brandName; }
     public void setBrandName(String brandName) { this.brandName = brandName; }
 
+    public String getContractStatus() {
+        return contractStatus;
+    }
+
+    public void setContractStatus(String contractStatus) {
+        this.contractStatus = contractStatus;
+    }
+
+    public Date getContractEndDate() {
+        return contractEndDate;
+    }
+
+    public void setContractEndDate(Date contractEndDate) {
+        this.contractEndDate = contractEndDate;
+    }
+
+    public String getLatestTerminatedEvent() {
+        return latestTerminatedEvent;
+    }
+
+    public void setLatestTerminatedEvent(String latestTerminatedEvent) {
+        this.latestTerminatedEvent = latestTerminatedEvent;
+    }
+
+    public Timestamp getTerminatedAt() {
+        return terminatedAt;
+    }
+
+    public void setTerminatedAt(Timestamp terminatedAt) {
+        this.terminatedAt = terminatedAt;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -124,6 +164,10 @@ public class Product {
         private Long contractId;
         private String categoryName;
         private String customerEmail;
+        private String contractStatus;
+        private Date contractEndDate;
+        private String latestTerminatedEvent;
+        private Timestamp terminatedAt;
 
         public Builder id(int id) { this.id = id; return this; }
         public Builder serialNumber(String serialNumber) { this.serialNumber = serialNumber; return this; }
@@ -145,6 +189,10 @@ public class Product {
         }
         public Builder categoryName(String categoryName) { this.categoryName = categoryName; return this; }
         public Builder customerEmail(String customerEmail) { this.customerEmail = customerEmail; return this; }
+        public Builder contractStatus(String contractStatus) { this.contractStatus = contractStatus; return this; }
+        public Builder contractEndDate(Date contractEndDate) { this.contractEndDate = contractEndDate; return this; }
+        public Builder latestTerminatedEvent(String latestTerminatedEvent) { this.latestTerminatedEvent = latestTerminatedEvent; return this; }
+        public Builder terminatedAt(Timestamp terminatedAt) { this.terminatedAt = terminatedAt; return this; }
 
         public Product build() {
             return new Product(this);

@@ -27,7 +27,6 @@
             #wrapper.toggled #sidebar-wrapper { margin-left: -15rem; }
         }
 
-        /* nice hover */
         #sidebar-wrapper .list-group-item:hover { background: rgba(255,255,255,0.08) !important; }
     </style>
 
@@ -40,7 +39,6 @@
     <!-- Sidebar -->
     <div class="border-end bg-dark text-white" id="sidebar-wrapper" style="width: 250px;">
 
-        <!-- IT Console quay về IT HOME -->
         <a href="<c:url value='/it/home'/>"
            class="text-center py-4 fs-4 fw-bold text-warning border-bottom border-secondary d-block text-decoration-none">
             <i class="fas fa-screwdriver-wrench"></i> IT Console
@@ -60,18 +58,23 @@
                 <i class="fas fa-box-open me-2" style="width: 20px;"></i> Quản lý máy
             </a>
 
-            <!-- ✅ Brands -->
+            <!-- Brands -->
             <a href="<c:url value='/it/brands'/>"
                class="list-group-item list-group-item-action bg-transparent text-white p-3">
                 <i class="fas fa-copyright me-2" style="width: 20px;"></i> Quản lý brand
             </a>
 
-            <!-- ✅ Quản lý danh mục (category) -->
+            <!-- Categories -->
             <a href="<c:url value='/it/categories/list'/>"
                class="list-group-item list-group-item-action bg-transparent text-white p-3">
                 <i class="fas fa-tags me-2" style="width: 20px;"></i> Quản lý danh mục
             </a>
 
+            <!-- Quản lý bài viết -->
+            <a href="<c:url value='/it/news/list'/>"
+               class="list-group-item list-group-item-action bg-transparent text-white p-3">
+                <i class="fas fa-newspaper me-2" style="width: 20px;"></i> Quản lý bài viết
+            </a>
         </div>
     </div>
 

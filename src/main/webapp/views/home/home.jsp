@@ -13,7 +13,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-  <!-- Font đẹp hơn -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -81,95 +80,132 @@
       background: rgba(78,115,223,.08);
     }
 
-    /* Hero */
+    /* Hero Slider */
     .hero-section{
       position: relative;
-      padding: 170px 0 110px;
-      color: #fff;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 55%, #162d6f 100%);
-      clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
       overflow: hidden;
     }
 
-    /* pattern nhẹ */
-    .hero-section::before{
+    .hero-slide{
+      position: relative;
+      min-height: 100vh;
+      padding: 170px 0 110px;
+      color: #fff;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      overflow: hidden;
+    }
+
+    .hero-slide::before{
       content:"";
-      position:absolute; inset:-2px;
+      position:absolute;
+      inset:0;
       background:
-        radial-gradient(800px 300px at 15% 20%, rgba(255,255,255,.20), transparent 60%),
-        radial-gradient(700px 250px at 80% 15%, rgba(255,255,255,.14), transparent 60%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cg fill='none' stroke='rgba(255,255,255,.10)' stroke-width='1'%3E%3Cpath d='M0 40h200M0 100h200M0 160h200'/%3E%3Cpath d='M40 0v200M100 0v200M160 0v200'/%3E%3C/g%3E%3C/svg%3E");
-      opacity: .7;
+        linear-gradient(115deg, rgba(15,23,42,.38) 0%, rgba(37,99,235,.30) 45%, rgba(15,23,42,.50) 100%),
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,.10), transparent 30%),
+        radial-gradient(circle at 80% 18%, rgba(255,255,255,.08), transparent 28%);
+      backdrop-filter: blur(1px);
       pointer-events:none;
+    }
+
+    .hero-content{
+      position: relative;
+      z-index: 1;
     }
 
     .hero-title{
       font-weight: 900;
-      font-size: clamp(2.2rem, 4vw, 3.6rem);
-      line-height: 1.12;
+      font-size: clamp(2.4rem, 5vw, 4.5rem);
+      line-height: 1.05;
       margin-bottom: 18px;
-    }
-    .hero-desc{
-      font-size: 1.12rem;
-      opacity: .92;
-      max-width: 46ch;
-      margin-bottom: 34px;
+      letter-spacing: -1.6px;
+      max-width: 12ch;
+      text-shadow: 0 10px 30px rgba(0,0,0,.22);
     }
 
-    /* Stats */
+    .hero-desc{
+      font-size: 1.08rem;
+      opacity: .96;
+      max-width: 58ch;
+      margin-bottom: 34px;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 6px 18px rgba(0,0,0,.18);
+    }
+
     .stat-badge{
-      background: rgba(255,255,255,.14);
-      padding: 18px 16px;
-      border-radius: 18px;
-      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.12);
+      padding: 22px 18px;
+      border-radius: 22px;
+      backdrop-filter: blur(16px);
       border: 1px solid rgba(255,255,255,.22);
       text-align:center;
-      transition: .28s ease;
-      box-shadow: 0 12px 30px rgba(0,0,0,.10);
+      transition: all .35s ease;
+      box-shadow: 0 18px 45px rgba(15,23,42,.18);
     }
     .stat-badge:hover{
-      background: rgba(255,255,255,.22);
-      transform: translateY(-6px);
+      background: rgba(255,255,255,.18);
+      transform: translateY(-8px);
+      box-shadow: 0 24px 55px rgba(15,23,42,.24);
     }
-    .stat-number{ font-size: 2rem; font-weight: 900; display:block; letter-spacing: .2px; }
-    .stat-label{ font-size: .78rem; text-transform: uppercase; letter-spacing: 1.2px; opacity:.9; }
 
-    /* Buttons */
-    .btn-white{
-      background: #fff;
-      color: var(--primary);
-      font-weight: 800;
-      border-radius: 999px;
-      padding: 12px 28px;
-      border: none;
-      transition: .25s;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      box-shadow: 0 14px 30px rgba(0,0,0,.18);
-    }
-    .btn-white:hover{
-      transform: translateY(-2px);
-      box-shadow: 0 18px 40px rgba(0,0,0,.22);
-      color: var(--secondary);
-    }
-    .btn-ghost{
-      display:inline-flex; align-items:center; gap:10px;
-      border-radius: 999px;
-      padding: 12px 22px;
-      font-weight: 700;
-      color: rgba(255,255,255,.95);
-      border: 1px solid rgba(255,255,255,.35);
-      background: rgba(255,255,255,.10);
-      text-decoration:none;
-      transition:.25s;
-    }
-    .btn-ghost:hover{
-      transform: translateY(-2px);
-      background: rgba(255,255,255,.16);
+    .stat-number{
+      font-size: 2.2rem;
+      font-weight: 900;
+      display:block;
+      letter-spacing: -.5px;
       color: #fff;
+      line-height: 1;
+      margin-bottom: 8px;
     }
+   .stat-label{
+     font-size: .82rem;
+     text-transform: uppercase;
+     letter-spacing: 1.5px;
+     opacity:.92;
+     color: rgba(255,255,255,.86);
+   }
+
+   .btn-white{
+     background: #fff;
+     color: var(--primary);
+     font-weight: 800;
+     border-radius: 999px;
+     padding: 13px 30px;
+     border: none;
+     transition: all .28s ease;
+     text-decoration:none;
+     display:inline-flex;
+     align-items:center;
+     gap:10px;
+     box-shadow: 0 16px 35px rgba(0,0,0,.18);
+   }
+   .btn-white:hover{
+     transform: translateY(-3px);
+     box-shadow: 0 22px 45px rgba(0,0,0,.22);
+     color: var(--secondary);
+   }
+   .btn-ghost{
+     display:inline-flex;
+     align-items:center;
+     gap:10px;
+     border-radius: 999px;
+     padding: 13px 24px;
+     font-weight: 700;
+     color: rgba(255,255,255,.96);
+     border: 1px solid rgba(255,255,255,.28);
+     background: rgba(255,255,255,.08);
+     backdrop-filter: blur(12px);
+     text-decoration:none;
+     transition: all .28s ease;
+   }
+
+   .btn-ghost:hover{
+     transform: translateY(-3px);
+     background: rgba(255,255,255,.14);
+     color: #fff;
+   }
+
 
     .user-dropdown-toggle{
       border-radius: 999px;
@@ -210,7 +246,8 @@
     }
     .feature-card::before{
       content:"";
-      position:absolute; inset:-2px;
+      position:absolute;
+      inset:-2px;
       background: radial-gradient(500px 140px at 20% 0%, rgba(78,115,223,.10), transparent 60%);
       opacity: .9;
       pointer-events:none;
@@ -221,9 +258,12 @@
       border-color: rgba(78,115,223,.18);
     }
     .feature-icon{
-      width: 72px; height: 72px;
+      width: 72px;
+      height: 72px;
       border-radius: 18px;
-      display:flex; align-items:center; justify-content:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       font-size: 1.9rem;
       margin: 0 auto 18px;
       background: rgba(78,115,223,.10);
@@ -248,14 +288,53 @@
       box-shadow: 0 16px 40px rgba(15,23,42,.10);
     }
 
-    /* Hero image */
-    .hero-img-col{ padding-left: 48px; position: relative; z-index: 1; }
-    .hero-img{
-      transform: translateX(8px) scale(1.08);
-      transform-origin: center right;
-      border-radius: 26px !important;
-      box-shadow: 0 26px 80px rgba(0,0,0,.30);
-      border: 1px solid rgba(255,255,255,.18);
+    .carousel-item{
+      transition: transform 1.2s ease-in-out, opacity 1.2s ease-in-out;
+    }
+    .carousel-fade .carousel-item{
+      opacity: 0;
+      transition-property: opacity;
+      transform: none;
+    }
+    .carousel-fade .carousel-item.active,
+    .carousel-fade .carousel-item-next.carousel-item-start,
+    .carousel-fade .carousel-item-prev.carousel-item-end{
+      opacity: 1;
+    }
+
+
+    .carousel-control-prev,
+    .carousel-control-next{
+      width: 7%;
+      z-index: 5;
+      opacity: .9;
+    }
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon{
+      width: 2.8rem;
+      height: 2.8rem;
+      border-radius: 50%;
+      background-color: rgba(255,255,255,.10);
+      backdrop-filter: blur(10px);
+      background-size: 45% 45%;
+    }
+
+    .carousel-indicators{
+      z-index: 6;
+      margin-bottom: 1.4rem;
+    }
+    .carousel-indicators .active{
+      background-color: #fff;
+      transform: scale(1.15);
+    }
+
+    .carousel-indicators [data-bs-target]{
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 0;
+      margin: 0 5px;
+      background-color: rgba(255,255,255,.45);
     }
 
     /* Footer */
@@ -268,8 +347,39 @@
     .footer-link{ color: rgba(255,255,255,.75); }
     .footer-link:hover{ color: #fff; }
 
-    /* Small tweaks */
     .shadow-2xl{ box-shadow: 0 22px 70px rgba(0,0,0,.22) !important; }
+
+    @media (max-width: 991.98px){
+      .hero-slide{
+        min-height: 88vh;
+        padding: 130px 0 85px;
+      }
+
+      .hero-title{
+        font-size: 2.5rem;
+        max-width: 100%;
+        line-height: 1.12;
+      }
+
+      .hero-desc{
+        font-size: 1rem;
+        max-width: 100%;
+      }
+
+      .stat-number{
+        font-size: 1.5rem;
+      }
+
+      .stat-badge{
+        padding: 16px 12px;
+        border-radius: 18px;
+      }
+
+      .carousel-control-prev,
+      .carousel-control-next{
+        display: none;
+      }
+    }
   </style>
 </head>
 
@@ -291,11 +401,16 @@
           <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a>
         </li>
 
+        <li class="nav-item">
+          <a class="nav-link nav-pill px-3" href="<c:url value='/news'/>">Tin tức</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link nav-pill px-3" href="<c:url value='/products'/>">Sản phẩm mẫu</a>
+        </li>
+
         <c:choose>
           <c:when test="${empty user}">
-            <li class="nav-item">
-              <a class="nav-link nav-pill px-3" href="#news">Tin tức</a>
-            </li>
           </c:when>
           <c:otherwise>
             <li class="nav-item">
@@ -304,8 +419,9 @@
           </c:otherwise>
         </c:choose>
 
-        <li class="nav-item"><a class="nav-link nav-pill px-3" href="#features">Tính năng</a></li>
-        <li class="nav-item"><a class="nav-link nav-pill px-3" href="#brands">Thương hiệu</a></li>
+        <li class="nav-item">
+          <a class="nav-link nav-pill px-3" href="#brands">Thương hiệu</a>
+        </li>
 
         <c:if test="${not empty user}">
           <li class="nav-item">
@@ -341,85 +457,171 @@
   </div>
 </nav>
 
-<section class="hero-section">
-  <div class="container position-relative" style="z-index:1;">
-    <div class="row align-items-center">
-      <div class="col-lg-7" data-aos="fade-right">
-        <h1 class="hero-title">Quản lý hệ thống máy phát điện thông minh</h1>
-        <p class="hero-desc">Theo dõi, cảnh báo và tối ưu hóa quy trình bảo trì chuyên nghiệp với công nghệ IoT thời gian thực.</p>
+<section class="hero-section p-0">
+<div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="false">
 
-        <div class="row g-3 mb-4">
-          <div class="col-4">
-            <div class="stat-badge">
-              <span class="stat-number">
-                <c:choose>
-                  <c:when test="${not empty stats}">
-                   ${stats.totalProductModels}
-                  </c:when>
-                  <c:otherwise>150</c:otherwise>
-                </c:choose>
-              </span>
-              <span class="stat-label">Máy phát</span>
-            </div>
-          </div>
-
-          <div class="col-4">
-            <div class="stat-badge">
-              <span class="stat-number">
-                <c:choose>
-                  <c:when test="${not empty stats}">
-                    ${stats.totalHours}
-                  </c:when>
-                  <c:otherwise>1200</c:otherwise>
-                </c:choose>
-              </span>
-              <span class="stat-label">Giờ chạy</span>
-            </div>
-          </div>
-
-          <div class="col-4">
-            <div class="stat-badge">
-              <span class="stat-number">
-                <c:choose>
-                  <c:when test="${not empty stats}">
-                    ${stats.totalUsers}
-                  </c:when>
-                  <c:otherwise>45</c:otherwise>
-                </c:choose>
-              </span>
-              <span class="stat-label">Người dùng</span>
-            </div>
-          </div>
-        </div>
-
-
-        <div class="d-flex flex-wrap gap-3">
-          <c:choose>
-            <c:when test="${empty user}">
-              <a href="<c:url value='/account/login'/>" class="btn btn-white">
-                <i class="fa-solid fa-rocket"></i> Bắt đầu ngay
-              </a>
-            </c:when>
-            <c:otherwise>
-              <a href="<c:url value='/admin/dashboard'/>" class="btn btn-white">
-                <i class="fa-solid fa-gauge-high"></i> Vào Dashboard
-              </a>
-            </c:otherwise>
-          </c:choose>
-
-          <a href="#features" class="btn-ghost">
-            <i class="fa-solid fa-circle-info"></i> Xem tính năng
-          </a>
-        </div>
-      </div>
-
-      <div class="col-lg-5 d-none d-lg-block hero-img-col" data-aos="zoom-in">
-        <img src="<c:url value='/template/images/img.png'/>"
-             class="img-fluid hero-img"
-             alt="Gen-CMS"
-             onerror="this.src='https://via.placeholder.com/640x460?text=Gen-CMS+System'">
-      </div>
+    <div class="carousel-indicators">
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
     </div>
+
+    <div class="carousel-inner">
+
+      <!-- Slide 1 -->
+      <div class="carousel-item active">
+        <div class="hero-slide" style="background-image: url('<c:url value="/template/images/slide1.jpg"/>');">
+          <div class="container position-relative hero-content">
+            <div class="row align-items-center">
+              <div class="col-lg-12" data-aos="fade-right">
+                <h1 class="hero-title">Quản lý hệ thống máy phát điện thông minh</h1>
+                <p class="hero-desc">Theo dõi, cảnh báo và tối ưu hóa quy trình bảo trì chuyên nghiệp với công nghệ IoT thời gian thực.</p>
+
+               <div class="row g-3 mb-5 mt-1">
+                  <div class="col-4">
+                    <div class="stat-badge">
+                      <span class="stat-number">
+                        <c:choose>
+                          <c:when test="${not empty stats}">
+                            ${stats.totalProductModels}
+                          </c:when>
+                          <c:otherwise>150</c:otherwise>
+                        </c:choose>
+                      </span>
+                      <span class="stat-label">Máy phát</span>
+                    </div>
+                  </div>
+
+                  <div class="col-4">
+                    <div class="stat-badge">
+                      <span class="stat-number">
+                        <c:choose>
+                          <c:when test="${not empty stats}">
+                            ${stats.totalHours}
+                          </c:when>
+                          <c:otherwise>1200</c:otherwise>
+                        </c:choose>
+                      </span>
+                      <span class="stat-label">Giờ chạy</span>
+                    </div>
+                  </div>
+
+                  <div class="col-4">
+                    <div class="stat-badge">
+                      <span class="stat-number">
+                        <c:choose>
+                          <c:when test="${not empty stats}">
+                            ${stats.totalUsers}
+                          </c:when>
+                          <c:otherwise>45</c:otherwise>
+                        </c:choose>
+                      </span>
+                      <span class="stat-label">Người dùng</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3">
+                  <c:choose>
+                    <c:when test="${empty user}">
+                      <a href="<c:url value='/account/login'/>" class="btn btn-white">
+                        <i class="fa-solid fa-rocket"></i> Bắt đầu ngay
+                      </a>
+                    </c:when>
+                    <c:otherwise>
+                      <a href="<c:url value='/admin/dashboard'/>" class="btn btn-white">
+                        <i class="fa-solid fa-gauge-high"></i> Vào Dashboard
+                      </a>
+                    </c:otherwise>
+                  </c:choose>
+
+                  <a href="#features" class="btn-ghost">
+                    <i class="fa-solid fa-circle-info"></i> Xem tính năng
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="carousel-item">
+        <div class="hero-slide" style="background-image: url('<c:url value="/template/images/slide2.jpg"/>');">
+          <div class="container position-relative hero-content">
+            <div class="row align-items-center">
+              <div class="col-lg-12" data-aos="fade-right">
+                <h1 class="hero-title">Giám sát thiết bị theo thời gian thực</h1>
+                <p class="hero-desc">Theo dõi trạng thái hoạt động của từng máy 24/7, phát hiện sự cố sớm và hỗ trợ vận hành ổn định hơn.</p>
+
+                <div class="d-flex flex-wrap gap-3">
+                  <c:choose>
+                    <c:when test="${empty user}">
+                      <a href="<c:url value='/account/login'/>" class="btn btn-white">
+                        <i class="fa-solid fa-rocket"></i> Bắt đầu ngay
+                      </a>
+                    </c:when>
+                    <c:otherwise>
+                      <a href="<c:url value='/admin/dashboard'/>" class="btn btn-white">
+                        <i class="fa-solid fa-gauge-high"></i> Vào Dashboard
+                      </a>
+                    </c:otherwise>
+                  </c:choose>
+
+                  <a href="#features" class="btn-ghost">
+                    <i class="fa-solid fa-circle-info"></i> Xem tính năng
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="carousel-item">
+        <div class="hero-slide" style="background-image: url('<c:url value="/template/images/slide3.jpg"/>');">
+          <div class="container position-relative hero-content">
+            <div class="row align-items-center">
+              <div class="col-lg-12" data-aos="fade-right">
+                <h1 class="hero-title">Tối ưu bảo trì và cảnh báo tức thì</h1>
+                <p class="hero-desc">Lên lịch bảo trì, quản lý lịch sử sửa chữa và nhận cảnh báo nhanh khi hệ thống phát sinh lỗi.</p>
+
+                <div class="d-flex flex-wrap gap-3">
+                  <c:choose>
+                    <c:when test="${empty user}">
+                      <a href="<c:url value='/account/login'/>" class="btn btn-white">
+                        <i class="fa-solid fa-rocket"></i> Bắt đầu ngay
+                      </a>
+                    </c:when>
+                    <c:otherwise>
+                      <a href="<c:url value='/admin/dashboard'/>" class="btn btn-white">
+                        <i class="fa-solid fa-gauge-high"></i> Vào Dashboard
+                      </a>
+                    </c:otherwise>
+                  </c:choose>
+
+                  <a href="#features" class="btn-ghost">
+                    <i class="fa-solid fa-circle-info"></i> Xem tính năng
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
   </div>
 </section>
 
@@ -500,7 +702,7 @@
       </div>
 
       <div class="col-lg-6 text-center text-lg-end">
-        <p class="small mb-2">&copy; 2024 Gen-CMS Corporation. Bảo lưu mọi quyền.</p>
+        <p class="small mb-2">&copy; 2026 Gen-CMS Corporation. Bảo lưu mọi quyền.</p>
         <div class="d-inline-flex gap-3">
           <a href="#" class="footer-link"><i class="fab fa-facebook fs-5"></i></a>
           <a href="#" class="footer-link"><i class="fab fa-linkedin fs-5"></i></a>

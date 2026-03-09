@@ -41,12 +41,9 @@ public class ProductModelDAO extends GenericDAO<ProductModel> {
                 model.getImageUrl(),
                 model.getStatus());
     }
-    public int countFilteredProductModels(Integer brandId,
-                                          Integer categoryId,
-                                          String fuelType,
-                                          Integer power,
-                                          String status,
-                                          String keyword) {
+    public int countFilteredProductModels(Integer brandId, Integer categoryId, String fuelType,
+                                          Integer powerMin, Integer powerMax,
+                                          String status, String keyword) {
 
         StringBuilder sql = new StringBuilder();
         List<Object> params = new ArrayList<>();
@@ -72,10 +69,14 @@ public class ProductModelDAO extends GenericDAO<ProductModel> {
             params.add(fuelType.trim());
         }
 
-        if (power != null) {
-            // Nếu bạn muốn lọc bằng đúng power thì đổi thành " = ? "
+        if (powerMin != null) {
             sql.append(" AND pm.power >= ? ");
-            params.add(power);
+            params.add(powerMin);
+        }
+
+        if (powerMax != null) {
+            sql.append(" AND pm.power <= ? ");
+            params.add(powerMax);
         }
 
         if (status != null && !status.trim().isEmpty()) {
@@ -94,16 +95,9 @@ public class ProductModelDAO extends GenericDAO<ProductModel> {
 
         return count(sql.toString(), params.toArray());
     }
-
-
-    public List<ProductModel> filterProductModelsPaged(Integer brandId,
-                                                       Integer categoryId,
-                                                       String fuelType,
-                                                       Integer power,
-                                                       String status,
-                                                       String keyword,
-                                                       int limit,
-                                                       int offset) {
+    public List<ProductModel> filterProductModelsPaged(Integer brandId, Integer categoryId, String fuelType,
+                                                       Integer powerMin, Integer powerMax,
+                                                       String status, String keyword, int limit, int offset) {
 
         StringBuilder sql = new StringBuilder();
         List<Object> params = new ArrayList<>();
@@ -129,9 +123,14 @@ public class ProductModelDAO extends GenericDAO<ProductModel> {
             params.add(fuelType.trim());
         }
 
-        if (power != null) {
+        if (powerMin != null) {
             sql.append(" AND pm.power >= ? ");
-            params.add(power);
+            params.add(powerMin);
+        }
+
+        if (powerMax != null) {
+            sql.append(" AND pm.power <= ? ");
+            params.add(powerMax);
         }
 
         if (status != null && !status.trim().isEmpty()) {
