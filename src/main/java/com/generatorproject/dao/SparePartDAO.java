@@ -35,6 +35,128 @@ public class SparePartDAO extends DbContext {
         }
         return list;
     }
+
+    public List<SparePart> getPaging(int page, int pageSize) {
+
+        List<SparePart> list = new ArrayList<>();
+
+        String sql = """
+        SELECT * FROM spare_parts
+        ORDER BY id DESC
+        LIMIT ? OFFSET ?
+    """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, pageSize);
+            ps.setInt(2, (page - 1) * pageSize);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                SparePart s = new SparePart();
+
+                s.setId(rs.getInt("id"));
+                s.setName(rs.getString("name"));
+                s.setPartCode(rs.getString("part_code"));
+                s.setUnit(rs.getString("unit"));
+                s.setQuantityInStock(rs.getInt("quantity_in_stock"));
+                s.setPrice(rs.getDouble("price"));
+
+                list.add(s);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public List<SparePart> searchPaging(String keyword, int page, int pageSize) {
+
+        List<SparePart> list = new ArrayList<>();
+
+        String sql = """
+        SELECT * FROM spare_parts
+        WHERE name LIKE ? OR part_code LIKE ?
+        LIMIT ? OFFSET ?
+    """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
+            ps.setInt(3, pageSize);
+            ps.setInt(4, (page - 1) * pageSize);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                SparePart s = new SparePart();
+
+                s.setId(rs.getInt("id"));
+                s.setName(rs.getString("name"));
+                s.setPartCode(rs.getString("part_code"));
+                s.setUnit(rs.getString("unit"));
+                s.setQuantityInStock(rs.getInt("quantity_in_stock"));
+                s.setPrice(rs.getDouble("price"));
+
+                list.add(s);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public int countSearch(String keyword) {
+
+        String sql = """
+        SELECT COUNT(*) 
+        FROM spare_parts
+        WHERE name LIKE ? OR part_code LIKE ?
+    """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) return rs.getInt(1);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public int countAll() {
+
+        String sql = "SELECT COUNT(*) FROM spare_parts";
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) return rs.getInt(1);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
     // =========================
     // Lấy tên và mã vật tư theo ID (Dùng cho Form Báo giá)
     // =========================

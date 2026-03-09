@@ -54,6 +54,12 @@
             <i class="fas fa-history me-2"></i> Lịch sử sửa chữa
         </a>
 
+        <!-- Thống kê của tôi -->
+        <a class="d-block p-2 rounded mb-2"
+           href="${pageContext.request.contextPath}/technical/stats">
+            <i class="fas fa-chart-pie me-2"></i> Thống kê của tôi
+        </a>
+
 
         <hr class="text-secondary">
 
