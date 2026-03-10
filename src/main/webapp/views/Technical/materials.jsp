@@ -106,3 +106,35 @@
 
     </tbody>
 </table>
+
+
+<c:if test="${totalPages > 1}">
+<nav>
+    <ul class="pagination justify-content-center">
+
+        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+            <a class="page-link"
+               href="?page=${currentPage - 1}&keyword=${keyword}">
+                «
+            </a>
+        </li>
+
+        <c:forEach begin="1" end="${totalPages}" var="i">
+            <li class="page-item ${i == currentPage ? 'active' : ''}">
+                <a class="page-link"
+                   href="?page=${i}&keyword=${keyword}">
+                    ${i}
+                </a>
+            </li>
+        </c:forEach>
+
+        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+            <a class="page-link"
+               href="?page=${currentPage + 1}&keyword=${keyword}">
+                »
+            </a>
+        </li>
+
+    </ul>
+</nav>
+</c:if>

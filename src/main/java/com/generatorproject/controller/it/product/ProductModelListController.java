@@ -22,7 +22,6 @@ public class ProductModelListController extends HttpServlet {
     private final BrandDAO brandDAO = new BrandDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
 
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -32,10 +31,16 @@ public class ProductModelListController extends HttpServlet {
         String keyword = trim(req.getParameter("keyword"));
         Integer brandId = parseIntOrNull(req.getParameter("brandId"));
         Integer categoryId = parseIntOrNull(req.getParameter("categoryId"));
-
         String fuelType = trim(req.getParameter("fuelType"));
-        Integer power = parseIntOrNull(req.getParameter("power"));
+        Integer powerMin = parseIntOrNull(req.getParameter("powerMin"));
+        Integer powerMax = parseIntOrNull(req.getParameter("powerMax"));
         String status = trim(req.getParameter("status"));
+
+        if (powerMin != null && powerMax != null && powerMin > powerMax) {
+            int temp = powerMin;
+            powerMin = powerMax;
+            powerMax = temp;
+        }
 
         int pageSize = 10;
         int page = parseIntOrDefault(req.getParameter("page"), 1);
@@ -46,7 +51,7 @@ public class ProductModelListController extends HttpServlet {
         List<Category> categories = categoryDAO.getAllCategories();
 
         int totalItems = productModelDAO.countFilteredProductModels(
-                brandId, categoryId, fuelType, power, status, keyword
+                brandId, categoryId, fuelType, powerMin, powerMax, status, keyword
         );
 
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
@@ -58,7 +63,7 @@ public class ProductModelListController extends HttpServlet {
         }
 
         List<ProductModel> listModels = productModelDAO.filterProductModelsPaged(
-                brandId, categoryId, fuelType, power, status, keyword, pageSize, offset
+                brandId, categoryId, fuelType, powerMin, powerMax, status, keyword, pageSize, offset
         );
 
         req.setAttribute("listModels", listModels);
@@ -71,7 +76,6 @@ public class ProductModelListController extends HttpServlet {
 
         req.getRequestDispatcher("/views/it/product/list.jsp").forward(req, resp);
     }
-
 
     private String trim(String s) {
         if (s == null) return null;

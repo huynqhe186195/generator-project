@@ -2,52 +2,36 @@ package com.generatorproject.dao;
 
 import com.generatorproject.mapper.InvoiceMapper;
 import com.generatorproject.model.Invoice;
-import com.generatorproject.model.Quote; // Giả sử bạn đã có model Quote
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 public class InvoiceDAO extends GenericDAO<Invoice> {
 
-    // Hàm sinh mã hóa đơn ngẫu nhiên: INV-20260304-1234
-    private String generateInvoiceCode() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        String dateStr = sdf.format(new Date());
-        int randomNum = new Random().nextInt(9000) + 1000; // Số từ 1000-9999
-        return "INV-" + dateStr + "-" + randomNum;
-    }
-
     /**
-     * TẠO HÓA ĐƠN TỪ BÁO GIÁ
-     * @param quoteId: ID của báo giá đã được duyệt
-     * @param staffId: ID của nhân viên tạo hóa đơn
-     * @param taxRate: Thuế VAT (VD: 8.0 cho 8%)
+     * TẠO HÓA ĐƠN KẾ THỪA TỪ BẢNG QUOTES (Đã fix lỗi quote_id bị null)
      */
-    public boolean createInvoiceFromQuote(Long quoteId, Integer staffId, double taxRate) {
+    public boolean createInvoiceFromRequest(Long requestId, Integer staffId, double taxRate) {
 
-
-        // Để code ngắn gọn, tôi viết logic query lồng vào insert luôn:
-        // Lấy dữ liệu từ bảng quotes insert thẳng sang invoices
+        // CÂU LỆNH SQL MỚI: Đã bổ sung quote_id và trích xuất q.total_amount từ bảng quotes
         String sqlSmartInsert =
                 "INSERT INTO invoices (invoice_code, customer_id, quote_id, maintenance_id, created_by, subtotal, tax_rate, tax_amount, total_amount, payment_status, issued_date, due_date) " +
                         "SELECT " +
-                        "   CONCAT('INV-', DATE_FORMAT(NOW(), '%Y%m%d'), '-', FLOOR(RAND()*(9999-1000)+1000)), " + // Sinh mã
+                        "   CONCAT('INV-', DATE_FORMAT(NOW(), '%Y%m%d'), '-', FLOOR(RAND()*(9999-1000)+1000)), " +
                         "   q.customer_id, " +
-                        "   q.id, " +
+                        "   q.id, " +         // <--- QUAN TRỌNG: Lưu ID của báo giá vào cột quote_id
                         "   q.maintenance_id, " +
-                        "   ?, " +   // Staff ID
-                        "   q.total_amount, " + // Subtotal
-                        "   ?, " +   // Tax Rate (VD: 8)
-                        "   (q.total_amount * ? / 100), " + // Tax Amount
-                        "   (q.total_amount + (q.total_amount * ? / 100)), " + // Total Amount
+                        "   ?, " +            // Tham số 1: Staff ID
+                        "   q.total_amount, " + // Lấy Tổng tiền từ Báo giá
+                        "   ?, " +            // Tham số 2: Tax Rate
+                        "   (q.total_amount * ? / 100), " + // Tham số 3: Tax Amount
+                        "   (q.total_amount + (q.total_amount * ? / 100)), " + // Tham số 4: Total Amount
                         "   'UNPAID', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY) " +
-                        "FROM quotes q WHERE q.id = ?";
+                        "FROM system_requests sr " +
+                        "JOIN quotes q ON q.maintenance_id = CAST(JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.maintenanceId')) AS UNSIGNED) " +
+                        "WHERE sr.id = ? AND q.status = 'APPROVED' " + // Tham số 5: Request ID
+                        "ORDER BY q.id DESC LIMIT 1";
 
-        // Gọi hàm update của GenericDAO
-        // Thứ tự tham số: staffId, taxRate, taxRate, taxRate, quoteId
         try {
-            update(sqlSmartInsert, staffId, taxRate, taxRate, taxRate, quoteId);
+            update(sqlSmartInsert, staffId, taxRate, taxRate, taxRate, requestId);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,12 +39,16 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
         }
     }
 
-    // Hàm kiểm tra xem báo giá này đã có hóa đơn chưa
-    public boolean hasInvoice(Long quoteId) {
-        String sql = "SELECT COUNT(*) FROM invoices WHERE quote_id = ?";
-        return count(sql, quoteId) > 0;
+    /**
+     * Hàm kiểm tra xem Yêu cầu này đã được xuất hóa đơn chưa
+     */
+    public boolean hasInvoiceByRequest(Long requestId) {
+        String sql = "SELECT COUNT(*) FROM invoices i " +
+                "JOIN quotes q ON i.quote_id = q.id " +
+                "JOIN system_requests sr ON q.maintenance_id = CAST(JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.maintenanceId')) AS UNSIGNED) " +
+                "WHERE sr.id = ?";
+        return count(sql, requestId) > 0;
     }
-    // Trong InvoiceDAO.java
 
     // 1. Hàm tìm theo ID
     public Invoice findById(Long id) {
@@ -77,8 +65,6 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
     public boolean updatePaymentStatus(Long invoiceId, String status, String method, String note, int staffId) {
         String sql = "UPDATE invoices SET payment_status = ?, payment_method = ?, note = ?, paid_at = NOW() WHERE id = ?";
 
-        // Lưu ý: Nếu status là CANCELLED thì paid_at nên để NULL hoặc giữ nguyên, tùy logic.
-        // Ở đây tôi viết đơn giản cho trường hợp PAID.
         if ("CANCELLED".equals(status)) {
             sql = "UPDATE invoices SET payment_status = ?, note = ? WHERE id = ?";
             update(sql, status, note, invoiceId);
@@ -87,18 +73,17 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
         }
         return true;
     }
+
     public List<Invoice> findAll(String keyword, String status, int page, int pageSize) {
         StringBuilder sql = new StringBuilder();
         List<Object> params = new java.util.ArrayList<>();
 
-        // SELECT có JOIN để lấy thông tin phụ hiển thị
         sql.append("SELECT i.*, u.full_name AS customer_name, u.email AS customer_email, s.full_name AS created_by_name ");
         sql.append("FROM invoices i ");
-        sql.append("JOIN users u ON i.customer_id = u.id "); // Join lấy tên khách
-        sql.append("LEFT JOIN users s ON i.created_by = s.id "); // Join lấy tên nhân viên (Left Join vì có thể null)
-        sql.append("WHERE 1=1 "); // Mẹo để dễ nối chuỗi AND
+        sql.append("JOIN users u ON i.customer_id = u.id ");
+        sql.append("LEFT JOIN users s ON i.created_by = s.id ");
+        sql.append("WHERE 1=1 ");
 
-        // 1. Xử lý tìm kiếm từ khóa
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (i.invoice_code LIKE ? OR u.full_name LIKE ?) ");
             String searchPattern = "%" + keyword.trim() + "%";
@@ -106,27 +91,20 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
             params.add(searchPattern);
         }
 
-        // 2. Xử lý lọc trạng thái
         if (status != null && !status.trim().isEmpty()) {
             sql.append("AND i.payment_status = ? ");
             params.add(status);
         }
 
-        // 3. Sắp xếp (Mới nhất lên đầu)
         sql.append("ORDER BY i.issued_date DESC ");
 
-        // 4. Phân trang
         sql.append("LIMIT ? OFFSET ?");
         params.add(pageSize);
         params.add((page - 1) * pageSize);
 
-        // Gọi hàm query của GenericDAO
         return query(sql.toString(), new InvoiceMapper(), params.toArray());
     }
 
-    /**
-     * Hàm đếm tổng số dòng (Dùng để tính tổng số trang cho phân trang)
-     */
     public int countAll(String keyword, String status) {
         StringBuilder sql = new StringBuilder();
         List<Object> params = new java.util.ArrayList<>();
@@ -148,5 +126,21 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
         }
 
         return count(sql.toString(), params.toArray());
+    }
+
+    public boolean updateTaxRate(Long invoiceId, double newTaxRate) {
+        String sql = "UPDATE invoices SET " +
+                "tax_rate = ?, " +
+                "tax_amount = (subtotal * ? / 100), " +
+                "total_amount = (subtotal + (subtotal * ? / 100)) " +
+                "WHERE id = ? AND payment_status = 'UNPAID'";
+
+        try {
+            update(sql, newTaxRate, newTaxRate, newTaxRate, invoiceId);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

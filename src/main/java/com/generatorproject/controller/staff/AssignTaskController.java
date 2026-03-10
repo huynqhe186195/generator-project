@@ -1,4 +1,4 @@
-package com.generatorproject.controller.manager;
+package com.generatorproject.controller.staff;
 
 import com.generatorproject.dao.MaintenanceDAO;
 import com.generatorproject.model.Maintenance;

@@ -29,8 +29,13 @@
                             <h5 class="text-dark fw-bold">#${repairRequest.maintenanceId}</h5>
                         </div>
                         <div class="col-sm-6">
-                            <p class="mb-1 text-muted small">Mã Kỹ thuật viên (Technician ID)</p>
-                            <h5 class="text-dark fw-bold">NV-${repairRequest.technicianId}</h5>
+                            <p class="mb-1 text-muted small">Thông tin Kỹ thuật viên</p>
+                            <h5 class="text-dark fw-bold mb-0">
+                                <i class="fas fa-user-tie text-primary me-2"></i>${technicianName}
+                            </h5>
+                            <div class="text-muted small mt-1">
+                                Mã ID: NV-<fmt:formatNumber value="${repairRequest.technicianId}" maxFractionDigits="0" />
+                            </div>
                         </div>
                     </div>
                     <hr>
@@ -62,9 +67,10 @@
                             <thead class="bg-light text-secondary">
                             <tr>
                                 <th class="py-3 ps-4 text-center">STT</th>
-                                <th class="py-3">Tên Vật tư</th>
+                                <th class="py-3">Vật tư</th>
                                 <th class="py-3 text-center">Số lượng</th>
-
+                                <%-- THÊM CỘT ĐƠN GIÁ MỚI --%>
+                                <th class="py-3 text-end">Đơn giá</th>
                                 <th class="py-3 text-end pe-4">Thành tiền</th>
                             </tr>
                             </thead>
@@ -76,22 +82,38 @@
                                     </tr>
                                 </c:when>
                                 <c:otherwise>
-                                <c:forEach items="${repairRequest.materials}" var="mat" varStatus="loop">
-                                    <tr>
-                                        <td class="ps-4 text-center fw-bold text-secondary">${loop.index + 1}</td>
-                                        <td>
-                                            <div class="fw-bold text-dark">${mat.partName}</div>
-                                            <div class="small text-muted">Mã ID: ${mat.sparePartId}</div>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-secondary rounded-pill px-3">${mat.quantityUsed}</span>
-                                        </td>
+                                    <c:forEach items="${repairRequest.materials}" var="mat" varStatus="loop">
+                                        <tr>
+                                            <td class="ps-4 text-center fw-bold text-secondary">${loop.index + 1}</td>
+                                            <td>
+                                                <div class="fw-bold text-dark">
+                                                        <%-- Xử lý an toàn: Nếu không có partName thì hiển thị tạm bằng ID --%>
+                                                    <c:choose>
+                                                        <c:when test="${not empty mat.partName}">
+                                                            ${mat.partName}
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            Vật tư ID: ${mat.sparePartId}
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                                <div class="small text-muted">Mã ID: ${mat.sparePartId}</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary rounded-pill px-3">${mat.quantityUsed}</span>
+                                            </td>
 
-                                        <td class="text-end pe-4 fw-bold text-primary">
-                                            <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> đ
-                                        </td>
-                                    </tr>
-                                </c:forEach>
+                                                <%-- HIỂN THỊ ĐƠN GIÁ (Dữ liệu mới) --%>
+                                            <td class="text-end fw-bold text-muted">
+                                                <fmt:formatNumber value="${mat.unitPrice}" pattern="#,###"/> đ
+                                            </td>
+
+                                                <%-- HIỂN THỊ TỔNG TIỀN (Số lượng * Đơn giá) --%>
+                                            <td class="text-end pe-4 fw-bold text-primary">
+                                                <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> đ
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
                                 </c:otherwise>
                             </c:choose>
                             </tbody>
@@ -141,16 +163,7 @@
                 </button>
             </c:when>
 
-            <%-- NẾU LÀ TRẠNG THÁI KHÁC THÌ HIỂN THỊ THÔNG BÁO --%>
-<%--            <c:otherwise>--%>
-<%--                <div class="alert alert-info text-center mb-0">--%>
-<%--                    <i class="fas fa-info-circle me-2"></i>Yêu cầu này đang ở trạng thái:--%>
-<%--                    <strong class="text-danger">${currentStatus}</strong>--%>
-<%--                </div>--%>
-<%--                <button type="button" class="btn btn-secondary disabled" disabled>--%>
-<%--                    <i class="fas fa-lock me-1"></i> Đã khóa thao tác--%>
-<%--                </button>--%>
-<%--            </c:otherwise>--%>
+
         </c:choose>
     </div>
                 </div>
