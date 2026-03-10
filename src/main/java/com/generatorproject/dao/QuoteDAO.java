@@ -32,19 +32,20 @@ public class QuoteDAO extends GenericDAO<Object> {
     public void insertQuoteDetails(Long quoteId, List<RepairRequestDTO.MaterialDTO> materials) {
         if (materials == null || materials.isEmpty()) return;
 
-        // Lưu ý: Cột lưu tên phụ tùng trong DB của bạn tên là 'description'
         String sql = "INSERT INTO quote_details (quote_id, description, quantity, unit_price, total_price) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
         for (RepairRequestDTO.MaterialDTO mat : materials) {
-            double unitPrice = mat.getCostAtTime() != null ? mat.getCostAtTime().doubleValue() : 0.0;
+
+            // LẤY CHUẨN ĐƠN GIÁ VÀ THÀNH TIỀN TỪ JSON MỚI
+            double unitPrice = mat.getUnitPrice() != null ? mat.getUnitPrice().doubleValue() : 0.0;
+            double totalPrice = mat.getCostAtTime() != null ? mat.getCostAtTime().doubleValue() : 0.0;
             int quantity = mat.getQuantityUsed() != null ? mat.getQuantityUsed() : 0;
-            double totalPrice = unitPrice * quantity;
 
             // Truyền tên phụ tùng vào cột description
             String description = (mat.getPartName() != null && !mat.getPartName().isEmpty())
                     ? mat.getPartName()
-                    : "Vật tư không tên";
+                    : "Vật tư ID: " + mat.getSparePartId();
 
             insert(sql,
                     quoteId,

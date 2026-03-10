@@ -22,4 +22,5 @@ public interface IInvoiceService {
     // Hủy hóa đơn (nếu có sai sót)
     boolean cancelInvoice(Long invoiceId, String reason, Users staff) throws Exception;
     int countInvoices(String keyword, String status);
+    public boolean updateTaxRate(Long invoiceId, double newTaxRate);
 }
