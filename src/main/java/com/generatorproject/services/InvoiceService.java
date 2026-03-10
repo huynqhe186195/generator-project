@@ -74,4 +74,9 @@ public class InvoiceService implements IInvoiceService {
     public int countInvoices(String keyword, String status) {
         return invoiceDAO.countAll(keyword, status); // Hàm này bạn đã có ở InvoiceDAO
     }
+
+    @Override
+    public boolean updateTaxRate(Long invoiceId, double newTaxRate) {
+        return invoiceDAO.updateTaxRate(invoiceId,newTaxRate);
+    }
 }

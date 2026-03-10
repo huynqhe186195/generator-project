@@ -126,22 +126,37 @@
                             <tr>
                                 <th class="ps-4">Tên Vật Tư</th>
                                 <th class="text-center">Số lượng</th>
-
+                                <%-- THÊM CỘT ĐƠN GIÁ --%>
+                                <th class="text-end">Đơn giá</th>
                                 <th class="text-end pe-4">Thành tiền</th>
                             </tr>
                             </thead>
                             <tbody>
                             <c:choose>
                                 <c:when test="${empty repairRequest.materials}">
+                                    <%-- Sửa colspan thành 4 cho khớp số cột --%>
                                     <tr><td colspan="4" class="text-center py-4 text-muted">Không có vật tư đề xuất.</td></tr>
                                 </c:when>
                                 <c:otherwise>
                                     <c:forEach items="${repairRequest.materials}" var="mat">
                                         <tr>
-                                            <td class="ps-4 fw-bold text-dark">${mat.partName}</td>
-                                            <td class="text-center"><span class="badge bg-light text-dark border">${mat.quantityUsed}</span></td>
+                                            <td class="ps-4 fw-bold text-dark">
+                                                <c:choose>
+                                                    <c:when test="${not empty mat.partName}">${mat.partName}</c:when>
+                                                    <c:otherwise>Vật tư ID: ${mat.sparePartId}</c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark border">${mat.quantityUsed}</span>
+                                            </td>
 
+                                                <%-- HIỂN THỊ ĐƠN GIÁ --%>
                                             <td class="text-end text-muted">
+                                                <fmt:formatNumber value="${mat.unitPrice}" pattern="#,###"/> đ
+                                            </td>
+
+                                                <%-- HIỂN THỊ THÀNH TIỀN (Số lượng * Đơn giá) --%>
+                                            <td class="text-end pe-4 fw-bold text-primary">
                                                 <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> đ
                                             </td>
                                         </tr>
