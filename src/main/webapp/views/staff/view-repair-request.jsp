@@ -29,8 +29,13 @@
                             <h5 class="text-dark fw-bold">#${repairRequest.maintenanceId}</h5>
                         </div>
                         <div class="col-sm-6">
-                            <p class="mb-1 text-muted small">Mã Kỹ thuật viên (Technician ID)</p>
-                            <h5 class="text-dark fw-bold">NV-${repairRequest.technicianId}</h5>
+                            <p class="mb-1 text-muted small">Thông tin Kỹ thuật viên</p>
+                            <h5 class="text-dark fw-bold mb-0">
+                                <i class="fas fa-user-tie text-primary me-2"></i>${technicianName}
+                            </h5>
+                            <div class="text-muted small mt-1">
+                                Mã ID: NV-<fmt:formatNumber value="${repairRequest.technicianId}" maxFractionDigits="0" />
+                            </div>
                         </div>
                     </div>
                     <hr>
