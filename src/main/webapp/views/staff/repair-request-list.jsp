@@ -96,7 +96,15 @@
 
                                     <td>
                                         <div class="small">
-                                            <div class="fw-bold text-dark"><i class="fas fa-user-cog me-1"></i> KTV ID: ${req.senderId}</div>
+                                            <div class="fw-bold text-dark">
+                                                <i class="fas fa-user-tie me-1 text-primary"></i>
+                                                    <%-- Hiển thị Tên KTV lấy từ Map dựa trên ID của Request --%>
+                                                    ${technicianNames[req.id]}
+                                            </div>
+                                            <div class="text-muted mt-1" style="font-size: 0.8rem;">
+                                                    <%-- Hiển thị Mã KTV bóc từ JSON (req.info), bỏ dấu .0 --%>
+                                                Mã NV: <fmt:formatNumber value="${req.info.technicianId}" maxFractionDigits="0" />
+                                            </div>
                                         </div>
                                     </td>
 
@@ -146,30 +154,34 @@
                                     </td>
 
                                     <td class="text-end pe-4">
-                                        <c:choose>
-                                            <c:when test="${req.status == 'APPROVED'}">
+                                        <div class="d-flex justify-content-end gap-2 align-items-center">
+
+                                                <%-- NÚT XEM CHI TIẾT (Luôn luôn hiển thị ở mọi trạng thái) --%>
+                                            <a href="<c:url value='/staff/repair-request/view?requestId=${req.id}'/>"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i> Xem
+                                            </a>
+
+                                                <%-- NÚT GỬI BÁO GIÁ (Chỉ hiện khi Sếp đã duyệt) --%>
+                                            <c:if test="${req.status == 'APPROVED'}">
                                                 <a href="<c:url value='/staff/repair-request/send-quote?requestId=${req.id}'/>"
                                                    class="btn btn-sm btn-success">
                                                     <i class="fas fa-paper-plane me-1"></i> Gửi báo giá
                                                 </a>
-                                            </c:when>
-                                            <c:when test="${req.status == 'COMPLETED'}">
-                                                <%-- Thay thẻ <a> bằng thẻ <form> method="POST" --%>
-                                                <form action="<c:url value='/staff/invoice/create'/>" method="POST" class="d-inline">
+                                            </c:if>
+
+                                                <%-- NÚT TẠO HÓA ĐƠN (Chỉ hiện khi đã hoàn thành) --%>
+                                            <c:if test="${req.status == 'COMPLETED'}">
+                                                <form action="<c:url value='/staff/invoice/create'/>" method="POST" class="m-0 p-0">
                                                     <input type="hidden" name="requestId" value="${req.id}">
                                                     <button type="submit" class="btn btn-sm btn-warning text-dark"
                                                             onclick="return confirm('Bạn có chắc chắn muốn xuất hóa đơn cho yêu cầu #${req.id} này?');">
                                                         <i class="fas fa-file-invoice-dollar me-1"></i> Tạo hóa đơn
                                                     </button>
                                                 </form>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <a href="<c:url value='/staff/repair-request/view?requestId=${req.id}'/>"
-                                                   class="btn btn-sm btn-outline-primary">
-                                                    <i class="fas fa-eye me-1"></i> Xem chi tiết
-                                                </a>
-                                            </c:otherwise>
-                                        </c:choose>
+                                            </c:if>
+
+                                        </div>
                                     </td>
                                 </tr>
                             </c:forEach>
