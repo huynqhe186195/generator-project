@@ -24,12 +24,17 @@ import java.util.UUID;
 @MultipartConfig
 public class ContractAiUploadServlet extends HttpServlet {
     private final AiCoreService aiCoreService = new AiCoreService();
+    private final Gson gson = new Gson();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Long contractId = Long.parseLong(req.getParameter("contractId"));
         Part file = req.getPart("sourceFile");
         if (file == null || file.getSize() == 0) {
+            if (isJsonRequest(req)) {
+                writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, "Vui lòng chọn file upload.");
+                return;
+            }
             resp.sendRedirect(req.getContextPath() + "/manager/contracts/draft?id=" + contractId + "&msg=no_file");
             return;
         }
@@ -63,6 +68,31 @@ public class ContractAiUploadServlet extends HttpServlet {
                 null, null, new Gson().toJson(meta));
 
         req.getSession().setAttribute("contractAiSourceFilePath_" + contractId, target.getAbsolutePath());
+        if (isJsonRequest(req)) {
+            Map<String, Object> ok = new HashMap<>();
+            ok.put("chatMessage", "Upload file thành công.");
+            ok.put("items", new Object[0]);
+            ok.put("warnings", new String[0]);
+            writeJson(resp, HttpServletResponse.SC_OK, ok);
+            return;
+        }
+
         resp.sendRedirect(req.getContextPath() + "/manager/contracts/draft?id=" + contractId + "&msg=file_uploaded");
+    }
+
+
+    private boolean isJsonRequest(HttpServletRequest req) {
+        String format = req.getParameter("format");
+        if ("json".equalsIgnoreCase(format)) {
+            return true;
+        }
+        String accept = req.getHeader("Accept");
+        return accept != null && accept.toLowerCase().contains("application/json");
+    }
+
+    private void writeJson(HttpServletResponse resp, int status, Object payload) throws IOException {
+        resp.setStatus(status);
+        resp.setContentType("application/json;charset=UTF-8");
+        resp.getWriter().write(gson.toJson(payload));
     }
 }

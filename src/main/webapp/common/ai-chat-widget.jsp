@@ -217,25 +217,25 @@
     </div>
 
     <div class="global-ai-body">
-        <div class="global-ai-row">
+        <div id="globalAiMessages" class="global-ai-row">
             <div class="global-ai-avatar">🤖</div>
             <div class="global-ai-msg">🎧 Xin chào! Mình là Trợ lý AI của MITIGA, Bạn muốn triển khai AI chatbot cho lĩnh vực nào?</div>
         </div>
 
-        <button type="button" class="global-ai-chip">Tại sao doanh nghiệp cần trợ lý AI?</button>
-        <button type="button" class="global-ai-chip">Quy trình triển khai trợ lý AI?</button>
-        <button type="button" class="global-ai-chip">Giá triển khai trợ lý AI?</button>
-        <button type="button" class="global-ai-chip">Kiểm tra đơn hàng #238382</button>
-        <button type="button" class="global-ai-chip">Tìm trên google 5 sự kiện mới nhất</button>
+        <button type="button" class="global-ai-chip ai-chip-btn">Tại sao doanh nghiệp cần trợ lý AI?</button>
+        <button type="button" class="global-ai-chip ai-chip-btn">Quy trình triển khai trợ lý AI?</button>
+        <button type="button" class="global-ai-chip ai-chip-btn">Giá triển khai trợ lý AI?</button>
+        <button type="button" class="global-ai-chip ai-chip-btn">Kiểm tra đơn hàng #238382</button>
+        <button type="button" class="global-ai-chip ai-chip-btn">Tìm trên google 5 sự kiện mới nhất</button>
 
         <div class="global-ai-input-wrap">
             <div class="global-ai-input-row">
                 <button type="button" class="btn-icon" title="Thêm PDF/Snapshot" onclick="document.getElementById('globalAiFileInput').click()">
                     <i class="fa fa-image"></i>
                 </button>
-                <input type="text" class="form-control" placeholder="Câu hỏi của bạn là gì?"/>
+                <input id="globalAiInput" type="text" class="form-control" placeholder="Câu hỏi của bạn là gì?"/>
                 <button type="button" class="btn-icon" title="Ghi âm"><i class="fa fa-microphone"></i></button>
-                <button type="button" class="global-ai-send" title="Gửi"><i class="fa fa-send"></i></button>
+                <button type="button" id="globalAiSendBtn" class="global-ai-send" title="Gửi"><i class="fa fa-send"></i></button>
             </div>
 
             <div class="global-ai-upload-line">
@@ -246,7 +246,7 @@
                             <input type="hidden" name="contractId" value="${draftContract.id}"/>
                             <button class="btn btn-sm btn-outline-primary" type="submit"><i class="fa fa-paperclip"></i> Add file PDF/Snapshot</button>
                         </form>
-                        <form method="post" action="${pageContext.request.contextPath}/manager/contracts/ai/extract">
+                        <form id="globalAiExtractForm" method="post" action="${pageContext.request.contextPath}/manager/contracts/ai/extract">
                             <input type="hidden" name="contractId" value="${draftContract.id}"/>
                             <button class="btn btn-sm btn-danger" type="submit"><i class="fa fa-robot"></i> Gửi đi (AI Extract)</button>
                         </form>
@@ -265,3 +265,33 @@
         <div class="global-ai-footer">Powered by MITIGA</div>
     </div>
 </div>
+
+<script>
+(function(){
+  const input = document.getElementById('globalAiInput');
+  const sendBtn = document.getElementById('globalAiSendBtn');
+  const extractForm = document.getElementById('globalAiExtractForm');
+  const messages = document.getElementById('globalAiMessages');
+
+  document.querySelectorAll('.ai-chip-btn').forEach(btn => {
+    btn.addEventListener('click', () => { if (input) input.value = btn.textContent.trim(); });
+  });
+
+  if (sendBtn && extractForm) {
+    sendBtn.addEventListener('click', function(){
+      const data = new FormData(extractForm);
+      fetch(extractForm.action + '?format=json', { method:'POST', body:data, headers:{'Accept':'application/json'} })
+        .then(r => r.json())
+        .then(json => {
+          if (!messages) return;
+          const bubble = document.createElement('div');
+          bubble.className = 'global-ai-msg';
+          bubble.style.marginLeft = '40px';
+          bubble.textContent = json.chatMessage || 'Đã nhận yêu cầu.';
+          messages.parentElement.appendChild(bubble);
+        })
+        .catch(() => extractForm.submit());
+    });
+  }
+})();
+</script>
