@@ -2,6 +2,7 @@ package com.generatorproject.controller.manager;
 
 import com.generatorproject.model.Contract;
 import com.generatorproject.model.Users;
+import com.generatorproject.model.ContractDraft;
 import com.generatorproject.services.ContractAiService;
 import com.generatorproject.services.ContractService;
 import com.generatorproject.services.UserServices;
@@ -32,7 +33,7 @@ public class CreateContractDraftServlet extends HttpServlet {
         }
         req.setAttribute("customers", userServices.getUsersByRole(5));
         req.setAttribute("models", productModelServices.findAll());
-        req.getRequestDispatcher("/views/manager/contract/contract-form.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/manager/contract/create-contract.jsp").forward(req, resp);
     }
 
     @Override
@@ -44,21 +45,23 @@ public class CreateContractDraftServlet extends HttpServlet {
                 return;
             }
 
-            String contractNumber = req.getParameter("contractNumber");
-            Long customerId = Long.parseLong(req.getParameter("customerId"));
-            Date signedDate = Date.valueOf(req.getParameter("signedDate"));
-            Date startDate = Date.valueOf(req.getParameter("startDate"));
-            Date endDate = Date.valueOf(req.getParameter("endDate"));
-            if (startDate.after(endDate)) {
+            ContractDraft draftInput = new ContractDraft();
+            draftInput.setContractNumber(req.getParameter("contractNumber"));
+            draftInput.setCustomerId(Long.parseLong(req.getParameter("customerId")));
+            draftInput.setSignedDate(Date.valueOf(req.getParameter("signedDate")));
+            draftInput.setStartDate(Date.valueOf(req.getParameter("startDate")));
+            draftInput.setEndDate(Date.valueOf(req.getParameter("endDate")));
+
+            if (draftInput.getStartDate().after(draftInput.getEndDate())) {
                 throw new IllegalArgumentException("Ngày hiệu lực phải <= ngày hết hạn.");
             }
 
             Contract draft = Contract.builder()
-                    .contractNumber(contractNumber)
-                    .customerId(customerId.intValue())
-                    .signedDate(signedDate)
-                    .startDate(startDate)
-                    .endDate(endDate)
+                     .contractNumber(draftInput.getContractNumber())
+                    .customerId(draftInput.getCustomerId().intValue())
+                    .signedDate(draftInput.getSignedDate())
+                    .startDate(draftInput.getStartDate())
+                    .endDate(draftInput.getEndDate())
                     .managerId(manager.getId())
                     .status("PENDING_SERIAL")
                     .build();

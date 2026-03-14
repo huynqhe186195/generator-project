@@ -16,6 +16,7 @@ public class GeminiGatewayService {
 
     private final Gson gson = new Gson();
     private final String model = "gemini-2.5-flash";
+    private final PromptBuilder promptBuilder = new PromptBuilder();
 
     public String extractDeviceList(String userPrompt, String ocrText) {
         String apiKey = System.getenv("GEMINI_API_KEY");
@@ -26,7 +27,7 @@ public class GeminiGatewayService {
         String endpoint = "https://generativelanguage.googleapis.com/v1beta/models/"
                 + model + ":generateContent?key=" + apiKey;
 
-        String finalPrompt = buildPrompt(userPrompt, ocrText);
+        String finalPrompt = promptBuilder.buildDeviceExtractionPrompt(userPrompt, ocrText);
 
         JsonObject part = new JsonObject();
         part.addProperty("text", finalPrompt);
@@ -102,33 +103,4 @@ public class GeminiGatewayService {
         return t;
     }
 
-    private String buildPrompt(String userPrompt, String ocrText) {
-        return String.format("Bạn là trợ lý trích xuất dữ liệu hợp đồng.\\n\\n"
-                        + "Nhiệm vụ:\\n"
-                        + "- Đọc nội dung hợp đồng bên dưới\\n"
-                        + "- Chỉ trích xuất danh sách thiết bị có trong hợp đồng\\n"
-                        + "- Không lấy bên mua, bên bán, ngày ký\\n"
-                        + "- Không tự suy đoán nếu không chắc\\n"
-                        + "- Nếu không đọc rõ thì để null\\n"
-                        + "- Trả về JSON hợp lệ, không giải thích thêm\\n\\n"
-                        + "JSON schema:\\n"
-                        + "{\\n"
-                        + "  \"chatMessage\": \"string\",\\n"
-                        + "  \"items\": [\\n"
-                        + "    {\\n"
-                        + "      \"rawModelName\": \"string|null\",\\n"
-                        + "      \"rawBrand\": \"string|null\",\\n"
-                        + "      \"rawPower\": \"string|null\",\\n"
-                        + "      \"quantity\": 1,\\n"
-                        + "      \"rawSerialNumber\": \"string|null\",\\n"
-                        + "      \"manufactureYear\": null,\\n"
-                        + "      \"currentLocation\": \"string|null\",\\n"
-                        + "      \"confidenceScore\": 0.95\\n"
-                        + "    }\\n"
-                        + "  ],\\n"
-                        + "  \"warnings\": [\"string\"]\\n"
-                        + "}\\n\\n"
-                        + "Yêu cầu người dùng:\\n%s\\n\\n"
-                        + "Nội dung OCR:\\n%s", userPrompt == null ? "" : userPrompt, ocrText == null ? "" : ocrText);
-    }
 }
