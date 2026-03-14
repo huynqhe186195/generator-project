@@ -210,6 +210,7 @@
                     });
                 </script>
 
-            </body>
+            <jsp:include page="/common/ai-chat-widget.jsp" />
+</body>
 
             </html>

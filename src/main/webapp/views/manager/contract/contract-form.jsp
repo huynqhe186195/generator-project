@@ -13,95 +13,8 @@
         .contract-field { display: grid; grid-template-columns: 180px 1fr; align-items: center; gap: 10px; margin-bottom: 14px; }
         .contract-field label { margin: 0; font-weight: 600; }
 
-        .ai-bubble-toggle { display: none; }
-        .ai-bubble-launcher {
-            position: fixed;
-            right: 24px;
-            bottom: 24px;
-            width: 66px;
-            height: 66px;
-            border-radius: 50%;
-            border: none;
-            background: #c20000;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 31px;
-            box-shadow: 0 10px 24px rgba(0,0,0,.25);
-            cursor: pointer;
-            z-index: 2000;
-        }
-
-        .ai-chatbox {
-            position: fixed;
-            right: 24px;
-            bottom: 104px;
-            width: 380px;
-            max-width: calc(100vw - 32px);
-            background: #f8f8f8;
-            border: 1px solid #dfdfdf;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 20px 38px rgba(0,0,0,.25);
-            opacity: 0;
-            transform: translateY(20px) scale(.97);
-            pointer-events: none;
-            transition: all .22s ease;
-            z-index: 1999;
-        }
-
-        .ai-bubble-toggle:checked ~ .ai-chatbox {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            pointer-events: auto;
-        }
-
-        .ai-chatbox-header {
-            background: #b50000;
-            color: #fff;
-            padding: 12px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 700;
-        }
-
-        .ai-chatbox-body {
-            padding: 14px;
-            max-height: 62vh;
-            overflow: auto;
-            background: linear-gradient(180deg, #f2f2f2 0%, #fbfbfb 100%);
-        }
-
-        .ai-msg {
-            background: #fff;
-            border-radius: 12px;
-            padding: 10px 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 1px 2px rgba(0,0,0,.08);
-        }
-
-        .ai-chip { display: inline-block; margin: 0 6px 8px 0; padding: 6px 12px; border-radius: 999px; background: #ececec; font-weight: 600; }
-        .ai-input { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 8px; }
-        .ai-tools { margin-top: 12px; border: 1px solid #ebebeb; background: #fff; border-radius: 10px; padding: 10px; }
-        .ai-tip-badge {
-            position: fixed;
-            right: 102px;
-            bottom: 53px;
-            background: #111;
-            color: #fff;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-weight: 700;
-            z-index: 2000;
-        }
-
         @media (max-width: 992px) {
             .contract-field { grid-template-columns: 1fr; }
-            .ai-chatbox { right: 10px; bottom: 90px; width: calc(100vw - 20px); }
-            .ai-bubble-launcher { right: 10px; bottom: 12px; }
-            .ai-tip-badge { display: none; }
         }
     </style>
 </head>
@@ -118,6 +31,7 @@
     <div class="contract-panel">
         <div class="panel-body">
             <h2 class="panel-title mb-4">Chi tiết hợp đồng</h2>
+            <div class="alert alert-secondary py-2">Mở bong bóng AI góc phải dưới để <b>add file PDF</b> và chạy AI Extract.</div>
             <form method="post" action="${pageContext.request.contextPath}/manager/contracts/draft">
                 <div class="contract-field">
                     <label>Số hợp đồng <span class="text-danger">*</span></label>
@@ -212,51 +126,6 @@
             </div>
         </div>
     </c:if>
-</div>
-
-<input type="checkbox" id="aiWidgetToggle" class="ai-bubble-toggle"/>
-<label for="aiWidgetToggle" class="ai-bubble-launcher" title="Mở AI Assistant">🤖</label>
-<div class="ai-tip-badge">Xin chào, Em là trợ lý AI! 👋</div>
-
-<div class="ai-chatbox">
-    <div class="ai-chatbox-header">
-        <span><i class="fa fa-android"></i> AI Assistant</span>
-        <label for="aiWidgetToggle" style="cursor:pointer; margin:0;"><i class="fa fa-close"></i></label>
-    </div>
-    <div class="ai-chatbox-body">
-        <div class="ai-msg">Chào bạn! Mình hỗ trợ trích xuất danh sách thiết bị từ file hợp đồng (snapshot/PDF).</div>
-        <div>
-            <span class="ai-chip">Đọc model thô</span>
-            <span class="ai-chip">Đọc serial nếu có</span>
-            <span class="ai-chip">Gợi ý model match</span>
-        </div>
-
-        <div class="ai-input">
-            <input class="form-control" placeholder="Nhập câu hỏi cho AI..." />
-            <button class="btn btn-primary" type="button"><i class="fa fa-send"></i></button>
-        </div>
-
-        <div class="ai-tools">
-            <c:choose>
-                <c:when test="${empty draftContract}">
-                    <div class="alert alert-warning mb-0">Vui lòng lưu nháp hợp đồng trước khi chạy AI.</div>
-                </c:when>
-                <c:otherwise>
-                    <form method="post" enctype="multipart/form-data" action="${pageContext.request.contextPath}/manager/contracts/ai/upload" class="mb-2">
-                        <input type="hidden" name="contractId" value="${draftContract.id}"/>
-                        <label class="form-label">Upload snapshot/PDF</label>
-                        <input type="file" name="sourceFile" class="form-control mb-2" accept=".pdf,.png,.jpg,.jpeg,.txt,.csv" required/>
-                        <button class="btn btn-outline-primary" type="submit">Upload file</button>
-                    </form>
-
-                    <form method="post" action="${pageContext.request.contextPath}/manager/contracts/ai/extract">
-                        <input type="hidden" name="contractId" value="${draftContract.id}"/>
-                        <button class="btn btn-danger" type="submit"><i class="fa fa-robot"></i> AI Extract</button>
-                    </form>
-                </c:otherwise>
-            </c:choose>
-        </div>
-    </div>
 </div>
 </body>
 </html>

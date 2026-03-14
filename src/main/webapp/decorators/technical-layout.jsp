@@ -77,5 +77,6 @@
     </div>
 </div>
 
+<jsp:include page="/common/ai-chat-widget.jsp" />
 </body>
 </html>
