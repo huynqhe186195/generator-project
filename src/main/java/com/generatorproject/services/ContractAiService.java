@@ -22,7 +22,9 @@ public class ContractAiService {
     public List<ContractAiExtractedItem> extractAndSave(Long contractId, String sourceFilePath) throws Exception {
         File file = sourceFilePath == null ? null : new File(sourceFilePath);
         String content = ocrService.readText(file);
-        List<ContractAiExtractedItem> items = extractionService.extractDevices(content, sourceFilePath, contractId);
+        AiExtractionService.ExtractResult extractionResult = extractionService.extractDevicesResult(content, sourceFilePath, contractId,
+                "Trích xuất danh sách thiết bị trong hợp đồng");
+        List<ContractAiExtractedItem> items = extractionResult.getItems();
 
         try (Connection conn = dbContext.getConnection()) {
             conn.setAutoCommit(false);
@@ -35,7 +37,7 @@ public class ContractAiService {
         return items;
     }
 
-    public AiExtractResponse extractForContract(Long contractId, Integer managerId, Long existingAiSessionId, String fallbackSourcePath) throws Exception {
+    public AiExtractResponse extractForContract(Long contractId, Integer managerId, Long existingAiSessionId, String fallbackSourcePath, String userPrompt) throws Exception {
         Long aiSessionId = existingAiSessionId;
         String sourcePath = null;
         Long runId = null;
@@ -55,8 +57,13 @@ public class ContractAiService {
                 sourcePath = fallbackSourcePath;
             }
 
-            List<ContractAiExtractedItem> items = extractAndSave(contractId, sourcePath);
-            AiExtractResponse response = buildResponse(items);
+            File file = sourcePath == null ? null : new File(sourcePath);
+            String content = ocrService.readText(file);
+            AiExtractionService.ExtractResult extractionResult = extractionService.extractDevicesResult(content, sourcePath, contractId,
+                    userPrompt == null || userPrompt.trim().isEmpty() ? "Trích xuất danh sách thiết bị trong hợp đồng" : userPrompt.trim());
+            saveExtractedItems(contractId, extractionResult.getItems());
+
+            AiExtractResponse response = buildResponse(extractionResult);
             response.setAiSessionId(aiSessionId);
 
             String payloadJson = new Gson().toJson(toPayloadMap(response));
@@ -94,12 +101,12 @@ public class ContractAiService {
         return payload;
     }
 
-    private AiExtractResponse buildResponse(List<ContractAiExtractedItem> items) {
+    private AiExtractResponse buildResponse(AiExtractionService.ExtractResult extractionResult) {
         AiExtractResponse response = new AiExtractResponse();
-        response.setChatMessage("Ok, tôi đã trích xuất xong cho bạn danh sách thiết bị có trong hợp đồng.");
+        response.setChatMessage(extractionResult.getChatMessage());
 
+        List<ContractAiExtractedItem> items = extractionResult.getItems();
         List<Map<String, Object>> itemPayload = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
 
         for (ContractAiExtractedItem item : items) {
             Map<String, Object> row = new LinkedHashMap<>();
@@ -109,15 +116,25 @@ public class ContractAiService {
             row.put("manufacture_year", item.getManufactureYear());
             row.put("current_location", item.getCurrentLocation());
             itemPayload.add(row);
-            if (item.getRawSerialNumber() == null || item.getRawSerialNumber().trim().isEmpty()) {
-                warnings.add("Không đọc rõ serial number ở một số dòng");
-            }
         }
 
         response.setItems(itemPayload);
-        response.setWarnings(warnings.isEmpty() ? Collections.singletonList("Không có cảnh báo") : warnings);
+        response.setWarnings(extractionResult.getWarnings() == null || extractionResult.getWarnings().isEmpty()
+                ? Collections.singletonList("Không có cảnh báo")
+                : extractionResult.getWarnings());
         response.setTotalItems(items.size());
         return response;
+    }
+
+    private void saveExtractedItems(Long contractId, List<ContractAiExtractedItem> items) throws Exception {
+        try (Connection conn = dbContext.getConnection()) {
+            conn.setAutoCommit(false);
+            itemDAO.deleteByContractId(conn, contractId);
+            for (ContractAiExtractedItem item : items) {
+                itemDAO.insert(conn, item);
+            }
+            conn.commit();
+        }
     }
 
     public List<ContractAiExtractedItem> findByContractId(Long contractId) {

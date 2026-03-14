@@ -280,6 +280,7 @@
   if (sendBtn && extractForm) {
     sendBtn.addEventListener('click', function(){
       const data = new FormData(extractForm);
+      if (input && input.value) data.append('userPrompt', input.value);
       fetch(extractForm.action + '?format=json', { method:'POST', body:data, headers:{'Accept':'application/json'} })
         .then(r => r.json())
         .then(json => {

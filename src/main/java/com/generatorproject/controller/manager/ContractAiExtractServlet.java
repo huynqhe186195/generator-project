@@ -27,9 +27,10 @@ public class ContractAiExtractServlet extends HttpServlet {
 
         Long aiSessionId = (Long) req.getSession().getAttribute("contractAiSessionId_" + contractId);
         String sourcePath = (String) req.getSession().getAttribute("contractAiSourceFilePath_" + contractId);
+        String userPrompt = req.getParameter("userPrompt");
 
         try {
-            AiExtractResponse response = contractAiService.extractForContract(contractId, managerId, aiSessionId, sourcePath);
+            AiExtractResponse response = contractAiService.extractForContract(contractId, managerId, aiSessionId, sourcePath, userPrompt);
             if (response.getAiSessionId() != null) {
                 req.getSession().setAttribute("contractAiSessionId_" + contractId, response.getAiSessionId());
             }
