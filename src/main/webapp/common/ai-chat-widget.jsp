@@ -3,6 +3,7 @@
 
 <style>
     .global-ai-bubble-toggle { display: none; }
+
     .global-ai-bubble-launcher {
         position: fixed;
         right: 24px;
@@ -10,108 +11,257 @@
         width: 64px;
         height: 64px;
         border-radius: 50%;
-        background: #c20000;
+        background: #b50000;
         color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 30px;
-        box-shadow: 0 10px 24px rgba(0,0,0,.25);
+        font-size: 24px;
+        box-shadow: 0 10px 24px rgba(0,0,0,.28);
         cursor: pointer;
         z-index: 2100;
     }
+
     .global-ai-chatbox {
         position: fixed;
         right: 24px;
         bottom: 100px;
-        width: 380px;
-        max-width: calc(100vw - 32px);
-        border: 1px solid #dfdfdf;
+        width: 500px;
+        max-width: calc(100vw - 30px);
+        border: 1px solid #d8d8d8;
         border-radius: 12px;
         overflow: hidden;
-        background: #f8f8f8;
-        box-shadow: 0 20px 38px rgba(0,0,0,.25);
+        background: #f3f3f3;
+        box-shadow: 0 24px 42px rgba(0,0,0,.28);
         opacity: 0;
-        transform: translateY(20px) scale(.97);
+        transform: translateY(16px) scale(.98);
         pointer-events: none;
-        transition: all .2s ease;
+        transition: all .22s ease;
         z-index: 2099;
     }
+
     .global-ai-bubble-toggle:checked ~ .global-ai-chatbox {
         opacity: 1;
         transform: translateY(0) scale(1);
         pointer-events: auto;
     }
+
     .global-ai-header {
         background: #b50000;
         color: #fff;
-        padding: 12px 14px;
+        padding: 14px 16px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
         font-weight: 700;
     }
+
+    .global-ai-header .left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+    }
+
+    .global-ai-header .left strong {
+        font-size: 36px;
+        letter-spacing: .3px;
+    }
+
+    .global-ai-header .actions button,
+    .global-ai-header .actions label {
+        background: transparent;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-size: 24px;
+        margin-left: 12px;
+    }
+
     .global-ai-body {
         padding: 14px;
+        background: linear-gradient(180deg, #efefef 0%, #f8f8f8 100%);
         max-height: 62vh;
         overflow: auto;
-        background: linear-gradient(180deg, #f2f2f2 0%, #fbfbfb 100%);
     }
-    .global-ai-msg { background: #fff; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
-    .global-ai-chip { display: inline-block; margin: 0 6px 8px 0; padding: 6px 12px; border-radius: 999px; background: #ececec; font-weight: 600; }
-    .global-ai-tools { margin-top: 12px; border: 1px solid #ebebeb; background: #fff; border-radius: 10px; padding: 10px; }
-    .global-ai-tip {
-        position: fixed;
-        right: 100px;
-        bottom: 52px;
-        background: #111;
-        color: #fff;
-        border-radius: 8px;
-        padding: 8px 12px;
+
+    .global-ai-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .global-ai-avatar {
+        font-size: 30px;
+        line-height: 1;
+        margin-top: 6px;
+    }
+
+    .global-ai-msg {
+        background: #ebedf2;
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        color: #434b5a;
+        font-weight: 600;
+        max-width: 88%;
+    }
+
+    .global-ai-chip {
+        display: inline-block;
+        margin: 0 8px 10px 0;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: #eceef1;
         font-weight: 700;
-        z-index: 2100;
+        color: #363a42;
+        border: 1px solid #e1e3e8;
+        cursor: pointer;
+    }
+
+    .global-ai-input-wrap {
+        margin-top: 10px;
+        background: #fff;
+        border: 1px solid #e2e2e2;
+        border-radius: 10px;
+        padding: 8px;
+    }
+
+    .global-ai-input-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .global-ai-input-row .btn-icon {
+        border: none;
+        background: #f5f6f8;
+        color: #2d73ff;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .global-ai-input-row input[type="text"] {
+        border: none;
+        box-shadow: none;
+        font-size: 18px;
+        color: #5b6070;
+        background: transparent;
+    }
+
+    .global-ai-input-row input[type="text"]:focus {
+        outline: none;
+    }
+
+    .global-ai-send {
+        border: none;
+        background: #2d73ff;
+        color: #fff;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .global-ai-upload-line {
+        margin-top: 10px;
+    }
+
+    .global-ai-upload-line input[type="file"] {
+        font-size: 12px;
+    }
+
+    .global-ai-footer {
+        text-align: center;
+        font-weight: 700;
+        color: #4b4b4b;
+        padding: 10px 0 2px;
+    }
+
+    .global-ai-hidden-file { display: none; }
+
+    @media (max-width: 992px) {
+        .global-ai-chatbox {
+            width: calc(100vw - 18px);
+            right: 9px;
+            bottom: 88px;
+        }
+        .global-ai-bubble-launcher {
+            right: 10px;
+            bottom: 14px;
+        }
     }
 </style>
 
 <input type="checkbox" id="globalAiToggle" class="global-ai-bubble-toggle"/>
 <label for="globalAiToggle" class="global-ai-bubble-launcher" title="Mở trợ lý AI">🤖</label>
-<div class="global-ai-tip">Xin chào, Em là trợ lý AI! 👋</div>
 
 <div class="global-ai-chatbox">
     <div class="global-ai-header">
-        <span><i class="fa fa-android"></i> AI Assistant</span>
-        <label for="globalAiToggle" style="cursor:pointer; margin:0;"><i class="fa fa-close"></i></label>
+        <div class="left">
+            <span>🤖</span>
+            <strong>MITIGA AI</strong>
+        </div>
+        <div class="actions">
+            <button type="button" title="Làm mới"><i class="fa fa-refresh"></i></button>
+            <label for="globalAiToggle" title="Đóng"><i class="fa fa-close"></i></label>
+        </div>
     </div>
+
     <div class="global-ai-body">
-        <div class="global-ai-msg">Bong bóng AI này hiển thị toàn hệ thống. Bạn có thể mở ở bất kỳ màn nào.</div>
-        <div>
-            <span class="global-ai-chip">Đọc model thô</span>
-            <span class="global-ai-chip">Đọc serial</span>
-            <span class="global-ai-chip">Gợi ý match model</span>
+        <div class="global-ai-row">
+            <div class="global-ai-avatar">🤖</div>
+            <div class="global-ai-msg">🎧 Xin chào! Mình là Trợ lý AI của MITIGA, Bạn muốn triển khai AI chatbot cho lĩnh vực nào?</div>
         </div>
 
-        <div class="global-ai-tools">
-            <c:choose>
-                <c:when test="${pageContext.request.requestURI.contains('/manager/contracts/draft') and not empty draftContract}">
-                    <div class="alert alert-success py-2">📎 Bấm nút bên dưới để thêm file PDF/snapshot cho hợp đồng nháp hiện tại.</div>
-                    <form method="post" enctype="multipart/form-data" action="${pageContext.request.contextPath}/manager/contracts/ai/upload" class="mb-2">
-                        <input type="hidden" name="contractId" value="${draftContract.id}"/>
-                        <label class="form-label fw-bold">Thêm file PDF/Snapshot</label>
-                        <input type="file" name="sourceFile" class="form-control mb-2" accept=".pdf,.png,.jpg,.jpeg,.txt,.csv" required/>
-                        <button class="btn btn-outline-primary" type="submit"><i class="fa fa-paperclip"></i> Add file PDF</button>
-                    </form>
-                    <form method="post" action="${pageContext.request.contextPath}/manager/contracts/ai/extract">
-                        <input type="hidden" name="contractId" value="${draftContract.id}"/>
-                        <button class="btn btn-danger" type="submit"><i class="fa fa-robot"></i> AI Extract</button>
-                    </form>
-                </c:when>
-                <c:otherwise>
-                    <div class="alert alert-warning mb-2">Bạn đang ở màn khác. Để thêm file PDF, vào <b>Tạo hợp đồng nháp</b>.</div>
-                    <a class="btn btn-primary btn-sm" href="${pageContext.request.contextPath}/manager/contracts/draft">
-                        <i class="fa fa-file-contract"></i> Đi tới màn thêm PDF
-                    </a>
-                </c:otherwise>
-            </c:choose>
+        <button type="button" class="global-ai-chip">Tại sao doanh nghiệp cần trợ lý AI?</button>
+        <button type="button" class="global-ai-chip">Quy trình triển khai trợ lý AI?</button>
+        <button type="button" class="global-ai-chip">Giá triển khai trợ lý AI?</button>
+        <button type="button" class="global-ai-chip">Kiểm tra đơn hàng #238382</button>
+        <button type="button" class="global-ai-chip">Tìm trên google 5 sự kiện mới nhất</button>
+
+        <div class="global-ai-input-wrap">
+            <div class="global-ai-input-row">
+                <button type="button" class="btn-icon" title="Thêm PDF/Snapshot" onclick="document.getElementById('globalAiFileInput').click()">
+                    <i class="fa fa-image"></i>
+                </button>
+                <input type="text" class="form-control" placeholder="Câu hỏi của bạn là gì?"/>
+                <button type="button" class="btn-icon" title="Ghi âm"><i class="fa fa-microphone"></i></button>
+                <button type="button" class="global-ai-send" title="Gửi"><i class="fa fa-send"></i></button>
+            </div>
+
+            <div class="global-ai-upload-line">
+                <c:choose>
+                    <c:when test="${pageContext.request.requestURI.contains('/manager/contracts/draft') and not empty draftContract}">
+                        <form method="post" enctype="multipart/form-data" action="${pageContext.request.contextPath}/manager/contracts/ai/upload" class="mb-2">
+                            <input id="globalAiFileInput" class="global-ai-hidden-file" type="file" name="sourceFile" accept=".pdf,.png,.jpg,.jpeg,.txt,.csv" onchange="this.form.submit()" required/>
+                            <input type="hidden" name="contractId" value="${draftContract.id}"/>
+                            <button class="btn btn-sm btn-outline-primary" type="submit"><i class="fa fa-paperclip"></i> Add file PDF/Snapshot</button>
+                        </form>
+                        <form method="post" action="${pageContext.request.contextPath}/manager/contracts/ai/extract">
+                            <input type="hidden" name="contractId" value="${draftContract.id}"/>
+                            <button class="btn btn-sm btn-danger" type="submit"><i class="fa fa-robot"></i> Gửi đi (AI Extract)</button>
+                        </form>
+                    </c:when>
+                    <c:otherwise>
+                        <input id="globalAiFileInput" class="global-ai-hidden-file" type="file" accept=".pdf,.png,.jpg,.jpeg,.txt,.csv"/>
+                        <div class="alert alert-warning py-2 mb-2">Để add file PDF/snapshot cho hợp đồng, vào màn Tạo hợp đồng nháp.</div>
+                        <a class="btn btn-sm btn-primary" href="${pageContext.request.contextPath}/manager/contracts/draft">
+                            <i class="fa fa-file-contract"></i> Đi tới màn tạo nháp
+                        </a>
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
+
+        <div class="global-ai-footer">Powered by MITIGA</div>
     </div>
 </div>
