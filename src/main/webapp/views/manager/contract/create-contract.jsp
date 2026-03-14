@@ -123,12 +123,12 @@ function renderItems(items){
   tbody.innerHTML='';
   items.forEach(it=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${it.raw_model_name||''}<input type="hidden" name="itemId" value="" /></td>
+    tr.innerHTML=`<td>\${it.raw_model_name||''}<input type="hidden" name="itemId" value="" /></td>
       <td><input class="form-control" name="matchedModelId" value="" /></td>
-      <td><input class="form-control" name="quantity" type="number" min="1" value="${it.quantity||1}" /></td>
-      <td><input class="form-control" name="serial" value="${it.raw_serial_number||''}" /></td>
-      <td><input class="form-control" name="manufactureYear" value="${it.manufacture_year||''}" /></td>
-      <td><input class="form-control" name="currentLocation" value="${it.current_location||''}" /></td>`;
+      <td><input class="form-control" name="quantity" type="number" min="1" value="\${it.quantity||1}" /></td>
+      <td><input class="form-control" name="serial" value="\${it.raw_serial_number||''}" /></td>
+      <td><input class="form-control" name="manufactureYear" value="\${it.manufacture_year||''}" /></td>
+      <td><input class="form-control" name="currentLocation" value="\${it.current_location||''}" /></td>`;
     tbody.appendChild(tr);
   });
 }
