@@ -1,8 +1,8 @@
 package com.generatorproject.controller.manager;
 
 import com.generatorproject.dao.ContractEventDAO;
-import com.generatorproject.dao.DbContext;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.AiCoreService;
 import com.google.gson.Gson;
 
 import javax.servlet.ServletException;
@@ -23,6 +23,8 @@ import java.util.UUID;
 @WebServlet("/manager/contracts/ai/upload")
 @MultipartConfig
 public class ContractAiUploadServlet extends HttpServlet {
+    private final AiCoreService aiCoreService = new AiCoreService();
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Long contractId = Long.parseLong(req.getParameter("contractId"));
@@ -34,11 +36,26 @@ public class ContractAiUploadServlet extends HttpServlet {
 
         String uploadRoot = req.getServletContext().getRealPath("/uploads/contract-ai");
         Files.createDirectories(Paths.get(uploadRoot));
-        String fileName = UUID.randomUUID() + "_" + Paths.get(file.getSubmittedFileName()).getFileName();
+        String originalName = Paths.get(file.getSubmittedFileName()).getFileName().toString();
+        String fileName = UUID.randomUUID() + "_" + originalName;
         File target = new File(uploadRoot, fileName);
         file.write(target.getAbsolutePath());
 
         Users manager = (Users) req.getSession().getAttribute("USERMODEL");
+        try {
+            if (manager != null) {
+                Long sessionId = aiCoreService.ensureSession(manager.getId(), "CONTRACT", "CONTRACT", contractId,
+                        "Contract draft #" + contractId);
+                Long userMessageId = aiCoreService.addMessage(sessionId, "USER",
+                        "Upload file for extract: " + originalName, "TEXT");
+                aiCoreService.addAttachment(sessionId, userMessageId, originalName, target.getAbsolutePath(),
+                        file.getContentType(), file.getSize(),
+                        aiCoreService.detectAttachmentKind(originalName, file.getContentType()));
+                req.getSession().setAttribute("contractAiSessionId_" + contractId, sessionId);
+            }
+        } catch (Exception ignored) {
+        }
+
         Map<String, Object> meta = new HashMap<>();
         meta.put("source_file_path", target.getAbsolutePath());
         new ContractEventDAO().insertEvent(contractId, "AI_UPLOAD", "AI_FILE_UPLOADED", null, null,
