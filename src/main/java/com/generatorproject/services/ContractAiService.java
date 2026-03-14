@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 
 public class ContractAiService {
@@ -61,7 +62,15 @@ public class ContractAiService {
             String content = ocrService.readText(file);
             AiExtractionService.ExtractResult extractionResult = extractionService.extractDevicesResult(content, sourcePath, contractId,
                     userPrompt == null || userPrompt.trim().isEmpty() ? "Trích xuất danh sách thiết bị trong hợp đồng" : userPrompt.trim());
-            saveExtractedItems(contractId, extractionResult.getItems());
+            try {
+                saveExtractedItems(contractId, extractionResult.getItems());
+            } catch (Exception saveEx) {
+                if (isMissingExtractTableError(saveEx)) {
+                    ensureWarnings(extractionResult).add("Chưa có bảng contract_ai_extracted_items. Vui lòng chạy migration `scripts/contract_ai_flow_migration.sql`.");
+                } else {
+                    throw saveEx;
+                }
+            }
 
             AiExtractResponse response = buildResponse(extractionResult);
             response.setAiSessionId(aiSessionId);
@@ -138,10 +147,47 @@ public class ContractAiService {
     }
 
     public List<ContractAiExtractedItem> findByContractId(Long contractId) {
-        return itemDAO.findByContractId(contractId);
+        try {
+            return itemDAO.findByContractId(contractId);
+        } catch (RuntimeException ex) {
+            if (isMissingExtractTableError(ex)) {
+                return Collections.emptyList();
+            }
+            throw ex;
+        }
     }
 
     public void applyReview(Long itemId, Long matchedModelId, Integer quantity, String serial, Integer year, String location) {
         itemDAO.updateReviewData(itemId, matchedModelId, quantity, serial, year, location);
+    }
+
+    private List<String> ensureWarnings(AiExtractionService.ExtractResult extractionResult) {
+        if (extractionResult.getWarnings() == null) {
+            extractionResult.setWarnings(new ArrayList<>());
+        }
+        return extractionResult.getWarnings();
+    }
+
+    private boolean isMissingExtractTableError(Throwable ex) {
+        Throwable cur = ex;
+        while (cur != null) {
+            String msg = cur.getMessage();
+            if (msg != null) {
+                String lower = msg.toLowerCase();
+                if (lower.contains("contract_ai_extracted_items") &&
+                        (lower.contains("doesn't exist") || lower.contains("does not exist") ||
+                                lower.contains("unknown table") || lower.contains("no such table"))) {
+                    return true;
+                }
+            }
+            if (cur instanceof SQLException) {
+                String state = ((SQLException) cur).getSQLState();
+                if ("42S02".equalsIgnoreCase(state)) {
+                    return true;
+                }
+            }
+            cur = cur.getCause();
+        }
+        return false;
     }
 }
