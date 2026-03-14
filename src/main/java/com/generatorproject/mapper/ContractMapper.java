@@ -14,6 +14,7 @@ public class ContractMapper implements RowMapper<Contract> {
                     .id(rs.getLong("id"))
                     .contractNumber(rs.getString("contract_number"))
                     .customerId(rs.getInt("customer_id"))
+                    .signedDate(rs.getDate("signed_date"))
                     .startDate(rs.getDate("start_date"))
                     .endDate(rs.getDate("end_date"))
                     .status(rs.getString("status"))

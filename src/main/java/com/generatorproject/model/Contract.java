@@ -8,6 +8,7 @@ public class Contract {
     private String contractNumber;
     private int customerId;
     private int productId;
+    private Date signedDate;
     private Date startDate;
     private Date endDate;
     private String status;
@@ -29,6 +30,7 @@ public class Contract {
         this.contractNumber = builder.contractNumber;
         this.customerId = builder.customerId;
         this.productId = builder.productId;
+        this.signedDate = builder.signedDate;
         this.startDate = builder.startDate;
         this.endDate = builder.endDate;
         this.status = builder.status;
@@ -72,6 +74,14 @@ public class Contract {
 
     public void setProductId(int productId) {
         this.productId = productId;
+    }
+
+    public Date getSignedDate() {
+        return signedDate;
+    }
+
+    public void setSignedDate(Date signedDate) {
+        this.signedDate = signedDate;
     }
 
     public Date getStartDate() {
@@ -171,6 +181,7 @@ public class Contract {
         private String contractNumber;
         private int customerId;
         private int productId;
+        private Date signedDate;
         private Date startDate;
         private Date endDate;
         private String status;
@@ -199,6 +210,11 @@ public class Contract {
 
         public Builder productId(int productId) {
             this.productId = productId;
+            return this;
+        }
+
+        public Builder signedDate(Date signedDate) {
+            this.signedDate = signedDate;
             return this;
         }
 

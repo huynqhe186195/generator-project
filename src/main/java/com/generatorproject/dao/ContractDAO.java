@@ -42,12 +42,13 @@ public class ContractDAO extends GenericDAO<Contract> {
     }
 
     public Long save(Contract contract) {
-        String sql = "INSERT INTO contracts (contract_number, customer_id, start_date, end_date, status, manager_id, created_at) "
+        String sql = "INSERT INTO contracts (contract_number, customer_id, signed_date, start_date, end_date, status, manager_id, created_at) "
                 +
-                "VALUES (?, ?, ?, ?, ?, ?, NOW())";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
         return insert(sql,
                 contract.getContractNumber(),
                 contract.getCustomerId(),
+                contract.getSignedDate(),
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
@@ -58,11 +59,12 @@ public class ContractDAO extends GenericDAO<Contract> {
         Contract oldContract = findById(contract.getId());
 
         String sql = "UPDATE contracts SET contract_number = ?, customer_id = ?, " +
-                "start_date = ?, end_date = ?, status = ?, manager_id = ? WHERE id = ?";
+                "signed_date = ?, start_date = ?, end_date = ?, status = ?, manager_id = ? WHERE id = ?";
 
         update(sql,
                 contract.getContractNumber(),
                 contract.getCustomerId(),
+                contract.getSignedDate(),
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
@@ -79,6 +81,7 @@ public class ContractDAO extends GenericDAO<Contract> {
             meta.put("action", "EDIT_CONTRACT");
             meta.put("contract_number", contract.getContractNumber());
             meta.put("customer_id", contract.getCustomerId());
+            meta.put("signed_date", contract.getSignedDate() == null ? null : contract.getSignedDate().toString());
             meta.put("start_date", contract.getStartDate() == null ? null : contract.getStartDate().toString());
             meta.put("end_date", contract.getEndDate() == null ? null : contract.getEndDate().toString());
 

@@ -7,9 +7,7 @@ import com.generatorproject.model.Brand;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.Users;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -422,6 +420,26 @@ public class ProductDAO extends GenericDAO<Product> {
                 product.getCurrentLocation(),
                 product.getModelId()
         );
+    }
+
+
+    public Long save(Connection conn, Product product) throws Exception {
+        String sql = "INSERT INTO products (serial_number, customer_id, contract_id, status, total_running_hours, manufacture_year, purchase_date, current_location, model_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, product.getSerialNumber());
+            ps.setObject(2, product.getCustomerId());
+            ps.setObject(3, product.getContractId());
+            ps.setString(4, product.getStatus());
+            ps.setObject(5, product.getTotalRunningHours());
+            ps.setObject(6, product.getManufactureYear());
+            ps.setObject(7, product.getPurchaseDate());
+            ps.setString(8, product.getCurrentLocation());
+            ps.setObject(9, product.getModelId());
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                return rs.next() ? rs.getLong(1) : null;
+            }
+        }
     }
 
     public Product getProductById(int id) {

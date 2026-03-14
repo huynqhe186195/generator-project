@@ -43,7 +43,7 @@ public class ManagementContractController extends HttpServlet {
 
         switch (action) {
             case "create_view":
-                showCreateForm(req, resp);
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts/draft");
                 break;
             case "edit_view":
                 showEditForm(req, resp);
@@ -335,7 +335,7 @@ public class ManagementContractController extends HttpServlet {
             String contractNumber = req.getParameter("contractNumber");
             if (contractNumber == null || contractNumber.trim().isEmpty()) {
                 req.setAttribute("errorMessage", "Vui lòng nhập Số hợp đồng!");
-                showCreateForm(req, resp);
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts/draft");
                 return;
             }
             contractNumber = contractNumber.trim();
@@ -343,7 +343,7 @@ public class ManagementContractController extends HttpServlet {
             String customerIdStr = req.getParameter("customerId");
             if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
                 req.setAttribute("errorMessage", "Vui lòng chọn Khách hàng!");
-                showCreateForm(req, resp);
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts/draft");
                 return;
             }
             Long customerId = Long.parseLong(customerIdStr);
@@ -352,7 +352,7 @@ public class ManagementContractController extends HttpServlet {
             String endDateStr = req.getParameter("endDate");
             if (startDateStr == null || endDateStr == null || startDateStr.isEmpty() || endDateStr.isEmpty()) {
                 req.setAttribute("errorMessage", "Vui lòng chọn Ngày bắt đầu và Ngày kết thúc!");
-                showCreateForm(req, resp);
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts/draft");
                 return;
             }
 
@@ -362,7 +362,7 @@ public class ManagementContractController extends HttpServlet {
             // (optional) validate ngày
             if (endDate.before(startDate)) {
                 req.setAttribute("errorMessage", "Ngày kết thúc phải >= ngày bắt đầu!");
-                showCreateForm(req, resp);
+                resp.sendRedirect(req.getContextPath() + "/manager/contracts/draft");
                 return;
             }
 
