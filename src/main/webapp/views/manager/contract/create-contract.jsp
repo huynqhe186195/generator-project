@@ -145,4 +145,15 @@ function sendChat(){
     .then(j=>{ appendChat(j.chatMessage||'Done'); renderItems(j.items||[]); if(j.warnings){ j.warnings.forEach(w=>appendChat('⚠ '+w)); } })
     .catch(()=>appendChat('AI chat thất bại'));
 }
+
+const promptInput = document.getElementById('userPrompt');
+if (promptInput) {
+  promptInput.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendChat();
+    }
+  });
+}
+
 </script>

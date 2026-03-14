@@ -277,21 +277,33 @@
     btn.addEventListener('click', () => { if (input) input.value = btn.textContent.trim(); });
   });
 
-  if (sendBtn && extractForm) {
-    sendBtn.addEventListener('click', function(){
-      const data = new FormData(extractForm);
-      if (input && input.value) data.append('userPrompt', input.value);
-      fetch(extractForm.action + '?format=json', { method:'POST', body:data, headers:{'Accept':'application/json'} })
-        .then(r => r.json())
-        .then(json => {
-          if (!messages) return;
-          const bubble = document.createElement('div');
-          bubble.className = 'global-ai-msg';
-          bubble.style.marginLeft = '40px';
-          bubble.textContent = json.chatMessage || 'Đã nhận yêu cầu.';
-          messages.parentElement.appendChild(bubble);
-        })
-        .catch(() => extractForm.submit());
+  function triggerSend(){
+    if (!extractForm) return;
+    const data = new FormData(extractForm);
+    if (input && input.value) data.append('userPrompt', input.value);
+    fetch(extractForm.action + '?format=json', { method:'POST', body:data, headers:{'Accept':'application/json'} })
+      .then(r => r.json())
+      .then(json => {
+        if (!messages) return;
+        const bubble = document.createElement('div');
+        bubble.className = 'global-ai-msg';
+        bubble.style.marginLeft = '40px';
+        bubble.textContent = json.chatMessage || 'Đã nhận yêu cầu.';
+        messages.parentElement.appendChild(bubble);
+      })
+      .catch(() => extractForm.submit());
+  }
+
+  if (sendBtn) {
+    sendBtn.addEventListener('click', triggerSend);
+  }
+
+  if (input) {
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerSend();
+      }
     });
   }
 })();
