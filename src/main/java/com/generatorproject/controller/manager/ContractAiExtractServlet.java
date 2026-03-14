@@ -46,7 +46,7 @@ public class ContractAiExtractServlet extends HttpServlet {
                 Map<String, Object> err = new HashMap<>();
                 err.put("chatMessage", "AI extract thất bại.");
                 err.put("items", new Object[0]);
-                err.put("warnings", new String[]{e.getMessage()});
+                err.put("warnings", new String[]{safeErrorMessage(e)});
                 writeJson(resp, HttpServletResponse.SC_BAD_REQUEST, err);
                 return;
             }
@@ -61,6 +61,19 @@ public class ContractAiExtractServlet extends HttpServlet {
         }
         String accept = req.getHeader("Accept");
         return accept != null && accept.toLowerCase().contains("application/json");
+    }
+
+    private String safeErrorMessage(Throwable e) {
+        if (e == null) return "AI extract thất bại.";
+        Throwable cur = e;
+        while (cur != null) {
+            String msg = cur.getMessage();
+            if (msg != null && !msg.trim().isEmpty() && !"null".equalsIgnoreCase(msg.trim())) {
+                return msg.trim();
+            }
+            cur = cur.getCause();
+        }
+        return e.getClass().getSimpleName();
     }
 
     private void writeJson(HttpServletResponse resp, int status, Object payload) throws IOException {

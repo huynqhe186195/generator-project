@@ -42,16 +42,23 @@ public class ContractAiService {
         Long aiSessionId = existingAiSessionId;
         String sourcePath = null;
         Long runId = null;
+        List<String> preWarnings = new ArrayList<>();
 
         try {
             if (managerId != null) {
-                if (aiSessionId == null) {
-                    aiSessionId = aiCoreService.ensureSession(managerId, "CONTRACT", "CONTRACT", contractId,
-                            "Contract draft #" + contractId);
+                try {
+                    if (aiSessionId == null) {
+                        aiSessionId = aiCoreService.ensureSession(managerId, "CONTRACT", "CONTRACT", contractId,
+                                "Contract draft #" + contractId);
+                    }
+                    sourcePath = aiCoreService.findLatestAttachmentPath(aiSessionId);
+                    Long triggerMsgId = aiCoreService.addMessage(aiSessionId, "USER", "Extract device list from attachment", "TEXT");
+                    runId = aiCoreService.createExtractRun(aiSessionId, triggerMsgId);
+                } catch (Exception aiCoreEx) {
+                    aiSessionId = null;
+                    runId = null;
+                    preWarnings.add("AI session tạm thời không khả dụng, hệ thống sẽ tiếp tục trích xuất không lưu lịch sử.");
                 }
-                sourcePath = aiCoreService.findLatestAttachmentPath(aiSessionId);
-                Long triggerMsgId = aiCoreService.addMessage(aiSessionId, "USER", "Extract device list from attachment", "TEXT");
-                runId = aiCoreService.createExtractRun(aiSessionId, triggerMsgId);
             }
 
             if (sourcePath == null || sourcePath.trim().isEmpty()) {
@@ -62,6 +69,10 @@ public class ContractAiService {
             String content = ocrService.readText(file);
             AiExtractionService.ExtractResult extractionResult = extractionService.extractDevicesResult(content, sourcePath, contractId,
                     userPrompt == null || userPrompt.trim().isEmpty() ? "Trích xuất danh sách thiết bị trong hợp đồng" : userPrompt.trim());
+            if (!preWarnings.isEmpty()) {
+                ensureWarnings(extractionResult).addAll(preWarnings);
+            }
+
             try {
                 saveExtractedItems(contractId, extractionResult.getItems());
             } catch (Exception saveEx) {
@@ -93,9 +104,9 @@ public class ContractAiService {
         } catch (Exception ex) {
             try {
                 if (aiSessionId != null) {
-                    aiCoreService.addMessage(aiSessionId, "SYSTEM", "AI extract failed: " + ex.getMessage(), "TEXT");
+                    aiCoreService.addMessage(aiSessionId, "SYSTEM", "AI extract failed: " + safeMessage(ex), "TEXT");
                 }
-                aiCoreService.markRunFailed(runId, ex.getMessage());
+                aiCoreService.markRunFailed(runId, safeMessage(ex));
             } catch (Exception ignored) {
             }
             throw ex;
@@ -190,4 +201,18 @@ public class ContractAiService {
         }
         return false;
     }
+
+    private String safeMessage(Throwable ex) {
+        if (ex == null) return "Unknown error";
+        Throwable cur = ex;
+        while (cur != null) {
+            String msg = cur.getMessage();
+            if (msg != null && !msg.trim().isEmpty() && !"null".equalsIgnoreCase(msg.trim())) {
+                return msg.trim();
+            }
+            cur = cur.getCause();
+        }
+        return ex.getClass().getSimpleName();
+    }
+
 }
