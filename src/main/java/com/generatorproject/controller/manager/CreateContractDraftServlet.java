@@ -25,11 +25,13 @@ public class CreateContractDraftServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String id = req.getParameter("id");
-        if (id != null && !id.trim().isEmpty()) {
-            Contract contract = contractService.findById(Long.parseLong(id));
-            req.setAttribute("draftContract", contract);
-            req.setAttribute("aiItems", contractAiService.findByContractId(contract.getId()));
+        Long id = parseLongParam(req.getParameter("id"));
+        if (id != null) {
+            Contract contract = contractService.findById(id);
+            if (contract != null) {
+                req.setAttribute("draftContract", contract);
+                req.setAttribute("aiItems", contractAiService.findByContractId(contract.getId()));
+            }
         }
         req.setAttribute("customers", userServices.getUsersByRole(5));
         req.setAttribute("models", productModelServices.findAll());
@@ -46,11 +48,15 @@ public class CreateContractDraftServlet extends HttpServlet {
             }
 
             ContractDraft draftInput = new ContractDraft();
-            draftInput.setContractNumber(req.getParameter("contractNumber"));
-            draftInput.setCustomerId(Long.parseLong(req.getParameter("customerId")));
-            draftInput.setSignedDate(Date.valueOf(req.getParameter("signedDate")));
-            draftInput.setStartDate(Date.valueOf(req.getParameter("startDate")));
-            draftInput.setEndDate(Date.valueOf(req.getParameter("endDate")));
+            draftInput.setContractNumber(normalize(req.getParameter("contractNumber")));
+            draftInput.setCustomerId(requireLongParam(req.getParameter("customerId"), "Vui lòng chọn khách hàng."));
+            draftInput.setSignedDate(requireDateParam(req.getParameter("signedDate"), "Vui lòng chọn ngày ký."));
+            draftInput.setStartDate(requireDateParam(req.getParameter("startDate"), "Vui lòng chọn ngày hiệu lực."));
+            draftInput.setEndDate(requireDateParam(req.getParameter("endDate"), "Vui lòng chọn ngày hết hạn."));
+
+            if (draftInput.getContractNumber() == null || draftInput.getContractNumber().isEmpty()) {
+                throw new IllegalArgumentException("Số hợp đồng không được để trống.");
+            }
 
             if (draftInput.getStartDate().after(draftInput.getEndDate())) {
                 throw new IllegalArgumentException("Ngày hiệu lực phải <= ngày hết hạn.");
@@ -67,10 +73,50 @@ public class CreateContractDraftServlet extends HttpServlet {
                     .build();
 
             Long id = contractService.createDraft(draft);
+            if (id == null) {
+                throw new IllegalStateException("Không thể tạo draft hợp đồng. Vui lòng thử lại.");
+            }
             resp.sendRedirect(req.getContextPath() + "/manager/contracts/draft?id=" + id + "&msg=draft_saved");
         } catch (Exception e) {
             req.setAttribute("errorMessage", e.getMessage());
             doGet(req, resp);
         }
     }
+
+    private Long parseLongParam(String value) {
+        String normalized = normalize(value);
+        if (normalized == null) return null;
+        try {
+            return Long.parseLong(normalized);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Long requireLongParam(String value, String message) {
+        Long parsed = parseLongParam(value);
+        if (parsed == null) {
+            throw new IllegalArgumentException(message);
+        }
+        return parsed;
+    }
+
+    private Date requireDateParam(String value, String message) {
+        String normalized = normalize(value);
+        if (normalized == null) {
+            throw new IllegalArgumentException(message);
+        }
+        try {
+            return Date.valueOf(normalized);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    private String normalize(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() || "null".equalsIgnoreCase(trimmed) ? null : trimmed;
+    }
+
 }
