@@ -10,8 +10,8 @@
 
 	<context-param>
 		<param-name>GEMINI_API_KEY</param-name>
-		<!-- API key Gemini đọc ở server-level config; để trống nếu không dùng -->
-		<param-value>__GEMINI_API_KEY__</param-value>
+		<!-- API key Gemini cấu hình sẵn ở server -->
+		<param-value>AIzaSyCnr3xQufhH8eIhnACBKm1zl86L895NrJg</param-value>
 	</context-param>
 
 	<welcome-file-list>
