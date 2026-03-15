@@ -24,6 +24,84 @@
             font-size: 12px;
             color: #6c757d;
         }
+        .request-detail-wrap {
+            border: 1px solid #e6ebf2;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            overflow: hidden;
+        }
+        .request-detail-head {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e6ebf2;
+            background: #f2f7ff;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .request-detail-body {
+            padding: 16px;
+        }
+        .detail-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #2b3a55;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .detail-item {
+            border: 1px solid #e9edf3;
+            border-radius: 10px;
+            background: #fff;
+            padding: 10px 12px;
+            min-height: 68px;
+        }
+        .detail-label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .detail-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2d3d;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .detail-value.is-muted {
+            color: #7f8a96;
+            font-weight: 500;
+            font-style: italic;
+        }
+        .detail-note {
+            border: 1px dashed #bfd5ff;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 10px 12px;
+            color: #30466e;
+            line-height: 1.5;
+            margin-top: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        pre.json-pretty{
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+        }
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -250,10 +328,10 @@
                     <span class="badge bg-dark" id="detailTypeBadge"></span>
                     <span class="text-muted ms-2">#<span id="detailId"></span></span>
                 </div>
-                <pre class="json-pretty border rounded p-3 bg-light" id="detailJson"></pre>
+                <div id="detailContent"></div>
+                <pre class="json-pretty border rounded p-3 bg-light d-none" id="detailJson"></pre>
             </div>
         </div>
-      </form>
     </div>
 </div>
 
@@ -465,6 +543,131 @@
         try { return JSON.parse(text); } catch (e) { return null; }
     }
 
+    function escapeHtml(input) {
+        return String(input || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function valueOrDash(value) {
+        if (value === null || value === undefined || value === "") return "-";
+        return value;
+    }
+
+    function renderField(label, value) {
+        const val = valueOrDash(value);
+        const mutedClass = val === "-" ? "is-muted" : "";
+        return `
+            <div class="detail-item">
+                <div class="detail-label">${escapeHtml(label)}</div>
+                <div class="detail-value ${mutedClass}">${escapeHtml(val)}</div>
+            </div>
+        `;
+    }
+
+    function renderSection(title, fields) {
+        const fieldHtml = fields.map(f => renderField(f.label, f.value)).join("");
+        return `
+            <div class="mb-3">
+                <div class="detail-section-title">${escapeHtml(title)}</div>
+                <div class="detail-grid">${fieldHtml}</div>
+            </div>
+        `;
+    }
+
+    function renderStructuredDetail(reqType, obj, requestId) {
+        const common = renderSection("Thông tin chung", [
+            { label: "Mã request", value: `#${requestId}` },
+            { label: "Loại yêu cầu", value: reqType || "REQUEST" }
+        ]);
+
+        if (reqType === "INCIDENT_REPORT") {
+            return `
+                <div class="request-detail-wrap">
+                    <div class="request-detail-head">
+                        <span class="badge bg-warning text-dark">Sự cố / Incident</span>
+                        <span class="text-muted small">Chi tiết sự cố đã gửi từ manager</span>
+                    </div>
+                    <div class="request-detail-body">
+                        ${common}
+                        ${renderSection("Nội dung sự cố", [
+                            { label: "Tiêu đề", value: obj.title },
+                            { label: "Loại sự cố", value: obj.issueType || obj.maintenanceType },
+                            { label: "Mức ưu tiên", value: obj.priority },
+                            { label: "Ngày mong muốn", value: obj.preferredDate },
+                            { label: "Mã sản phẩm", value: obj.productId },
+                            { label: "Kỹ thuật viên", value: obj.technicianId }
+                        ])}
+                        ${renderSection("Người báo cáo", [
+                            { label: "Họ tên", value: obj.reporterName },
+                            { label: "Số điện thoại", value: obj.reporterPhone },
+                            { label: "Email", value: obj.reporterEmail }
+                        ])}
+                        <div class="detail-section-title">Mô tả chi tiết</div>
+                        <div class="detail-note">${escapeHtml(valueOrDash(obj.description))}</div>
+                        <div class="detail-section-title mt-3">Ghi chú nội bộ</div>
+                        <div class="detail-note">${escapeHtml(valueOrDash(obj.staffNote))}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (reqType === "CREATE_USER") {
+            return `
+                <div class="request-detail-wrap">
+                    <div class="request-detail-head">
+                        <span class="badge bg-info text-dark">Tạo tài khoản</span>
+                    </div>
+                    <div class="request-detail-body">
+                        ${common}
+                        ${renderSection("Thông tin user", [
+                            { label: "Họ tên", value: obj.fullName },
+                            { label: "Email", value: obj.email },
+                            { label: "Số điện thoại", value: obj.phone || obj.phoneNumber },
+                            { label: "Vai trò", value: obj.role || obj.roleId }
+                        ])}
+                    </div>
+                </div>
+            `;
+        }
+
+        if (reqType === "NEW_PRODUCT" || reqType === "NEW_USER") {
+            return `
+                <div class="request-detail-wrap">
+                    <div class="request-detail-head">
+                        <span class="badge bg-primary">Import từ Excel</span>
+                    </div>
+                    <div class="request-detail-body">
+                        ${common}
+                        ${renderSection("File đính kèm", [
+                            { label: "Tên file", value: obj.excelFileName },
+                            { label: "Kích thước", value: obj.fileSize }
+                        ])}
+                    </div>
+                </div>
+            `;
+        }
+
+        const genericFields = Object.keys(obj).slice(0, 12).map(function (k) {
+            return { label: k, value: typeof obj[k] === "object" ? JSON.stringify(obj[k]) : obj[k] };
+        });
+
+        return `
+            <div class="request-detail-wrap">
+                <div class="request-detail-head">
+                    <span class="badge bg-secondary">REQUEST</span>
+                </div>
+                <div class="request-detail-body">
+                    ${common}
+                    ${renderSection("Dữ liệu", genericFields)}
+                </div>
+            </div>
+        `;
+    }
+
     function buildSummary(reqType, obj, raw) {
         if (!obj) return raw;
 
@@ -516,10 +719,20 @@
             const type = button.getAttribute("data-reqtype");
             const raw = (document.getElementById("json-" + id)?.textContent || "").trim();
             const obj = safeParseJson(raw);
+            const detailContentEl = document.getElementById("detailContent");
+            const detailJsonEl = document.getElementById("detailJson");
 
             document.getElementById("detailId").textContent = id;
             document.getElementById("detailTypeBadge").textContent = type || "REQUEST";
-            document.getElementById("detailJson").textContent = obj ? JSON.stringify(obj, null, 2) : raw;
+
+            if (obj) {
+                detailContentEl.innerHTML = renderStructuredDetail(type, obj, id);
+                detailJsonEl.classList.add("d-none");
+            } else {
+                detailContentEl.innerHTML = "";
+                detailJsonEl.classList.remove("d-none");
+                detailJsonEl.textContent = raw;
+            }
         });
     }
 
