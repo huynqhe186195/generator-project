@@ -68,13 +68,22 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Ngày bắt đầu <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold">Ngày ký <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" name="signedDate"
+                               value="${param.signedDate}"
+                               required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Ngày có hiệu lực <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" name="startDate"
                                value="${contract.startDate != null ? contract.startDate : param.startDate}"
                                required />
                     </div>
+                </div>
+
+                <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Ngày kết thúc <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold">Ngày hết hiệu lực <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" name="endDate"
                                value="${contract.endDate != null ? contract.endDate : param.endDate}"
                                required />
