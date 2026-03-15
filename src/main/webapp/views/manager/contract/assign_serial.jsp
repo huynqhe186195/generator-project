@@ -421,15 +421,20 @@
                     throw new Error(data.message || 'AI trả về lỗi không xác định');
                 }
 
-                const reply = data.reply || '';
-                addMessage(reply, 'bot');
-                chatHistory.push({ role: 'user', content: prompt });
-                chatHistory.push({ role: 'assistant', content: reply });
-                chatStatus.textContent = 'Đã nhận phản hồi từ AI.';
+                const rawReply = data.reply || '';
+                let displayReply = rawReply;
 
                 if (data.structured && data.data) {
                     const extracted = data.data;
                     const devices = extracted.devices || [];
+
+                    if (extracted.answer && extracted.answer.trim()) {
+                        displayReply = extracted.answer.trim();
+                    } else if (devices.length > 0) {
+                        displayReply = 'Mình đã phân tích file và tìm thấy ' + devices.length + ' thiết bị.';
+                    } else {
+                        displayReply = 'Mình đã phân tích file, nhưng chưa tìm thấy dữ liệu thiết bị rõ ràng.';
+                    }
 
                     if (devices.length > 0) {
                         tableBody.innerHTML = '';
@@ -444,6 +449,11 @@
                         contractNumberView.textContent = extracted.contract.contractNumber + ' (AI nhận diện)';
                     }
                 }
+
+                addMessage(displayReply, 'bot');
+                chatHistory.push({ role: 'user', content: prompt });
+                chatHistory.push({ role: 'assistant', content: displayReply });
+                chatStatus.textContent = 'Đã nhận phản hồi từ AI.';
             } catch (err) {
                 chatStatus.textContent = 'Lỗi: ' + err.message;
                 addMessage('Lỗi: ' + err.message, 'bot');
