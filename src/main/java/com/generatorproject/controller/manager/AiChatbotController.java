@@ -231,6 +231,10 @@ public class AiChatbotController extends HttpServlet {
         }
 
         String apiKeyFromProperties = normalizeApiKey(AppConfig.get("gemini.api.key"));
+        if (apiKeyFromProperties == null) {
+            AppConfig.reload();
+            apiKeyFromProperties = normalizeApiKey(AppConfig.get("gemini.api.key"));
+        }
         if (apiKeyFromProperties != null) {
             return apiKeyFromProperties;
         }

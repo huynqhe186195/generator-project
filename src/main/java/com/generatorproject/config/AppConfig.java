@@ -23,6 +23,14 @@ public class AppConfig {
         return value == null ? defaultValue : value;
     }
 
+    public static void reload() {
+        synchronized (AppConfig.class) {
+            PROPS.clear();
+            loaded = false;
+        }
+        loadIfNeeded();
+    }
+
     private static void loadIfNeeded() {
         if (loaded) {
             return;
@@ -59,7 +67,15 @@ public class AppConfig {
             }
 
             if (!loadedFromFile) {
-                loadedFromFile = loadFromFile("src/main/resources/application.properties");
+                loadedFromFile = tryLoadFromParentChain(System.getProperty("user.dir"), 4);
+            }
+
+            if (!loadedFromFile) {
+                loadedFromFile = tryLoadFromParentChain(System.getProperty("catalina.base"), 4);
+            }
+
+            if (!loadedFromFile) {
+                loadedFromFile = tryLoadFromParentChain(System.getProperty("catalina.home"), 4);
             }
 
             if (!loadedFromFile) {
@@ -93,6 +109,34 @@ public class AppConfig {
             }
         } catch (Exception ignored) {
         }
+    }
+
+    private static boolean tryLoadFromParentChain(String startPath, int maxDepth) {
+        String normalizedStart = normalize(startPath);
+        if (normalizedStart == null) {
+            return false;
+        }
+
+        File current = new File(normalizedStart);
+        if (!current.exists()) {
+            return false;
+        }
+
+        if (current.isFile()) {
+            current = current.getParentFile();
+        }
+
+        int depth = 0;
+        while (current != null && depth <= maxDepth) {
+            File candidate = new File(current, "application.properties");
+            if (loadFromFile(candidate.getAbsolutePath())) {
+                return true;
+            }
+            current = current.getParentFile();
+            depth++;
+        }
+
+        return false;
     }
 
     private static String firstNonBlank(String... values) {
