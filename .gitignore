@@ -31,5 +31,4 @@ local.properties
 
 .DS_Store
 Thumbs.db
-application.properties
 src/main/resources/application.properties

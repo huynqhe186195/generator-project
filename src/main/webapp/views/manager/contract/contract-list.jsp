@@ -7,7 +7,7 @@
 
 <body>
 <div class="container-fluid">
-    <h2 class="mb-4 text-primary fw-bold">Quản lý Hợp đồng Bảo trì</h2>
+    <h2 class="mb-4 text-primary fw-bold">Quản lý Hợp đồng mua bán</h2>
 
     <c:if test="${not empty errorMessage}">
         <div class="alert alert-danger alert-dismissible fade show shadow-sm border-danger">
