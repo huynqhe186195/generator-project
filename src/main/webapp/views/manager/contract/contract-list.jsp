@@ -170,7 +170,7 @@
                 <tbody>
                 <c:forEach var="c" items="${contracts}" varStatus="status">
                     <tr>
-                        <td>${status.index + 1}</td>
+                        <td>${(currentPage - 1) * pageSize + status.index + 1}</td>
                         <td class="fw-bold text-primary">${c.contractNumber}</td>
                         <td>${c.customerName}</td>
                         <td>${c.startDate}</td>
@@ -222,10 +222,47 @@
             </table>
         </div>
     </div>
+
+
+
+    <c:if test="${totalPages > 1}">
+        <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+            <div class="text-muted small">
+                Hiển thị ${contracts.size()} / ${totalItems} hợp đồng
+            </div>
+
+            <nav aria-label="Contract pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                           href="${pageContext.request.contextPath}/manager/contracts?action=list&keyword=${currentKeyword}&status=${currentStatus}&page=${currentPage - 1}&pageSize=${pageSize}">
+                            Trước
+                        </a>
+                    </li>
+
+                    <c:forEach var="p" begin="1" end="${totalPages}">
+                        <li class="page-item ${p == currentPage ? 'active' : ''}">
+                            <a class="page-link"
+                               href="${pageContext.request.contextPath}/manager/contracts?action=list&keyword=${currentKeyword}&status=${currentStatus}&page=${p}&pageSize=${pageSize}">
+                                ${p}
+                            </a>
+                        </li>
+                    </c:forEach>
+
+                    <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                           href="${pageContext.request.contextPath}/manager/contracts?action=list&keyword=${currentKeyword}&status=${currentStatus}&page=${currentPage + 1}&pageSize=${pageSize}">
+                            Sau
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </c:if>
+
 </div>
 
-<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">    <div class="modal-dialog">
         <div class="modal-content">
             <form action="${pageContext.request.contextPath}/manager/contracts" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="import">
