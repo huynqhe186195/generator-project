@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 15, maxRequestSize = 1024 * 1024 * 20)
 public class AiDeviceExtractionController extends HttpServlet {
 
-    private static final String GEMINI_MODEL = "gemini-1.5-flash";
+    private static final String GEMINI_MODEL = "gemini-2.5-flash";
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
