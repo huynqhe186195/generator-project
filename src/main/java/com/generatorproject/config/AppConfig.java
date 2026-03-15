@@ -47,7 +47,19 @@ public class AppConfig {
             }
 
             if (!loadedFromFile) {
+                String catalinaBase = normalize(System.getProperty("catalina.base"));
+                if (catalinaBase != null) {
+                    loadedFromFile = loadFromFile(catalinaBase + File.separator + "conf"
+                            + File.separator + "application.properties");
+                }
+            }
+
+            if (!loadedFromFile) {
                 loadedFromFile = loadFromFile("application.properties");
+            }
+
+            if (!loadedFromFile) {
+                loadedFromFile = loadFromFile("src/main/resources/application.properties");
             }
 
             if (!loadedFromFile) {

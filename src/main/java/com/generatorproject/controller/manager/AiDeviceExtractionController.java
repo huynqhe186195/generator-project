@@ -34,7 +34,7 @@ public class AiDeviceExtractionController extends HttpServlet {
         try {
             String apiKey = resolveApiKey(req);
             if (apiKey == null || apiKey.trim().isEmpty()) {
-                throw new IllegalStateException("Thiếu API key Gemini. Vui lòng nhập API key ở giao diện AI hoặc cấu hình GEMINI_API_KEY.");
+                throw new IllegalStateException("Thiếu API key Gemini. Hãy cấu hình gemini.api.key trong application.properties (root project hoặc src/main/resources), hoặc set APP_CONFIG_FILE / GEMINI_API_KEY.");
             }
 
             Part filePart = req.getPart("sourceFile");

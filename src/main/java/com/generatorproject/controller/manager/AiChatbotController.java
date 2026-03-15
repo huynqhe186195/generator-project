@@ -34,7 +34,7 @@ public class AiChatbotController extends HttpServlet {
         try {
             String apiKey = resolveApiKey(req);
             if (apiKey == null || apiKey.trim().isEmpty()) {
-                throw new IllegalStateException("Thiếu API key Gemini.");
+                throw new IllegalStateException("Thiếu API key Gemini. Hãy cấu hình gemini.api.key trong application.properties (root project hoặc src/main/resources), hoặc set APP_CONFIG_FILE / GEMINI_API_KEY.");
             }
 
             String message = req.getParameter("message");
