@@ -7,6 +7,13 @@
 
 	<display-name>generator-project</display-name>
 
+
+	<context-param>
+		<param-name>GEMINI_API_KEY</param-name>
+		<!-- API key Gemini đọc ở server-level config; để trống nếu không dùng -->
+		<param-value>__GEMINI_API_KEY__</param-value>
+	</context-param>
+
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
