@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,8 +121,46 @@ public class ManagementContractController extends HttpServlet {
     private void showList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String keyword = req.getParameter("keyword");
         String status = req.getParameter("status");
-        req.setAttribute("contracts", contractService.searchAndFilterContracts(keyword, status));
+        if (keyword == null) keyword = "";
+        if (status == null) status = "";
+
+        int page = parsePositiveInt(req.getParameter("page"), 1);
+        int pageSize = parsePositiveInt(req.getParameter("pageSize"), 10);
+
+        List<Contract> allContracts = contractService.searchAndFilterContracts(keyword, status);
+        int totalItems = allContracts == null ? 0 : allContracts.size();
+        int totalPages = totalItems == 0 ? 1 : (int) Math.ceil((double) totalItems / pageSize);
+
+        if (page > totalPages) {
+            page = totalPages;
+        }
+
+        int fromIndex = (page - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, totalItems);
+
+        List<Contract> pagedContracts = new ArrayList<>();
+        if (allContracts != null && fromIndex < totalItems) {
+            pagedContracts = allContracts.subList(fromIndex, toIndex);
+        }
+
+        req.setAttribute("contracts", pagedContracts);
+        req.setAttribute("currentKeyword", keyword);
+        req.setAttribute("currentStatus", status);
+        req.setAttribute("currentPage", page);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("totalItems", totalItems);
+
         req.getRequestDispatcher("/views/manager/contract/contract-list.jsp").forward(req, resp);
+    }
+
+    private int parsePositiveInt(String value, int defaultValue) {
+        try {
+            int parsed = Integer.parseInt(value);
+            return parsed > 0 ? parsed : defaultValue;
+        } catch (Exception ignored) {
+            return defaultValue;
+        }
     }
 
     private void showDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
