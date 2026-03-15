@@ -36,6 +36,26 @@ public class MaintenanceDAO extends DbContext {
         return list;
     }
 
+    public boolean markCompleted(int id) {
+        String sql = """
+        UPDATE maintenances
+        SET status = 'COMPLETED',
+            completed_at = NOW()
+        WHERE id = ?
+    """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     // =========================
     // Lấy maintenance theo ID
     // =========================
@@ -285,7 +305,46 @@ public class MaintenanceDAO extends DbContext {
         }
     }
 
+    public boolean updateLaborCost(int id, double laborCost) {
+        String sql = """
+        UPDATE maintenances
+        SET labor_cost = ?
+        WHERE id = ?
+    """;
 
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDouble(1, laborCost);
+            ps.setInt(2, id);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateTotalCost(int id, double totalCost) {
+        String sql = """
+        UPDATE maintenances
+        SET total_cost = ?
+        WHERE id = ?
+    """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDouble(1, totalCost);
+            ps.setInt(2, id);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 
 
@@ -306,13 +365,13 @@ public class MaintenanceDAO extends DbContext {
         m.setDescription(rs.getString("description"));
         m.setTotalCost(rs.getDouble("total_cost"));
         m.setStatus(rs.getString("status"));
-
+        m.setLaborCost(rs.getDouble("labor_cost"));
         m.setCreatedAt(rs.getTimestamp("created_at"));
         m.setCreatedBy((Integer) rs.getObject("created_by"));
         m.setActualDescription(rs.getString("actual_description"));
         m.setAssignmentStatus(rs.getString("assignment_status"));
         m.setApprovedBy((Integer) rs.getObject("approved_by"));
-
+        m.setCompletedAt(rs.getTimestamp("completed_at"));
 
         try {
             m.setProductName(rs.getString("product_name"));
