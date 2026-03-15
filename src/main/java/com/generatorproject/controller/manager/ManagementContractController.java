@@ -121,11 +121,13 @@ public class ManagementContractController extends HttpServlet {
     private void showList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String keyword = req.getParameter("keyword");
         String status = req.getParameter("status");
-        if (keyword == null) keyword = "";
-        if (status == null) status = "";
+        if (keyword == null)
+            keyword = "";
+        if (status == null)
+            status = "";
 
         int page = parsePositiveInt(req.getParameter("page"), 1);
-        int pageSize = parsePositiveInt(req.getParameter("pageSize"), 10);
+        int pageSize = parsePositiveInt(req.getParameter("pageSize"), 5);
 
         List<Contract> allContracts = contractService.searchAndFilterContracts(keyword, status);
         int totalItems = allContracts == null ? 0 : allContracts.size();
