@@ -7,7 +7,6 @@ target/
 *.rar
 
 .idea/
-.idea\
 *.iml
 *.iws
 out/
@@ -32,3 +31,4 @@ local.properties
 
 .DS_Store
 Thumbs.db
+src/main/resources/application.properties

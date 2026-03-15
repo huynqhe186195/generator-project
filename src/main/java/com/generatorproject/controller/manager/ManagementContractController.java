@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,8 +121,46 @@ public class ManagementContractController extends HttpServlet {
     private void showList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String keyword = req.getParameter("keyword");
         String status = req.getParameter("status");
-        req.setAttribute("contracts", contractService.searchAndFilterContracts(keyword, status));
+        if (keyword == null) keyword = "";
+        if (status == null) status = "";
+
+        int page = parsePositiveInt(req.getParameter("page"), 1);
+        int pageSize = parsePositiveInt(req.getParameter("pageSize"), 10);
+
+        List<Contract> allContracts = contractService.searchAndFilterContracts(keyword, status);
+        int totalItems = allContracts == null ? 0 : allContracts.size();
+        int totalPages = totalItems == 0 ? 1 : (int) Math.ceil((double) totalItems / pageSize);
+
+        if (page > totalPages) {
+            page = totalPages;
+        }
+
+        int fromIndex = (page - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, totalItems);
+
+        List<Contract> pagedContracts = new ArrayList<>();
+        if (allContracts != null && fromIndex < totalItems) {
+            pagedContracts = allContracts.subList(fromIndex, toIndex);
+        }
+
+        req.setAttribute("contracts", pagedContracts);
+        req.setAttribute("currentKeyword", keyword);
+        req.setAttribute("currentStatus", status);
+        req.setAttribute("currentPage", page);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("totalItems", totalItems);
+
         req.getRequestDispatcher("/views/manager/contract/contract-list.jsp").forward(req, resp);
+    }
+
+    private int parsePositiveInt(String value, int defaultValue) {
+        try {
+            int parsed = Integer.parseInt(value);
+            return parsed > 0 ? parsed : defaultValue;
+        } catch (Exception ignored) {
+            return defaultValue;
+        }
     }
 
     private void showDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -199,29 +238,61 @@ public class ManagementContractController extends HttpServlet {
             throws ServletException, IOException {
         try {
             Long contractId = Long.parseLong(req.getParameter("contractId"));
-            String serialNumber = req.getParameter("serialNumber");
 
-            String modelIdStr = req.getParameter("modelId");
-            Long modelId = (modelIdStr == null || modelIdStr.isBlank()) ? null : Long.parseLong(modelIdStr);
+            String[] serialNumbers = req.getParameterValues("serialNumbers");
+            String[] modelIds = req.getParameterValues("modelIds");
+            String[] purchaseDates = req.getParameterValues("purchaseDates");
+            String[] manufactureYears = req.getParameterValues("manufactureYears");
+            String[] currentLocations = req.getParameterValues("currentLocations");
 
-            String purchaseDateStr = req.getParameter("purchaseDate");
-            java.sql.Date purchaseDate = (purchaseDateStr == null || purchaseDateStr.isBlank())
-                    ? null
-                    : java.sql.Date.valueOf(purchaseDateStr.trim());
+            Long firstCreatedProductId = null;
 
-            String manufactureYearStr = req.getParameter("manufactureYear");
-            Integer manufactureYear = (manufactureYearStr == null || manufactureYearStr.isBlank())
-                    ? null
-                    : Integer.parseInt(manufactureYearStr.trim());
+            if (serialNumbers != null && serialNumbers.length > 0) {
+                for (int i = 0; i < serialNumbers.length; i++) {
+                    String serialNumber = serialNumbers[i] == null ? null : serialNumbers[i].trim();
+                    if (serialNumber == null || serialNumber.isEmpty()) {
+                        continue;
+                    }
 
-            String currentLocation = req.getParameter("currentLocation");
+                    Long modelId = parseLongAt(modelIds, i);
+                    Date purchaseDate = parseDateAt(purchaseDates, i);
+                    Integer manufactureYear = parseIntegerAt(manufactureYears, i);
+                    String currentLocation = parseStringAt(currentLocations, i);
 
-            Long newProductId = contractService.assignSerialToContract(
-                    contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
+                    Long pid = contractService.assignSerialToContract(
+                            contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
+                    if (firstCreatedProductId == null) {
+                        firstCreatedProductId = pid;
+                    }
+                }
+
+                if (firstCreatedProductId == null) {
+                    throw new IllegalArgumentException("Vui lòng nhập ít nhất một serial hợp lệ.");
+                }
+            } else {
+                String serialNumber = req.getParameter("serialNumber");
+                String modelIdStr = req.getParameter("modelId");
+                Long modelId = (modelIdStr == null || modelIdStr.isBlank()) ? null : Long.parseLong(modelIdStr);
+
+                String purchaseDateStr = req.getParameter("purchaseDate");
+                Date purchaseDate = (purchaseDateStr == null || purchaseDateStr.isBlank())
+                        ? null
+                        : Date.valueOf(purchaseDateStr.trim());
+
+                String manufactureYearStr = req.getParameter("manufactureYear");
+                Integer manufactureYear = (manufactureYearStr == null || manufactureYearStr.isBlank())
+                        ? null
+                        : Integer.parseInt(manufactureYearStr.trim());
+
+                String currentLocation = req.getParameter("currentLocation");
+
+                firstCreatedProductId = contractService.assignSerialToContract(
+                        contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
+            }
 
             resp.sendRedirect(req.getContextPath()
                     + "/manager/contracts?action=detail&id=" + contractId
-                    + "&assignedProductId=" + newProductId);
+                    + "&assignedProductId=" + firstCreatedProductId);
         } catch (Exception e) {
             try {
                 Long contractId = Long.parseLong(req.getParameter("contractId"));
@@ -231,8 +302,36 @@ public class ManagementContractController extends HttpServlet {
             }
 
             req.setAttribute("error", e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/contracts/assign_serial.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/manager/contract/assign_serial.jsp").forward(req, resp);
         }
+    }
+
+    private Long parseLongAt(String[] values, int idx) {
+        if (values == null || idx >= values.length || values[idx] == null || values[idx].isBlank()) {
+            return null;
+        }
+        return Long.parseLong(values[idx].trim());
+    }
+
+    private Integer parseIntegerAt(String[] values, int idx) {
+        if (values == null || idx >= values.length || values[idx] == null || values[idx].isBlank()) {
+            return null;
+        }
+        return Integer.parseInt(values[idx].trim());
+    }
+
+    private Date parseDateAt(String[] values, int idx) {
+        if (values == null || idx >= values.length || values[idx] == null || values[idx].isBlank()) {
+            return null;
+        }
+        return Date.valueOf(values[idx].trim());
+    }
+
+    private String parseStringAt(String[] values, int idx) {
+        if (values == null || idx >= values.length || values[idx] == null || values[idx].isBlank()) {
+            return null;
+        }
+        return values[idx].trim();
     }
 
     private void handleRequestAccount(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -348,20 +447,33 @@ public class ManagementContractController extends HttpServlet {
             }
             Long customerId = Long.parseLong(customerIdStr);
 
-            String startDateStr = req.getParameter("startDate");
-            String endDateStr = req.getParameter("endDate");
-            if (startDateStr == null || endDateStr == null || startDateStr.isEmpty() || endDateStr.isEmpty()) {
-                req.setAttribute("errorMessage", "Vui lòng chọn Ngày bắt đầu và Ngày kết thúc!");
+            String signedDateStr = req.getParameter("signedDate");
+            if (signedDateStr == null || signedDateStr.trim().isEmpty()) {
+                req.setAttribute("errorMessage", "Vui lòng chọn Ngày ký hợp đồng!");
                 showCreateForm(req, resp);
                 return;
             }
 
+            String startDateStr = req.getParameter("startDate");
+            String endDateStr = req.getParameter("endDate");
+            if (startDateStr == null || endDateStr == null || startDateStr.isEmpty() || endDateStr.isEmpty()) {
+                req.setAttribute("errorMessage", "Vui lòng chọn Ngày có hiệu lực và Ngày hết hiệu lực!");
+                showCreateForm(req, resp);
+                return;
+            }
+
+            Date signedDate = Date.valueOf(signedDateStr);
             Date startDate = Date.valueOf(startDateStr);
             Date endDate = Date.valueOf(endDateStr);
 
-            // (optional) validate ngày
+            if (startDate.before(signedDate)) {
+                req.setAttribute("errorMessage", "Ngày có hiệu lực phải lớn hơn hoặc bằng Ngày ký!");
+                showCreateForm(req, resp);
+                return;
+            }
+
             if (endDate.before(startDate)) {
-                req.setAttribute("errorMessage", "Ngày kết thúc phải >= ngày bắt đầu!");
+                req.setAttribute("errorMessage", "Ngày hết hiệu lực phải >= Ngày có hiệu lực!");
                 showCreateForm(req, resp);
                 return;
             }
