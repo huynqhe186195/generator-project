@@ -125,7 +125,7 @@ public class ManagementContractController extends HttpServlet {
         if (status == null) status = "";
 
         int page = parsePositiveInt(req.getParameter("page"), 1);
-        int pageSize = parsePositiveInt(req.getParameter("pageSize"), 10);
+        int pageSize = parsePositiveInt(req.getParameter("pageSize"), 5);
 
         List<Contract> allContracts = contractService.searchAndFilterContracts(keyword, status);
         int totalItems = allContracts == null ? 0 : allContracts.size();
