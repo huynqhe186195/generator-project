@@ -536,12 +536,18 @@
 })();
 </script>
 
+<script id="technicianDisplayMapData" type="application/json">${fn:escapeXml(technicianDisplayJson)}</script>
+<script id="productDisplayMapData" type="application/json">${fn:escapeXml(productDisplayJson)}</script>
+
 
 <script>
 (function () {
     function safeParseJson(text) {
         try { return JSON.parse(text); } catch (e) { return null; }
     }
+
+    const technicianDisplayMap = safeParseJson((document.getElementById("technicianDisplayMapData")?.textContent || "").trim()) || {};
+    const productDisplayMap = safeParseJson((document.getElementById("productDisplayMapData")?.textContent || "").trim()) || {};
 
     function escapeHtml(input) {
         return String(input || "")
@@ -554,6 +560,23 @@
 
     function valueOrDash(value) {
         if (value === null || value === undefined || value === "") return "-";
+        return value;
+    }
+
+    function resolveTechnicianDisplay(technicianId) {
+        const key = String(valueOrDash(technicianId));
+        if (key === "-") return "-";
+        return productOrFallback(technicianDisplayMap[key], key);
+    }
+
+    function resolveProductDisplay(productId) {
+        const key = String(valueOrDash(productId));
+        if (key === "-") return "-";
+        return productOrFallback(productDisplayMap[key], "Sản phẩm #" + key);
+    }
+
+    function productOrFallback(value, fallback) {
+        if (value === null || value === undefined || value === "") return fallback;
         return value;
     }
 
@@ -593,8 +616,8 @@
                     { label: "Loại sự cố", value: obj.issueType || obj.maintenanceType },
                     { label: "Mức ưu tiên", value: obj.priority },
                     { label: "Ngày mong muốn", value: obj.preferredDate },
-                    { label: "Mã sản phẩm", value: obj.productId },
-                    { label: "Kỹ thuật viên", value: obj.technicianId }
+                    { label: "Sản phẩm", value: resolveProductDisplay(obj.productId) },
+                    { label: "Kỹ thuật viên", value: resolveTechnicianDisplay(obj.technicianId) }
                 ])
                 + renderSection("Người báo cáo", [
                     { label: "Họ tên", value: obj.reporterName },
