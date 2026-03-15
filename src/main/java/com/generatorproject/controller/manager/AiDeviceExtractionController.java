@@ -33,9 +33,9 @@ public class AiDeviceExtractionController extends HttpServlet {
         JsonObject result = new JsonObject();
 
         try {
-            String apiKey = System.getenv("GEMINI_API_KEY");
+            String apiKey = resolveApiKey(req);
             if (apiKey == null || apiKey.trim().isEmpty()) {
-                throw new IllegalStateException("Thiếu biến môi trường GEMINI_API_KEY.");
+                throw new IllegalStateException("Thiếu API key Gemini. Vui lòng nhập API key ở giao diện AI hoặc cấu hình GEMINI_API_KEY.");
             }
 
             Part filePart = req.getPart("sourceFile");
@@ -72,6 +72,31 @@ public class AiDeviceExtractionController extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write(result.toString());
         }
+    }
+
+
+    private String resolveApiKey(HttpServletRequest req) {
+        String apiKeyFromRequest = req.getParameter("apiKey");
+        if (apiKeyFromRequest != null && !apiKeyFromRequest.trim().isEmpty()) {
+            return apiKeyFromRequest.trim();
+        }
+
+        String apiKeyFromEnv = System.getenv("GEMINI_API_KEY");
+        if (apiKeyFromEnv != null && !apiKeyFromEnv.trim().isEmpty()) {
+            return apiKeyFromEnv.trim();
+        }
+
+        String apiKeyFromSystemProp = System.getProperty("GEMINI_API_KEY");
+        if (apiKeyFromSystemProp != null && !apiKeyFromSystemProp.trim().isEmpty()) {
+            return apiKeyFromSystemProp.trim();
+        }
+
+        String apiKeyFromContextParam = getServletContext().getInitParameter("GEMINI_API_KEY");
+        if (apiKeyFromContextParam != null && !apiKeyFromContextParam.trim().isEmpty()) {
+            return apiKeyFromContextParam.trim();
+        }
+
+        return null;
     }
 
     private JsonObject buildGeminiRequest(String contentType, String base64Content, String userPrompt) {

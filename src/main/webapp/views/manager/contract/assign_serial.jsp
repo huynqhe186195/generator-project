@@ -70,6 +70,11 @@
                         <label class="form-label fw-semibold">Prompt</label>
                         <textarea class="form-control" id="aiPrompt" rows="3">Trích xuất danh sách thiết bị từ hợp đồng. Mỗi thiết bị gồm serialNumber, modelName, manufactureYear, currentLocation.</textarea>
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Gemini API key (nếu server chưa cấu hình)</label>
+                        <input type="password" class="form-control" id="geminiApiKey" placeholder="AIza...">
+                        <div class="form-text">Nếu server đã cấu hình GEMINI_API_KEY thì có thể để trống.</div>
+                    </div>
                 </div>
 
                 <div class="d-flex gap-2 mt-3">
@@ -237,6 +242,7 @@
             const fileInput = document.getElementById('aiSourceFile');
             const prompt = document.getElementById('aiPrompt').value || '';
             const file = fileInput.files[0];
+            const apiKey = document.getElementById('geminiApiKey').value || '';
 
             if (!file) {
                 aiStatus.innerHTML = '<div class="alert alert-warning mb-0">Vui lòng chọn file trước khi trích xuất.</div>';
@@ -246,6 +252,9 @@
             const formData = new FormData();
             formData.append('sourceFile', file);
             formData.append('prompt', prompt);
+            if (apiKey.trim()) {
+                formData.append('apiKey', apiKey.trim());
+            }
 
             aiStatus.innerHTML = '<div class="alert alert-info mb-0">Đang gọi AI...</div>';
             aiRawOutput.style.display = 'none';
