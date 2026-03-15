@@ -174,9 +174,6 @@
 
     <div class="card shadow-sm mb-3">
         <div class="card-body">
-            <div class="alert alert-info mb-3">
-                <i class="fa fa-robot"></i> Chatbot AI dạng bong bóng ở góc phải. Chat thường như GPT/Gemini, khi đính kèm file thì AI tự hiểu để hỗ trợ trích xuất.
-            </div>
 
             <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="deviceForm">
                 <input type="hidden" name="action" value="assignSerialSubmit"/>

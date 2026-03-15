@@ -90,11 +90,6 @@
                     </div>
                 </div>
 
-                <div class="alert alert-warning mt-2">
-                    <b>Lưu ý:</b> Ở bước này bạn <u>chưa nhập serial</u>. Sau khi tạo hợp đồng thành công,
-                    hệ thống sẽ chuyển bạn sang màn <b>Gán serial</b> để tạo tài sản (Product).
-                </div>
-
                 <div class="d-flex gap-2 mt-3">
                     <button type="submit" class="btn btn-primary">
                         <i class="fa fa-save"></i> Tạo hợp đồng
