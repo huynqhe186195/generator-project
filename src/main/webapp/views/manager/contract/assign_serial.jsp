@@ -1,6 +1,73 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<style>
+    .chatbot-bubble {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, #0d6efd, #4b8bff);
+        color: #fff;
+        font-size: 22px;
+        box-shadow: 0 10px 20px rgba(13, 110, 253, .35);
+        z-index: 2000;
+    }
+
+    .chatbot-panel {
+        position: fixed;
+        right: 24px;
+        bottom: 96px;
+        width: min(420px, calc(100vw - 32px));
+        max-height: 72vh;
+        background: #fff;
+        border: 1px solid #d7e4ff;
+        border-radius: 14px;
+        box-shadow: 0 16px 30px rgba(0, 0, 0, .18);
+        z-index: 2000;
+        display: none;
+        overflow: hidden;
+    }
+
+    .chatbot-header {
+        background: #0d6efd;
+        color: #fff;
+        padding: 10px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chatbot-body {
+        padding: 12px;
+        max-height: calc(72vh - 50px);
+        overflow-y: auto;
+        background: #f8fbff;
+    }
+
+    .chat-msg {
+        border-radius: 10px;
+        padding: 8px 10px;
+        margin-bottom: 8px;
+        max-width: 92%;
+        font-size: 14px;
+        white-space: pre-wrap;
+    }
+
+    .chat-msg.user {
+        background: #dbe8ff;
+        margin-left: auto;
+    }
+
+    .chat-msg.bot {
+        background: #ffffff;
+        border: 1px solid #d9e7ff;
+    }
+</style>
+
 <div class="container py-4" style="max-width: 1100px;">
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
@@ -49,47 +116,10 @@
 
     <div class="card shadow-sm mb-3">
         <div class="card-body">
-            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-1"><i class="fa fa-robot text-primary"></i> Chatbot AI trích xuất thiết bị</h6>
-                    <div class="text-muted small">Upload PDF/ảnh hợp đồng, AI sẽ trả list device và tự điền vào bảng phía dưới.</div>
-                </div>
-                <button type="button" class="btn btn-primary" id="toggleAiPanelBtn">
-                    Mở chatbot AI
-                </button>
+            <div class="alert alert-info mb-3">
+                <i class="fa fa-robot"></i> Chatbot AI đã chuyển sang dạng bong bóng chat ở góc phải màn hình.
             </div>
 
-            <div id="aiPanel" class="border rounded p-3 mt-3" style="display: none; background: #fafcff;">
-                <div class="mb-2 small text-muted">Bạn có thể đặt câu hỏi để bóc tách đúng nghiệp vụ trước khi fill dữ liệu.</div>
-                <div class="row g-2">
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">File hợp đồng (PDF/ảnh)</label>
-                        <input type="file" class="form-control" id="aiSourceFile" accept="application/pdf,image/*">
-                    </div>
-                    <div class="col-md-8">
-                        <label class="form-label fw-semibold">Prompt</label>
-                        <textarea class="form-control" id="aiPrompt" rows="3">Trích xuất danh sách thiết bị từ hợp đồng. Mỗi thiết bị gồm serialNumber, modelName, manufactureYear, currentLocation.</textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Gemini API key (nếu server chưa cấu hình)</label>
-                        <input type="password" class="form-control" id="geminiApiKey" placeholder="AIza...">
-                        <div class="form-text">Nếu server đã cấu hình GEMINI_API_KEY thì có thể để trống.</div>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2 mt-3">
-                    <button type="button" class="btn btn-success" id="extractAiBtn">Trích xuất bằng AI</button>
-                    <button type="button" class="btn btn-outline-secondary" id="fillContractInfoBtn">Điền thông tin hợp đồng vào form</button>
-                </div>
-
-                <div class="mt-3" id="aiStatus"></div>
-                <pre class="mt-2 p-2 bg-dark text-white rounded" id="aiRawOutput" style="max-height: 220px; overflow: auto; display: none;"></pre>
-            </div>
-        </div>
-    </div>
-
-    <div class="card shadow-sm mb-3">
-        <div class="card-body">
             <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="deviceForm">
                 <input type="hidden" name="action" value="assignSerialSubmit"/>
                 <input type="hidden" name="contractId" value="${contract.id}"/>
@@ -143,11 +173,50 @@
     </div>
 </div>
 
+<button type="button" class="chatbot-bubble" id="chatBubbleBtn" title="Mở chatbot AI">
+    <i class="fa fa-robot"></i>
+</button>
+
+<div class="chatbot-panel" id="chatbotPanel">
+    <div class="chatbot-header">
+        <strong>Chatbot AI trích xuất thiết bị</strong>
+        <button type="button" class="btn btn-sm btn-light" id="closeChatbotBtn">×</button>
+    </div>
+    <div class="chatbot-body" id="chatbotBody">
+        <div class="chat-msg bot">Xin chào! Upload hợp đồng và gửi prompt để mình trích xuất list device nhé.</div>
+
+        <div class="mb-2">
+            <label class="form-label fw-semibold mb-1">File hợp đồng (PDF/ảnh)</label>
+            <input type="file" class="form-control" id="aiSourceFile" accept="application/pdf,image/*">
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label fw-semibold mb-1">Gemini API key (nếu cần)</label>
+            <input type="password" class="form-control" id="geminiApiKey" placeholder="AIza...">
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label fw-semibold mb-1">Tin nhắn / Prompt</label>
+            <textarea class="form-control" id="aiPrompt" rows="3">Trích xuất danh sách thiết bị từ hợp đồng. Mỗi thiết bị gồm serialNumber, modelName, manufactureYear, currentLocation.</textarea>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-2">
+            <button type="button" class="btn btn-success btn-sm" id="extractAiBtn">Gửi & trích xuất</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="fillContractInfoBtn">Điền thông tin hợp đồng</button>
+        </div>
+
+        <div id="aiStatus"></div>
+        <pre class="mt-2 p-2 bg-dark text-white rounded" id="aiRawOutput" style="max-height: 220px; overflow: auto; display: none;"></pre>
+    </div>
+</div>
+
 <script>
     (function () {
         const ctx = '${pageContext.request.contextPath}';
-        const aiPanel = document.getElementById('aiPanel');
-        const toggleAiPanelBtn = document.getElementById('toggleAiPanelBtn');
+        const chatBubbleBtn = document.getElementById('chatBubbleBtn');
+        const closeChatbotBtn = document.getElementById('closeChatbotBtn');
+        const chatbotPanel = document.getElementById('chatbotPanel');
+        const chatbotBody = document.getElementById('chatbotBody');
         const extractAiBtn = document.getElementById('extractAiBtn');
         const addRowBtn = document.getElementById('addRowBtn');
         const tableBody = document.getElementById('deviceTableBody');
@@ -160,6 +229,14 @@
             const firstSelect = document.querySelector('select[name="modelIds"]');
             return firstSelect ? firstSelect.innerHTML : '<option value="">-- Chọn model --</option>';
         })();
+
+        function addMessage(text, type) {
+            const msg = document.createElement('div');
+            msg.className = 'chat-msg ' + type;
+            msg.textContent = text;
+            chatbotBody.appendChild(msg);
+            chatbotBody.scrollTop = chatbotBody.scrollHeight;
+        }
 
         function createRow(device) {
             const tr = document.createElement('tr');
@@ -227,10 +304,14 @@
             });
         }
 
-        toggleAiPanelBtn.addEventListener('click', function () {
-            const isHidden = aiPanel.style.display === 'none';
-            aiPanel.style.display = isHidden ? 'block' : 'none';
-            toggleAiPanelBtn.textContent = isHidden ? 'Ẩn chatbot AI' : 'Mở chatbot AI';
+        chatBubbleBtn.addEventListener('click', function () {
+            chatbotPanel.style.display = 'block';
+            chatBubbleBtn.style.display = 'none';
+        });
+
+        closeChatbotBtn.addEventListener('click', function () {
+            chatbotPanel.style.display = 'none';
+            chatBubbleBtn.style.display = 'inline-block';
         });
 
         addRowBtn.addEventListener('click', function () {
@@ -248,6 +329,8 @@
                 aiStatus.innerHTML = '<div class="alert alert-warning mb-0">Vui lòng chọn file trước khi trích xuất.</div>';
                 return;
             }
+
+            addMessage(prompt || 'Trích xuất từ file hợp đồng', 'user');
 
             const formData = new FormData();
             formData.append('sourceFile', file);
@@ -276,6 +359,8 @@
                 aiRawOutput.textContent = data.raw || JSON.stringify(latestAiData, null, 2);
 
                 const devices = latestAiData.devices || [];
+                addMessage('Mình đã trích xuất được ' + devices.length + ' thiết bị từ hợp đồng.', 'bot');
+
                 if (devices.length > 0) {
                     tableBody.innerHTML = '';
                     devices.forEach(function (d) {
@@ -285,6 +370,7 @@
                 }
             } catch (err) {
                 aiStatus.innerHTML = '<div class="alert alert-danger mb-0">Lỗi AI: ' + err.message + '</div>';
+                addMessage('Lỗi khi trích xuất: ' + err.message, 'bot');
             }
         });
 
@@ -301,6 +387,7 @@
             }
 
             aiStatus.innerHTML = '<div class="alert alert-info mb-0">Đã điền thông tin hợp đồng nhận diện được (hiển thị tham khảo).</div>';
+            addMessage('Mình đã điền thông tin hợp đồng nhận diện được.', 'bot');
         });
 
         bindRemoveButtons();
