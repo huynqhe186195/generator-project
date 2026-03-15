@@ -408,20 +408,33 @@ public class ManagementContractController extends HttpServlet {
             }
             Long customerId = Long.parseLong(customerIdStr);
 
-            String startDateStr = req.getParameter("startDate");
-            String endDateStr = req.getParameter("endDate");
-            if (startDateStr == null || endDateStr == null || startDateStr.isEmpty() || endDateStr.isEmpty()) {
-                req.setAttribute("errorMessage", "Vui lòng chọn Ngày bắt đầu và Ngày kết thúc!");
+            String signedDateStr = req.getParameter("signedDate");
+            if (signedDateStr == null || signedDateStr.trim().isEmpty()) {
+                req.setAttribute("errorMessage", "Vui lòng chọn Ngày ký hợp đồng!");
                 showCreateForm(req, resp);
                 return;
             }
 
+            String startDateStr = req.getParameter("startDate");
+            String endDateStr = req.getParameter("endDate");
+            if (startDateStr == null || endDateStr == null || startDateStr.isEmpty() || endDateStr.isEmpty()) {
+                req.setAttribute("errorMessage", "Vui lòng chọn Ngày có hiệu lực và Ngày hết hiệu lực!");
+                showCreateForm(req, resp);
+                return;
+            }
+
+            Date signedDate = Date.valueOf(signedDateStr);
             Date startDate = Date.valueOf(startDateStr);
             Date endDate = Date.valueOf(endDateStr);
 
-            // (optional) validate ngày
+            if (startDate.before(signedDate)) {
+                req.setAttribute("errorMessage", "Ngày có hiệu lực phải lớn hơn hoặc bằng Ngày ký!");
+                showCreateForm(req, resp);
+                return;
+            }
+
             if (endDate.before(startDate)) {
-                req.setAttribute("errorMessage", "Ngày kết thúc phải >= ngày bắt đầu!");
+                req.setAttribute("errorMessage", "Ngày hết hiệu lực phải >= Ngày có hiệu lực!");
                 showCreateForm(req, resp);
                 return;
             }

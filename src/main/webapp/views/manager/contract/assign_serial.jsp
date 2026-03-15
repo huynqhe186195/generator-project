@@ -151,22 +151,43 @@
         const fillContractInfoBtn = document.getElementById('fillContractInfoBtn');
 
         let latestAiData = null;
+        const modelOptionsHtml = (function () {
+            const firstSelect = document.querySelector('select[name="modelIds"]');
+            return firstSelect ? firstSelect.innerHTML : '<option value="">-- Chọn model --</option>';
+        })();
 
         function createRow(device) {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><input type="text" class="form-control" name="serialNumbers" required></td>
-                <td>
-                    <select name="modelIds" class="form-select">
-                        <option value="">-- Chọn model --</option>
-                        ${Array.from(document.querySelectorAll('select[name="modelIds"] option')).map(o => `<option value="${o.value}">${o.textContent}</option>`).join('')}
-                    </select>
-                </td>
-                <td><input type="date" class="form-control" name="purchaseDates"></td>
-                <td><input type="number" class="form-control" name="manufactureYears" min="1990" max="2100"></td>
-                <td><input type="text" class="form-control" name="currentLocations"></td>
-                <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">×</button></td>
-            `;
+
+            const serialTd = document.createElement('td');
+            serialTd.innerHTML = '<input type="text" class="form-control" name="serialNumbers" required>';
+
+            const modelTd = document.createElement('td');
+            const modelSelect = document.createElement('select');
+            modelSelect.name = 'modelIds';
+            modelSelect.className = 'form-select';
+            modelSelect.innerHTML = modelOptionsHtml;
+            modelTd.appendChild(modelSelect);
+
+            const purchaseDateTd = document.createElement('td');
+            purchaseDateTd.innerHTML = '<input type="date" class="form-control" name="purchaseDates">';
+
+            const manufactureYearTd = document.createElement('td');
+            manufactureYearTd.innerHTML = '<input type="number" class="form-control" name="manufactureYears" min="1990" max="2100">';
+
+            const locationTd = document.createElement('td');
+            locationTd.innerHTML = '<input type="text" class="form-control" name="currentLocations">';
+
+            const removeTd = document.createElement('td');
+            removeTd.className = 'text-center';
+            removeTd.innerHTML = '<button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">×</button>';
+
+            tr.appendChild(serialTd);
+            tr.appendChild(modelTd);
+            tr.appendChild(purchaseDateTd);
+            tr.appendChild(manufactureYearTd);
+            tr.appendChild(locationTd);
+            tr.appendChild(removeTd);
 
             if (device) {
                 tr.querySelector('input[name="serialNumbers"]').value = device.serialNumber || '';
@@ -174,16 +195,19 @@
                 tr.querySelector('input[name="currentLocations"]').value = device.currentLocation || '';
 
                 if (device.modelName) {
-                    const modelSelect = tr.querySelector('select[name="modelIds"]');
-                    const option = Array.from(modelSelect.options).find(op => op.textContent.trim() === device.modelName.trim());
-                    if (option) modelSelect.value = option.value;
+                    const option = Array.prototype.find.call(modelSelect.options, function (op) {
+                        return op.textContent.trim() === device.modelName.trim();
+                    });
+                    if (option) {
+                        modelSelect.value = option.value;
+                    }
                 }
             }
             return tr;
         }
 
         function bindRemoveButtons() {
-            tableBody.querySelectorAll('.remove-row-btn').forEach((btn) => {
+            tableBody.querySelectorAll('.remove-row-btn').forEach(function (btn) {
                 btn.onclick = function () {
                     if (tableBody.rows.length === 1) {
                         tableBody.rows[0].querySelector('input[name="serialNumbers"]').value = '';
@@ -242,14 +266,16 @@
                 aiRawOutput.style.display = 'block';
                 aiRawOutput.textContent = data.raw || JSON.stringify(latestAiData, null, 2);
 
-                const devices = (latestAiData.devices || []);
+                const devices = latestAiData.devices || [];
                 if (devices.length > 0) {
                     tableBody.innerHTML = '';
-                    devices.forEach((d) => tableBody.appendChild(createRow(d)));
+                    devices.forEach(function (d) {
+                        tableBody.appendChild(createRow(d));
+                    });
                     bindRemoveButtons();
                 }
             } catch (err) {
-                aiStatus.innerHTML = `<div class="alert alert-danger mb-0">Lỗi AI: ${err.message}</div>`;
+                aiStatus.innerHTML = '<div class="alert alert-danger mb-0">Lỗi AI: ' + err.message + '</div>';
             }
         });
 
