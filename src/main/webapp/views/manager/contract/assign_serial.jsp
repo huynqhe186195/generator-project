@@ -22,7 +22,7 @@
         right: 24px;
         bottom: 96px;
         width: min(420px, calc(100vw - 32px));
-        max-height: 72vh;
+        height: min(620px, 76vh);
         background: #fff;
         border: 1px solid #d7e4ff;
         border-radius: 14px;
@@ -42,19 +42,26 @@
     }
 
     .chatbot-body {
-        padding: 12px;
-        max-height: calc(72vh - 50px);
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        height: calc(100% - 48px);
         background: #f8fbff;
     }
 
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+    }
+
     .chat-msg {
-        border-radius: 10px;
-        padding: 8px 10px;
-        margin-bottom: 8px;
-        max-width: 92%;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        max-width: 90%;
         font-size: 14px;
         white-space: pre-wrap;
+        word-break: break-word;
     }
 
     .chat-msg.user {
@@ -65,6 +72,57 @@
     .chat-msg.bot {
         background: #ffffff;
         border: 1px solid #d9e7ff;
+    }
+
+    .chat-composer {
+        border-top: 1px solid #e4ecff;
+        background: #fff;
+        padding: 10px;
+    }
+
+    .chat-file-pill {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        background: #eef4ff;
+        border: 1px solid #d6e3ff;
+        color: #225;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .chat-input-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chat-input {
+        flex: 1;
+        border: 1px solid #d4ddf5;
+        border-radius: 12px;
+        padding: 9px 12px;
+        outline: none;
+    }
+
+    .chat-icon-btn {
+        border: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #eff4ff;
+        color: #2e6ef7;
+    }
+
+    .chat-send-btn {
+        border: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #2e6ef7;
+        color: #fff;
     }
 </style>
 
@@ -117,7 +175,7 @@
     <div class="card shadow-sm mb-3">
         <div class="card-body">
             <div class="alert alert-info mb-3">
-                <i class="fa fa-robot"></i> Chatbot AI đã chuyển sang dạng bong bóng chat ở góc phải màn hình.
+                <i class="fa fa-robot"></i> Chatbot AI dạng bong bóng ở góc phải. Chat thường như GPT/Gemini, khi đính kèm file thì AI tự hiểu để hỗ trợ trích xuất.
             </div>
 
             <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="deviceForm">
@@ -179,54 +237,62 @@
 
 <div class="chatbot-panel" id="chatbotPanel">
     <div class="chatbot-header">
-        <strong>Chatbot AI trợ lý hợp đồng</strong>
+        <strong>AI trợ lý hợp đồng</strong>
         <button type="button" class="btn btn-sm btn-light" id="closeChatbotBtn">×</button>
     </div>
-    <div class="chatbot-body" id="chatbotBody">
-        <div class="chat-msg bot">Xin chào! Bạn có thể hỏi bất cứ điều gì như GPT/Gemini. Nếu muốn trích xuất thiết bị từ PDF/ảnh, hãy upload file rồi bấm nút trích xuất.</div>
 
-        <div class="mb-2">
-            <label class="form-label fw-semibold mb-1">File hợp đồng (PDF/ảnh)</label>
-            <input type="file" class="form-control" id="aiSourceFile" accept="application/pdf,image/*">
+    <div class="chatbot-body">
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg bot">Xin chào 👋 Bạn có thể hỏi bất cứ điều gì. Nếu muốn AI bóc tách list device thì bấm icon ảnh để đính kèm PDF/snapshot rồi gửi tin nhắn.</div>
         </div>
 
-        <div class="mb-2">
-            <label class="form-label fw-semibold mb-1">Gemini API key (nếu cần)</label>
-            <input type="password" class="form-control" id="geminiApiKey" placeholder="AIza...">
-        </div>
+        <div class="chat-composer">
+            <input type="file" id="aiSourceFile" accept="application/pdf,image/*" style="display:none;">
+            <input type="password" id="geminiApiKey" placeholder="Gemini API key (tuỳ chọn)" class="form-control form-control-sm mb-2" style="display:none;">
 
-        <div class="mb-2">
-            <label class="form-label fw-semibold mb-1">Nhập tin nhắn (hỏi tự do hoặc yêu cầu trích xuất)</label>
-            <textarea class="form-control" id="aiPrompt" rows="3">Trích xuất danh sách thiết bị từ hợp đồng. Mỗi thiết bị gồm serialNumber, modelName, manufactureYear, currentLocation.</textarea>
-        </div>
+            <div class="chat-file-pill" id="chatFilePill">
+                <i class="fa fa-paperclip"></i>
+                <span id="chatFileName"></span>
+                <button type="button" class="btn btn-sm btn-link p-0" id="removeFileBtn">x</button>
+            </div>
 
-        <div class="d-flex flex-wrap gap-2 mb-2">
-            <button type="button" class="btn btn-success btn-sm" id="sendChatBtn">Gửi chat thường</button>
-            <button type="button" class="btn btn-success btn-sm" id="extractAiBtn">Trích xuất list device</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" id="fillContractInfoBtn">Điền thông tin hợp đồng</button>
+            <div class="chat-input-row">
+                <button type="button" class="chat-icon-btn" id="attachFileBtn" title="Đính kèm PDF/ảnh">
+                    <i class="fa fa-image"></i>
+                </button>
+                <input type="text" class="chat-input" id="chatInput" placeholder="Câu hỏi của bạn là gì?">
+                <button type="button" class="chat-send-btn" id="sendChatBtn" title="Gửi">
+                    <i class="fa fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="small text-muted mt-2" id="chatStatus"></div>
         </div>
-
-        <div id="aiStatus"></div>
-        <pre class="mt-2 p-2 bg-dark text-white rounded" id="aiRawOutput" style="max-height: 220px; overflow: auto; display: none;"></pre>
     </div>
 </div>
 
 <script>
     (function () {
         const ctx = '${pageContext.request.contextPath}';
+
         const chatBubbleBtn = document.getElementById('chatBubbleBtn');
         const closeChatbotBtn = document.getElementById('closeChatbotBtn');
         const chatbotPanel = document.getElementById('chatbotPanel');
-        const chatbotBody = document.getElementById('chatbotBody');
-        const sendChatBtn = document.getElementById('sendChatBtn');
-        const extractAiBtn = document.getElementById('extractAiBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
         const addRowBtn = document.getElementById('addRowBtn');
         const tableBody = document.getElementById('deviceTableBody');
-        const aiStatus = document.getElementById('aiStatus');
-        const aiRawOutput = document.getElementById('aiRawOutput');
-        const fillContractInfoBtn = document.getElementById('fillContractInfoBtn');
+        const contractNumberView = document.getElementById('contractNumberView');
 
-        let latestAiData = null;
+        const aiSourceFile = document.getElementById('aiSourceFile');
+        const geminiApiKey = document.getElementById('geminiApiKey');
+        const attachFileBtn = document.getElementById('attachFileBtn');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+        const chatFilePill = document.getElementById('chatFilePill');
+        const chatFileName = document.getElementById('chatFileName');
+        const chatInput = document.getElementById('chatInput');
+        const sendChatBtn = document.getElementById('sendChatBtn');
+        const chatStatus = document.getElementById('chatStatus');
+
         const chatHistory = [];
         const modelOptionsHtml = (function () {
             const firstSelect = document.querySelector('select[name="modelIds"]');
@@ -237,74 +303,18 @@
             const msg = document.createElement('div');
             msg.className = 'chat-msg ' + type;
             msg.textContent = text;
-            chatbotBody.appendChild(msg);
-            chatbotBody.scrollTop = chatbotBody.scrollHeight;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
-        async function askChatbot(extractionMode) {
-            const fileInput = document.getElementById('aiSourceFile');
-            const prompt = document.getElementById('aiPrompt').value || '';
-            const file = fileInput.files[0];
-            const apiKey = document.getElementById('geminiApiKey').value || '';
-
-            if (!prompt.trim()) {
-                aiStatus.innerHTML = '<div class="alert alert-warning mb-0">Vui lòng nhập nội dung chat.</div>';
-                return;
-            }
-
-            if (extractionMode && !file) {
-                aiStatus.innerHTML = '<div class="alert alert-warning mb-0">Muốn trích xuất list device thì cần upload file PDF/ảnh.</div>';
-                return;
-            }
-
-            addMessage(prompt, 'user');
-
-            const formData = new FormData();
-            formData.append('message', prompt);
-            formData.append('extractionMode', extractionMode ? 'true' : 'false');
-            formData.append('history', JSON.stringify(chatHistory));
+        function updateFilePill() {
+            const file = aiSourceFile.files[0];
             if (file) {
-                formData.append('sourceFile', file);
-            }
-            if (apiKey.trim()) {
-                formData.append('apiKey', apiKey.trim());
-            }
-
-            aiStatus.innerHTML = '<div class="alert alert-info mb-0">AI đang trả lời...</div>';
-            aiRawOutput.style.display = 'none';
-
-            try {
-                const res = await fetch(ctx + '/manager/contracts/ai-chat', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                if (!data.success) {
-                    throw new Error(data.message || 'AI trả về lỗi không xác định');
-                }
-
-                const reply = data.reply || '';
-                addMessage(reply, 'bot');
-                chatHistory.push({ role: 'user', content: prompt });
-                chatHistory.push({ role: 'assistant', content: reply });
-                aiStatus.innerHTML = '<div class="alert alert-success mb-0">AI đã trả lời.</div>';
-                aiRawOutput.style.display = 'block';
-                aiRawOutput.textContent = reply;
-
-                if (extractionMode && data.structured && data.data) {
-                    latestAiData = data.data;
-                    const devices = latestAiData.devices || [];
-                    if (devices.length > 0) {
-                        tableBody.innerHTML = '';
-                        devices.forEach(function (d) {
-                            tableBody.appendChild(createRow(d));
-                        });
-                        bindRemoveButtons();
-                    }
-                }
-            } catch (err) {
-                aiStatus.innerHTML = '<div class="alert alert-danger mb-0">Lỗi AI: ' + err.message + '</div>';
-                addMessage('Lỗi: ' + err.message, 'bot');
+                chatFilePill.style.display = 'inline-flex';
+                chatFileName.textContent = file.name;
+            } else {
+                chatFilePill.style.display = 'none';
+                chatFileName.textContent = '';
             }
         }
 
@@ -374,6 +384,72 @@
             });
         }
 
+        async function askChatbot() {
+            const prompt = chatInput.value || '';
+            const file = aiSourceFile.files[0];
+            const apiKey = geminiApiKey.value || '';
+            const extractionMode = !!file;
+
+            if (!prompt.trim()) {
+                chatStatus.textContent = 'Vui lòng nhập nội dung chat.';
+                return;
+            }
+
+            addMessage(prompt, 'user');
+            chatInput.value = '';
+
+            const formData = new FormData();
+            formData.append('message', prompt);
+            formData.append('extractionMode', extractionMode ? 'true' : 'false');
+            formData.append('history', JSON.stringify(chatHistory));
+            if (file) {
+                formData.append('sourceFile', file);
+            }
+            if (apiKey.trim()) {
+                formData.append('apiKey', apiKey.trim());
+            }
+
+            chatStatus.textContent = 'AI đang trả lời...';
+
+            try {
+                const res = await fetch(ctx + '/manager/contracts/ai-chat', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'AI trả về lỗi không xác định');
+                }
+
+                const reply = data.reply || '';
+                addMessage(reply, 'bot');
+                chatHistory.push({ role: 'user', content: prompt });
+                chatHistory.push({ role: 'assistant', content: reply });
+                chatStatus.textContent = 'Đã nhận phản hồi từ AI.';
+
+                if (data.structured && data.data) {
+                    const extracted = data.data;
+                    const devices = extracted.devices || [];
+
+                    if (devices.length > 0) {
+                        tableBody.innerHTML = '';
+                        devices.forEach(function (d) {
+                            tableBody.appendChild(createRow(d));
+                        });
+                        bindRemoveButtons();
+                        addMessage('Mình đã tự điền ' + devices.length + ' thiết bị vào bảng bên dưới.', 'bot');
+                    }
+
+                    if (extracted.contract && extracted.contract.contractNumber) {
+                        contractNumberView.textContent = extracted.contract.contractNumber + ' (AI nhận diện)';
+                    }
+                }
+            } catch (err) {
+                chatStatus.textContent = 'Lỗi: ' + err.message;
+                addMessage('Lỗi: ' + err.message, 'bot');
+            }
+        }
+
         chatBubbleBtn.addEventListener('click', function () {
             chatbotPanel.style.display = 'block';
             chatBubbleBtn.style.display = 'none';
@@ -389,28 +465,26 @@
             bindRemoveButtons();
         });
 
+        attachFileBtn.addEventListener('click', function () {
+            aiSourceFile.click();
+        });
+
+        aiSourceFile.addEventListener('change', updateFilePill);
+
+        removeFileBtn.addEventListener('click', function () {
+            aiSourceFile.value = '';
+            updateFilePill();
+        });
+
         sendChatBtn.addEventListener('click', async function () {
-            await askChatbot(false);
+            await askChatbot();
         });
 
-        extractAiBtn.addEventListener('click', async function () {
-            await askChatbot(true);
-        });
-
-        fillContractInfoBtn.addEventListener('click', function () {
-            if (!latestAiData || !latestAiData.contract) {
-                aiStatus.innerHTML = '<div class="alert alert-warning mb-0">Chưa có dữ liệu hợp đồng từ AI.</div>';
-                return;
+        chatInput.addEventListener('keydown', async function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                await askChatbot();
             }
-
-            const c = latestAiData.contract;
-            if (c.contractNumber) {
-                const view = document.getElementById('contractNumberView');
-                view.textContent = c.contractNumber + ' (AI nhận diện)';
-            }
-
-            aiStatus.innerHTML = '<div class="alert alert-info mb-0">Đã điền thông tin hợp đồng nhận diện được (hiển thị tham khảo).</div>';
-            addMessage('Mình đã điền thông tin hợp đồng nhận diện được.', 'bot');
         });
 
         bindRemoveButtons();
