@@ -198,7 +198,9 @@
                 <th>Ngày</th>
                 <th>Loại</th>
                 <th>Chi phí</th>
+                <th>Hoàn thành lúc</th>
                 <th>Chi tiết</th>
+
             </tr>
             </thead>
             <tbody>
@@ -215,12 +217,14 @@
                     <td>${t.maintenanceDate}</td>
                     <td>${t.type}</td>
                     <td><fmt:formatNumber value="${t.totalCost}" type="number"/> đ</td>
+                    <td><fmt:formatDate value="${t.completedAt}" pattern="dd-MM-yyyy HH:mm:ss"/></td>
                     <td>
                         <a class="btn btn-sm btn-primary"
                            href="<c:url value='/technical/repair-report?id=${t.id}'/>">
                             Xem
                         </a>
                     </td>
+
                 </tr>
             </c:forEach>
             </tbody>

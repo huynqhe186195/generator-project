@@ -7,6 +7,15 @@ public class MaintenanceImage {
     private int maintenanceId;
     private String imagePath;
     private Timestamp uploadedAt;
+    private String imageType;
+
+    public String getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
+    }
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
