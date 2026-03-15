@@ -199,29 +199,61 @@ public class ManagementContractController extends HttpServlet {
             throws ServletException, IOException {
         try {
             Long contractId = Long.parseLong(req.getParameter("contractId"));
-            String serialNumber = req.getParameter("serialNumber");
 
-            String modelIdStr = req.getParameter("modelId");
-            Long modelId = (modelIdStr == null || modelIdStr.isBlank()) ? null : Long.parseLong(modelIdStr);
+            String[] serialNumbers = req.getParameterValues("serialNumbers");
+            String[] modelIds = req.getParameterValues("modelIds");
+            String[] purchaseDates = req.getParameterValues("purchaseDates");
+            String[] manufactureYears = req.getParameterValues("manufactureYears");
+            String[] currentLocations = req.getParameterValues("currentLocations");
 
-            String purchaseDateStr = req.getParameter("purchaseDate");
-            java.sql.Date purchaseDate = (purchaseDateStr == null || purchaseDateStr.isBlank())
-                    ? null
-                    : java.sql.Date.valueOf(purchaseDateStr.trim());
+            Long firstCreatedProductId = null;
 
-            String manufactureYearStr = req.getParameter("manufactureYear");
-            Integer manufactureYear = (manufactureYearStr == null || manufactureYearStr.isBlank())
-                    ? null
-                    : Integer.parseInt(manufactureYearStr.trim());
+            if (serialNumbers != null && serialNumbers.length > 0) {
+                for (int i = 0; i < serialNumbers.length; i++) {
+                    String serialNumber = serialNumbers[i] == null ? null : serialNumbers[i].trim();
+                    if (serialNumber == null || serialNumber.isEmpty()) {
+                        continue;
+                    }
 
-            String currentLocation = req.getParameter("currentLocation");
+                    Long modelId = parseLongAt(modelIds, i);
+                    Date purchaseDate = parseDateAt(purchaseDates, i);
+                    Integer manufactureYear = parseIntegerAt(manufactureYears, i);
+                    String currentLocation = parseStringAt(currentLocations, i);
 
-            Long newProductId = contractService.assignSerialToContract(
-                    contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
+                    Long pid = contractService.assignSerialToContract(
+                            contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
+                    if (firstCreatedProductId == null) {
+                        firstCreatedProductId = pid;
+                    }
+                }
+
+                if (firstCreatedProductId == null) {
+                    throw new IllegalArgumentException("Vui lòng nhập ít nhất một serial hợp lệ.");
+                }
+            } else {
+                String serialNumber = req.getParameter("serialNumber");
+                String modelIdStr = req.getParameter("modelId");
+                Long modelId = (modelIdStr == null || modelIdStr.isBlank()) ? null : Long.parseLong(modelIdStr);
+
+                String purchaseDateStr = req.getParameter("purchaseDate");
+                Date purchaseDate = (purchaseDateStr == null || purchaseDateStr.isBlank())
+                        ? null
+                        : Date.valueOf(purchaseDateStr.trim());
+
+                String manufactureYearStr = req.getParameter("manufactureYear");
+                Integer manufactureYear = (manufactureYearStr == null || manufactureYearStr.isBlank())
+                        ? null
+                        : Integer.parseInt(manufactureYearStr.trim());
+
+                String currentLocation = req.getParameter("currentLocation");
+
+                firstCreatedProductId = contractService.assignSerialToContract(
+                        contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
+            }
 
             resp.sendRedirect(req.getContextPath()
                     + "/manager/contracts?action=detail&id=" + contractId
-                    + "&assignedProductId=" + newProductId);
+                    + "&assignedProductId=" + firstCreatedProductId);
         } catch (Exception e) {
             try {
                 Long contractId = Long.parseLong(req.getParameter("contractId"));
@@ -231,8 +263,36 @@ public class ManagementContractController extends HttpServlet {
             }
 
             req.setAttribute("error", e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/contracts/assign_serial.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/manager/contract/assign_serial.jsp").forward(req, resp);
         }
+    }
+
+    private Long parseLongAt(String[] values, int idx) {
+        if (values == null || idx >= values.length || values[idx] == null || values[idx].isBlank()) {
+            return null;
+        }
+        return Long.parseLong(values[idx].trim());
+    }
+
+    private Integer parseIntegerAt(String[] values, int idx) {
+        if (values == null || idx >= values.length || values[idx] == null || values[idx].isBlank()) {
+            return null;
+        }
+        return Integer.parseInt(values[idx].trim());
+    }
+
+    private Date parseDateAt(String[] values, int idx) {
+        if (values == null || idx >= values.length || values[idx] == null || values[idx].isBlank()) {
+            return null;
+        }
+        return Date.valueOf(values[idx].trim());
+    }
+
+    private String parseStringAt(String[] values, int idx) {
+        if (values == null || idx >= values.length || values[idx] == null || values[idx].isBlank()) {
+            return null;
+        }
+        return values[idx].trim();
     }
 
     private void handleRequestAccount(HttpServletRequest req, HttpServletResponse resp) throws IOException {
