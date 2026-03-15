@@ -560,112 +560,100 @@
     function renderField(label, value) {
         const val = valueOrDash(value);
         const mutedClass = val === "-" ? "is-muted" : "";
-        return `
-            <div class="detail-item">
-                <div class="detail-label">${escapeHtml(label)}</div>
-                <div class="detail-value ${mutedClass}">${escapeHtml(val)}</div>
-            </div>
-        `;
+        return '<div class="detail-item">'
+            + '<div class="detail-label">' + escapeHtml(label) + '</div>'
+            + '<div class="detail-value ' + mutedClass + '">' + escapeHtml(val) + '</div>'
+            + '</div>';
     }
 
     function renderSection(title, fields) {
         const fieldHtml = fields.map(f => renderField(f.label, f.value)).join("");
-        return `
-            <div class="mb-3">
-                <div class="detail-section-title">${escapeHtml(title)}</div>
-                <div class="detail-grid">${fieldHtml}</div>
-            </div>
-        `;
+        return '<div class="mb-3">'
+            + '<div class="detail-section-title">' + escapeHtml(title) + '</div>'
+            + '<div class="detail-grid">' + fieldHtml + '</div>'
+            + '</div>';
     }
 
     function renderStructuredDetail(reqType, obj, requestId) {
         const common = renderSection("Thông tin chung", [
-            { label: "Mã request", value: `#${requestId}` },
+            { label: "Mã request", value: "#" + requestId },
             { label: "Loại yêu cầu", value: reqType || "REQUEST" }
         ]);
 
         if (reqType === "INCIDENT_REPORT") {
-            return `
-                <div class="request-detail-wrap">
-                    <div class="request-detail-head">
-                        <span class="badge bg-warning text-dark">Sự cố / Incident</span>
-                        <span class="text-muted small">Chi tiết sự cố đã gửi từ manager</span>
-                    </div>
-                    <div class="request-detail-body">
-                        ${common}
-                        ${renderSection("Nội dung sự cố", [
-                            { label: "Tiêu đề", value: obj.title },
-                            { label: "Loại sự cố", value: obj.issueType || obj.maintenanceType },
-                            { label: "Mức ưu tiên", value: obj.priority },
-                            { label: "Ngày mong muốn", value: obj.preferredDate },
-                            { label: "Mã sản phẩm", value: obj.productId },
-                            { label: "Kỹ thuật viên", value: obj.technicianId }
-                        ])}
-                        ${renderSection("Người báo cáo", [
-                            { label: "Họ tên", value: obj.reporterName },
-                            { label: "Số điện thoại", value: obj.reporterPhone },
-                            { label: "Email", value: obj.reporterEmail }
-                        ])}
-                        <div class="detail-section-title">Mô tả chi tiết</div>
-                        <div class="detail-note">${escapeHtml(valueOrDash(obj.description))}</div>
-                        <div class="detail-section-title mt-3">Ghi chú nội bộ</div>
-                        <div class="detail-note">${escapeHtml(valueOrDash(obj.staffNote))}</div>
-                    </div>
-                </div>
-            `;
+            return '<div class="request-detail-wrap">'
+                + '<div class="request-detail-head">'
+                + '<span class="badge bg-warning text-dark">Sự cố / Incident</span>'
+                + '<span class="text-muted small">Chi tiết sự cố đã gửi từ manager</span>'
+                + '</div>'
+                + '<div class="request-detail-body">'
+                + common
+                + renderSection("Nội dung sự cố", [
+                    { label: "Tiêu đề", value: obj.title },
+                    { label: "Loại sự cố", value: obj.issueType || obj.maintenanceType },
+                    { label: "Mức ưu tiên", value: obj.priority },
+                    { label: "Ngày mong muốn", value: obj.preferredDate },
+                    { label: "Mã sản phẩm", value: obj.productId },
+                    { label: "Kỹ thuật viên", value: obj.technicianId }
+                ])
+                + renderSection("Người báo cáo", [
+                    { label: "Họ tên", value: obj.reporterName },
+                    { label: "Số điện thoại", value: obj.reporterPhone },
+                    { label: "Email", value: obj.reporterEmail }
+                ])
+                + '<div class="detail-section-title">Mô tả chi tiết</div>'
+                + '<div class="detail-note">' + escapeHtml(valueOrDash(obj.description)) + '</div>'
+                + '<div class="detail-section-title mt-3">Ghi chú nội bộ</div>'
+                + '<div class="detail-note">' + escapeHtml(valueOrDash(obj.staffNote)) + '</div>'
+                + '</div>'
+                + '</div>';
         }
 
         if (reqType === "CREATE_USER") {
-            return `
-                <div class="request-detail-wrap">
-                    <div class="request-detail-head">
-                        <span class="badge bg-info text-dark">Tạo tài khoản</span>
-                    </div>
-                    <div class="request-detail-body">
-                        ${common}
-                        ${renderSection("Thông tin user", [
-                            { label: "Họ tên", value: obj.fullName },
-                            { label: "Email", value: obj.email },
-                            { label: "Số điện thoại", value: obj.phone || obj.phoneNumber },
-                            { label: "Vai trò", value: obj.role || obj.roleId }
-                        ])}
-                    </div>
-                </div>
-            `;
+            return '<div class="request-detail-wrap">'
+                + '<div class="request-detail-head">'
+                + '<span class="badge bg-info text-dark">Tạo tài khoản</span>'
+                + '</div>'
+                + '<div class="request-detail-body">'
+                + common
+                + renderSection("Thông tin user", [
+                    { label: "Họ tên", value: obj.fullName },
+                    { label: "Email", value: obj.email },
+                    { label: "Số điện thoại", value: obj.phone || obj.phoneNumber },
+                    { label: "Vai trò", value: obj.role || obj.roleId }
+                ])
+                + '</div>'
+                + '</div>';
         }
 
         if (reqType === "NEW_PRODUCT" || reqType === "NEW_USER") {
-            return `
-                <div class="request-detail-wrap">
-                    <div class="request-detail-head">
-                        <span class="badge bg-primary">Import từ Excel</span>
-                    </div>
-                    <div class="request-detail-body">
-                        ${common}
-                        ${renderSection("File đính kèm", [
-                            { label: "Tên file", value: obj.excelFileName },
-                            { label: "Kích thước", value: obj.fileSize }
-                        ])}
-                    </div>
-                </div>
-            `;
+            return '<div class="request-detail-wrap">'
+                + '<div class="request-detail-head">'
+                + '<span class="badge bg-primary">Import từ Excel</span>'
+                + '</div>'
+                + '<div class="request-detail-body">'
+                + common
+                + renderSection("File đính kèm", [
+                    { label: "Tên file", value: obj.excelFileName },
+                    { label: "Kích thước", value: obj.fileSize }
+                ])
+                + '</div>'
+                + '</div>';
         }
 
         const genericFields = Object.keys(obj).slice(0, 12).map(function (k) {
             return { label: k, value: typeof obj[k] === "object" ? JSON.stringify(obj[k]) : obj[k] };
         });
 
-        return `
-            <div class="request-detail-wrap">
-                <div class="request-detail-head">
-                    <span class="badge bg-secondary">REQUEST</span>
-                </div>
-                <div class="request-detail-body">
-                    ${common}
-                    ${renderSection("Dữ liệu", genericFields)}
-                </div>
-            </div>
-        `;
+        return '<div class="request-detail-wrap">'
+            + '<div class="request-detail-head">'
+            + '<span class="badge bg-secondary">REQUEST</span>'
+            + '</div>'
+            + '<div class="request-detail-body">'
+            + common
+            + renderSection("Dữ liệu", genericFields)
+            + '</div>'
+            + '</div>';
     }
 
     function buildSummary(reqType, obj, raw) {
@@ -675,7 +663,7 @@
             const fullName = obj.fullName || "-";
             const email = obj.email || "-";
             const phone = obj.phone || obj.phoneNumber || "-";
-            return `Tạo user: ${fullName} | ${email} | ${phone}`;
+            return "Tạo user: " + fullName + " | " + email + " | " + phone;
         }
 
         if (reqType === "INCIDENT_REPORT") {
@@ -683,21 +671,21 @@
             const priority = obj.priority || "-";
             const issueType = obj.issueType || "-";
             const productId = obj.productId || "-";
-            return `Sự cố: ${title} | Priority: ${priority} | Type: ${issueType} | ProductID: ${productId}`;
+            return "Sự cố: " + title + " | Priority: " + priority + " | Type: " + issueType + " | ProductID: " + productId;
         }
 
         if (reqType === "NEW_PRODUCT") {
             const excelFileName = obj.excelFileName || "(không có tên file)";
-            return `Tạo product từ file Excel: ${excelFileName}`;
+            return "Tạo product từ file Excel: " + excelFileName;
         }
 
         if (reqType === "NEW_USER") {
             const excelFileName = obj.excelFileName || "(không có tên file)";
-            return `Import users từ file Excel: ${excelFileName}`;
+            return "Import users từ file Excel: " + excelFileName;
         }
 
         const keys = Object.keys(obj);
-        return `Dữ liệu: ${keys.slice(0, 6).join(", ")}${keys.length > 6 ? "..." : ""}`;
+        return "Dữ liệu: " + keys.slice(0, 6).join(", ") + (keys.length > 6 ? "..." : "");
     }
 
     document.querySelectorAll("code[id^='json-']").forEach(codeEl => {
