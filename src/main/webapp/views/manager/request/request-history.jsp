@@ -536,9 +536,8 @@
 })();
 </script>
 
-<script id="technicianDisplayMapData" type="application/json">${fn:escapeXml(technicianDisplayJson)}</script>
-<script id="productDisplayMapData" type="application/json">${fn:escapeXml(productDisplayJson)}</script>
-
+<script id="technicianDisplayMapData" type="application/json"><c:out value="${technicianDisplayJson}" escapeXml="false"/></script>
+<script id="productDisplayMapData" type="application/json"><c:out value="${productDisplayJson}" escapeXml="false"/></script>
 
 <script>
 (function () {
@@ -566,13 +565,13 @@
     function resolveTechnicianDisplay(technicianId) {
         const key = String(valueOrDash(technicianId));
         if (key === "-") return "-";
-        return productOrFallback(technicianDisplayMap[key], key);
+        return productOrFallback(technicianDisplayMap[key], key + " - Chưa có tên");
     }
 
     function resolveProductDisplay(productId) {
         const key = String(valueOrDash(productId));
         if (key === "-") return "-";
-        return productOrFallback(productDisplayMap[key], "Sản phẩm #" + key);
+        return productOrFallback(productDisplayMap[key], "Sản phẩm #" + key + " - N/A");
     }
 
     function productOrFallback(value, fallback) {

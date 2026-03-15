@@ -135,6 +135,8 @@ public class ManagerRequestController extends HttpServlet {
             }
         }
 
+        req.setAttribute("technicianDisplayMap", technicianDisplayById);
+        req.setAttribute("productDisplayMap", productDisplayById);
         req.setAttribute("technicianDisplayJson", gson.toJson(technicianDisplayById));
         req.setAttribute("productDisplayJson", gson.toJson(productDisplayById));
     }
