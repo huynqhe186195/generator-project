@@ -190,13 +190,14 @@ public class MaintenanceDAO extends DbContext {
         List<Maintenance> list = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder("""
-        SELECT m.*, pm.name AS product_name,
-               p.serial_number AS product_serial_number
-        FROM maintenances m
-        JOIN products p ON m.product_id = p.id
-        JOIN product_models pm ON m.product_id = pm.id
-        WHERE m.technician_id = ?
-    """);
+    SELECT m.*, 
+           pm.name AS product_name,
+           p.serial_number AS product_serial_number
+    FROM maintenances m
+    JOIN products p ON m.product_id = p.id
+    JOIN product_models pm ON p.model_id = pm.id
+    WHERE m.technician_id = ?
+""");
 
         if (status != null && !status.isEmpty()) {
             sql.append(" AND m.status = ? ");
