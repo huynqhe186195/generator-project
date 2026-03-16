@@ -33,3 +33,4 @@ local.properties
 Thumbs.db
 application.properties
 src/main/resources/application.properties
+db_v8.sql
