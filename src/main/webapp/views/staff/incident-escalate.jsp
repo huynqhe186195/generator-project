@@ -64,6 +64,22 @@
                                     </select>
                                 </div>
 
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Ngày hẹn sửa <span class="text-danger">*</span></label>
+                                    <input type="date" name="preferredDate" class="form-control"
+                                           value="${req.info.preferredDate}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Giờ bắt đầu</label>
+                                    <input type="time" name="startTime" class="form-control"
+                                           value="${req.info.startTime}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Giờ kết thúc</label>
+                                    <input type="time" name="endTime" class="form-control"
+                                           value="${req.info.endTime}">
+                                </div>
+
                                 <div class="col-12">
                                     <label class="form-label fw-bold">Ghi chú trình Manager</label>
                                     <textarea name="staff_note" class="form-control" rows="3" placeholder="Ví dụ: Khách báo cần xử lý gấp vào buổi sáng..."></textarea>

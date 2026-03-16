@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -361,6 +363,8 @@ public class MaintenanceDAO extends DbContext {
 
         m.setIncidentId((Integer) rs.getObject("incident_id"));
         m.setMaintenanceDate(rs.getDate("maintenance_date"));
+        m.setStartTime(rs.getTime("start_time"));
+        m.setEndTime(rs.getTime("end_time"));
         m.setType(rs.getString("type"));
         m.setDescription(rs.getString("description"));
         m.setTotalCost(rs.getDouble("total_cost"));
@@ -388,20 +392,20 @@ public class MaintenanceDAO extends DbContext {
     }
 
     public boolean insertMaintenance(Maintenance req) {
-        // Lệnh SQL chỉ chọn các cột có trong bảng
         String sql = "INSERT INTO maintenances " +
-                "(product_id, technician_id, maintenance_date, type, description, status) " +
-                "VALUES (?, ?, CURRENT_DATE, ?, ?, 'SCHEDULED')";
+                "(product_id, technician_id, maintenance_date, start_time, end_time, type, description, status) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, 'SCHEDULED')";
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-
             ps.setInt(1, req.getProductId());
             ps.setInt(2, req.getTechnicianId());
-            // Bỏ dòng set preferredDate đi vì SQL đã tự lấy CURRENT_DATE rồi
-            ps.setString(3, req.getType());
-            ps.setString(4, req.getDescription());
+            ps.setDate(3, req.getMaintenanceDate());
+            ps.setTime(4, req.getStartTime());
+            ps.setTime(5, req.getEndTime());
+            ps.setString(6, req.getType());
+            ps.setString(7, req.getDescription());
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
 
@@ -410,6 +414,43 @@ public class MaintenanceDAO extends DbContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
+    }
+
+    public boolean hasScheduleConflict(int technicianId, Date maintenanceDate, Time startTime, Time endTime) {
+        if (maintenanceDate == null || startTime == null || endTime == null) {
+            return false;
+        }
+
+        String sql = """
+                SELECT COUNT(*)
+                FROM maintenances
+                WHERE technician_id = ?
+                  AND maintenance_date = ?
+                  AND status <> 'CANCELLED'
+                  AND start_time IS NOT NULL
+                  AND end_time IS NOT NULL
+                  AND start_time < ?
+                  AND end_time > ?
+                """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, technicianId);
+            ps.setDate(2, maintenanceDate);
+            ps.setTime(3, endTime);
+            ps.setTime(4, startTime);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return false;
     }
 

@@ -41,8 +41,17 @@ public class RequestManagerController extends HttpServlet {
             String priority = req.getParameter("priority");
             String type = req.getParameter("type");
             String staffNote = req.getParameter("staff_note");
+            String preferredDate = req.getParameter("preferredDate");
+            String startTime = req.getParameter("startTime");
+            String endTime = req.getParameter("endTime");
 
             long requestId = Long.parseLong(idStr);
+
+            if (startTime != null && !startTime.isBlank() && endTime != null && !endTime.isBlank()
+                    && endTime.compareTo(startTime) <= 0) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=invalid_time_range");
+                return;
+            }
 
             // 2. Lấy Request cũ từ DB để cập nhật thêm thông tin vào JSON
             SystemRequest sysReq = requestServices.findById(requestId);
@@ -55,6 +64,9 @@ public class RequestManagerController extends HttpServlet {
             info.put("priority", priority);
             info.put("maintenanceType", type);
             info.put("staffNote", staffNote);
+            info.put("preferredDate", preferredDate);
+            info.put("startTime", startTime);
+            info.put("endTime", endTime);
 
 
             // Đóng gói lại thành JSON

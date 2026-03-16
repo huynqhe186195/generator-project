@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.sql.Timestamp;
 import java.sql.Date;
+import java.sql.Time;
 
 public class Maintenance {
 
@@ -13,6 +14,8 @@ public class Maintenance {
     private Integer incidentId;   // incident_id (nullable)
 
     private Date maintenanceDate;
+    private Time startTime;
+    private Time endTime;
     @SerializedName("issueType")// maintenance_date
     private String type;          // PERIODIC | REPAIR | INSPECTION
     private String description;   // description
@@ -108,6 +111,12 @@ public class Maintenance {
 
     public Date getMaintenanceDate() { return maintenanceDate; }
     public void setMaintenanceDate(Date maintenanceDate) { this.maintenanceDate = maintenanceDate; }
+
+    public Time getStartTime() { return startTime; }
+    public void setStartTime(Time startTime) { this.startTime = startTime; }
+
+    public Time getEndTime() { return endTime; }
+    public void setEndTime(Time endTime) { this.endTime = endTime; }
 
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
