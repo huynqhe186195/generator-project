@@ -2,11 +2,15 @@ package com.generatorproject.controller.manager;
 
 import com.generatorproject.services.IRequestServices;
 import com.generatorproject.services.IUserServices;
+import com.generatorproject.services.IProductServices;
 import com.generatorproject.services.RequestServices;
 import com.generatorproject.model.SystemRequest;
+import com.generatorproject.model.Product;
 import com.generatorproject.model.Users;
 import com.generatorproject.services.UserServices;
+import com.generatorproject.services.ProductServices;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -33,10 +37,14 @@ public class ManagerRequestController extends HttpServlet {
 
     private final IRequestServices requestService;
     private final IUserServices userService;
+    private final IProductServices productService;
+    private final Gson gson;
 
     public ManagerRequestController() {
         requestService = new RequestServices();
         userService = new UserServices();
+        productService = new ProductServices();
+        gson = new Gson();
     }
 
     @Override
@@ -50,11 +58,14 @@ public class ManagerRequestController extends HttpServlet {
         String box = req.getParameter("box");
         if (box == null || box.isBlank()) box = "sent";
 
+        List<SystemRequest> currentRequests;
+
         if ("inbox".equalsIgnoreCase(box)) {
             String status = req.getParameter("status");
             if (status == null || status.isBlank()) status = "WAITING_MANAGER";
 
             List<SystemRequest> inbox = requestService.findByReceiverRole("Manager", status);
+            currentRequests = inbox;
             req.setAttribute("requests", inbox);
             req.setAttribute("box", "inbox");
 
@@ -69,11 +80,77 @@ public class ManagerRequestController extends HttpServlet {
 
         } else {
             List<SystemRequest> myRequests = requestService.findBySenderId((long) manager.getId());
+            currentRequests = myRequests;
             req.setAttribute("requests", myRequests);
             req.setAttribute("box", "sent");
         }
 
+        attachReferenceDisplayData(req, currentRequests);
+
         req.getRequestDispatcher("/views/manager/request/request-history.jsp").forward(req, resp);
+    }
+
+    private void attachReferenceDisplayData(HttpServletRequest req, List<SystemRequest> requests) {
+        Map<Long, String> technicianDisplayById = new HashMap<>();
+        Map<Long, String> productDisplayById = new HashMap<>();
+
+        if (requests != null) {
+            for (SystemRequest item : requests) {
+                if (item == null || item.getRequestData() == null || item.getRequestData().trim().isEmpty()) continue;
+
+                Map<String, Object> data;
+                try {
+                    data = gson.fromJson(item.getRequestData(), new TypeToken<Map<String, Object>>() {}.getType());
+                } catch (Exception ignored) {
+                    continue;
+                }
+                if (data == null) continue;
+
+                Long technicianId = asLong(data.get("technicianId"));
+                if (technicianId != null && !technicianDisplayById.containsKey(technicianId)) {
+                    Users technician = userService.findUserById(technicianId.intValue());
+                    String technicianName = (technician != null && technician.getFullName() != null
+                            && !technician.getFullName().trim().isEmpty())
+                            ? technician.getFullName().trim()
+                            : "Không rõ";
+                    technicianDisplayById.put(technicianId, technicianId + " - " + technicianName);
+                }
+
+                Long productId = asLong(data.get("productId"));
+                if (productId != null && !productDisplayById.containsKey(productId)) {
+                    Product product = productService.getProductById(productId.intValue());
+
+                    String modelName = (product != null && product.getModelName() != null
+                            && !product.getModelName().trim().isEmpty())
+                            ? product.getModelName().trim()
+                            : "Sản phẩm #" + productId;
+
+                    String serial = (product != null && product.getSerialNumber() != null
+                            && !product.getSerialNumber().trim().isEmpty())
+                            ? product.getSerialNumber().trim()
+                            : "N/A";
+
+                    productDisplayById.put(productId, modelName + " - " + serial);
+                }
+            }
+        }
+
+        req.setAttribute("technicianDisplayMap", technicianDisplayById);
+        req.setAttribute("productDisplayMap", productDisplayById);
+        req.setAttribute("technicianDisplayJson", gson.toJson(technicianDisplayById));
+        req.setAttribute("productDisplayJson", gson.toJson(productDisplayById));
+    }
+
+    private Long asLong(Object raw) {
+        if (raw == null) return null;
+        if (raw instanceof Number) return ((Number) raw).longValue();
+        try {
+            String s = String.valueOf(raw).trim();
+            if (s.isEmpty()) return null;
+            return Long.parseLong(s);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 

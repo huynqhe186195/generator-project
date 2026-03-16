@@ -7,12 +7,25 @@
 <div class="card shadow-sm">
   <div class="card-body">
 
+    <c:if test="${param.msg == 'saved'}">
+      <div class="alert alert-success">
+        Đã lưu báo cáo hiện trường.
+      </div>
+    </c:if>
+
+    <c:if test="${param.error == 'noreport'}">
+      <div class="alert alert-danger">
+        Vui lòng nhập báo cáo hiện trường trước khi hoàn thành.
+      </div>
+    </c:if>
+
     <!-- THÔNG TIN CHUNG -->
     <div class="row mb-3">
       <div class="col-md-6">
         <p><strong>Serial:</strong> ${task.productSerialNumber}</p>
         <p><strong>Tên máy:</strong> ${task.productName}</p>
       </div>
+
       <div class="col-md-6">
         <p><strong>Ngày bảo trì:</strong> ${task.maintenanceDate}</p>
         <p><strong>Loại:</strong> ${task.type}</p>
@@ -27,7 +40,6 @@
       </div>
     </div>
 
-    <!-- ✅ THÊM enctype để upload ảnh -->
     <form method="post"
           action="<c:url value='/technical/task-report'/>"
           enctype="multipart/form-data">
@@ -37,9 +49,7 @@
       <!-- MÔ TẢ BAN ĐẦU -->
       <div class="mb-3">
         <label class="form-label fw-bold">Mô tả ban đầu</label>
-        <textarea rows="4"
-                  class="form-control"
-                  readonly>${task.description}</textarea>
+        <textarea rows="4" class="form-control" readonly>${task.description}</textarea>
       </div>
 
       <!-- BÁO CÁO HIỆN TRƯỜNG -->
@@ -53,7 +63,6 @@
                       class="form-control"
                       required>${task.actualDescription}</textarea>
           </c:when>
-
           <c:otherwise>
             <textarea rows="5"
                       class="form-control"
@@ -62,36 +71,58 @@
         </c:choose>
       </div>
 
-      <!-- ✅ ẢNH HIỆN TRƯỜNG (CHỈ CHO SCHEDULED CHỌN THÊM) -->
+      <!-- UPLOAD ẢNH BEFORE -->
       <c:if test="${task.status == 'SCHEDULED'}">
         <div class="mb-3">
-          <label class="form-label fw-bold">Ảnh hiện trường (chọn nhiều ảnh)</label>
+          <label class="form-label fw-bold">Ảnh hiện trường trước sửa (BEFORE)</label>
           <input type="file"
                  name="siteImages"
                  class="form-control"
                  accept="image/*"
                  multiple />
-          <small class="text-muted">Chọn 1 hoặc nhiều ảnh để upload cùng lúc khi bấm “Lưu báo cáo”.</small>
+          <small class="text-muted">
+            Chọn 1 hoặc nhiều ảnh hiện trạng trước khi sửa chữa.
+          </small>
         </div>
       </c:if>
 
-      <!-- ✅ HIỂN THỊ ẢNH ĐÃ UPLOAD -->
-      <c:if test="${not empty images}">
+      <!-- HIỂN THỊ ẢNH BEFORE -->
+      <c:if test="${not empty beforeImages}">
         <div class="mt-3">
-          <h5 class="fw-bold">📷 Ảnh hiện trường</h5>
+          <h5 class="fw-bold">📷 Ảnh hiện trường trước sửa</h5>
           <div class="row">
-            <c:forEach items="${images}" var="img">
-              <div class="col-md-3 mb-3">
-                <img src="<c:url value='/${img.imagePath}'/>"
-                     class="img-fluid rounded border"
-                     style="height:160px; object-fit:cover; width:100%;" />
-              </div>
+            <c:forEach items="${beforeImages}" var="img">
+              <c:if test="${img.imageType == 'BEFORE'}">
+                <div class="col-md-3 mb-3">
+                  <img src="<c:url value='/${img.imagePath}'/>"
+                       class="img-fluid rounded border"
+                       style="height:160px; object-fit:cover; width:100%;" />
+                </div>
+              </c:if>
             </c:forEach>
           </div>
         </div>
       </c:if>
 
-      <!-- VẬT TƯ ĐÃ SỬ DỤNG -->
+      <!-- HIỂN THỊ ẢNH AFTER -->
+      <c:if test="${not empty afterImages   }">
+        <div class="mt-4">
+          <h5 class="fw-bold">📷 Ảnh sau sửa chữa</h5>
+          <div class="row">
+            <c:forEach items="${afterImages}" var="img">
+              <c:if test="${img.imageType == 'AFTER'}">
+                <div class="col-md-3 mb-3">
+                  <img src="<c:url value='/${img.imagePath}'/>"
+                       class="img-fluid rounded border"
+                       style="height:160px; object-fit:cover; width:100%;" />
+                </div>
+              </c:if>
+            </c:forEach>
+          </div>
+        </div>
+      </c:if>
+
+      <!-- VẬT TƯ -->
       <c:if test="${not empty materials}">
         <div class="mt-4">
           <h5 class="fw-bold">🧰 Vật tư đã sử dụng</h5>
@@ -111,9 +142,7 @@
                   <td>${st.index + 1}</td>
                   <td>${m.sparePartName}</td>
                   <td>${m.quantityUsed}</td>
-                  <td>
-                    <fmt:formatNumber value="${m.costAtTime}" type="number"/> đ
-                  </td>
+                  <td><fmt:formatNumber value="${m.costAtTime}" type="number"/> đ</td>
                 </tr>
               </c:forEach>
             </tbody>
@@ -121,42 +150,50 @@
 
           <c:set var="partsTotal" value="0" />
           <c:forEach var="m" items="${materials}">
-              <c:set var="partsTotal" value="${partsTotal + m.costAtTime}" />
+            <c:set var="partsTotal" value="${partsTotal + m.costAtTime}" />
           </c:forEach>
 
           <div class="d-flex justify-content-end mt-2">
-              <div class="fw-bold">
-                  Tổng giá vật tư:
-                  <fmt:formatNumber value="${partsTotal}" type="number"/> đ
+            <div style="min-width: 320px;">
+              <div class="d-flex justify-content-between border-bottom py-1">
+                <span>Tổng vật tư:</span>
+                <strong><fmt:formatNumber value="${partsTotal}" type="number"/> đ</strong>
               </div>
+
+              <div class="d-flex justify-content-between border-bottom py-1">
+                <span>Chi phí công:</span>
+                <strong><fmt:formatNumber value="${task.laborCost}" type="number"/> đ</strong>
+              </div>
+
+              <div class="d-flex justify-content-between py-2">
+                <span><strong>Tổng chi phí:</strong></span>
+                <strong class="text-danger">
+                  <fmt:formatNumber value="${partsTotal + task.laborCost}" type="number"/> đ
+                </strong>
+              </div>
+            </div>
           </div>
         </div>
       </c:if>
 
-      <div class="d-flex justify-content-between">
-        <a href="<c:url value='/technical/my-tasks'/>"
-           class="btn btn-secondary">
+      <div class="d-flex justify-content-between mt-4">
+        <a href="<c:url value='/technical/my-tasks'/>" class="btn btn-secondary">
           ← Quay lại
         </a>
 
-        <!-- CHỈ SCHEDULED MỚI CÓ HÀNH ĐỘNG -->
         <c:if test="${task.status == 'SCHEDULED'}">
           <div>
-
-            <!-- LƯU BÁO CÁO -->
             <button type="submit" class="btn btn-primary">
               💾 Lưu báo cáo
             </button>
 
-            <!-- ===== REPAIR ===== -->
             <c:if test="${task.type == 'REPAIR'}">
               <a href="<c:url value='/technical/repair-report?id=${task.id}'/>"
                  class="btn btn-warning ms-2">
-                🔧 Chọn vật tư
+                🔧 Sang màn sửa chữa
               </a>
             </c:if>
 
-            <!-- ===== PERIODIC / INSPECTION ===== -->
             <c:if test="${task.type != 'REPAIR'}">
               <button type="submit"
                       class="btn btn-success ms-2"
@@ -165,7 +202,6 @@
                 ✅ Hoàn thành
               </button>
             </c:if>
-
           </div>
         </c:if>
       </div>
