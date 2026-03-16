@@ -93,14 +93,14 @@ public class MaintenanceSparePartDAO extends DbContext {
 
             // 4) Recalc total_cost = SUM(cost_at_time)
             String recalcSQL = """
-            UPDATE maintenances
-            SET total_cost = (
-                SELECT IFNULL(SUM(cost_at_time),0)
-                FROM maintenance_spare_parts
-                WHERE maintenance_id = ?
-            )
-            WHERE id = ?
-        """;
+                UPDATE maintenances
+                SET total_cost = IFNULL(labor_cost, 0) + (
+                 SELECT IFNULL(SUM(cost_at_time), 0)
+                      FROM maintenance_spare_parts
+                   WHERE maintenance_id = ?
+                  )
+                  WHERE id = ?
+                    """;
             PreparedStatement ps4 = conn.prepareStatement(recalcSQL);
             ps4.setInt(1, maintenanceId);
             ps4.setInt(2, maintenanceId);
@@ -163,14 +163,14 @@ public class MaintenanceSparePartDAO extends DbContext {
 
             // 4) Recalc total_cost
             String recalcSQL = """
-            UPDATE maintenances
-            SET total_cost = (
-                SELECT IFNULL(SUM(cost_at_time),0)
+                UPDATE maintenances
+                    SET total_cost = IFNULL(labor_cost, 0) + (
+                        SELECT IFNULL(SUM(cost_at_time), 0)
                 FROM maintenance_spare_parts
-                WHERE maintenance_id = ?
-            )
-            WHERE id = ?
-        """;
+                      WHERE maintenance_id = ?
+                          )
+                          WHERE id = ?
+                    """;
             PreparedStatement ps4 = conn.prepareStatement(recalcSQL);
             ps4.setInt(1, maintenanceId);
             ps4.setInt(2, maintenanceId);

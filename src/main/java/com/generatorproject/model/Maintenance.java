@@ -22,17 +22,33 @@ public class Maintenance {
     private Timestamp createdAt;  // created_at
     private Integer createdBy;    // created_by
 
-
+    private Timestamp completedAt;
     private String customerName;
     private String customerPhone;
 
+
+    public Timestamp getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Timestamp completedAt) {
+        this.completedAt = completedAt;
+    }
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String customerName) { this.customerName = customerName; }
 
     public String getCustomerPhone() { return customerPhone; }
     public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
 
+    private double laborCost;
 
+    public double getLaborCost() {
+        return laborCost;
+    }
+
+    public void setLaborCost(double laborCost) {
+        this.laborCost = laborCost;
+    }
     private String actualDescription;
 
     public String getActualDescription() {
