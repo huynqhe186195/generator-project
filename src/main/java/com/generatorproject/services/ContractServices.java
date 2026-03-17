@@ -107,4 +107,9 @@ public class ContractServices implements IContractServices {
         return contractDAO.assignSerialToContract(contractId, serialNumber, modelId, purchaseDate, manufactureYear,
                 currentLocation);
     }
+    @Override
+    public void updateContractFilePath(Long contractId, String filePath) {
+        contractDAO.updateFilePath(contractId, filePath);
+    }
+
 }
