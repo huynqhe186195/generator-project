@@ -60,6 +60,7 @@
 </head>
 <body>
 
+<%-- Dùng container-xl để có đủ không gian rộng cho 2 cột chạy song song --%>
 <div class="container-xl py-4">
 
     <%-- CÁC NÚT ĐIỀU HƯỚNG TRÊN CÙNG (ẨN KHI IN) --%>
@@ -82,11 +83,12 @@
         <div class="alert alert-primary alert-dismissible fade show shadow-sm no-print"><i class="fas fa-paper-plane me-2"></i> Đã gửi Email kèm Link thanh toán VNPay cho khách hàng! <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     </c:if>
 
+    <%-- ========================================== --%>
+    <%-- GRID 2 CỘT: HÓA ĐƠN (TRÁI) - THAO TÁC (PHẢI) --%>
+    <%-- ========================================== --%>
     <div class="row g-4">
 
-        <%-- ========================================== --%>
-        <%-- CỘT TRÁI (8/12): TỜ HÓA ĐƠN A4             --%>
-        <%-- ========================================== --%>
+        <%-- CỘT TRÁI (8/12): TỜ HÓA ĐƠN A4 --%>
         <div class="col-lg-8">
             <div class="invoice-paper">
                 <%-- HEADER HÓA ĐƠN --%>
@@ -155,17 +157,6 @@
                                         <td class="text-end fw-bold text-primary"><fmt:formatNumber value="${detail.totalPrice}" pattern="#,###"/></td>
                                     </tr>
                                 </c:forEach>
-
-                                <%-- Dòng bổ sung: Phí nhân công (Nếu có) --%>
-                                <c:if test="${laborCost > 0}">
-                                    <tr style="background-color: #f8fafc;">
-                                        <td class="text-center fw-bold text-muted">*</td>
-                                        <td><div class="fw-bold text-dark">Phí nhân công sửa chữa / bảo trì</div></td>
-                                        <td class="text-center"><span class="badge border border-secondary text-dark px-2">1</span></td>
-                                        <td class="text-end"><fmt:formatNumber value="${laborCost}" pattern="#,###"/></td>
-                                        <td class="text-end fw-bold text-primary"><fmt:formatNumber value="${laborCost}" pattern="#,###"/></td>
-                                    </tr>
-                                </c:if>
                             </c:when>
                             <c:otherwise>
                                 <tr>
@@ -190,27 +181,15 @@
                         <strong>Phương thức thanh toán:</strong> Chuyển khoản qua Cổng VNPay.<br>
                         <strong>Thời hạn thanh toán:</strong> <fmt:formatDate value="${invoice.dueDate}" pattern="dd/MM/yyyy" /><br>
                         <c:if test="${invoice.paymentStatus == 'PAID' && not empty invoice.note}">
-                            <strong>Mã giao dịch VNPay:</strong> <em class="text-primary">${invoice.note}</em>
+                            <strong>Mã giao dịch VNPay:</strong> <em>${invoice.note}</em>
                         </c:if>
                     </div>
 
                     <div class="col-sm-6 col-12">
                         <table class="table table-sm table-borderless summary-row text-end">
-                            <%-- Chỉ tách bạch 2 dòng này ra khi có danh sách vật tư --%>
-                            <c:if test="${not empty quoteDetails}">
-                                <tr>
-                                    <td class="text-muted">Tổng tiền vật tư:</td>
-                                    <td class="fw-bold"><fmt:formatNumber value="${partsTotal}" pattern="#,###"/> đ</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted border-bottom pb-3">Phí nhân công:</td>
-                                    <td class="fw-bold border-bottom pb-3"><fmt:formatNumber value="${laborCost}" pattern="#,###"/> đ</td>
-                                </tr>
-                            </c:if>
-
                             <tr>
-                                <td class="text-muted pt-3">Cộng tiền dịch vụ (Trước thuế):</td>
-                                <td class="fw-bold pt-3"><fmt:formatNumber value="${invoice.subtotal}" pattern="#,###"/> đ</td>
+                                <td class="text-muted">Cộng tiền dịch vụ:</td>
+                                <td class="fw-bold"><fmt:formatNumber value="${invoice.subtotal}" pattern="#,###"/> đ</td>
                             </tr>
                             <tr>
                                 <td class="text-muted border-bottom pb-3">Thuế GTGT (VAT <fmt:formatNumber value="${invoice.taxRate}" pattern="#.#"/>%):</td>
@@ -239,9 +218,7 @@
             </div>
         </div>
 
-        <%-- ========================================== --%>
-        <%-- CỘT PHẢI (4/12): PANEL THAO TÁC CỦA STAFF    --%>
-        <%-- ========================================== --%>
+        <%-- CỘT PHẢI (4/12): PANEL THAO TÁC CỦA STAFF (Luôn bám dính khi cuộn) --%>
         <div class="col-lg-4 no-print">
             <c:if test="${invoice.paymentStatus == 'UNPAID'}">
                 <div class="action-panel position-sticky" style="top: 20px;">
@@ -271,6 +248,7 @@
                         </div>
 
                         <form action="<c:url value='/staff/invoice/detail'/>" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn gửi Yêu cầu thanh toán VNPay cho khách hàng này không?');">
+                                <%-- Đổi action thành send_vnpay --%>
                             <input type="hidden" name="action" value="send_vnpay">
                             <input type="hidden" name="invoiceId" value="${invoice.id}">
 

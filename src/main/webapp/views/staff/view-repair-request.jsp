@@ -15,9 +15,6 @@
     </div>
 
     <div class="row">
-        <%-- =============================================== --%>
-        <%-- CỘT TRÁI: THÔNG TIN YÊU CẦU & CHI TIẾT VẬT TƯ     --%>
-        <%-- =============================================== --%>
         <div class="col-lg-8">
             <div class="card shadow mb-4 border-0">
                 <div class="card-header bg-white py-3">
@@ -72,6 +69,7 @@
                                 <th class="py-3 ps-4 text-center">STT</th>
                                 <th class="py-3">Vật tư</th>
                                 <th class="py-3 text-center">Số lượng</th>
+                                <%-- THÊM CỘT ĐƠN GIÁ MỚI --%>
                                 <th class="py-3 text-end">Đơn giá</th>
                                 <th class="py-3 text-end pe-4">Thành tiền</th>
                             </tr>
@@ -89,6 +87,7 @@
                                             <td class="ps-4 text-center fw-bold text-secondary">${loop.index + 1}</td>
                                             <td>
                                                 <div class="fw-bold text-dark">
+                                                        <%-- Xử lý an toàn: Nếu không có partName thì hiển thị tạm bằng ID --%>
                                                     <c:choose>
                                                         <c:when test="${not empty mat.partName}">
                                                             ${mat.partName}
@@ -103,11 +102,13 @@
                                             <td class="text-center">
                                                 <span class="badge bg-secondary rounded-pill px-3">${mat.quantityUsed}</span>
                                             </td>
-                                                <%-- Đơn giá --%>
+
+                                                <%-- HIỂN THỊ ĐƠN GIÁ (Dữ liệu mới) --%>
                                             <td class="text-end fw-bold text-muted">
                                                 <fmt:formatNumber value="${mat.unitPrice}" pattern="#,###"/> đ
                                             </td>
-                                                <%-- Thành tiền của từng vật tư --%>
+
+                                                <%-- HIỂN THỊ TỔNG TIỀN (Số lượng * Đơn giá) --%>
                                             <td class="text-end pe-4 fw-bold text-primary">
                                                 <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> đ
                                             </td>
@@ -122,9 +123,6 @@
             </div>
         </div>
 
-        <%-- =============================================== --%>
-        <%-- CỘT PHẢI: TỔNG CỘNG CHI PHÍ & NÚT THAO TÁC        --%>
-        <%-- =============================================== --%>
         <div class="col-lg-4">
             <div class="card shadow mb-4 border-0 position-sticky" style="top: 20px;">
                 <div class="card-header bg-white py-3 text-center">
@@ -133,44 +131,41 @@
                     </h6>
                 </div>
                 <div class="card-body bg-light">
-
-                    <%-- THÊM LẠI CÁC TRƯỜNG TÍNH TOÁN --%>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Tổng tiền vật tư:</span>
-                        <span class="fw-bold text-dark">
-                            <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> đ
-                        </span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Phí nhân công:</span>
-                        <span class="fw-bold text-dark">
-                            <fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> đ
-                        </span>
-                    </div>
-
-                    <hr>
-
-                    <%-- SỬ DỤNG GRAND TOTAL CHO TỔNG THANH TOÁN --%>
+<%--                    <div class="d-flex justify-content-between mb-3">--%>
+<%--                        <span class="text-muted">Tổng tiền vật tư:</span>--%>
+<%--                        <span class="fw-bold text-dark">--%>
+<%--                            <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ--%>
+<%--                        </span>--%>
+<%--                    </div>--%>
+<%--                    <div class="d-flex justify-content-between mb-3">--%>
+<%--                        <span class="text-muted">Phí nhân công:</span>--%>
+<%--                        <span class="fw-bold text-dark">--%>
+<%--                            <fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> VNĐ--%>
+<%--                        </span>--%>
+<%--                    </div>--%>
+<%--                    <hr>--%>
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <span class="text-uppercase fw-bold text-secondary">Tổng thanh toán:</span>
+                        <span class="text-uppercase fw-bold text-secondary">Thành tiền:</span>
                         <h4 class="fw-bold text-danger mb-0">
-                            <fmt:formatNumber value="${repairRequest.grandTotal}" pattern="#,###"/> đ
+                            <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ
                         </h4>
                     </div>
 
-                    <div class="d-grid gap-2 mt-4">
-                        <c:choose>
-                            <c:when test="${currentStatus == 'WAITING_STAFF'}">
-                                <button type="button" class="btn btn-success btn-lg" onclick="submitToManager()">
-                                    <i class="fas fa-check-circle me-1"></i> Tạo Báo Giá & Trình Manager
-                                </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectRequest()">
-                                    <i class="fas fa-times-circle me-1"></i> Từ chối / Báo lại KTV
-                                </button>
-                            </c:when>
-                        </c:choose>
-                    </div>
+    <div class="d-grid gap-2 mt-4">
+        <c:choose>
+            <%-- Sửa lại thành currentStatus --%>
+            <c:when test="${currentStatus == 'WAITING_STAFF'}">
+                <button type="button" class="btn btn-success btn-lg" onclick="submitToManager()">
+                    <i class="fas fa-check-circle me-1"></i> Tạo Báo Giá & Trình Manager
+                </button>
+                <button type="button" class="btn btn-outline-danger" onclick="rejectRequest()">
+                    <i class="fas fa-times-circle me-1"></i> Từ chối / Báo lại KTV
+                </button>
+            </c:when>
+
+
+        </c:choose>
+    </div>
                 </div>
             </div>
         </div>
