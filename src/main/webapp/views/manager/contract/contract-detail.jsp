@@ -230,7 +230,6 @@
                     </button>
                     <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
                     <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
-                    <div class="small text-muted mt-2">Nhấn vào tên để xem danh sách device khách hàng sở hữu trong hợp đồng này.</div>
 
                     <div id="ownerDetailPanel" class="owner-detail-panel">
 
