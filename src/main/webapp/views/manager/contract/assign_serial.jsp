@@ -456,11 +456,17 @@
                                 bindRemoveButtons();
                                 addMessage('Mình đã tự điền ' + devices.length + ' thiết bị vào bảng bên dưới.', 'bot');
 
-                                const unmatchedRows = Array.prototype.filter.call(tableBody.rows, function (row) {
-                                    return row.dataset && row.dataset.modelUnmatched === 'true';
+                                const unmatchedRows = [];
+                                Array.prototype.forEach.call(tableBody.rows, function (row, idx) {
+                                    if (!(row.dataset && row.dataset.modelUnmatched === 'true')) {
+                                        return;
+                                    }
+                                    const modelName = row.dataset.aiModelName || '(không rõ)';
+                                    row.querySelector('select[name="modelIds"]').classList.add('is-invalid');
+                                    unmatchedRows.push('Dòng ' + (idx + 1) + ' - cột Model: "' + modelName + '" không tồn tại trong hệ thống');
                                 });
                                 if (unmatchedRows.length > 0) {
-                                    addMessage('Có ' + unmatchedRows.length + ' thiết bị chưa map được model trong hệ thống. Vui lòng chọn model thủ công trước khi lưu.', 'bot');
+                                    addMessage('AI bỏ trống các giá trị Model không hợp lệ để tránh fill sai. Vui lòng kiểm tra các lỗi sau:\n- ' + unmatchedRows.join('\n- '), 'bot');
                                 }
                             }
 
