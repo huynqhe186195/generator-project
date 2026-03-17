@@ -202,7 +202,6 @@
                         <button type="button" class="owner-name-btn" id="ownerNameToggle">
                             ${u.fullName}
                         </button>
-                        <div class="small text-muted">Nhấn vào tên để xem chi tiết khách hàng và thiết bị của khách trong hợp đồng hiện tại.</div>
 
                         <div id="ownerDetailPanel" class="owner-detail-panel">
                             <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
