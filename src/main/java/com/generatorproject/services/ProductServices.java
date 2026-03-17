@@ -1,6 +1,5 @@
 package com.generatorproject.services;
 
-import com.generatorproject.dao.GenericDAO;
 import com.generatorproject.dao.ProductDAO;
 import com.generatorproject.model.Product;
 
