@@ -366,8 +366,10 @@
 
                 const addRowBtn = document.getElementById('addRowBtn');
                 const tableBody = document.getElementById('deviceTableBody');
+                const deviceForm = document.getElementById('deviceForm');
                 const contractNumberView = document.getElementById('contractNumberView');
                 const aiSavedSourceFile = document.getElementById('aiSavedSourceFile');
+                const contractIdInput = document.querySelector('input[name="contractId"]');
 
                 const aiSourceFile = document.getElementById('aiSourceFile');
                 const geminiApiKey = document.getElementById('geminiApiKey');
@@ -380,10 +382,81 @@
                 const chatStatus = document.getElementById('chatStatus');
 
                 const chatHistory = [];
+                const draftStorageKey = 'assignSerialDraft_' + (contractIdInput ? contractIdInput.value : 'unknown');
+                const hasServerDraft = ${not empty draftRows};
+                const hasError = ${not empty error};
                 const modelOptionsHtml = (function () {
                     const firstSelect = document.querySelector('select[name="modelIds"]');
                     return firstSelect ? firstSelect.innerHTML : '<option value="">-- Chọn model --</option>';
                 })();
+
+                function collectDraftRows() {
+                    return Array.prototype.map.call(tableBody.rows, function (row) {
+                        return {
+                            modelId: row.querySelector('select[name="modelIds"]')?.value || '',
+                            serialNumber: row.querySelector('input[name="serialNumbers"]')?.value || '',
+                            purchaseDate: row.querySelector('input[name="purchaseDates"]')?.value || '',
+                            manufactureYear: row.querySelector('input[name="manufactureYears"]')?.value || '',
+                            currentLocation: row.querySelector('input[name="currentLocations"]')?.value || ''
+                        };
+                    });
+                }
+
+                function persistDraft() {
+                    try {
+                        const payload = {
+                            rows: collectDraftRows(),
+                            aiSavedSourceFile: aiSavedSourceFile.value || ''
+                        };
+                        sessionStorage.setItem(draftStorageKey, JSON.stringify(payload));
+                    } catch (ignore) {
+                    }
+                }
+
+                function isDefaultEmptyRowOnly() {
+                    if (tableBody.rows.length !== 1) {
+                        return false;
+                    }
+                    const row = tableBody.rows[0];
+                    return !row.querySelector('input[name="serialNumbers"]').value
+                            && !row.querySelector('input[name="purchaseDates"]').value
+                            && !row.querySelector('input[name="manufactureYears"]').value
+                            && !row.querySelector('input[name="currentLocations"]').value
+                            && !row.querySelector('select[name="modelIds"]').value;
+                }
+
+                function restoreDraftFromStorageIfNeeded() {
+                    if (!hasError || hasServerDraft) {
+                        return;
+                    }
+
+                    if (!isDefaultEmptyRowOnly()) {
+                        return;
+                    }
+
+                    try {
+                        const raw = sessionStorage.getItem(draftStorageKey);
+                        if (!raw) {
+                            return;
+                        }
+                        const draft = JSON.parse(raw);
+                        const rows = Array.isArray(draft.rows) ? draft.rows : [];
+                        if (rows.length === 0) {
+                            return;
+                        }
+
+                        tableBody.innerHTML = '';
+                        rows.forEach(function (d) {
+                            tableBody.appendChild(createRow(d));
+                        });
+                        if (draft.aiSavedSourceFile) {
+                            aiSavedSourceFile.value = draft.aiSavedSourceFile;
+                        }
+                        bindRemoveButtons();
+                        addMessage('Đã khôi phục dữ liệu tạm sau lỗi duplicate. Bạn không cần trích xuất AI lại.', 'bot');
+                    } catch (ignore) {
+                    }
+                }
 
                 function addMessage(text, type) {
                     const msg = document.createElement('div');
@@ -443,8 +516,13 @@
                         tr.querySelector('input[name="currentLocations"]').value = device.currentLocation || '';
                         tr.querySelector('input[name="purchaseDates"]').value = device.purchaseDate || '';
 
+                        const modelIdRaw = (device && device.modelId != null) ? String(device.modelId).trim() : '';
+                        if (modelIdRaw) {
+                            modelSelect.value = modelIdRaw;
+                        }
+
                         const modelNameRaw = (device && device.modelName != null) ? String(device.modelName).trim() : '';
-                        if (modelNameRaw) {
+                        if (modelNameRaw && !modelSelect.value) {
                             const option = Array.prototype.find.call(modelSelect.options, function (op) {
                                 return op.textContent && op.textContent.trim().toLowerCase() === modelNameRaw.toLowerCase();
                             });
@@ -534,6 +612,7 @@
                                     tableBody.appendChild(createRow(d));
                                 });
                                 bindRemoveButtons();
+                                persistDraft();
                                 addMessage('Mình đã tự điền ' + devices.length + ' thiết bị vào bảng bên dưới.', 'bot');
 
                                 const unmatchedRows = [];
@@ -552,6 +631,7 @@
 
                             if (data.savedSourceFile) {
                                 aiSavedSourceFile.value = data.savedSourceFile;
+                                persistDraft();
                                 addMessage('Đã lưu file nguồn tạm: ' + data.savedSourceFile + '. Khi bấm Lưu danh sách thiết bị, hệ thống mới cập nhật vào hợp đồng.', 'bot');
                             }
 
@@ -586,6 +666,7 @@
                 addRowBtn.addEventListener('click', function () {
                     tableBody.appendChild(createRow());
                     bindRemoveButtons();
+                    persistDraft();
                 });
 
                 attachFileBtn.addEventListener('click', function () {
@@ -598,6 +679,13 @@
                     aiSourceFile.value = '';
                     updateFilePill();
                 });
+
+                tableBody.addEventListener('input', persistDraft);
+                tableBody.addEventListener('change', persistDraft);
+                deviceForm.addEventListener('submit', persistDraft);
+
+                restoreDraftFromStorageIfNeeded();
+                persistDraft();
 
                 sendChatBtn.addEventListener('click', async function () {
                     await askChatbot();
