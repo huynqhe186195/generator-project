@@ -436,7 +436,11 @@
 
                             <td class="text-end pe-3">
                                 <div class="d-flex justify-content-end gap-2 align-items-center">
-
+<a href="<c:url value='/user/contracts?action=detail&productId=${p.id}'/>"
+   class="btn btn-sm btn-outline-primary btn-pill px-3 shadow-sm"
+   title="Xem hợp đồng của thiết bị này">
+    <i class="fas fa-file-contract me-1"></i>Hợp đồng
+</a>
                                         <%-- NÚT XEM LỊCH SỬ BÁO GIÁ (Luôn hiển thị cho mọi máy) --%>
                                     <a href="<c:url value='/user/quote-history?productId=${p.id}'/>"
                                        class="btn btn-sm btn-outline-info btn-pill px-3 shadow-sm"

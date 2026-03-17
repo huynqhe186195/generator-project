@@ -13,6 +13,10 @@ public class ProductServices implements IProductServices {
         productDAO = new ProductDAO();
     }
 
+    public Product findByIdAndCustomerId(Long productId, Long customerId) {
+        return productDAO.findByIdAndCustomerId(productId, customerId);
+    }
+
     @Override
     public Product findProductBySerial(String serialNumber) {
         return productDAO.findBySerial(serialNumber);
@@ -94,3 +98,5 @@ public class ProductServices implements IProductServices {
         return productDAO.findProductDetailBySerial(serial);
     }
 }
+
+

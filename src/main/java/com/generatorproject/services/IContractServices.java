@@ -51,4 +51,6 @@ public interface IContractServices {
             Date purchaseDate,
             Integer manufactureYear,
             String currentLocation) throws Exception;
+
+    Contract findContractDetailForCustomer(Long contractId, Long customerId);
 }

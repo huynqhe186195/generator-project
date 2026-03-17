@@ -488,6 +488,18 @@ public class ProductDAO extends GenericDAO<Product> {
 
         return count(sql, searchPattern, searchPattern);
     }
+    public Product findByIdAndCustomerId(Long productId, Long customerId) {
+        String sql = """
+        SELECT p.*, pm.name AS model_name, b.name AS brand_name
+        FROM products p
+        LEFT JOIN product_models pm ON p.model_id = pm.id
+        LEFT JOIN brands b ON pm.brand_id = b.id
+        WHERE p.id = ? AND p.customer_id = ?
+        LIMIT 1
+    """;
 
+        List<Product> list = query(sql, new ProductMapper(), productId, customerId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
+    }
 
 }

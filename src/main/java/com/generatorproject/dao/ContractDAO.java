@@ -501,4 +501,16 @@ public class ContractDAO extends GenericDAO<Contract> {
                 "ORDER BY c.created_at DESC LIMIT ?";
         return query(sql, new ContractMapper(), limit);
     }
+    public Contract findContractDetailForCustomer(Long contractId, Long customerId) {
+        String sql = """
+        SELECT c.*
+        FROM contracts c
+        WHERE c.id = ?
+          AND c.customer_id = ?
+        LIMIT 1
+    """;
+
+        List<Contract> list = query(sql, new ContractMapper(), contractId, customerId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
+    }
 }
