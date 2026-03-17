@@ -62,7 +62,7 @@ public class CreateInvoiceController extends HttpServlet {
             if (isCreated) {
                 // Đổi trạng thái Yêu cầu thành INVOICED (Đã xuất HĐ) để ẩn nút "Tạo hóa đơn" đi
                 requestServices.updateStatus(sysReq.getId().intValue(), "INVOICED");
-
+                System.out.println(sysReq.getId().intValue());
                 // Thành công -> Chuyển hướng sang trang danh sách yêu cầu (hoặc danh sách hóa đơn)
                 resp.sendRedirect(req.getContextPath() + "/staff/repair-request-list?message=invoice_created_success");
             } else {

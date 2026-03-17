@@ -79,4 +79,9 @@ public class InvoiceService implements IInvoiceService {
     public boolean updateTaxRate(Long invoiceId, double newTaxRate) {
         return invoiceDAO.updateTaxRate(invoiceId,newTaxRate);
     }
+
+    @Override
+    public boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo) {
+        return invoiceDAO.updatePaymentStatusByCode(invoiceCode,paymentStatus,paymentMethod,transactionNo);
+    }
 }

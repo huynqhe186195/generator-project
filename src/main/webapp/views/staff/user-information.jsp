@@ -88,36 +88,52 @@
                         <tbody>
                           <c:forEach items="${listContracts}" var="contract">
                             <tr>
-                              <td class="ps-3 fw-bold text-primary">
-                                <i class="fas fa-hashtag me-1 text-muted small"></i>${contract.contractNumber}
+                              <td class="ps-3">
+                                <a href="<c:url value='/staff/contract/detail?id=${contract.id}'/>" class="text-decoration-none text-primary action-hover d-inline-block">
+                                  <div class="fw-bold">
+                                    <i class="fas fa-hashtag me-1 text-muted small"></i>${contract.contractNumber}
+                                  </div>
+                                </a>
                               </td>
 
                               <td>
-                                  <%-- Tìm tên máy và serial từ listProducts dựa vào contractId --%>
+                                  <%-- 1. Khai báo thêm biến productId --%>
                                 <c:set var="machineName" value="Chưa xác định / Đang chờ máy" />
                                 <c:set var="machineSerial" value="" />
+                                <c:set var="productId" value="" />
 
+                                  <%-- 2. Tìm máy và lấy thông tin (bao gồm cả ID) --%>
                                 <c:forEach items="${listProducts}" var="prod">
-                                  <%-- ĐẢO NGƯỢC ĐIỀU KIỆN TẠI ĐÂY: So sánh contractId của máy với id của hợp đồng --%>
                                   <c:if test="${prod.contractId == contract.id}">
                                     <c:set var="machineName" value="${prod.modelName}" />
                                     <c:set var="machineSerial" value="${prod.serialNumber}" />
+                                    <c:set var="productId" value="${prod.id}" />
                                   </c:if>
                                 </c:forEach>
 
-                                <div class="fw-bold text-dark">
-                                  <i class="fas fa-server me-1 text-secondary"></i>${machineName}
-                                </div>
-                                <small class="text-muted">
-                                  <c:choose>
-                                    <c:when test="${not empty machineSerial}">
-                                      Serial: <span class="font-monospace">${machineSerial}</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                      <span class="fst-italic">Chưa cấp Serial</span>
-                                    </c:otherwise>
-                                  </c:choose>
-                                </small>
+                                  <%-- 3. Hiển thị: Nếu có ID thì tạo Link bấm được, nếu không thì hiện text --%>
+                                <c:choose>
+                                  <c:when test="${not empty productId}">
+
+                                    <a href="<c:url value='/staff/product/detail?id=${productId}'/>" class="text-decoration-none text-primary action-hover">
+                                      <div class="fw-bold text-primary">
+                                        <i class="fas fa-server me-1"></i>${machineName}
+                                      </div>
+                                      <small class="text-muted">
+                                        Serial: <span class="font-monospace text-dark">${machineSerial}</span>
+                                      </small>
+                                    </a>
+                                  </c:when>
+
+                                  <c:otherwise>
+                                    <div class="fw-bold text-dark opacity-75">
+                                      <i class="fas fa-server me-1 text-secondary"></i>${machineName}
+                                    </div>
+                                    <small class="text-muted fst-italic">
+                                      Chưa cấp Serial
+                                    </small>
+                                  </c:otherwise>
+                                </c:choose>
                               </td>
                               <td>
                                 <div class="small">
