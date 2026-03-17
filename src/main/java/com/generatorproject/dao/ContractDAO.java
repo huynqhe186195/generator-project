@@ -102,6 +102,12 @@ public class ContractDAO extends GenericDAO<Contract> {
         return results.isEmpty() ? null : results.get(0);
     }
 
+    public boolean updateFilePath(Long contractId, String filePath) {
+        String sql = "UPDATE contracts SET file_path = ? WHERE id = ?";
+        int updated = update(sql, filePath, contractId);
+        return updated > 0;
+    }
+
     public Contract findByIdWithDetails(Long id) {
         String sql = "SELECT c.*, u.full_name, p.serial_number, p.manufacture_year, pm.name AS model_name " +
                 "FROM contracts c " +

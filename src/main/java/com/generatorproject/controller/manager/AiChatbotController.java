@@ -1,6 +1,7 @@
 package com.generatorproject.controller.manager;
 
 import com.generatorproject.config.AppConfig;
+import com.generatorproject.dao.ContractDAO;
 import com.google.gson.*;
 
 import javax.servlet.ServletException;
@@ -30,6 +31,8 @@ import java.util.regex.Pattern;
 @WebServlet(urlPatterns = { "/manager/contracts/ai-chat" })
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 15, maxRequestSize = 1024 * 1024 * 25)
 public class AiChatbotController extends HttpServlet {
+
+    private final ContractDAO contractDAO = new ContractDAO();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -65,9 +68,13 @@ public class AiChatbotController extends HttpServlet {
                     result.addProperty("structured", true);
                     result.add("data", extracted);
 
-                    String savedFilePath = saveExtractionFile(req, filePart);
-                    if (savedFilePath != null) {
-                        result.addProperty("savedSourceFile", savedFilePath);
+                    JsonArray devices = extracted.getAsJsonArray("devices");
+                    if (devices != null && devices.size() > 0) {
+                        String savedFilePath = saveExtractionFile(req, filePart);
+                        if (savedFilePath != null) {
+                            result.addProperty("savedSourceFile", savedFilePath);
+                            updateContractFilePath(req, savedFilePath);
+                        }
                     }
                 } else {
                     result.addProperty("structured", false);
@@ -327,6 +334,19 @@ public class AiChatbotController extends HttpServlet {
         filePart.write(new File(dir, fileName).getAbsolutePath());
 
         return "uploads/ai-extractions/" + fileName;
+    }
+
+    private void updateContractFilePath(HttpServletRequest req, String filePath) {
+        String contractIdRaw = req.getParameter("contractId");
+        if (contractIdRaw == null || contractIdRaw.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            Long contractId = Long.parseLong(contractIdRaw.trim());
+            contractDAO.updateFilePath(contractId, filePath);
+        } catch (NumberFormatException ignore) {
+        }
     }
 
     private String resolveApiKey(HttpServletRequest req) {

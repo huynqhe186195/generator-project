@@ -406,6 +406,7 @@
                     const formData = new FormData();
                     formData.append('message', prompt);
                     formData.append('extractionMode', extractionMode ? 'true' : 'false');
+                    formData.append('contractId', '${contract.id}');
                     formData.append('history', JSON.stringify(chatHistory));
                     if (file) {
                         formData.append('sourceFile', file);
