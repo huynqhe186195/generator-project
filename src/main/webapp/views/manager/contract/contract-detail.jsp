@@ -14,18 +14,34 @@
         }
         .soft-card {
             border: 0;
-            border-radius: 12px;
-            box-shadow: 0 8px 22px rgba(18, 38, 63, 0.08);
+            border-radius: 14px;
+            box-shadow: 0 10px 26px rgba(18, 38, 63, 0.10);
+            overflow: hidden;
         }
         .soft-card .card-header {
             border-bottom: 1px solid #edf2f7;
-            background: #f8fafc;
-            font-weight: 600;
+            background: linear-gradient(180deg, #f9fbff 0%, #f2f7ff 100%);
+            font-weight: 700;
+            color: #1f2a44;
         }
         .status-pill { font-size: 12px; padding: 7px 12px; border-radius: 999px; }
         .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: .4px; color: #64748b; }
         .kv-table td { padding: .5rem 0; }
         .timeline-table td, .timeline-table th { vertical-align: middle; }
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .overview-item {
+            border: 1px solid #edf2ff;
+            border-radius: 10px;
+            background: #fff;
+            padding: 10px 12px;
+        }
+        .overview-item .label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+        .overview-item .value { font-weight: 700; color: #1f2937; }
         .owner-name-btn {
             border: 0;
             padding: 0;
@@ -83,10 +99,10 @@
             <div class="card soft-card mb-4">
                 <div class="card-header"><i class="fa fa-info-circle text-primary"></i> Tổng quan hợp đồng</div>
                 <div class="card-body">
-                    <table class="table table-borderless kv-table mb-0">
-                        <tr>
-                            <td class="text-muted" style="width:45%;">Trạng thái</td>
-                            <td>
+                    <div class="overview-grid">
+                        <div class="overview-item">
+                            <div class="label">Trạng thái</div>
+                            <div class="value">
                                 <c:choose>
                                     <c:when test="${c.status == 'PENDING_SERIAL'}"><span class="badge bg-warning text-dark status-pill">PENDING SERIAL</span></c:when>
                                     <c:when test="${c.status == 'ACTIVE'}"><span class="badge bg-success status-pill">ACTIVE</span></c:when>
@@ -94,23 +110,27 @@
                                     <c:when test="${c.status == 'TERMINATED'}"><span class="badge bg-secondary status-pill">TERMINATED</span></c:when>
                                     <c:otherwise><span class="badge bg-dark status-pill">${c.status}</span></c:otherwise>
                                 </c:choose>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Ngày bắt đầu</td>
-                            <td class="fw-semibold"><fmt:formatDate value="${c.startDate}" pattern="dd/MM/yyyy"/></td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Ngày kết thúc</td>
-                            <td class="fw-semibold text-danger"><fmt:formatDate value="${c.endDate}" pattern="dd/MM/yyyy"/></td>
-                        </tr>
-                        <c:if test="${c.terminatedAt != null}">
-                            <tr>
-                                <td class="text-muted">Thời điểm chấm dứt</td>
-                                <td class="fw-semibold"><fmt:formatDate value="${c.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/></td>
-                            </tr>
-                        </c:if>
-                    </table>
+                            </div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="label">Ngày ký</div>
+                            <div class="value"><fmt:formatDate value="${c.createdAt}" pattern="dd/MM/yyyy"/></div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="label">Ngày bắt đầu</div>
+                            <div class="value"><fmt:formatDate value="${c.startDate}" pattern="dd/MM/yyyy"/></div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="label">Ngày kết thúc</div>
+                            <div class="value text-danger"><fmt:formatDate value="${c.endDate}" pattern="dd/MM/yyyy"/></div>
+                        </div>
+                    </div>
+                    <c:if test="${c.terminatedAt != null}">
+                        <div class="overview-item mb-2">
+                            <div class="label">Thời điểm chấm dứt</div>
+                            <div class="value"><fmt:formatDate value="${c.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/></div>
+                        </div>
+                    </c:if>
 
                     <c:if test="${c.status == 'PENDING_SERIAL'}">
                         <div class="alert alert-warning mt-3 mb-0">Hợp đồng chưa có thiết bị, vui lòng gán serial để tạo tài sản.</div>
@@ -161,7 +181,7 @@
             </div>
 
             <div class="card soft-card">
-                <div class="card-header"><i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng</div>
+                <div class="card-header d-flex justify-content-between align-items-center"><span><i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng</span><span class="badge bg-light text-dark">${contractEvents != null ? contractEvents.size() : 0}</span></div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-sm table-striped mb-0 timeline-table">
