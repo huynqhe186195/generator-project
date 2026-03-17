@@ -82,6 +82,9 @@ public class StaffManagementController extends HttpServlet {
             case "/incident-view":
                 showIncidentDetail(req, resp);
                 break;
+            case "/invoice-list":
+                listInvoices(req, resp);
+                break;
         }
     }
 
@@ -227,10 +230,27 @@ public class StaffManagementController extends HttpServlet {
             req.setAttribute("currentStatus", sysReq != null ? sysReq.getStatus() : "");
             RepairRequestDTO dto = repairWorkflowService.getRepairRequestDetails(requestId);
 
+            // ==========================================
+            // BỔ SUNG: LẤY TÊN KỸ THUẬT VIÊN TỪ DB
+            // ==========================================
+            String technicianName = "Không xác định";
+            if (dto != null && dto.getTechnicianId() != null) {
+                // Khởi tạo DAO (Đổi tên UserDAO cho khớp với class thực tế của bạn nếu cần)
+
+                Users technician = userServices.findUserById(dto.getTechnicianId());
+
+                if (technician != null && technician.getFullName() != null) {
+                    technicianName = technician.getFullName();
+                }
+            }
+            // Đẩy biến tên KTV sang JSP độc lập với DTO
+            req.setAttribute("technicianName", technicianName);
+            // ==========================================
+
             // Đẩy DTO sang JSP để in ra màn hình
             req.setAttribute("repairRequest", dto);
-            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit
-            // (Approve)
+
+            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit (Approve)
             req.setAttribute("rawJsonData", new Gson().toJson(dto));
 
             // Chuyển hướng sang trang chi tiết
@@ -315,6 +335,34 @@ public class StaffManagementController extends HttpServlet {
                 }
             }
 
+            Map<Long, String> technicianNames = new HashMap<>();
+
+            for (SystemRequest sysReq : listRequests) {
+
+                // ... (Các đoạn code lấy Product và Maintenance của bạn giữ nguyên) ...
+
+                // ==========================================
+                // LẤY TÊN KỸ THUẬT VIÊN TỪ CHUỖI JSON
+                // ==========================================
+                // Bóc technicianId từ request_data
+                Long ktvId = extractIdFromRequestInfo(sysReq, "technicianId");
+
+                if (ktvId != null) {
+                    // Query vào bảng users bằng ID vừa bóc được
+                    Users ktv = userServices.findUserById(ktvId.intValue());
+
+                    if (ktv != null) {
+                        technicianNames.put(sysReq.getId(), ktv.getFullName()); // Lấy cột tên gán vào Map
+                    } else {
+                        technicianNames.put(sysReq.getId(), "KTV không tồn tại");
+                    }
+                } else {
+                    technicianNames.put(sysReq.getId(), "Chưa có KTV");
+                }
+            }
+
+            // Đẩy Map này sang JSP
+            req.setAttribute("technicianNames", technicianNames);
             // 5. Gửi toàn bộ dữ liệu sang JSP
             req.setAttribute("listRequests", listRequests);
             req.setAttribute("relatedProducts", relatedProducts);
