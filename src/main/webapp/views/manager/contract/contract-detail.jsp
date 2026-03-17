@@ -26,6 +26,25 @@
         .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: .4px; color: #64748b; }
         .kv-table td { padding: .5rem 0; }
         .timeline-table td, .timeline-table th { vertical-align: middle; }
+        .owner-name-btn {
+            border: 0;
+            padding: 0;
+            background: transparent;
+            font-size: 30px;
+            font-weight: 700;
+            color: #198754;
+            text-align: left;
+        }
+        .owner-name-btn:hover { text-decoration: underline; color: #157347; }
+        .owner-detail-panel {
+            margin-top: 12px;
+            border: 1px dashed #cde7d8;
+            background: #f7fffb;
+            border-radius: 10px;
+            padding: 12px;
+            display: none;
+        }
+        .owner-detail-panel.show { display: block; }
     </style>
 </head>
 
@@ -142,78 +161,58 @@
             <div class="card soft-card mb-4">
                 <div class="card-header"><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</div>
                 <div class="card-body">
-                    <div class="fw-bold fs-5 text-success">${u.fullName}</div>
-                    <div class="mt-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
-                    <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
-                </div>
-            </div>
+                    <button type="button" class="owner-name-btn" id="ownerNameToggle">
+                        ${u.fullName}
+                    </button>
+                    <div class="small text-muted">Nhấn vào tên để xem chi tiết khách hàng và thiết bị của khách trong hợp đồng hiện tại.</div>
 
-            <div class="card soft-card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span><i class="fa fa-server text-primary"></i> Thiết bị thuộc hợp đồng</span>
-                    <span class="badge bg-primary">${products != null ? products.size() : 0}</span>
-                </div>
-                <div class="card-body p-0">
-                    <c:choose>
-                        <c:when test="${products == null || products.isEmpty()}">
-                            <div class="p-3 text-muted">Chưa có thiết bị nào được gán cho hợp đồng này.</div>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                    <tr>
-                                        <th>Serial</th>
-                                        <th>Tên thiết bị</th>
-                                        <th class="text-end">Giờ chạy</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <c:forEach var="x" items="${products}">
-                                        <tr style="cursor:pointer"
-                                            class="${(p != null && p.serialNumber == x.serialNumber) ? 'table-primary' : ''}"
-                                            onclick="window.location='${pageContext.request.contextPath}/manager/contracts?action=detail&id=${c.id}&serial=${x.serialNumber}'">
-                                            <td class="fw-semibold">${x.serialNumber}</td>
-                                            <td>${not empty x.modelName ? x.modelName : (not empty x.brandName ? x.brandName : '—')}</td>
-                                            <td class="text-end">${x.totalRunningHours}h</td>
+                    <div id="ownerDetailPanel" class="owner-detail-panel">
+                        <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
+                        <div class="mb-3"><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+
+                        <div class="fw-semibold mb-2 d-flex justify-content-between align-items-center">
+                            <span>Thiết bị thuộc hợp đồng hiện tại</span>
+                            <span class="badge bg-primary">${products != null ? products.size() : 0}</span>
+                        </div>
+                        <c:choose>
+                            <c:when test="${products == null || products.isEmpty()}">
+                                <div class="text-muted">Hợp đồng hiện tại chưa có thiết bị nào được gán.</div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>Serial</th>
+                                            <th>Model</th>
+                                            <th>Trạng thái</th>
+                                            <th class="text-end">Giờ chạy</th>
+                                            <th>Năm SX</th>
+                                            <th>Vị trí</th>
                                         </tr>
-                                    </c:forEach>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </c:otherwise>
-                    </c:choose>
+                                        </thead>
+                                        <tbody>
+                                        <c:forEach var="d" items="${products}">
+                                            <tr>
+                                                <td class="fw-semibold">${d.serialNumber}</td>
+                                                <td>${not empty d.modelName ? d.modelName : (not empty d.brandName ? d.brandName : '—')}</td>
+                                                <td>${not empty d.status ? d.status : '—'}</td>
+                                                <td class="text-end">${d.totalRunningHours}h</td>
+                                                <td>${d.manufactureYear != null ? d.manufactureYear : 'N/A'}</td>
+                                                <td>${not empty d.currentLocation ? d.currentLocation : '—'}</td>
+                                            </tr>
+                                        </c:forEach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <div class="card soft-card mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <span><i class="fa fa-microchip"></i> Hồ sơ thiết bị</span>
-                    <span class="badge bg-light text-primary">${p != null ? p.serialNumber : 'Chưa chọn thiết bị'}</span>
-                </div>
-                <div class="card-body">
-                    <c:if test="${p == null}">
-                        <div class="text-muted">Chưa có thiết bị để hiển thị. Hãy gán serial trước hoặc chọn thiết bị ở danh sách.</div>
-                    </c:if>
-
-                    <c:if test="${p != null}">
-                        <div class="row g-3 mb-3 text-center">
-                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Brand</div><div class="fw-bold">${p.brandName != null ? p.brandName : '—'}</div></div></div>
-                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Category</div><div class="fw-bold">${p.categoryName != null ? p.categoryName : '—'}</div></div></div>
-                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Năm SX</div><div class="fw-bold">${p.manufactureYear != null ? p.manufactureYear : 'N/A'}</div></div></div>
-                        </div>
-
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between"><span>Vị trí lắp đặt</span><span class="fw-semibold">${p.currentLocation != null ? p.currentLocation : 'Chưa cập nhật'}</span></li>
-                            <li class="list-group-item d-flex justify-content-between"><span>Trạng thái máy</span><span class="fw-semibold text-${p.status == 'RUNNING' ? 'success' : 'warning'}">${p.status}</span></li>
-                            <li class="list-group-item d-flex justify-content-between"><span>Lần bảo trì gần nhất</span><span class="text-muted">--/--/----</span></li>
-                        </ul>
-                    </c:if>
-                </div>
-            </div>
-
             <div class="card soft-card">
                 <div class="card-header"><i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng</div>
                 <div class="card-body p-0">
@@ -249,4 +248,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        const ownerNameToggle = document.getElementById('ownerNameToggle');
+        const ownerDetailPanel = document.getElementById('ownerDetailPanel');
+        if (!ownerNameToggle || !ownerDetailPanel) {
+            return;
+        }
+
+        ownerNameToggle.addEventListener('click', function () {
+            ownerDetailPanel.classList.toggle('show');
+        });
+    })();
+</script>
 </body>
