@@ -26,6 +26,7 @@ public class StaffManagementController extends HttpServlet {
     private final IRepairWorkflowService repairWorkflowService;
     private final IInvoiceService invoiceService;
     private final MaintenanceDAO maintenanceDAO;
+    private final IProductModelServices productModelServices;
 
     public StaffManagementController() {
         userServices = new UserServices();
@@ -35,7 +36,7 @@ public class StaffManagementController extends HttpServlet {
         repairWorkflowService = new RepairWorkflowService();
         invoiceService = new InvoiceService();
         maintenanceDAO = new MaintenanceDAO();
-
+        productModelServices = new ProductModelServices();
     }
 
     @Override
@@ -85,9 +86,52 @@ public class StaffManagementController extends HttpServlet {
             case "/invoice-list":
                 listInvoices(req, resp);
                 break;
+            case "/product/detail":
+                handleProductDetail(req, resp);
+                break;
         }
     }
+    private void handleProductDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String idParam = req.getParameter("id");
 
+        if (idParam == null || idParam.trim().isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=missing_product_id");
+            return;
+        }
+
+        try {
+            int productId = Integer.parseInt(idParam);
+
+            // 1. Lấy thông tin Máy cụ thể (Product thuần)
+            Product product = productServices.getProductById(productId);
+
+            if (product == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-listv?message=product_not_found");
+                return;
+            }
+
+            // 2. Lấy thông tin Dòng máy (ProductModel) dựa vào modelId của Product
+            if (product.getModelId() != null) {
+                ProductModel productModel = productModelServices.findById(product.getModelId().intValue());
+                req.setAttribute("productModel", productModel); // Đẩy riêng object này sang JSP
+            }
+
+            // 3. Lấy thông tin Hợp đồng (Contract)
+            if (product.getContractId() != null && product.getContractId() > 0) {
+                Contract contract = contractServices.findContractById(product.getContractId().longValue());
+                req.setAttribute("contract", contract);
+            }
+
+            // 4. Đẩy Product sang JSP
+            req.setAttribute("product", product);
+
+            req.getRequestDispatcher("/views/staff/product-detail.jsp").forward(req, resp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
@@ -305,54 +349,42 @@ public class StaffManagementController extends HttpServlet {
                 page = 1;
 
             // Lấy danh sách Request từ DB
-            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page,
-                    pageSize);
+            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
 
             Map<Long, Product> relatedProducts = new HashMap<>();
+            Map<Long, String> technicianNames = new HashMap<>();
 
-            // 4. DUYỆT DANH SÁCH ĐỂ CẬP NHẬT TRẠNG THÁI VÀ LẤY PRODUCT
+            // 4. DUYỆT DANH SÁCH 1 LẦN DUY NHẤT ĐỂ TỐI ƯU HIỆU NĂNG
             for (SystemRequest sysReq : listRequests) {
 
-                // 1. Tận dụng hàm mới để lấy maintenanceId cực nhanh
+                // --- A. CẬP NHẬT TRẠNG THÁI COMPLETED TỪ MAINTENANCE ---
                 Long maintenanceId = extractIdFromRequestInfo(sysReq, "maintenanceId");
-
                 if (maintenanceId != null) {
                     Maintenance maintenance = maintenanceDAO.getById(maintenanceId.intValue());
 
                     if (maintenance != null && "COMPLETED".equalsIgnoreCase(maintenance.getStatus())) {
-                        if (!"COMPLETED".equalsIgnoreCase(sysReq.getStatus())) {
+                        String currentStatus = sysReq.getStatus();
+                        // ĐIỂM SỬA QUAN TRỌNG:
+                        // Chỉ tự động chuyển sang COMPLETED nếu nó chưa bị đổi thành INVOICED
+                        if (!"COMPLETED".equalsIgnoreCase(currentStatus) && !"INVOICED".equalsIgnoreCase(currentStatus)) {
                             requestServices.updateStatus(sysReq.getId().intValue(), "COMPLETED");
                             sysReq.setStatus("COMPLETED"); // Cập nhật trên UI
                         }
                     }
                 }
-                // ---------------------------------------------------------
 
-                // Lấy thông tin máy (Product) liên kết với từng Request
+                // --- B. LẤY THÔNG TIN SẢN PHẨM ---
                 Product p = getProductFromRequest(sysReq);
                 if (p != null) {
                     relatedProducts.put(sysReq.getId(), p);
                 }
-            }
 
-            Map<Long, String> technicianNames = new HashMap<>();
-
-            for (SystemRequest sysReq : listRequests) {
-
-                // ... (Các đoạn code lấy Product và Maintenance của bạn giữ nguyên) ...
-
-                // ==========================================
-                // LẤY TÊN KỸ THUẬT VIÊN TỪ CHUỖI JSON
-                // ==========================================
-                // Bóc technicianId từ request_data
+                // --- C. LẤY TÊN KỸ THUẬT VIÊN TỪ CHUỖI JSON ---
                 Long ktvId = extractIdFromRequestInfo(sysReq, "technicianId");
-
                 if (ktvId != null) {
-                    // Query vào bảng users bằng ID vừa bóc được
                     Users ktv = userServices.findUserById(ktvId.intValue());
-
                     if (ktv != null) {
-                        technicianNames.put(sysReq.getId(), ktv.getFullName()); // Lấy cột tên gán vào Map
+                        technicianNames.put(sysReq.getId(), ktv.getFullName());
                     } else {
                         technicianNames.put(sysReq.getId(), "KTV không tồn tại");
                     }
@@ -361,9 +393,8 @@ public class StaffManagementController extends HttpServlet {
                 }
             }
 
-            // Đẩy Map này sang JSP
-            req.setAttribute("technicianNames", technicianNames);
             // 5. Gửi toàn bộ dữ liệu sang JSP
+            req.setAttribute("technicianNames", technicianNames);
             req.setAttribute("listRequests", listRequests);
             req.setAttribute("relatedProducts", relatedProducts);
 
