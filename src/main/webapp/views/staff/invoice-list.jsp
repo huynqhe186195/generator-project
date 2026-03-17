@@ -15,8 +15,8 @@
     <%-- 1. FORM LỌC & TÌM KIẾM --%>
     <div class="card shadow-sm border-0 mb-4 rounded-4">
         <div class="card-body p-4">
-            <form action="<c:url value='/staff/management'/>" method="get" class="row g-3 align-items-end">
-                <input type="hidden" name="action" value="invoice-list">
+            <form action="<c:url value='/staff/invoice-list'/>" method="get" class="row g-3 align-items-end">
+<%--                <input type="hidden" name="action" value="invoice-list">--%>
                 <input type="hidden" name="page" value="1">
 
                 <div class="col-md-4">
@@ -50,7 +50,7 @@
 
                 <div class="col-md-3 text-end d-flex gap-2 justify-content-end">
                     <button type="submit" class="btn btn-primary px-4 rounded-pill fw-bold shadow-sm">Tìm kiếm</button>
-                    <a href="<c:url value='/staff/management?action=invoice-list'/>" class="btn btn-light border rounded-pill px-4 fw-bold">Đặt lại</a>
+                    <a href="<c:url value='/staff/invoice-list'/>" class="btn btn-light border rounded-pill px-4 fw-bold">Đặt lại</a>
                 </div>
             </form>
         </div>
@@ -121,15 +121,15 @@
                 <nav>
                     <ul class="pagination justify-content-center mb-0">
                         <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
-                            <a class="page-link shadow-sm border-0" href="<c:url value='/staff/management'><c:param name='action' value='invoice-list'/><c:param name='page' value='${currentPage - 1}'/><c:param name='pageSize' value='${pageSize}'/><c:param name='keyword' value='${keyword}'/><c:param name='status' value='${status}'/></c:url>">Trước</a>
+                            <a class="page-link shadow-sm border-0" href="<c:url value='/staff/invoice-list'><c:param name='page' value='${currentPage - 1}'/><c:param name='pageSize' value='${pageSize}'/><c:param name='keyword' value='${keyword}'/><c:param name='status' value='${status}'/></c:url>">Trước</a>
                         </li>
                         <c:forEach begin="1" end="${totalPages}" var="i">
                             <li class="page-item ${currentPage == i ? 'active' : ''}">
-                                <a class="page-link shadow-sm border-0 mx-1 rounded-2" href="<c:url value='/staff/management'><c:param name='action' value='invoice-list'/><c:param name='page' value='${i}'/><c:param name='pageSize' value='${pageSize}'/><c:param name='keyword' value='${keyword}'/><c:param name='status' value='${status}'/></c:url>">${i}</a>
+                                <a class="page-link shadow-sm border-0 mx-1 rounded-2" href="<c:url value='/staff/invoice-list'><c:param name='page' value='${i}'/><c:param name='pageSize' value='${pageSize}'/><c:param name='keyword' value='${keyword}'/><c:param name='status' value='${status}'/></c:url>">${i}</a>
                             </li>
                         </c:forEach>
                         <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
-                            <a class="page-link shadow-sm border-0" href="<c:url value='/staff/management'><c:param name='action' value='invoice-list'/><c:param name='page' value='${currentPage + 1}'/><c:param name='pageSize' value='${pageSize}'/><c:param name='keyword' value='${keyword}'/><c:param name='status' value='${status}'/></c:url>">Sau</a>
+                            <a class="page-link shadow-sm border-0" href="<c:url value='/staff/invoice-list'><c:param name='page' value='${currentPage + 1}'/><c:param name='pageSize' value='${pageSize}'/><c:param name='keyword' value='${keyword}'/><c:param name='status' value='${status}'/></c:url>">Sau</a>
                         </li>
                     </ul>
                 </nav>
