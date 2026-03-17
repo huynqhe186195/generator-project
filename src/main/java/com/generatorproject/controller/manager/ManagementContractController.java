@@ -181,24 +181,12 @@ public class ManagementContractController extends HttpServlet {
 
             List<Product> products = productServices.findByContractId(contractId);
 
-            String selectedSerial = req.getParameter("serial");
-            if ((selectedSerial == null || selectedSerial.isBlank()) && products != null && !products.isEmpty()) {
-                selectedSerial = products.get(0).getSerialNumber();
-            }
-
-            Product selectedProduct = null;
-            if (selectedSerial != null && !selectedSerial.isBlank()) {
-                selectedProduct = productServices.findProductDetailBySerial(selectedSerial);
-            }
-
             ContractEvent latestTerminatedEvent = contractService.findLatestTerminatedEvent(contractId);
             List<ContractEvent> contractEvents = contractService.findEventsByContractId(contractId);
 
             req.setAttribute("c", contract);
             req.setAttribute("u", customer);
             req.setAttribute("products", products);
-            req.setAttribute("p", selectedProduct);
-            req.setAttribute("selectedSerial", selectedSerial);
             req.setAttribute("terminatedEvent", latestTerminatedEvent);
             req.setAttribute("contractEvents", contractEvents);
 

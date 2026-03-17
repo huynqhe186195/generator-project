@@ -244,7 +244,6 @@
                     <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="deviceForm">
                         <input type="hidden" name="action" value="assignSerialSubmit" />
                         <input type="hidden" name="contractId" value="${contract.id}" />
-                        <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile" value="" />
                         <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile"
                             value="${aiSavedSourceFile}" />
 
