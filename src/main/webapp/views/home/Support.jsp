@@ -118,7 +118,7 @@
         <c:choose>
           <c:when test="${empty user}">
             <li class="nav-item">
-              <a class="nav-link px-3" href="#/">Tin tức</a>
+              <a class="nav-link nav-pill px-3" href="<c:url value='/news'/>">Tin tức</a>
             </li>
           </c:when>
           <c:otherwise>

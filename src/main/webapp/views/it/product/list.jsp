@@ -58,11 +58,11 @@
 <div class="container-fluid py-4">
 
   <c:if test="${param.msg == 'import_success'}">
-    <div class="alert alert-success">Import Excel thành công. Đã tạo <b>${param.count}</b> product model.</div>
+    <div class="alert alert-success">Nhập Excel thành công. Đã tạo <b>${param.count}</b> mẫu sản phẩm.</div>
   </c:if>
   <c:if test="${param.msg == 'import_empty'}">
     <div class="alert alert-warning">
-      <div>Không import được dòng nào từ file Excel (kiểm tra dữ liệu).</div>
+      <div>Không nhập được dòng nào từ file Excel (vui lòng kiểm tra dữ liệu).</div>
       <c:if test="${not empty param.detail}">
         <div class="small mt-1" style="white-space: pre-line;"><b>Chi tiết lỗi:</b> ${param.detail}</div>
       </c:if>
@@ -73,7 +73,7 @@
   </c:if>
   <c:if test="${param.msg == 'import_error'}">
     <div class="alert alert-danger">
-      <div>Lỗi khi import Excel, vui lòng thử lại.</div>
+      <div>Có lỗi khi nhập Excel, vui lòng thử lại.</div>
       <c:if test="${not empty param.detail}">
         <div class="small mt-1" style="white-space: pre-line;"><b>Chi tiết lỗi:</b> ${param.detail}</div>
       </c:if>
@@ -81,16 +81,16 @@
   </c:if>
 
   <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-    <h3 class="fw-bold text-dark mb-0">Quản lý Product Model</h3>
+    <h3 class="fw-bold text-dark mb-0">Quản lý mẫu sản phẩm</h3>
 
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <form action="${ctx}/it/products/import-excel" method="post" enctype="multipart/form-data"
         class="d-flex align-items-center gap-2 p-2 border rounded bg-light">
-        <span class="small fw-bold text-success">Import Product từ Excel:</span>
+        <span class="small fw-bold text-success">Nhập sản phẩm từ Excel:</span>
         <input type="file" name="excelFile" class="form-control form-control-sm" accept=".xlsx,.xls" required
           style="max-width: 260px;" />
         <button type="submit" class="btn btn-success btn-sm">
-          <i class="fas fa-file-import me-1"></i> Import Excel
+          <i class="fas fa-file-import me-1"></i> Nhập Excel
         </button>
       </form>
 
@@ -107,7 +107,7 @@
         <div class="col-md-3">
           <label class="form-label small fw-bold">Tên</label>
           <input type="text" name="keyword" value="${fn:escapeXml(param.keyword)}"
-            class="form-control form-control-sm" placeholder="Tên, slug...">
+            class="form-control form-control-sm" placeholder="Tên, đường dẫn tĩnh...">
         </div>
 
         <div class="col-md-2">
@@ -135,17 +135,17 @@
         </div>
 
         <div class="col-md-1">
-          <label class="form-label small fw-bold">Fuel</label>
+          <label class="form-label small fw-bold">Nhiên liệu</label>
           <select class="form-select form-select-sm" name="fuelType">
-            <option value="">--Tất cả--</option>
-            <option value="DIESEL" ${param.fuelType=='DIESEL' ? 'selected' : '' }>DIESEL</option>
-            <option value="GASOLINE" ${param.fuelType=='GASOLINE' ? 'selected' : '' }>GAS</option>
-            <option value="OTHER" ${param.fuelType=='OTHER' ? 'selected' : '' }>OTHER</option>
+            <option value="">-- Tất cả --</option>
+            <option value="DIESEL" ${param.fuelType=='DIESEL' ? 'selected' : '' }>Dầu diesel</option>
+            <option value="GASOLINE" ${param.fuelType=='GASOLINE' ? 'selected' : '' }>Xăng</option>
+            <option value="OTHER" ${param.fuelType=='OTHER' ? 'selected' : '' }>Khác</option>
           </select>
         </div>
 
         <div class="col-md-1">
-          <label class="form-label small fw-bold">Power từ</label>
+          <label class="form-label small fw-bold">Công suất từ</label>
           <input type="number" step="0.01" min="0" name="powerMin"
             value="${fn:escapeXml(param.powerMin)}"
             class="form-control form-control-sm" placeholder="150">
@@ -162,9 +162,9 @@
           <label class="form-label small fw-bold">Trạng thái</label>
           <select class="form-select form-select-sm" name="status">
             <option value="">-- Tất cả --</option>
-            <option value="ACTIVE" ${param.status=='ACTIVE' ? 'selected' : '' }>ACTIVE</option>
-            <option value="INACTIVE" ${param.status=='INACTIVE' ? 'selected' : '' }>INACTIVE</option>
-            <option value="COMING_SOON" ${param.status=='COMING_SOON' ? 'selected' : '' }>COMING</option>
+            <option value="ACTIVE" ${param.status=='ACTIVE' ? 'selected' : '' }>Đang hoạt động</option>
+            <option value="INACTIVE" ${param.status=='INACTIVE' ? 'selected' : '' }>Ngừng hoạt động</option>
+            <option value="COMING_SOON" ${param.status=='COMING_SOON' ? 'selected' : '' }>Sắp ra mắt</option>
           </select>
         </div>
 
@@ -187,12 +187,12 @@
       <table class="table table-hover align-middle mb-0">
         <thead>
           <tr>
-            <th class="text-center" style="width: 60px;">#</th>
+            <th class="text-center" style="width: 60px;">STT</th>
             <th>Mẫu sản phẩm</th>
-            <th>Brand</th>
-            <th>Fuel</th>
-            <th class="text-center">Power</th>
-            <th class="text-center">Status</th>
+            <th>Hãng</th>
+            <th>Nhiên liệu</th>
+            <th class="text-center">Công suất</th>
+            <th class="text-center">Trạng thái</th>
             <th class="text-end pe-4">Thao tác</th>
           </tr>
         </thead>
@@ -206,29 +206,29 @@
                 <div class="d-flex align-items-center">
                   <c:choose>
                     <c:when test="${not empty pm.imageUrl and fn:startsWith(pm.imageUrl, 'http')}">
-                      <img src="${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="thumb"
+                      <img src="${pm.imageUrl}" class="thumb-img me-3 shadow-sm border" alt="Ảnh thu nhỏ"
                         onerror="this.onerror=null;this.src='${ctx}/uploads/download.jpg';">
                     </c:when>
                     <c:when
                       test="${not empty pm.imageUrl and (fn:startsWith(pm.imageUrl, '/') or fn:startsWith(pm.imageUrl, 'uploads/') or fn:startsWith(pm.imageUrl, 'product-images/'))}">
                       <img src="${ctx}${fn:startsWith(pm.imageUrl, '/') ? '' : '/'}${pm.imageUrl}"
-                        class="thumb-img me-3 shadow-sm border" alt="thumb"
+                        class="thumb-img me-3 shadow-sm border" alt="Ảnh thu nhỏ"
                         onerror="this.onerror=null;this.src='${ctx}/uploads/download.jpg';">
                     </c:when>
                     <c:when
                       test="${not empty pm.imageUrl and (fn:endsWith(pm.imageUrl, '.jpg') or fn:endsWith(pm.imageUrl, '.jpeg') or fn:endsWith(pm.imageUrl, '.png') or fn:endsWith(pm.imageUrl, '.webp') or fn:endsWith(pm.imageUrl, '.gif') or fn:endsWith(pm.imageUrl, '.bmp') or fn:endsWith(pm.imageUrl, '.svg'))}">
                       <img src="${ctx}/uploads/product-images/${pm.imageUrl}"
-                        class="thumb-img me-3 shadow-sm border" alt="thumb"
+                        class="thumb-img me-3 shadow-sm border" alt="Ảnh thu nhỏ"
                         onerror="this.onerror=null;this.src='${ctx}/uploads/download.jpg';">
                     </c:when>
                     <c:otherwise>
-                      <img src="${ctx}/uploads/download.jpg" class="thumb-img me-3 shadow-sm border" alt="thumb">
+                      <img src="${ctx}/uploads/download.jpg" class="thumb-img me-3 shadow-sm border" alt="Ảnh thu nhỏ">
                     </c:otherwise>
                   </c:choose>
 
                   <div>
                     <div class="fw-bold text-primary">${pm.name}</div>
-                    <small class="text-muted">Slug: ${pm.slug} | ID: #${pm.id}</small>
+                    <small class="text-muted">Đường dẫn tĩnh: ${pm.slug} | Mã: #${pm.id}</small>
                   </div>
                 </div>
               </td>
@@ -248,28 +248,28 @@
               <td class="text-center">
                 <c:choose>
                   <c:when test="${pm.status == 'ACTIVE'}">
-                    <span class="status-active"><i class="fas fa-check-circle me-1"></i>ACTIVE</span>
+                    <span class="status-active"><i class="fas fa-check-circle me-1"></i>Đang hoạt động</span>
                   </c:when>
                   <c:when test="${pm.status == 'COMING_SOON'}">
-                    <span class="status-coming"><i class="fas fa-clock me-1"></i>COMING_SOON</span>
+                    <span class="status-coming"><i class="fas fa-clock me-1"></i>Sắp ra mắt</span>
                   </c:when>
                   <c:otherwise>
-                    <span class="status-locked"><i class="fas fa-ban me-1"></i>INACTIVE</span>
+                    <span class="status-locked"><i class="fas fa-ban me-1"></i>Ngừng hoạt động</span>
                   </c:otherwise>
                 </c:choose>
               </td>
 
               <td class="text-end pe-4">
                 <a href="${ctx}/it/products/detail?id=${pm.id}" class="btn btn-sm btn-outline-info border-0"
-                  title="Xem">
+                  title="Xem chi tiết">
                   <i class="fas fa-eye"></i>
                 </a>
                 <a href="${ctx}/it/products/edit?id=${pm.id}" class="btn btn-sm btn-outline-warning border-0"
-                  title="Sửa">
+                  title="Chỉnh sửa">
                   <i class="fas fa-edit"></i>
                 </a>
                 <a href="${ctx}/it/products/delete?id=${pm.id}" class="btn btn-sm btn-outline-danger border-0"
-                  title="Xóa" onclick="return confirm('Bạn chắc chắn muốn xóa mẫu này?');">
+                  title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa mẫu này không?');">
                   <i class="fas fa-trash"></i>
                 </a>
               </td>

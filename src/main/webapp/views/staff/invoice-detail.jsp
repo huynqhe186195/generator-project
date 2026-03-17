@@ -3,69 +3,80 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <fmt:setTimeZone value="Asia/Ho_Chi_Minh" />
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Hóa đơn ${invoice.invoiceCode} | Gen-CMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<title>Hóa đơn ${invoice.invoiceCode} | Gen-CMS</title>
 
-    <style>
-        body { background-color: #f0f2f5; font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+<style>
+    /* GIAO DIỆN TỜ GIẤY A4 TRÊN WEB */
+    .invoice-paper {
+        background: #fff;
+        padding: 50px;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
 
-        /* GIAO DIỆN TỜ GIẤY A4 TRÊN WEB */
-        .invoice-paper {
-            background: #fff;
-            padding: 50px;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
+    /* TRANG TRÍ HÓA ĐƠN */
+    .company-name { font-weight: 800; color: #2563eb; font-size: 1.4rem; letter-spacing: 0.5px; }
+    .invoice-title { font-weight: 900; color: #1e293b; font-size: 2rem; letter-spacing: 2px; }
+    .section-title { font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 15px; font-size: 1.1rem; }
+
+    /* BẢNG CHI TIẾT */
+    .table-invoice th { background-color: #f8fafc !important; color: #334155; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; border-bottom: 2px solid #cbd5e1 !important; padding: 12px; }
+    .table-invoice td { padding: 12px; vertical-align: middle; border-bottom: 1px solid #e2e8f0; }
+    .summary-row td { border: none; padding: 8px 12px; }
+    .grand-total { background-color: #eff6ff; border-radius: 6px; }
+
+    /* PANEL THAO TÁC (KHÔNG IN) */
+    .action-panel {
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border-top: 5px solid #0d6efd;
+    }
+
+    /* CSS CHUẨN KHI IN RA GIẤY A4 */
+    @media print {
+        /* 1. Reset nền và lề của toàn bộ trang */
+        body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+
+        /* 2. ẨN TRIỆT ĐỂ mọi râu ria của Layout (Sidebar, Topbar, Header, Footer, Menu, Nút bấm) */
+        .no-print, header, footer, aside, nav, .sidebar, #sidebar, .topbar, .navbar, button, .menu-toggle {
+            display: none !important;
         }
 
-        /* TRANG TRÍ HÓA ĐƠN */
-        .company-name { font-weight: 800; color: #2563eb; font-size: 1.4rem; letter-spacing: 0.5px; }
-        .invoice-title { font-weight: 900; color: #1e293b; font-size: 2rem; letter-spacing: 2px; }
-        .section-title { font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 15px; font-size: 1.1rem; }
-
-        /* BẢNG CHI TIẾT */
-        .table-invoice th { background-color: #f8fafc !important; color: #334155; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; border-bottom: 2px solid #cbd5e1 !important; padding: 12px; }
-        .table-invoice td { padding: 12px; vertical-align: middle; border-bottom: 1px solid #e2e8f0; }
-        .summary-row td { border: none; padding: 8px 12px; }
-        .grand-total { background-color: #eff6ff; border-radius: 6px; }
-
-        /* PANEL THAO TÁC (KHÔNG IN) */
-        .action-panel {
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            border-top: 5px solid #0d6efd;
+        /* 3. Khôi phục lại margin nếu Layout chính (main) đang bị đẩy sang phải (do sidebar) */
+        #main-wrapper, .main-content, #content, main, .container-fluid {
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        /* CSS CHUẨN KHI IN RA GIẤY A4 */
-        @media print {
-            body { background: #fff !important; margin: 0; padding: 0; }
-            .no-print, .navbar-landing, footer { display: none !important; }
-
-            /* Ghi đè Bootstrap grid để tờ giấy in full trang A4 */
-            .col-lg-8 { width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; }
-
-            .invoice-paper { box-shadow: none !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; }
-            .grand-total { background-color: transparent !important; border: 2px solid #000 !important; }
-            .table-invoice th { border-bottom: 2px solid #000 !important; }
-            .table-invoice td { border-bottom: 1px solid #ccc !important; }
+        /* 4. Ép tờ hóa đơn bung full 100% bề rộng trang A4 */
+        .col-lg-8 {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 0 0 100% !important;
         }
-    </style>
-</head>
-<body>
+
+        /* 5. Ẩn hoàn toàn cột Panel thao tác bên phải */
+        .col-lg-4 {
+            display: none !important;
+        }
+
+        /* 6. Định dạng lại bảng và viền cho rõ nét khi in trắng đen */
+        .invoice-paper { box-shadow: none !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; }
+        .grand-total { background-color: transparent !important; border: 2px solid #000 !important; }
+        .table-invoice th { border-bottom: 2px solid #000 !important; color: #000 !important; }
+        .table-invoice td { border-bottom: 1px solid #ccc !important; color: #000 !important; }
+    }
+</style>
 
 <%-- Dùng container-xl để có đủ không gian rộng cho 2 cột chạy song song --%>
 <div class="container-xl py-4">
 
     <%-- CÁC NÚT ĐIỀU HƯỚNG TRÊN CÙNG (ẨN KHI IN) --%>
     <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-        <a href="<c:url value='/staff/management?action=invoice-list'/>" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+        <a href="<c:url value='/staff/invoice-list'/>" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
             <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
         </a>
         <div>
@@ -96,7 +107,7 @@
                     <div class="col-sm-6">
                         <div class="company-name mb-1"><i class="fas fa-bolt text-warning me-2"></i>GEN-CMS CORPORATION</div>
                         <div class="text-muted small lh-lg">
-                            <i class="fas fa-map-marker-alt me-2"></i>Khu Công nghệ cao, Quận 9, TP. Hồ Chí Minh<br>
+                            <i class="fas fa-map-marker-alt me-2"></i>Khu Công nghệ cao, Hòa Lạc, Hà Nội<br>
                             <i class="fas fa-phone-alt me-2"></i>Hotline: 1900 8888<br>
                             <i class="fas fa-envelope me-2"></i>Email: billing@gen-cms.vn
                         </div>
@@ -106,11 +117,11 @@
                         <div class="fw-bold text-secondary mb-1">Mã số: ${invoice.invoiceCode}</div>
                         <div class="text-muted small">Ngày lập: <fmt:formatDate value="${invoice.issuedDate}" pattern="dd/MM/yyyy" /></div>
 
-                        <%-- Trạng thái thanh toán (Hiển thị mộc đóng dấu) --%>
+                        <%-- Trạng thái thanh toán --%>
                         <div class="mt-3">
                             <c:choose>
                                 <c:when test="${invoice.paymentStatus == 'PAID'}">
-                                    <span class="badge border border-success text-success bg-white px-3 py-2 fs-6 rounded-pill text-uppercase" style="border-width: 2px !important;"><i class="fas fa-check-circle me-1"></i> Đã Thanh Toán (VNPay)</span>
+                                    <span class="badge border border-success text-success bg-white px-3 py-2 fs-6 rounded-pill text-uppercase" style="border-width: 2px !important;"><i class="fas fa-check-circle me-1"></i> Đã Thanh Toán</span>
                                 </c:when>
                                 <c:when test="${invoice.paymentStatus == 'CANCELLED'}">
                                     <span class="badge border border-danger text-danger bg-white px-3 py-2 fs-6 rounded-pill text-uppercase" style="border-width: 2px !important;"><i class="fas fa-times-circle me-1"></i> Đã Hủy</span>
@@ -157,6 +168,17 @@
                                         <td class="text-end fw-bold text-primary"><fmt:formatNumber value="${detail.totalPrice}" pattern="#,###"/></td>
                                     </tr>
                                 </c:forEach>
+
+                                <%-- Phí nhân công (Nếu có) --%>
+                                <c:if test="${laborCost > 0}">
+                                    <tr style="background-color: #f8fafc;">
+                                        <td class="text-center fw-bold text-muted">*</td>
+                                        <td><div class="fw-bold text-dark">Phí nhân công sửa chữa / bảo trì</div></td>
+                                        <td class="text-center"><span class="badge border border-secondary text-dark px-2">1</span></td>
+                                        <td class="text-end"><fmt:formatNumber value="${laborCost}" pattern="#,###"/></td>
+                                        <td class="text-end fw-bold text-primary"><fmt:formatNumber value="${laborCost}" pattern="#,###"/></td>
+                                    </tr>
+                                </c:if>
                             </c:when>
                             <c:otherwise>
                                 <tr>
@@ -187,9 +209,19 @@
 
                     <div class="col-sm-6 col-12">
                         <table class="table table-sm table-borderless summary-row text-end">
+                            <c:if test="${not empty quoteDetails}">
+                                <tr>
+                                    <td class="text-muted">Tổng tiền vật tư:</td>
+                                    <td class="fw-bold"><fmt:formatNumber value="${partsTotal}" pattern="#,###"/> đ</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted border-bottom pb-3">Phí nhân công:</td>
+                                    <td class="fw-bold border-bottom pb-3"><fmt:formatNumber value="${laborCost}" pattern="#,###"/> đ</td>
+                                </tr>
+                            </c:if>
                             <tr>
-                                <td class="text-muted">Cộng tiền dịch vụ:</td>
-                                <td class="fw-bold"><fmt:formatNumber value="${invoice.subtotal}" pattern="#,###"/> đ</td>
+                                <td class="text-muted pt-3">Cộng tiền dịch vụ (Trước thuế):</td>
+                                <td class="fw-bold pt-3"><fmt:formatNumber value="${invoice.subtotal}" pattern="#,###"/> đ</td>
                             </tr>
                             <tr>
                                 <td class="text-muted border-bottom pb-3">Thuế GTGT (VAT <fmt:formatNumber value="${invoice.taxRate}" pattern="#.#"/>%):</td>
@@ -218,7 +250,7 @@
             </div>
         </div>
 
-        <%-- CỘT PHẢI (4/12): PANEL THAO TÁC CỦA STAFF (Luôn bám dính khi cuộn) --%>
+        <%-- CỘT PHẢI (4/12): PANEL THAO TÁC CỦA STAFF --%>
         <div class="col-lg-4 no-print">
             <c:if test="${invoice.paymentStatus == 'UNPAID'}">
                 <div class="action-panel position-sticky" style="top: 20px;">
@@ -248,7 +280,6 @@
                         </div>
 
                         <form action="<c:url value='/staff/invoice/detail'/>" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn gửi Yêu cầu thanh toán VNPay cho khách hàng này không?');">
-                                <%-- Đổi action thành send_vnpay --%>
                             <input type="hidden" name="action" value="send_vnpay">
                             <input type="hidden" name="invoiceId" value="${invoice.id}">
 
@@ -280,10 +311,5 @@
                 </div>
             </c:if>
         </div>
-
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
