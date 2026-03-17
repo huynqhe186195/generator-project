@@ -359,6 +359,7 @@
                         tr.querySelector('input[name="serialNumbers"]').value = device.serialNumber || '';
                         tr.querySelector('input[name="manufactureYears"]').value = device.manufactureYear || '';
                         tr.querySelector('input[name="currentLocations"]').value = device.currentLocation || '';
+                        tr.querySelector('input[name="purchaseDates"]').value = device.purchaseDate || '';
 
                         if (device.modelName) {
                             const option = Array.prototype.find.call(modelSelect.options, function (op) {
@@ -447,6 +448,10 @@
                                 });
                                 bindRemoveButtons();
                                 addMessage('Mình đã tự điền ' + devices.length + ' thiết bị vào bảng bên dưới.', 'bot');
+                            }
+
+                            if (data.savedSourceFile) {
+                                addMessage('Đã lưu file nguồn: ' + data.savedSourceFile, 'bot');
                             }
 
                             if (extracted.contract && extracted.contract.contractNumber) {

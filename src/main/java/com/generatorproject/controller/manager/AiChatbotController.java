@@ -10,13 +10,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Base64;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +64,11 @@ public class AiChatbotController extends HttpServlet {
                 if (extracted != null) {
                     result.addProperty("structured", true);
                     result.add("data", extracted);
+
+                    String savedFilePath = saveExtractionFile(req, filePart);
+                    if (savedFilePath != null) {
+                        result.addProperty("savedSourceFile", savedFilePath);
+                    }
                 } else {
                     result.addProperty("structured", false);
                 }
@@ -80,9 +92,10 @@ public class AiChatbotController extends HttpServlet {
         if (extractionMode) {
             systemPrompt = "Bạn là chatbot AI trợ lý hợp đồng. "
                     + "Hãy trả về JSON hợp lệ duy nhất (không markdown) theo schema: "
-                    + "{\"answer\":\"...\",\"devices\":[{\"serialNumber\":\"\",\"modelName\":\"\",\"manufactureYear\":null,\"currentLocation\":\"\"}],"
+                    + "{\"answer\":\"...\",\"devices\":[{\"serialNumber\":\"\",\"modelName\":\"\",\"purchaseDate\":\"\",\"manufactureYear\":null,\"currentLocation\":\"\"}],"
                     + "\"contract\":{\"contractNumber\":\"\",\"purchaseDate\":\"\",\"signedDate\":\"\",\"effectiveDate\":\"\",\"endDate\":\"\",\"buyerName\":\"\"}}. "
-                    + "Nếu thiếu dữ liệu thì dùng chuỗi rỗng hoặc null.";
+                    + "Nếu thiếu dữ liệu thì dùng chuỗi rỗng hoặc null. "
+                    + "Riêng purchaseDate của device bắt buộc định dạng yyyy-MM-dd nếu đọc được.";
         } else {
             systemPrompt = "Bạn là chatbot AI hỗ trợ nghiệp vụ hợp đồng và thiết bị máy phát điện. "
                     + "Trả lời rõ ràng, ngắn gọn, đúng nghiệp vụ. Nếu người dùng hỏi ngoài nghiệp vụ vẫn hỗ trợ như chatbot thông thường.";
@@ -218,10 +231,102 @@ public class AiChatbotController extends HttpServlet {
             if (!obj.has("answer")) {
                 obj.addProperty("answer", "Đã trích xuất dữ liệu từ file hợp đồng.");
             }
+
+            normalizeExtractionDates(obj);
             return obj;
         } catch (Exception ignore) {
             return null;
         }
+    }
+
+    private void normalizeExtractionDates(JsonObject obj) {
+        JsonArray devices = obj.getAsJsonArray("devices");
+        for (JsonElement deviceEl : devices) {
+            if (!deviceEl.isJsonObject()) {
+                continue;
+            }
+            JsonObject device = deviceEl.getAsJsonObject();
+            String rawPurchaseDate = device.has("purchaseDate") && !device.get("purchaseDate").isJsonNull()
+                    ? device.get("purchaseDate").getAsString()
+                    : "";
+            device.addProperty("purchaseDate", normalizeDate(rawPurchaseDate));
+        }
+
+        JsonObject contract = obj.getAsJsonObject("contract");
+        normalizeContractDate(contract, "purchaseDate");
+        normalizeContractDate(contract, "signedDate");
+        normalizeContractDate(contract, "effectiveDate");
+        normalizeContractDate(contract, "endDate");
+    }
+
+    private void normalizeContractDate(JsonObject contract, String key) {
+        if (contract == null || !contract.has(key) || contract.get(key).isJsonNull()) {
+            return;
+        }
+        contract.addProperty(key, normalizeDate(contract.get(key).getAsString()));
+    }
+
+    private String normalizeDate(String rawDate) {
+        if (rawDate == null || rawDate.trim().isEmpty()) {
+            return "";
+        }
+
+        String input = rawDate.trim()
+                .replace(".", "/")
+                .replace("-", "/")
+                .replaceAll("\\s+", "");
+
+        DateTimeFormatter[] formatters = new DateTimeFormatter[] {
+                DateTimeFormatter.ISO_LOCAL_DATE,
+                DateTimeFormatter.ofPattern("d/M/uuuu", Locale.ROOT),
+                DateTimeFormatter.ofPattern("d/M/uu", Locale.ROOT),
+                DateTimeFormatter.ofPattern("uuuu/M/d", Locale.ROOT)
+        };
+
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                LocalDate parsed = LocalDate.parse(input, formatter);
+                return parsed.format(DateTimeFormatter.ISO_LOCAL_DATE);
+            } catch (DateTimeParseException ignore) {
+            }
+        }
+
+        return "";
+    }
+
+    private String saveExtractionFile(HttpServletRequest req, Part filePart) throws IOException {
+        if (filePart == null || filePart.getSize() == 0) {
+            return null;
+        }
+
+        String originalName = filePart.getSubmittedFileName();
+        if (originalName == null || originalName.trim().isEmpty()) {
+            originalName = "source";
+        }
+        String safeOriginal = Paths.get(originalName).getFileName().toString();
+
+        String ext = "";
+        int dot = safeOriginal.lastIndexOf('.');
+        if (dot >= 0) {
+            ext = safeOriginal.substring(dot).toLowerCase(Locale.ROOT);
+        }
+
+        String contentType = filePart.getContentType() == null ? "" : filePart.getContentType().toLowerCase(Locale.ROOT);
+        if (ext.isEmpty()) {
+            ext = contentType.equals("application/pdf") ? ".pdf" : ".png";
+        }
+
+        String uploadFolder = "/uploads/ai-extractions";
+        String uploadDir = req.getServletContext().getRealPath(uploadFolder);
+        File dir = new File(uploadDir);
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IOException("Không thể tạo thư mục lưu file trích xuất AI.");
+        }
+
+        String fileName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().replace("-", "") + ext;
+        filePart.write(new File(dir, fileName).getAbsolutePath());
+
+        return "uploads/ai-extractions/" + fileName;
     }
 
     private String resolveApiKey(HttpServletRequest req) {
