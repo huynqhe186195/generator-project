@@ -230,7 +230,8 @@
                     <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="deviceForm">
                         <input type="hidden" name="action" value="assignSerialSubmit" />
                         <input type="hidden" name="contractId" value="${contract.id}" />
-                        <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile" value="" />
+                        <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile"
+                            value="${aiSavedSourceFile}" />
 
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Danh sách thiết bị</h6>
@@ -251,23 +252,52 @@
                                     </tr>
                                 </thead>
                                 <tbody id="deviceTableBody">
-                                    <tr>
-                                        <td>
-                                            <select name="modelIds" class="form-select">
-                                                <option value="">-- Chọn model --</option>
-                                                <c:forEach var="m" items="${models}">
-                                                    <option value="${m.id}">${m.name}</option>
-                                                </c:forEach>
-                                            </select>
-                                        </td>
-                                        <td><input type="text" class="form-control" name="serialNumbers" required></td>
-                                        <td><input type="date" class="form-control" name="purchaseDates"></td>
-                                        <td><input type="number" class="form-control" name="manufactureYears" min="1990"
-                                                max="2100"></td>
-                                        <td><input type="text" class="form-control" name="currentLocations"></td>
-                                        <td class="text-center"><button type="button"
-                                                class="btn btn-sm btn-outline-danger remove-row-btn">×</button></td>
-                                    </tr>
+                                    <c:choose>
+                                        <c:when test="${not empty draftRows}">
+                                            <c:forEach var="r" items="${draftRows}">
+                                                <tr>
+                                                    <td>
+                                                        <select name="modelIds" class="form-select">
+                                                            <option value="">-- Chọn model --</option>
+                                                            <c:forEach var="m" items="${models}">
+                                                                <option value="${m.id}" ${m.id == r.modelId ? 'selected' : ''}>${m.name}
+                                                                </option>
+                                                            </c:forEach>
+                                                        </select>
+                                                    </td>
+                                                    <td><input type="text" class="form-control" name="serialNumbers" required
+                                                            value="${r.serialNumber}"></td>
+                                                    <td><input type="date" class="form-control" name="purchaseDates"
+                                                            value="${r.purchaseDate}"></td>
+                                                    <td><input type="number" class="form-control" name="manufactureYears" min="1990"
+                                                            max="2100" value="${r.manufactureYear}"></td>
+                                                    <td><input type="text" class="form-control" name="currentLocations"
+                                                            value="${r.currentLocation}"></td>
+                                                    <td class="text-center"><button type="button"
+                                                            class="btn btn-sm btn-outline-danger remove-row-btn">×</button></td>
+                                                </tr>
+                                            </c:forEach>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <tr>
+                                                <td>
+                                                    <select name="modelIds" class="form-select">
+                                                        <option value="">-- Chọn model --</option>
+                                                        <c:forEach var="m" items="${models}">
+                                                            <option value="${m.id}">${m.name}</option>
+                                                        </c:forEach>
+                                                    </select>
+                                                </td>
+                                                <td><input type="text" class="form-control" name="serialNumbers" required></td>
+                                                <td><input type="date" class="form-control" name="purchaseDates"></td>
+                                                <td><input type="number" class="form-control" name="manufactureYears" min="1990"
+                                                        max="2100"></td>
+                                                <td><input type="text" class="form-control" name="currentLocations"></td>
+                                                <td class="text-center"><button type="button"
+                                                        class="btn btn-sm btn-outline-danger remove-row-btn">×</button></td>
+                                            </tr>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </tbody>
                             </table>
                         </div>

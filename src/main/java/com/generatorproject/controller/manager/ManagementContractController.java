@@ -14,6 +14,7 @@ import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -306,12 +307,56 @@ public class ManagementContractController extends HttpServlet {
                 Long contractId = Long.parseLong(req.getParameter("contractId"));
                 req.setAttribute("contract", contractService.findContractById(contractId));
                 req.setAttribute("models", productModelServices.findAll());
+                req.setAttribute("draftRows", buildDraftRows(req));
+                req.setAttribute("aiSavedSourceFile", req.getParameter("aiSavedSourceFile"));
             } catch (Exception ignored) {
             }
 
             req.setAttribute("error", e.getMessage());
             req.getRequestDispatcher("/views/manager/contract/assign_serial.jsp").forward(req, resp);
         }
+    }
+
+    private List<Map<String, String>> buildDraftRows(HttpServletRequest req) {
+        String[] serialNumbers = req.getParameterValues("serialNumbers");
+        String[] modelIds = req.getParameterValues("modelIds");
+        String[] purchaseDates = req.getParameterValues("purchaseDates");
+        String[] manufactureYears = req.getParameterValues("manufactureYears");
+        String[] currentLocations = req.getParameterValues("currentLocations");
+
+        int maxLen = maxLength(serialNumbers, modelIds, purchaseDates, manufactureYears, currentLocations);
+        List<Map<String, String>> rows = new ArrayList<>();
+        if (maxLen == 0) {
+            return rows;
+        }
+
+        for (int i = 0; i < maxLen; i++) {
+            Map<String, String> row = new LinkedHashMap<>();
+            row.put("modelId", getAt(modelIds, i));
+            row.put("serialNumber", getAt(serialNumbers, i));
+            row.put("purchaseDate", getAt(purchaseDates, i));
+            row.put("manufactureYear", getAt(manufactureYears, i));
+            row.put("currentLocation", getAt(currentLocations, i));
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    private int maxLength(String[]... arrays) {
+        int max = 0;
+        for (String[] arr : arrays) {
+            if (arr != null && arr.length > max) {
+                max = arr.length;
+            }
+        }
+        return max;
+    }
+
+    private String getAt(String[] values, int idx) {
+        if (values == null || idx < 0 || idx >= values.length || values[idx] == null) {
+            return "";
+        }
+        return values[idx];
     }
 
     private Long parseLongAt(String[] values, int idx) {
