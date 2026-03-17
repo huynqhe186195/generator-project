@@ -395,7 +395,10 @@
                             </td>
 
                             <td>
-                                <p class="name mb-1 fw-bold text-primary">${p.modelName}</p>
+                                <a href="<c:url value='/products/detail'><c:param name='id' value='${p.modelId}'/></c:url>"
+                                   class="text-decoration-none">
+                                    <p class="name mb-1 fw-bold text-primary">${p.modelName}</p>
+                                </a>
                                 <div class="meta text-muted small">
                                     <span class="fw-bold">${p.brandName}</span>
                                     <c:if test="${not empty p.currentLocation}">
