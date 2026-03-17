@@ -244,11 +244,9 @@
                     <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="deviceForm">
                         <input type="hidden" name="action" value="assignSerialSubmit" />
                         <input type="hidden" name="contractId" value="${contract.id}" />
-                        <<<<<<< HEAD <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile" value="" />
-                        =======
+                        <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile" value="" />
                         <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile"
                             value="${aiSavedSourceFile}" />
-                        >>>>>>> codex/add-purchase-date-extraction-for-devices
 
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Danh sách thiết bị</h6>
