@@ -225,17 +225,17 @@
                 <div class="card soft-card mb-4">
                     <div class="card-header"><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</div>
                     <div class="card-body">
-                        <button type="button" class="owner-name-btn" id="ownerNameToggle">
-                            ${u.fullName}
-                        </button>
-                        <div class="small text-muted">Nhấn vào tên để xem chi tiết khách hàng và thiết bị của khách trong hợp đồng hiện tại.</div>
+                    <button type="button" class="owner-name-btn" id="ownerNameToggle">
+                        ${u.fullName}
+                    </button>
+                    <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
+                    <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+                    <div class="small text-muted mt-2">Nhấn vào tên để xem danh sách device khách hàng sở hữu trong hợp đồng này.</div>
 
-                        <div id="ownerDetailPanel" class="owner-detail-panel">
-                            <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
-                            <div class="mb-3"><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+                    <div id="ownerDetailPanel" class="owner-detail-panel">
 
                             <div class="fw-semibold mb-2 d-flex justify-content-between align-items-center">
-                                <span>Thiết bị thuộc hợp đồng hiện tại</span>
+                                <span>Device khách hàng sở hữu trong hợp đồng hiện tại</span>
                                 <span class="badge bg-primary">${products != null ? products.size() : 0}</span>
                             </div>
                             <c:choose>
