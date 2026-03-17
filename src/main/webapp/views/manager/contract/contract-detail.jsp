@@ -45,6 +45,8 @@
             display: none;
         }
         .owner-detail-panel.show { display: block; }
+        .contract-sidebar { position: sticky; top: 90px; }
+        @media (max-width: 991.98px) { .contract-sidebar { position: static; top: auto; } }
     </style>
 </head>
 
@@ -77,7 +79,7 @@
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-5">
+        <div class="col-lg-8">
             <div class="card soft-card mb-4">
                 <div class="card-header"><i class="fa fa-info-circle text-primary"></i> Tổng quan hợp đồng</div>
                 <div class="card-body">
@@ -158,61 +160,6 @@
                 </div>
             </div>
 
-            <div class="card soft-card mb-4">
-                <div class="card-header"><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</div>
-                <div class="card-body">
-                    <button type="button" class="owner-name-btn" id="ownerNameToggle">
-                        ${u.fullName}
-                    </button>
-                    <div class="small text-muted">Nhấn vào tên để xem chi tiết khách hàng và thiết bị của khách trong hợp đồng hiện tại.</div>
-
-                    <div id="ownerDetailPanel" class="owner-detail-panel">
-                        <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
-                        <div class="mb-3"><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
-
-                        <div class="fw-semibold mb-2 d-flex justify-content-between align-items-center">
-                            <span>Thiết bị thuộc hợp đồng hiện tại</span>
-                            <span class="badge bg-primary">${products != null ? products.size() : 0}</span>
-                        </div>
-                        <c:choose>
-                            <c:when test="${products == null || products.isEmpty()}">
-                                <div class="text-muted">Hợp đồng hiện tại chưa có thiết bị nào được gán.</div>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-bordered mb-0">
-                                        <thead class="table-light">
-                                        <tr>
-                                            <th>Serial</th>
-                                            <th>Model</th>
-                                            <th>Trạng thái</th>
-                                            <th class="text-end">Giờ chạy</th>
-                                            <th>Năm SX</th>
-                                            <th>Vị trí</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <c:forEach var="d" items="${products}">
-                                            <tr>
-                                                <td class="fw-semibold">${d.serialNumber}</td>
-                                                <td>${not empty d.modelName ? d.modelName : (not empty d.brandName ? d.brandName : '—')}</td>
-                                                <td>${not empty d.status ? d.status : '—'}</td>
-                                                <td class="text-end">${d.totalRunningHours}h</td>
-                                                <td>${d.manufactureYear != null ? d.manufactureYear : 'N/A'}</td>
-                                                <td>${not empty d.currentLocation ? d.currentLocation : '—'}</td>
-                                            </tr>
-                                        </c:forEach>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-7">
             <div class="card soft-card">
                 <div class="card-header"><i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng</div>
                 <div class="card-body p-0">
@@ -242,6 +189,63 @@
                             </c:if>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="contract-sidebar">
+                <div class="card soft-card mb-4">
+                    <div class="card-header"><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</div>
+                    <div class="card-body">
+                        <button type="button" class="owner-name-btn" id="ownerNameToggle">
+                            ${u.fullName}
+                        </button>
+                        <div class="small text-muted">Nhấn vào tên để xem chi tiết khách hàng và thiết bị của khách trong hợp đồng hiện tại.</div>
+
+                        <div id="ownerDetailPanel" class="owner-detail-panel">
+                            <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
+                            <div class="mb-3"><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+
+                            <div class="fw-semibold mb-2 d-flex justify-content-between align-items-center">
+                                <span>Thiết bị thuộc hợp đồng hiện tại</span>
+                                <span class="badge bg-primary">${products != null ? products.size() : 0}</span>
+                            </div>
+                            <c:choose>
+                                <c:when test="${products == null || products.isEmpty()}">
+                                    <div class="text-muted">Hợp đồng hiện tại chưa có thiết bị nào được gán.</div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered mb-0">
+                                            <thead class="table-light">
+                                            <tr>
+                                                <th>Serial</th>
+                                                <th>Model</th>
+                                                <th>Trạng thái</th>
+                                                <th class="text-end">Giờ chạy</th>
+                                                <th>Năm SX</th>
+                                                <th>Vị trí</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <c:forEach var="d" items="${products}">
+                                                <tr>
+                                                    <td class="fw-semibold">${d.serialNumber}</td>
+                                                    <td>${not empty d.modelName ? d.modelName : (not empty d.brandName ? d.brandName : '—')}</td>
+                                                    <td>${not empty d.status ? d.status : '—'}</td>
+                                                    <td class="text-end">${d.totalRunningHours}h</td>
+                                                    <td>${d.manufactureYear != null ? d.manufactureYear : 'N/A'}</td>
+                                                    <td>${not empty d.currentLocation ? d.currentLocation : '—'}</td>
+                                                </tr>
+                                            </c:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
                 </div>
             </div>
