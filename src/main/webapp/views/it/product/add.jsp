@@ -7,28 +7,28 @@
 <div class="container-fluid py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold text-dark mb-0">Thêm Product Model</h3>
+        <h3 class="fw-bold text-dark mb-0">Thêm mẫu sản phẩm</h3>
         <a href="${ctx}/it/products" class="btn btn-outline-secondary btn-sm">Quay lại</a>
     </div>
 
-    <!-- Error từ ProductModelAddController -->
+    <!-- Lỗi từ ProductModelAddController -->
     <c:if test="${not empty error}">
         <div class="alert alert-danger">${error}</div>
     </c:if>
 
-    <!-- Error/Success từ BrandAddController redirect về -->
+    <!-- Lỗi/Thành công từ BrandAddController redirect về -->
     <c:if test="${not empty param.brandError}">
         <div class="alert alert-danger">
             <c:choose>
-                <c:when test="${param.brandError == 'NameRequired'}">Tên Brand không được để trống.</c:when>
-                <c:when test="${param.brandError == 'InsertFailed'}">Không thể thêm Brand. Vui lòng thử lại.</c:when>
-                <c:otherwise>Lỗi thêm Brand.</c:otherwise>
+                <c:when test="${param.brandError == 'NameRequired'}">Tên hãng không được để trống.</c:when>
+                <c:when test="${param.brandError == 'InsertFailed'}">Không thể thêm hãng. Vui lòng thử lại.</c:when>
+                <c:otherwise>Có lỗi khi thêm hãng.</c:otherwise>
             </c:choose>
         </div>
     </c:if>
 
     <c:if test="${not empty param.brandAdded}">
-        <div class="alert alert-success">Đã thêm Brand thành công!</div>
+        <div class="alert alert-success">Đã thêm hãng thành công!</div>
     </c:if>
 
     <div class="card shadow-sm">
@@ -37,18 +37,18 @@
             <form action="${ctx}/it/products/add" method="post" enctype="multipart/form-data" class="row g-3">
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Name *</label>
+                    <label class="form-label fw-bold">Tên *</label>
                     <input type="text" name="name" class="form-control" required>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Slug (optional)</label>
-                    <input type="text" name="slug" class="form-control" placeholder="Tự sinh nếu để trống">
+                    <label class="form-label fw-bold">Slug (không bắt buộc)</label>
+                    <input type="text" name="slug" class="form-control" placeholder="Tự tạo nếu để trống">
                 </div>
 
-                <!-- Brand + nút thêm Brand -->
+                <!-- Hãng + nút thêm hãng -->
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Brand *</label>
+                    <label class="form-label fw-bold">Hãng *</label>
 
                     <div class="d-flex gap-2">
                         <select class="form-select" name="brandId" required>
@@ -61,14 +61,14 @@
 
                         <button type="button" class="btn btn-outline-primary"
                                 data-bs-toggle="modal" data-bs-target="#addBrandModal">
-                            + Brand
+                            + Hãng
                         </button>
                     </div>
-                    <small class="text-muted">Nếu chưa có hãng, bấm “+ Brand” để thêm nhanh.</small>
+                    <small class="text-muted">Nếu chưa có hãng, bấm “+ Hãng” để thêm nhanh.</small>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Category *</label>
+                    <label class="form-label fw-bold">Danh mục *</label>
                     <select class="form-select" name="categoryId" required>
                         <option value="">-- Chọn danh mục --</option>
                         <c:forEach items="${categories}" var="cat">
@@ -78,49 +78,49 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Origin</label>
-                    <input type="text" name="origin" class="form-control" placeholder="VD: Japan">
+                    <label class="form-label fw-bold">Xuất xứ</label>
+                    <input type="text" name="origin" class="form-control" placeholder="VD: Nhật Bản">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Fuel type *</label>
+                    <label class="form-label fw-bold">Loại nhiên liệu *</label>
                     <select class="form-select" name="fuelType" required>
                         <option value="">-- Chọn --</option>
-                        <option value="DIESEL">DIESEL</option>
-                        <option value="GASOLINE">GASOLINE</option>
-                        <option value="OTHER">OTHER</option>
+                        <option value="DIESEL">Dầu diesel</option>
+                        <option value="GASOLINE">Xăng</option>
+                        <option value="OTHER">Khác</option>
                     </select>
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label fw-bold">Power</label>
+                    <label class="form-label fw-bold">Công suất</label>
                     <input type="number" step="0.01" name="power" class="form-control" placeholder="VD: 150.00">
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Status *</label>
+                    <label class="form-label fw-bold">Trạng thái *</label>
                     <select class="form-select" name="status" required>
                         <option value="">-- Chọn --</option>
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="INACTIVE">INACTIVE</option>
-                        <option value="COMING_SOON">COMING_SOON</option>
+                        <option value="ACTIVE">Đang hoạt động</option>
+                        <option value="INACTIVE">Ngừng hoạt động</option>
+                        <option value="COMING_SOON">Sắp ra mắt</option>
                     </select>
                 </div>
 
                 <!-- Upload nhiều ảnh -->
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Images (optional)</label>
+                    <label class="form-label fw-bold">Hình ảnh (không bắt buộc)</label>
                     <input type="file" name="imageFiles" class="form-control" accept="image/*" multiple>
-                    <small class="text-muted">Có thể chọn nhiều ảnh. Lưu vào /uploads/product-models</small>
+                    <small class="text-muted">Có thể chọn nhiều ảnh. Ảnh sẽ được lưu vào /uploads/product-models</small>
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label fw-bold">Description</label>
+                    <label class="form-label fw-bold">Mô tả</label>
                     <textarea name="description" class="form-control" rows="3"></textarea>
                 </div>
 
                 <div class="col-12">
-                    <label class="form-label fw-bold">Specifications</label>
+                    <label class="form-label fw-bold">Thông số kỹ thuật</label>
                     <textarea name="specifications" class="form-control" rows="3"></textarea>
                 </div>
 
@@ -132,51 +132,51 @@
             </form>
 
             <div class="text-muted small mt-2">
-                * PDF thông tin sản phẩm sẽ được xuất tự động ở trang Detail (nút "Xuất PDF").
+                * Tệp PDF thông tin sản phẩm sẽ được xuất tự động ở trang chi tiết (nút "Xuất PDF").
             </div>
 
         </div>
     </div>
 </div>
 
-<!-- ================== MODAL: ADD BRAND ================== -->
+<!-- ================== MODAL: THÊM HÃNG ================== -->
 <div class="modal fade" id="addBrandModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Thêm Brand</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Thêm hãng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
 
             <form action="${ctx}/it/brands/add" method="post">
                 <div class="modal-body">
-                    <!-- quay lại trang add product và auto chọn brand mới -->
+                    <!-- quay lại trang thêm product và tự động chọn brand mới -->
                     <input type="hidden" name="returnUrl" value="${ctx}/it/products/add" />
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Name *</label>
+                        <label class="form-label fw-bold">Tên *</label>
                         <input type="text" name="name" class="form-control" required />
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Slug (optional)</label>
-                        <input type="text" name="slug" class="form-control" placeholder="Tự sinh nếu để trống" />
+                        <label class="form-label fw-bold">Slug (không bắt buộc)</label>
+                        <input type="text" name="slug" class="form-control" placeholder="Tự tạo nếu để trống" />
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Logo URL (optional)</label>
+                        <label class="form-label fw-bold">Đường dẫn logo (không bắt buộc)</label>
                         <input type="text" name="logoUrl" class="form-control" placeholder="https://..." />
                     </div>
 
                     <small class="text-muted">
-                        Sau khi lưu Brand, hệ thống sẽ quay lại form Product và tự chọn Brand vừa tạo.
+                        Sau khi lưu hãng, hệ thống sẽ quay lại biểu mẫu sản phẩm và tự chọn hãng vừa tạo.
                     </small>
                 </div>
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Lưu Brand</button>
+                    <button type="submit" class="btn btn-primary">Lưu hãng</button>
                 </div>
             </form>
 
@@ -184,7 +184,7 @@
     </div>
 </div>
 
-<!-- Auto open modal nếu add brand bị lỗi -->
+<!-- Tự mở modal nếu thêm hãng bị lỗi -->
 <c:if test="${not empty param.brandError}">
     <script>
         document.addEventListener("DOMContentLoaded", function () {
