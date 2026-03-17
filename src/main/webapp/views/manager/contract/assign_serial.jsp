@@ -6,72 +6,99 @@
                 position: fixed;
                 right: 24px;
                 bottom: 24px;
-                width: 60px;
-                height: 60px;
+                width: 62px;
+                height: 62px;
                 border-radius: 50%;
                 border: none;
-                background: linear-gradient(135deg, #0d6efd, #4b8bff);
+                background: linear-gradient(135deg, #2f7bff, #6559ff 55%, #8f63ff);
                 color: #fff;
                 font-size: 22px;
-                box-shadow: 0 10px 20px rgba(13, 110, 253, .35);
+                box-shadow: 0 14px 30px rgba(66, 85, 255, .45);
                 z-index: 2000;
+                transition: transform .2s ease, box-shadow .2s ease;
+                animation: bubblePulse 2.4s ease-in-out infinite;
+            }
+
+            .chatbot-bubble:hover {
+                transform: translateY(-2px) scale(1.02);
+                box-shadow: 0 18px 36px rgba(66, 85, 255, .5);
             }
 
             .chatbot-panel {
                 position: fixed;
                 right: 24px;
                 bottom: 96px;
-                width: min(420px, calc(100vw - 32px));
-                height: min(620px, 76vh);
+                width: min(430px, calc(100vw - 28px));
+                height: min(640px, 78vh);
                 background: #fff;
                 border: 1px solid #d7e4ff;
-                border-radius: 14px;
-                box-shadow: 0 16px 30px rgba(0, 0, 0, .18);
+                border-radius: 18px;
+                box-shadow: 0 22px 48px rgba(22, 33, 74, .25);
                 z-index: 2000;
-                display: none;
                 overflow: hidden;
+                opacity: 0;
+                transform: translateY(14px) scale(.98);
+                pointer-events: none;
+                transition: opacity .24s ease, transform .24s ease;
+            }
+
+            .chatbot-panel.open {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                pointer-events: auto;
             }
 
             .chatbot-header {
-                background: #0d6efd;
+                background: linear-gradient(120deg, #2567f8, #4b78ff 50%, #7f69ff);
                 color: #fff;
-                padding: 10px 14px;
+                padding: 12px 14px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
             }
 
+            .chatbot-header strong {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                letter-spacing: .2px;
+            }
+
             .chatbot-body {
                 display: flex;
                 flex-direction: column;
-                height: calc(100% - 48px);
-                background: #f8fbff;
+                height: calc(100% - 52px);
+                background: linear-gradient(180deg, #f7faff 0%, #f4f8ff 35%, #ffffff 100%);
             }
 
             .chat-messages {
                 flex: 1;
                 overflow-y: auto;
-                padding: 12px;
+                padding: 14px;
             }
 
             .chat-msg {
-                border-radius: 12px;
-                padding: 10px 12px;
+                border-radius: 14px;
+                padding: 11px 13px;
                 margin-bottom: 10px;
                 max-width: 90%;
-                font-size: 14px;
+                font-size: 13.5px;
                 white-space: pre-wrap;
                 word-break: break-word;
+                animation: msgIn .2s ease;
             }
 
             .chat-msg.user {
-                background: #dbe8ff;
+                background: linear-gradient(120deg, #d7e8ff, #cfe0ff);
                 margin-left: auto;
+                border: 1px solid #c8dcff;
             }
 
             .chat-msg.bot {
                 background: #ffffff;
                 border: 1px solid #d9e7ff;
+                box-shadow: 0 4px 10px rgba(79, 119, 255, .08);
             }
 
             .chat-composer {
@@ -103,26 +130,49 @@
                 flex: 1;
                 border: 1px solid #d4ddf5;
                 border-radius: 12px;
-                padding: 9px 12px;
+                padding: 10px 12px;
                 outline: none;
+                transition: border-color .15s ease, box-shadow .15s ease;
+            }
+
+            .chat-input:focus {
+                border-color: #7aa5ff;
+                box-shadow: 0 0 0 3px rgba(101, 134, 255, .15);
+            }
+
+            .chat-icon-btn,
+            .chat-send-btn {
+                border: none;
+                width: 39px;
+                height: 39px;
+                border-radius: 11px;
+                transition: transform .15s ease, filter .15s ease;
             }
 
             .chat-icon-btn {
-                border: none;
-                width: 38px;
-                height: 38px;
-                border-radius: 10px;
                 background: #eff4ff;
                 color: #2e6ef7;
             }
 
             .chat-send-btn {
-                border: none;
-                width: 38px;
-                height: 38px;
-                border-radius: 10px;
-                background: #2e6ef7;
+                background: linear-gradient(120deg, #2f7bff, #6559ff);
                 color: #fff;
+            }
+
+            .chat-icon-btn:hover,
+            .chat-send-btn:hover {
+                transform: translateY(-1px);
+                filter: brightness(1.03);
+            }
+
+            @keyframes msgIn {
+                from { opacity: 0; transform: translateY(6px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            @keyframes bubblePulse {
+                0%, 100% { box-shadow: 0 14px 30px rgba(66, 85, 255, .35); }
+                50% { box-shadow: 0 18px 38px rgba(66, 85, 255, .55); }
             }
         </style>
 
@@ -180,6 +230,7 @@
                     <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="deviceForm">
                         <input type="hidden" name="action" value="assignSerialSubmit" />
                         <input type="hidden" name="contractId" value="${contract.id}" />
+                        <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile" value="" />
 
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Danh sách thiết bị</h6>
@@ -239,7 +290,7 @@
 
         <div class="chatbot-panel" id="chatbotPanel">
             <div class="chatbot-header">
-                <strong>AI trợ lý hợp đồng</strong>
+                <strong><span style="width:8px;height:8px;border-radius:50%;background:#7cffb2;display:inline-block;box-shadow:0 0 0 5px rgba(124,255,178,.2);"></span>AI trợ lý hợp đồng</strong>
                 <button type="button" class="btn btn-sm btn-light" id="closeChatbotBtn">×</button>
             </div>
 
@@ -286,6 +337,7 @@
                 const addRowBtn = document.getElementById('addRowBtn');
                 const tableBody = document.getElementById('deviceTableBody');
                 const contractNumberView = document.getElementById('contractNumberView');
+                const aiSavedSourceFile = document.getElementById('aiSavedSourceFile');
 
                 const aiSourceFile = document.getElementById('aiSourceFile');
                 const geminiApiKey = document.getElementById('geminiApiKey');
@@ -359,13 +411,19 @@
                         tr.querySelector('input[name="serialNumbers"]').value = device.serialNumber || '';
                         tr.querySelector('input[name="manufactureYears"]').value = device.manufactureYear || '';
                         tr.querySelector('input[name="currentLocations"]').value = device.currentLocation || '';
+                        tr.querySelector('input[name="purchaseDates"]').value = device.purchaseDate || '';
 
-                        if (device.modelName) {
+                        const modelNameRaw = (device && device.modelName != null) ? String(device.modelName).trim() : '';
+                        if (modelNameRaw) {
                             const option = Array.prototype.find.call(modelSelect.options, function (op) {
-                                return op.textContent.trim() === device.modelName.trim();
+                                return op.textContent && op.textContent.trim().toLowerCase() === modelNameRaw.toLowerCase();
                             });
                             if (option) {
                                 modelSelect.value = option.value;
+                            } else {
+                                modelSelect.value = '';
+                                tr.dataset.modelUnmatched = 'true';
+                                tr.dataset.aiModelName = modelNameRaw;
                             }
                         }
                     }
@@ -447,6 +505,24 @@
                                 });
                                 bindRemoveButtons();
                                 addMessage('Mình đã tự điền ' + devices.length + ' thiết bị vào bảng bên dưới.', 'bot');
+
+                                const unmatchedRows = [];
+                                Array.prototype.forEach.call(tableBody.rows, function (row, idx) {
+                                    if (!(row.dataset && row.dataset.modelUnmatched === 'true')) {
+                                        return;
+                                    }
+                                    const modelName = row.dataset.aiModelName || '(không rõ)';
+                                    row.querySelector('select[name="modelIds"]').classList.add('is-invalid');
+                                    unmatchedRows.push('Dòng ' + (idx + 1) + ' - cột Model: "' + modelName + '" không tồn tại trong hệ thống');
+                                });
+                                if (unmatchedRows.length > 0) {
+                                    addMessage('AI bỏ trống các giá trị Model không hợp lệ để tránh fill sai. Vui lòng kiểm tra các lỗi sau:\n- ' + unmatchedRows.join('\n- '), 'bot');
+                                }
+                            }
+
+                            if (data.savedSourceFile) {
+                                aiSavedSourceFile.value = data.savedSourceFile;
+                                addMessage('Đã lưu file nguồn tạm: ' + data.savedSourceFile + '. Khi bấm Lưu danh sách thiết bị, hệ thống mới cập nhật vào hợp đồng.', 'bot');
                             }
 
                             if (extracted.contract && extracted.contract.contractNumber) {
@@ -465,12 +541,15 @@
                 }
 
                 chatBubbleBtn.addEventListener('click', function () {
-                    chatbotPanel.style.display = 'block';
+                    chatbotPanel.classList.add('open');
                     chatBubbleBtn.style.display = 'none';
+                    setTimeout(function () {
+                        chatInput.focus();
+                    }, 160);
                 });
 
                 closeChatbotBtn.addEventListener('click', function () {
-                    chatbotPanel.style.display = 'none';
+                    chatbotPanel.classList.remove('open');
                     chatBubbleBtn.style.display = 'inline-block';
                 });
 
