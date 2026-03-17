@@ -180,6 +180,7 @@
                     <form method="post" action="${pageContext.request.contextPath}/manager/contracts" id="deviceForm">
                         <input type="hidden" name="action" value="assignSerialSubmit" />
                         <input type="hidden" name="contractId" value="${contract.id}" />
+                        <input type="hidden" name="aiSavedSourceFile" id="aiSavedSourceFile" value="" />
 
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Danh sách thiết bị</h6>
@@ -286,6 +287,7 @@
                 const addRowBtn = document.getElementById('addRowBtn');
                 const tableBody = document.getElementById('deviceTableBody');
                 const contractNumberView = document.getElementById('contractNumberView');
+                const aiSavedSourceFile = document.getElementById('aiSavedSourceFile');
 
                 const aiSourceFile = document.getElementById('aiSourceFile');
                 const geminiApiKey = document.getElementById('geminiApiKey');
@@ -359,13 +361,19 @@
                         tr.querySelector('input[name="serialNumbers"]').value = device.serialNumber || '';
                         tr.querySelector('input[name="manufactureYears"]').value = device.manufactureYear || '';
                         tr.querySelector('input[name="currentLocations"]').value = device.currentLocation || '';
+                        tr.querySelector('input[name="purchaseDates"]').value = device.purchaseDate || '';
 
-                        if (device.modelName) {
+                        const modelNameRaw = (device && device.modelName != null) ? String(device.modelName).trim() : '';
+                        if (modelNameRaw) {
                             const option = Array.prototype.find.call(modelSelect.options, function (op) {
-                                return op.textContent.trim() === device.modelName.trim();
+                                return op.textContent && op.textContent.trim().toLowerCase() === modelNameRaw.toLowerCase();
                             });
                             if (option) {
                                 modelSelect.value = option.value;
+                            } else {
+                                modelSelect.value = '';
+                                tr.dataset.modelUnmatched = 'true';
+                                tr.dataset.aiModelName = modelNameRaw;
                             }
                         }
                     }
@@ -447,6 +455,18 @@
                                 });
                                 bindRemoveButtons();
                                 addMessage('Mình đã tự điền ' + devices.length + ' thiết bị vào bảng bên dưới.', 'bot');
+
+                                const unmatchedRows = Array.prototype.filter.call(tableBody.rows, function (row) {
+                                    return row.dataset && row.dataset.modelUnmatched === 'true';
+                                });
+                                if (unmatchedRows.length > 0) {
+                                    addMessage('Có ' + unmatchedRows.length + ' thiết bị chưa map được model trong hệ thống. Vui lòng chọn model thủ công trước khi lưu.', 'bot');
+                                }
+                            }
+
+                            if (data.savedSourceFile) {
+                                aiSavedSourceFile.value = data.savedSourceFile;
+                                addMessage('Đã lưu file nguồn tạm: ' + data.savedSourceFile + '. Khi bấm Lưu danh sách thiết bị, hệ thống mới cập nhật vào hợp đồng.', 'bot');
                             }
 
                             if (extracted.contract && extracted.contract.contractNumber) {
