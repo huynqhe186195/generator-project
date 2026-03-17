@@ -32,7 +32,7 @@
             color: var(--ink);
         }
 
-        /* NAVBAR (Giữ nguyên của bạn) */
+        /* NAVBAR */
         .navbar-landing{
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             padding: 14px 0;
@@ -100,6 +100,9 @@
         </div>
 
         <div class="row g-4">
+            <%-- =============================================== --%>
+            <%-- CỘT TRÁI: THÔNG TIN THIẾT BỊ & VẬT TƯ             --%>
+            <%-- =============================================== --%>
             <div class="col-lg-8">
 
                 <div class="card-custom mb-4">
@@ -126,7 +129,6 @@
                             <tr>
                                 <th class="ps-4">Tên Vật Tư</th>
                                 <th class="text-center">Số lượng</th>
-                                <%-- THÊM CỘT ĐƠN GIÁ --%>
                                 <th class="text-end">Đơn giá</th>
                                 <th class="text-end pe-4">Thành tiền</th>
                             </tr>
@@ -134,7 +136,6 @@
                             <tbody>
                             <c:choose>
                                 <c:when test="${empty repairRequest.materials}">
-                                    <%-- Sửa colspan thành 4 cho khớp số cột --%>
                                     <tr><td colspan="4" class="text-center py-4 text-muted">Không có vật tư đề xuất.</td></tr>
                                 </c:when>
                                 <c:otherwise>
@@ -149,15 +150,11 @@
                                             <td class="text-center">
                                                 <span class="badge bg-light text-dark border">${mat.quantityUsed}</span>
                                             </td>
-
-                                                <%-- HIỂN THỊ ĐƠN GIÁ --%>
                                             <td class="text-end text-muted">
-                                                <fmt:formatNumber value="${mat.unitPrice}" pattern="#,###"/> đ
+                                                <fmt:formatNumber value="${mat.unitPrice}" pattern="#,###"/> VNĐ
                                             </td>
-
-                                                <%-- HIỂN THỊ THÀNH TIỀN (Số lượng * Đơn giá) --%>
                                             <td class="text-end pe-4 fw-bold text-primary">
-                                                <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> đ
+                                                <fmt:formatNumber value="${mat.costAtTime}" pattern="#,###"/> VNĐ
                                             </td>
                                         </tr>
                                     </c:forEach>
@@ -169,25 +166,31 @@
                 </div>
             </div>
 
+            <%-- =============================================== --%>
+            <%-- CỘT PHẢI: TỔNG KẾT CHI PHÍ & NÚT PHẢN HỒI         --%>
+            <%-- =============================================== --%>
             <div class="col-lg-4">
                 <div class="card-custom position-sticky" style="top: 90px;">
                     <div class="card-header-soft text-center"><i class="fas fa-receipt me-2"></i>Tổng kết chi phí</div>
                     <div class="card-body p-4">
+
+                        <%-- Mở khóa phần Tổng tiền vật tư và Phí nhân công --%>
                         <div class="d-flex justify-content-between mb-3">
-                            <span class="text-muted">Phí vật tư:</span>
+                            <span class="text-muted">Tổng tiền vật tư:</span>
                             <span class="fw-bold"><fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ</span>
                         </div>
-<%--                        <div class="d-flex justify-content-between mb-3">--%>
-<%--                            <span class="text-muted">Phí nhân công:</span>--%>
-<%--                            <span class="fw-bold"><fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> VNĐ</span>--%>
-<%--                        </div>--%>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Phí nhân công:</span>
+                            <span class="fw-bold"><fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> VNĐ</span>
+                        </div>
 
                         <hr class="my-4 border-secondary opacity-25">
 
                         <div class="total-box mb-4">
                             <div class="text-center text-uppercase fw-bold text-muted small mb-2">Tổng Thanh Toán</div>
                             <h2 class="fw-bold text-danger text-center mb-0">
-                                <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ
+                                <%-- Đổi thành grandTotal --%>
+                                <fmt:formatNumber value="${repairRequest.grandTotal}" pattern="#,###"/> VNĐ
                             </h2>
                         </div>
 

@@ -41,16 +41,34 @@ public class StaffInvoiceDetailController extends HttpServlet {
             }
 
             // ==========================================
-            // THÊM ĐOẠN NÀY ĐỂ LẤY CHI TIẾT VẬT TƯ THAY THẾ
+            // XỬ LÝ DỮ LIỆU VẬT TƯ & NHÂN CÔNG
             // ==========================================
-            // Giả sử model Invoice của bạn có hàm getQuoteId()
+            double partsTotal = 0; // Biến lưu tổng tiền vật tư
+            double laborCost = 0;  // Biến lưu phí nhân công
+
             if (invoice.getQuoteId() != null && invoice.getQuoteId() > 0) {
                 List<QuoteDetail> quoteDetails = quoteDetailService.findByQuoteId(invoice.getQuoteId());
                 req.setAttribute("quoteDetails", quoteDetails);
-            }
-            // ==========================================
 
+                // Tính tổng tiền vật tư bằng cách cộng dồn
+                if (quoteDetails != null && !quoteDetails.isEmpty()) {
+                    for (QuoteDetail detail : quoteDetails) {
+                        partsTotal += detail.getTotalPrice();
+                    }
+                }
+            }
+
+            // Phí nhân công = Tổng trước thuế (subtotal) - Tổng tiền vật tư
+            // Nếu không có vật tư (partsTotal = 0) thì toàn bộ subtotal chính là phí dịch vụ/nhân công
+            laborCost = invoice.getSubtotal() - partsTotal;
+
+            // Đẩy 2 biến mới này sang JSP để hiển thị
+            req.setAttribute("partsTotal", partsTotal);
+            req.setAttribute("laborCost", laborCost);
+
+            // Đẩy hóa đơn sang
             req.setAttribute("invoice", invoice);
+
             req.getRequestDispatcher("/views/staff/invoice-detail.jsp").forward(req, resp);
 
         } catch (Exception e) {
@@ -121,12 +139,17 @@ public class StaffInvoiceDetailController extends HttpServlet {
                     emailBody.append("<p>Cảm ơn Quý khách đã tin tưởng sử dụng dịch vụ của chúng tôi. Dưới đây là chi tiết bảng kê cho hóa đơn mã số <strong>").append(invoiceCode).append("</strong>:</p>");
 
                     // Vẽ Bảng Chi Tiết Bằng HTML
+                    // ... (Code phần Header Email giữ nguyên) ...
+
+                    // Vẽ Bảng Chi Tiết Bằng HTML
                     emailBody.append("<table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>");
                     emailBody.append("<thead><tr style='background-color: #f1f5f9; text-align: left;'>");
                     emailBody.append("<th style='padding: 12px; border: 1px solid #cbd5e1;'>Nội dung / Phụ tùng</th>");
                     emailBody.append("<th style='padding: 12px; border: 1px solid #cbd5e1; text-align: center;'>SL</th>");
                     emailBody.append("<th style='padding: 12px; border: 1px solid #cbd5e1; text-align: right;'>Thành tiền</th>");
                     emailBody.append("</tr></thead><tbody>");
+
+                    double partsTotal = 0; // Biến lưu tổng tiền vật tư
 
                     // Đổ dữ liệu vật tư vào bảng
                     if (details != null && !details.isEmpty()) {
@@ -137,8 +160,26 @@ public class StaffInvoiceDetailController extends HttpServlet {
                             emailBody.append("<td style='padding: 12px; border: 1px solid #cbd5e1; text-align: right; color: #0f172a; font-weight: bold;'>")
                                     .append(String.format("%,.0f", item.getTotalPrice())).append(" đ</td>");
                             emailBody.append("</tr>");
+
+                            // Cộng dồn tiền vật tư
+                            partsTotal += item.getTotalPrice();
                         }
-                    } else { // Nếu hóa đơn không có vật tư (Chỉ có tổng tiền)
+
+                        // Tính Phí nhân công = Tổng trước thuế (subtotal) - Tổng vật tư
+                        double laborCost = invoice.getSubtotal() - partsTotal;
+
+                        // Thêm 1 dòng riêng cho Phí nhân công vào cuối bảng (Nếu có)
+                        if (laborCost > 0) {
+                            emailBody.append("<tr style='background-color: #f8fafc;'>");
+                            emailBody.append("<td style='padding: 12px; border: 1px solid #cbd5e1; font-weight: bold; color: #334155;'>Phí nhân công sửa chữa / bảo trì</td>");
+                            emailBody.append("<td style='padding: 12px; border: 1px solid #cbd5e1; text-align: center;'>1</td>");
+                            emailBody.append("<td style='padding: 12px; border: 1px solid #cbd5e1; text-align: right; color: #0f172a; font-weight: bold;'>")
+                                    .append(String.format("%,.0f", laborCost)).append(" đ</td>");
+                            emailBody.append("</tr>");
+                        }
+
+                    } else {
+                        // Nếu hóa đơn không có vật tư, gộp chung thành 1 dòng phí dịch vụ
                         emailBody.append("<tr>");
                         emailBody.append("<td style='padding: 12px; border: 1px solid #cbd5e1;'>Chi phí sửa chữa / Bảo trì thiết bị (Tham chiếu: #").append(invoice.getMaintenanceId()).append(")</td>");
                         emailBody.append("<td style='padding: 12px; border: 1px solid #cbd5e1; text-align: center;'>1</td>");
@@ -148,12 +189,24 @@ public class StaffInvoiceDetailController extends HttpServlet {
                     }
                     emailBody.append("</tbody></table>");
 
-                    // Phần Tổng Tiền
+                    // ==========================================
+                    // Phần Tổng Tiền (Hiển thị chi tiết rõ ràng cho khách)
+                    // ==========================================
                     emailBody.append("<div style='text-align: right; margin-bottom: 30px; font-size: 15px;'>");
-                    emailBody.append("<p>Cộng tiền dịch vụ: <strong>").append(String.format("%,.0f", invoice.getSubtotal())).append(" đ</strong></p>");
-                    emailBody.append("<p>Thuế GTGT (VAT ").append(invoice.getTaxRate()).append("%): <strong>").append(String.format("%,.0f", invoice.getTaxAmount())).append(" đ</strong></p>");
-                    emailBody.append("<h3 style='color: #dc2626; margin-top: 10px;'>TỔNG THANH TOÁN: ").append(String.format("%,.0f", invoice.getTotalAmount())).append(" VNĐ</h3>");
+
+                    // Chỉ hiện tách bạch vật tư/nhân công nếu có danh sách vật tư
+                    if (details != null && !details.isEmpty()) {
+                        double laborCost = invoice.getSubtotal() - partsTotal;
+                        emailBody.append("<p style='margin: 5px 0;'>Tổng tiền vật tư: <strong>").append(String.format("%,.0f", partsTotal)).append(" đ</strong></p>");
+                        emailBody.append("<p style='margin: 5px 0;'>Phí nhân công: <strong>").append(String.format("%,.0f", laborCost)).append(" đ</strong></p>");
+                    }
+
+                    emailBody.append("<p style='margin: 5px 0; border-top: 1px solid #cbd5e1; padding-top: 10px; display: inline-block;'>Cộng tiền dịch vụ (Trước thuế): <strong>").append(String.format("%,.0f", invoice.getSubtotal())).append(" đ</strong></p><br>");
+                    emailBody.append("<p style='margin: 5px 0;'>Thuế GTGT (VAT ").append(invoice.getTaxRate()).append("%): <strong>").append(String.format("%,.0f", invoice.getTaxAmount())).append(" đ</strong></p>");
+                    emailBody.append("<h3 style='color: #dc2626; margin-top: 15px; font-size: 20px;'>TỔNG THANH TOÁN: ").append(String.format("%,.0f", invoice.getTotalAmount())).append(" VNĐ</h3>");
                     emailBody.append("</div>");
+
+                    // ... (Code phần Nút VNPay bên dưới giữ nguyên) ...
 
                     // Nút Thanh Toán VNPay nổi bật
                     emailBody.append("<div style='text-align: center; margin: 40px 0;'>");

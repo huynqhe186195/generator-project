@@ -110,9 +110,9 @@
 
                                     <td class="text-end">
                                         <c:choose>
-                                            <c:when test="${not empty req.info.partsTotal}">
+                                            <c:when test="${not empty req.info.grandTotal}">
                                                 <div class="fw-bold text-danger">
-                                                    <fmt:formatNumber value="${req.info.partsTotal}" pattern="#,###"/> VNĐ
+                                                    <fmt:formatNumber value="${req.info.grandTotal}" pattern="#,###"/> VNĐ
                                                 </div>
                                             </c:when>
                                             <c:otherwise>

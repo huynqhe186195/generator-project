@@ -12,7 +12,7 @@ public class RepairRequestDTO {
     private BigDecimal partsTotal;
     private BigDecimal grandTotal;
     private List<MaterialDTO> materials;
-
+    private BigDecimal laborCost;
     // --- Getters and Setters cho DTO gốc ---
     public Integer getMaintenanceId() { return maintenanceId; }
     public void setMaintenanceId(Integer maintenanceId) { this.maintenanceId = maintenanceId; }
@@ -33,6 +33,14 @@ public class RepairRequestDTO {
 
     public List<MaterialDTO> getMaterials() { return materials; }
     public void setMaterials(List<MaterialDTO> materials) { this.materials = materials; }
+
+    public BigDecimal getLaborCost() {
+        return laborCost;
+    }
+
+    public void setLaborCost(BigDecimal laborCost) {
+        this.laborCost = laborCost;
+    }
 
     // --- Inner Class MaterialDTO ---
     public static class MaterialDTO {
