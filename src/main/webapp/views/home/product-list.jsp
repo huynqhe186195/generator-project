@@ -651,7 +651,7 @@
                                 <option value="">-- Chọn loại yêu cầu --</option>
                                 <option value="PERIODIC">Bảo dưỡng định kỳ</option>
                                 <option value="REPAIR">Thay thế phụ tùng</option>
-                                <option value="INSPECTION'">Báo Lỗi / Hỏng hóc</option>
+                                <option value="INSPECTION">Báo Lỗi / Hỏng hóc</option>
 
                             </select>
                         </div>

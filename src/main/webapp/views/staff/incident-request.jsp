@@ -107,16 +107,22 @@
                                                 <div class="small">
                                                     <c:choose>
                                                         <c:when test="${not empty prod}">
-                                                            <div class="fw-bold text-primary"><i
-                                                                    class="fas fa-server me-1"></i> ${prod.modelName}
+                                                            <%-- Bọc tên máy bằng thẻ a và dùng class name-link --%>
+                                                            <div class="fw-bold text-primary">
+                                                                <a href="<c:url value='/staff/product/detail?id=${prod.id}'/>"
+                                                                   class="name-link"
+                                                                   title="Xem chi tiết thiết bị">
+                                                                    <i class="fas fa-server me-1"></i> ${prod.modelName}
+                                                                </a>
                                                             </div>
-                                                            <div class="text-muted"><i class="fas fa-barcode me-1"></i>
-                                                                ${prod.serialNumber}</div>
+                                                            <div class="text-muted mt-1">
+                                                                <i class="fas fa-barcode me-1"></i> ${prod.serialNumber}
+                                                            </div>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <div class="text-danger"><i
-                                                                    class="fas fa-exclamation-circle me-1"></i> Không
-                                                                tìm thấy (ID: ${req.info.productId})</div>
+                                                            <div class="text-danger">
+                                                                <i class="fas fa-exclamation-circle me-1"></i> Không tìm thấy (ID: ${req.info.productId})
+                                                            </div>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </div>
