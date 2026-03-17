@@ -26,6 +26,25 @@
         .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: .4px; color: #64748b; }
         .kv-table td { padding: .5rem 0; }
         .timeline-table td, .timeline-table th { vertical-align: middle; }
+        .owner-name-btn {
+            border: 0;
+            padding: 0;
+            background: transparent;
+            font-size: 30px;
+            font-weight: 700;
+            color: #198754;
+            text-align: left;
+        }
+        .owner-name-btn:hover { text-decoration: underline; color: #157347; }
+        .owner-detail-panel {
+            margin-top: 12px;
+            border: 1px dashed #cde7d8;
+            background: #f7fffb;
+            border-radius: 10px;
+            padding: 12px;
+            display: none;
+        }
+        .owner-detail-panel.show { display: block; }
     </style>
 </head>
 
@@ -142,9 +161,46 @@
             <div class="card soft-card mb-4">
                 <div class="card-header"><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</div>
                 <div class="card-body">
-                    <div class="fw-bold fs-5 text-success">${u.fullName}</div>
-                    <div class="mt-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
-                    <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+                    <button type="button" class="owner-name-btn" id="ownerNameToggle">
+                        ${u.fullName}
+                    </button>
+                    <div class="small text-muted">Nhấn vào tên để xem chi tiết khách hàng và toàn bộ thiết bị đang sở hữu.</div>
+
+                    <div id="ownerDetailPanel" class="owner-detail-panel">
+                        <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
+                        <div class="mb-3"><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+
+                        <div class="fw-semibold mb-2">Thiết bị khách hàng đang sở hữu</div>
+                        <c:choose>
+                            <c:when test="${customerDevices == null || customerDevices.isEmpty()}">
+                                <div class="text-muted">Khách hàng chưa sở hữu thiết bị nào.</div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>Serial</th>
+                                            <th>Model</th>
+                                            <th>Trạng thái</th>
+                                            <th>Vị trí</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <c:forEach var="d" items="${customerDevices}">
+                                            <tr>
+                                                <td class="fw-semibold">${d.serialNumber}</td>
+                                                <td>${not empty d.modelName ? d.modelName : '—'}</td>
+                                                <td>${not empty d.status ? d.status : '—'}</td>
+                                                <td>${not empty d.currentLocation ? d.currentLocation : '—'}</td>
+                                            </tr>
+                                        </c:forEach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
             </div>
 
@@ -249,4 +305,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        const ownerNameToggle = document.getElementById('ownerNameToggle');
+        const ownerDetailPanel = document.getElementById('ownerDetailPanel');
+        if (!ownerNameToggle || !ownerDetailPanel) {
+            return;
+        }
+
+        ownerNameToggle.addEventListener('click', function () {
+            ownerDetailPanel.classList.toggle('show');
+        });
+    })();
+</script>
 </body>
