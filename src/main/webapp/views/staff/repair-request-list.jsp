@@ -24,17 +24,17 @@
                     <label class="form-label small text-muted mb-1">Trạng thái Báo giá:</label>
                     <select class="form-select" name="status">
                         <option value="">-- Tất cả --</option>
-                        <option value="WAITING_STAFF" ${status == 'WAITING_STAFF' ? 'selected' : '' }>Mới (Chờ xử lý)</option>
-                        <option value="PENDING" ${status == 'PENDING' ? 'selected' : '' }>Đã trình Manager</option>
+                        <option value="WAITING_STAFF" ${status == 'WAITING_STAFF' ? 'selected' : '' }>Chờ Staff xử lý</option>
+                        <option value="PENDING" ${status == 'PENDING' ? 'selected' : '' }>Chờ Manager duyệt</option>
                         <option value="APPROVED" ${status == 'APPROVED' ? 'selected' : '' }>Manager đã duyệt</option>
-                        <option value="REJECTED" ${status == 'REJECTED' ? 'selected' : '' }>Bị từ chối</option>
+                        <option value="REJECTED" ${status == 'REJECTED' ? 'selected' : '' }>Manager từ chối</option>
 
-
-                        <option value="WAITING_CUSTOMER" ${status == 'WAITING_CUSTOMER' ? 'selected' : '' }>Chờ khách duyệt</option>
-                        <option value="APPROVED_BY_CUSTOMER" ${status == 'APPROVED_BY_CUSTOMER' ? 'selected' : '' }>Khách đã duyệt</option>
-                        <option value="REJECTED_BY_CUSTOMER" ${status == 'REJECTED_BY_CUSTOMER' ? 'selected' : '' }>Khách từ chối</option>
+                        <option value="WAITING_CUSTOMER" ${status == 'WAITING_CUSTOMER' ? 'selected' : '' }>Chờ khách hàng duyệt</option>
+                        <option value="APPROVED_BY_CUSTOMER" ${status == 'APPROVED_BY_CUSTOMER' ? 'selected' : '' }>Khách hàng đồng ý</option>
+                        <option value="REJECTED_BY_CUSTOMER" ${status == 'REJECTED_BY_CUSTOMER' ? 'selected' : '' }>Khách hàng từ chối</option>
 
                         <option value="COMPLETED" ${status == 'COMPLETED' ? 'selected' : '' }>Đã hoàn thành</option>
+                        <option value="INVOICED" ${status == 'INVOICED' ? 'selected' : '' }>Đã xuất Hóa đơn</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -55,7 +55,7 @@
                         <th class="py-3 ps-4"># Request ID</th>
                         <th class="py-3">Thông tin Yêu cầu</th>
                         <th class="py-3">Người gửi (KTV)</th>
-                        <th class="py-3 text-end">Tổng tiền vật tư</th>
+                        <th class="py-3 text-end">Tổng thanh toán</th>
                         <th class="py-3 text-center">Trạng thái</th>
                         <th class="py-3 text-end pe-4">Hành động</th>
                     </tr>
@@ -73,14 +73,17 @@
                         <c:otherwise>
                             <c:forEach items="${listRequests}" var="req" varStatus="loop">
                                 <tr>
-                                    <td class="ps-4 fw-bold text-secondary">#${req.id}</td>
+                                    <td class="ps-4 fw-bold text-secondary">
+                                        <div class="fw-bold fs-5">#${req.id}</div>
+                                    </td>
 
                                     <td>
                                         <div class="fw-bold text-dark mb-1">
                                             Máy: <span class="text-primary">
                                                 <c:choose>
                                                     <c:when test="${not empty relatedProducts[req.id]}">
-                                                        ${relatedProducts[req.id].name} </c:when>
+                                                        ${relatedProducts[req.id].name}
+                                                    </c:when>
                                                     <c:otherwise>Không xác định</c:otherwise>
                                                 </c:choose>
                                             </span>
@@ -98,11 +101,9 @@
                                         <div class="small">
                                             <div class="fw-bold text-dark">
                                                 <i class="fas fa-user-tie me-1 text-primary"></i>
-                                                    <%-- Hiển thị Tên KTV lấy từ Map dựa trên ID của Request --%>
                                                     ${technicianNames[req.id]}
                                             </div>
                                             <div class="text-muted mt-1" style="font-size: 0.8rem;">
-                                                    <%-- Hiển thị Mã KTV bóc từ JSON (req.info), bỏ dấu .0 --%>
                                                 Mã NV: <fmt:formatNumber value="${req.info.technicianId}" maxFractionDigits="0" />
                                             </div>
                                         </div>
@@ -110,6 +111,11 @@
 
                                     <td class="text-end">
                                         <c:choose>
+                                            <c:when test="${not empty req.info.grandTotal}">
+                                                <div class="fw-bold text-danger">
+                                                    <fmt:formatNumber value="${req.info.grandTotal}" pattern="#,###"/> VNĐ
+                                                </div>
+                                            </c:when>
                                             <c:when test="${not empty req.info.partsTotal}">
                                                 <div class="fw-bold text-danger">
                                                     <fmt:formatNumber value="${req.info.partsTotal}" pattern="#,###"/> VNĐ
@@ -124,28 +130,33 @@
                                     <td class="text-center">
                                         <c:choose>
                                             <c:when test="${req.status == 'WAITING_STAFF'}">
-                                                <span class="badge bg-danger rounded-pill px-3">Cần duyệt</span>
+                                                <span class="badge bg-danger rounded-pill px-3">Chờ Staff xử lý</span>
                                             </c:when>
                                             <c:when test="${req.status == 'PENDING'}">
-                                                <span class="badge bg-warning text-dark rounded-pill px-3">Đã trình Sếp</span>
+                                                <span class="badge bg-warning text-dark rounded-pill px-3">Chờ Manager duyệt</span>
                                             </c:when>
                                             <c:when test="${req.status == 'APPROVED'}">
-                                                <span class="badge bg-success rounded-pill px-3">Đã duyệt</span>
+                                                <span class="badge bg-success rounded-pill px-3">Manager đã duyệt</span>
                                             </c:when>
-
+                                            <c:when test="${req.status == 'REJECTED'}">
+                                                <span class="badge bg-danger rounded-pill px-3">Manager từ chối</span>
+                                            </c:when>
 
                                             <c:when test="${req.status == 'WAITING_CUSTOMER'}">
-                                                <span class="badge bg-info text-dark rounded-pill px-3"><i class="fas fa-hourglass-half me-1"></i>Chờ khách duyệt</span>
+                                                <span class="badge bg-info text-dark rounded-pill px-3"><i class="fas fa-hourglass-half me-1"></i>Chờ khách hàng duyệt</span>
                                             </c:when>
                                             <c:when test="${req.status == 'APPROVED_BY_CUSTOMER'}">
-                                                <span class="badge bg-primary rounded-pill px-3"><i class="fas fa-check-double me-1"></i>Khách đã duyệt</span>
+                                                <span class="badge bg-primary rounded-pill px-3"><i class="fas fa-check-double me-1"></i>Khách hàng đồng ý</span>
                                             </c:when>
                                             <c:when test="${req.status == 'REJECTED_BY_CUSTOMER'}">
-                                                <span class="badge bg-dark rounded-pill px-3"><i class="fas fa-times me-1"></i>Khách từ chối</span>
+                                                <span class="badge bg-dark rounded-pill px-3"><i class="fas fa-times me-1"></i>Khách hàng từ chối</span>
                                             </c:when>
 
                                             <c:when test="${req.status == 'COMPLETED'}">
-                                                <span class="badge bg-info rounded-pill px-3">Hoàn thành</span>
+                                                <span class="badge bg-success bg-opacity-75 rounded-pill px-3">Đã hoàn thành</span>
+                                            </c:when>
+                                            <c:when test="${req.status == 'INVOICED'}">
+                                                <span class="badge bg-secondary rounded-pill px-3"><i class="fas fa-file-invoice-dollar me-1"></i>Đã xuất Hóa đơn</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge bg-secondary rounded-pill px-3">${req.status}</span>
@@ -156,13 +167,13 @@
                                     <td class="text-end pe-4">
                                         <div class="d-flex justify-content-end gap-2 align-items-center">
 
-                                                <%-- NÚT XEM CHI TIẾT (Luôn luôn hiển thị ở mọi trạng thái) --%>
+                                                <%-- NÚT XEM CHI TIẾT --%>
                                             <a href="<c:url value='/staff/repair-request/view?requestId=${req.id}'/>"
                                                class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-eye me-1"></i> Xem
                                             </a>
 
-                                                <%-- NÚT GỬI BÁO GIÁ (Chỉ hiện khi Sếp đã duyệt) --%>
+                                                <%-- NÚT GỬI BÁO GIÁ --%>
                                             <c:if test="${req.status == 'APPROVED'}">
                                                 <a href="<c:url value='/staff/repair-request/send-quote?requestId=${req.id}'/>"
                                                    class="btn btn-sm btn-success">
@@ -170,9 +181,9 @@
                                                 </a>
                                             </c:if>
 
-                                                <%-- NÚT TẠO HÓA ĐƠN (Chỉ hiện khi đã hoàn thành) --%>
+                                                <%-- NÚT TẠO HÓA ĐƠN --%>
                                             <c:if test="${req.status == 'COMPLETED'}">
-                                                <form action="<c:url value='/staff/invoice/create'/>" method="POST" class="m-0 p-0">
+                                                <form action="<c:url value='/staff/invoice/create'/>" method="POST" class="m-0 p-0" onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerHTML='Đang xử lý...';">
                                                     <input type="hidden" name="requestId" value="${req.id}">
                                                     <button type="submit" class="btn btn-sm btn-warning text-dark"
                                                             onclick="return confirm('Bạn có chắc chắn muốn xuất hóa đơn cho yêu cầu #${req.id} này?');">
