@@ -156,8 +156,16 @@ public class ProductModelDAO extends GenericDAO<ProductModel> {
 
     public List<ProductModel> searchPublicDeviceModels(String keyword, int limit) {
         String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+
         if (normalizedKeyword.isEmpty()) {
-            return new ArrayList<ProductModel>();
+            String sql = """
+                SELECT pm.*
+                FROM product_models pm
+                WHERE pm.status = 'ACTIVE'
+                ORDER BY pm.id DESC
+                LIMIT ?
+            """;
+            return query(sql, new ProductModelMapper(), limit);
         }
 
         String sql = """
@@ -166,20 +174,27 @@ public class ProductModelDAO extends GenericDAO<ProductModel> {
             LEFT JOIN brands b ON pm.brand_id = b.id
             LEFT JOIN categories c ON pm.category_id = c.id
             WHERE pm.status = 'ACTIVE'
-              AND (LOWER(pm.name) LIKE ?
-                   OR LOWER(pm.slug) LIKE ?
-                   OR LOWER(b.name) LIKE ?
-                   OR LOWER(c.name) LIKE ?)
+              AND (LOWER(COALESCE(pm.name, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.slug, '')) LIKE ?
+                   OR LOWER(COALESCE(b.name, '')) LIKE ?
+                   OR LOWER(COALESCE(c.name, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.origin, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.fuel_type, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.description, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.specifications, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.manual_url, '')) LIKE ?)
             ORDER BY
-                CASE WHEN LOWER(pm.name) = ? THEN 0 ELSE 1 END,
-                CASE WHEN LOWER(pm.slug) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(pm.name, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(pm.slug, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(b.name, '')) = ? THEN 0 ELSE 1 END,
                 pm.id DESC
             LIMIT ?
         """;
 
         String likeKeyword = "%" + normalizedKeyword + "%";
         return query(sql, new ProductModelMapper(), likeKeyword, likeKeyword, likeKeyword, likeKeyword,
-                normalizedKeyword, normalizedKeyword, limit);
+                likeKeyword, likeKeyword, likeKeyword, likeKeyword, likeKeyword,
+                normalizedKeyword, normalizedKeyword, normalizedKeyword, limit);
     }
     public Long insertProductModel(ProductModel model) {
         String sql = "INSERT INTO product_models " +

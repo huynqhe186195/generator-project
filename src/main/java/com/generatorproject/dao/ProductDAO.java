@@ -132,18 +132,21 @@ public class ProductDAO extends GenericDAO<Product> {
             LEFT JOIN product_models pm ON p.model_id = pm.id
             LEFT JOIN brands b ON pm.brand_id = b.id
             WHERE p.customer_id = ?
-              AND (LOWER(p.serial_number) LIKE ?
-                   OR LOWER(pm.name) LIKE ?
-                   OR LOWER(b.name) LIKE ?)
+              AND (LOWER(COALESCE(p.serial_number, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.name, '')) LIKE ?
+                   OR LOWER(COALESCE(b.name, '')) LIKE ?
+                   OR LOWER(COALESCE(p.current_location, '')) LIKE ?
+                   OR LOWER(COALESCE(p.status, '')) LIKE ?)
             ORDER BY
-                CASE WHEN LOWER(p.serial_number) = ? THEN 0 ELSE 1 END,
-                CASE WHEN LOWER(pm.name) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(p.serial_number, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(pm.name, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(p.current_location, '')) = ? THEN 0 ELSE 1 END,
                 p.id DESC
             LIMIT ?
         """;
 
         String likeKeyword = "%" + normalizedKeyword + "%";
-        return query(sql, mapper, customerId, likeKeyword, likeKeyword, likeKeyword, normalizedKeyword, normalizedKeyword, limit);
+        return query(sql, mapper, customerId, likeKeyword, likeKeyword, likeKeyword, likeKeyword, likeKeyword, normalizedKeyword, normalizedKeyword, normalizedKeyword, limit);
     }
 
     public List<Product> findByFilter(String keyword, Long modelId, Long customerId, String status,
@@ -465,7 +468,7 @@ public class ProductDAO extends GenericDAO<Product> {
         return list.isEmpty() ? null : list.get(0);
     }
     public List<Product> getAllProductByCustomerId(int id){
-        String sql = "select p1.*, p2.name as model_name FROM products p1 LEFT JOIN product_models p2 ON p1.model_id = p2.id WHERE p1.customer_id = ?";
+        String sql = "select p1.*, p2.name as model_name FROM products p1 LEFT JOIN product_models p2 ON p1.model_id = p2.id WHERE p1.customer_id = ? ORDER BY p1.id DESC";
         List<Product> list = query(sql, new ProductMapper(), id);
         return list.isEmpty() ? null : list;
     }

@@ -9,7 +9,9 @@ import com.generatorproject.model.ProductModel;
 import com.generatorproject.model.ai.DeviceSearchResultDto;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class CustomerAiToolService {
     public static final String DEVICE_TYPE_OWNED = "OWNED";
@@ -31,11 +33,17 @@ public class CustomerAiToolService {
 
     public List<DeviceSearchResultDto> searchOwnedDevices(long customerId, String keyword, String contextPath) {
         String normalizedKeyword = normalizeKeyword(keyword);
-        if (normalizedKeyword == null) {
-            return new ArrayList<DeviceSearchResultDto>();
+        List<Product> products;
+        if (isListAllIntent(normalizedKeyword)) {
+            List<Product> allProducts = productDAO.getAllProductByCustomerId((int) customerId);
+            products = limitProducts(allProducts, 6);
+        } else {
+            String searchableKeyword = stripNoise(normalizedKeyword);
+            if (searchableKeyword == null) {
+                return new ArrayList<DeviceSearchResultDto>();
+            }
+            products = productDAO.searchCustomerDevices(customerId, searchableKeyword, 6);
         }
-
-        List<Product> products = productDAO.searchCustomerDevices(customerId, normalizedKeyword, 6);
         List<DeviceSearchResultDto> results = new ArrayList<DeviceSearchResultDto>();
         for (Product product : products) {
             DeviceSearchResultDto dto = new DeviceSearchResultDto();
@@ -57,11 +65,16 @@ public class CustomerAiToolService {
 
     public List<DeviceSearchResultDto> searchPublicDevices(String keyword, String contextPath) {
         String normalizedKeyword = normalizeKeyword(keyword);
-        if (normalizedKeyword == null) {
-            return new ArrayList<DeviceSearchResultDto>();
+        String searchableKeyword = stripNoise(normalizedKeyword);
+        List<ProductModel> models;
+        if (isListAllIntent(normalizedKeyword) && searchableKeyword == null) {
+            models = productModelDAO.searchPublicDeviceModels(null, 6);
+        } else {
+            if (searchableKeyword == null) {
+                return new ArrayList<DeviceSearchResultDto>();
+            }
+            models = productModelDAO.searchPublicDeviceModels(searchableKeyword, 6);
         }
-
-        List<ProductModel> models = productModelDAO.searchPublicDeviceModels(normalizedKeyword, 6);
         List<DeviceSearchResultDto> results = new ArrayList<DeviceSearchResultDto>();
         for (ProductModel model : models) {
             DeviceSearchResultDto dto = new DeviceSearchResultDto();
@@ -80,6 +93,50 @@ public class CustomerAiToolService {
     private String normalizeKeyword(String keyword) {
         String normalizedKeyword = keyword == null ? "" : keyword.trim();
         return normalizedKeyword.isEmpty() ? null : normalizedKeyword;
+    }
+
+    private boolean isListAllIntent(String keyword) {
+        if (keyword == null) {
+            return false;
+        }
+        String normalized = keyword.toLowerCase(Locale.ROOT);
+        return normalized.contains("tất cả")
+                || normalized.contains("toàn bộ")
+                || normalized.contains("danh sách")
+                || normalized.contains("liệt kê")
+                || normalized.contains("bao nhiêu")
+                || normalized.contains("all ")
+                || normalized.startsWith("all");
+    }
+
+    private String stripNoise(String keyword) {
+        if (keyword == null) {
+            return null;
+        }
+
+        String normalized = keyword.toLowerCase(Locale.ROOT);
+        List<String> noiseTokens = Arrays.asList(
+                "tất cả", "toàn bộ", "danh sách", "liệt kê", "bao nhiêu",
+                "thiết bị", "device", "máy", "model", "public", "tài liệu",
+                "manual", "catalog", "catalogue", "thông số", "spec",
+                "của tôi", "máy của tôi", "thiết bị của tôi", "đang sở hữu",
+                "sở hữu", "đang dùng", "cho tôi", "giúp tôi", "hãy", "vui lòng"
+        );
+        for (String token : noiseTokens) {
+            normalized = normalized.replace(token, " ");
+        }
+        normalized = normalized.replaceAll("\\s+", " ").trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private List<Product> limitProducts(List<Product> products, int limit) {
+        if (products == null || products.isEmpty()) {
+            return new ArrayList<Product>();
+        }
+        if (products.size() <= limit) {
+            return products;
+        }
+        return new ArrayList<Product>(products.subList(0, limit));
     }
 
     private String resolveBrandName(int brandId) {
