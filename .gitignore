@@ -33,4 +33,5 @@ local.properties
 Thumbs.db
 application.properties
 src/main/resources/application.properties
-db_v8.sql
+src/main/java/com/generatorproject/dao/DbContext.java
+db_v9.sql

@@ -56,7 +56,9 @@ public class RequestServices implements IRequestServices {
 
     @Override
     public void updateStatus(int id, String status) {
+        System.out.println("update in service");
         requestDAO.updateStatus(id, status);
+
     }
 
     @Override

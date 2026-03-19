@@ -118,7 +118,7 @@
         <c:choose>
           <c:when test="${empty user}">
             <li class="nav-item">
-              <a class="nav-link px-3" href="#/">Tin tức</a>
+              <a class="nav-link nav-pill px-3" href="<c:url value='/news'/>">Tin tức</a>
             </li>
           </c:when>
           <c:otherwise>
@@ -322,6 +322,8 @@
     </div>
   </div>
 </footer>
+
+<jsp:include page="/views/customer/common/ai-chat-widget.jsp" />
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>

@@ -395,7 +395,10 @@
                             </td>
 
                             <td>
-                                <p class="name mb-1 fw-bold text-primary">${p.modelName}</p>
+                                <a href="<c:url value='/products/detail'><c:param name='id' value='${p.modelId}'/></c:url>"
+                                   class="text-decoration-none">
+                                    <p class="name mb-1 fw-bold text-primary">${p.modelName}</p>
+                                </a>
                                 <div class="meta text-muted small">
                                     <span class="fw-bold">${p.brandName}</span>
                                     <c:if test="${not empty p.currentLocation}">
@@ -651,14 +654,14 @@
                                 <option value="">-- Chọn loại yêu cầu --</option>
                                 <option value="PERIODIC">Bảo dưỡng định kỳ</option>
                                 <option value="REPAIR">Thay thế phụ tùng</option>
-                                <option value="INSPECTION'">Báo Lỗi / Hỏng hóc</option>
+                                <option value="INSPECTION">Báo Lỗi / Hỏng hóc</option>
 
                             </select>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Ngày đề xuất kiểm tra</label>
-                            <input type="date" name="preferredDate" class="form-control">
+                            <input type="date" name="preferredDate" id="preferredDateInput" class="form-control">
                         </div>
 
                         <div class="col-12">
@@ -719,7 +722,22 @@
         var myModal = new bootstrap.Modal(document.getElementById('reportModal'));
         myModal.show();
     }
+    // HÀM CHẶN CHỌN NGÀY QUÁ KHỨ
+    document.addEventListener("DOMContentLoaded", function() {
+        const dateInput = document.getElementById('preferredDateInput');
+        if (dateInput) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+
+            // SỬ DỤNG DẤU + ĐỂ NỐI CHUỖI, TRÁNH XUNG ĐỘT VỚI JSP
+            dateInput.min = year + "-" + month + "-" + day;
+        }
+    });
 </script>
+
+<jsp:include page="/views/customer/common/ai-chat-widget.jsp" />
 
 </body>
 </html>
