@@ -28,7 +28,7 @@ public class CustomerAiToolService {
         List<DeviceSearchResultDto> results = new ArrayList<DeviceSearchResultDto>();
         for (Product product : products) {
             DeviceSearchResultDto dto = new DeviceSearchResultDto();
-            dto.setProductId(product.getId() == null ? null : product.getId().longValue());
+            dto.setProductId((long) product.getId());
             dto.setModelId(product.getModelId());
             dto.setModelName(product.getModelName());
             dto.setBrandName(product.getBrandName());
