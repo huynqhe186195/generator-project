@@ -279,7 +279,7 @@
     <span class="customer-ai-hint-icon"><i class="fas fa-sparkles"></i></span>
     <div>
       <p class="customer-ai-hint-title">AI đang sẵn sàng hỗ trợ</p>
-      <p class="customer-ai-hint-text">Tìm nhanh máy theo model, serial, thương hiệu hoặc vị trí sử dụng.</p>
+      <p class="customer-ai-hint-text">Phân biệt máy sở hữu có serial và tài liệu public theo model chỉ trong một ô chat.</p>
     </div>
   </div>
 
@@ -288,8 +288,8 @@
       <div class="customer-ai-badge"><i class="fas fa-robot"></i> Trợ lý AI cho khách hàng</div>
       <div class="customer-ai-title">
         <div>
-          <h5>Tìm thiết bị của bạn nhanh hơn</h5>
-          <p>Hỏi tự nhiên như đang chat, tôi sẽ giúp bạn tìm đúng máy đang cần.</p>
+          <h5>Phân biệt đúng 2 loại device</h5>
+          <p>Tôi nhận diện được máy sở hữu có serial và mẫu máy public chỉ có tài liệu / thông số.</p>
         </div>
         <button type="button" class="customer-ai-close" id="customerAiClose" aria-label="Đóng AI chat">
           <i class="fas fa-times"></i>
@@ -299,34 +299,34 @@
 
     <div class="customer-ai-summary">
       <div class="customer-ai-stat">
-        <strong>Model / Serial</strong>
-        <span>Tra cứu theo mã, tên máy hoặc hãng</span>
+        <strong>Thiết bị sở hữu</strong>
+        <span>Có serial number, vị trí và trạng thái vận hành</span>
       </div>
       <div class="customer-ai-stat">
-        <strong>Mở nhanh chi tiết</strong>
-        <span>Tự chuyển trang khi chỉ có 1 kết quả</span>
+        <strong>Tài liệu public</strong>
+        <span>Chỉ là model public, không có serial number</span>
       </div>
       <div class="customer-ai-stat">
-        <strong>Đúng dữ liệu của bạn</strong>
-        <span>Chỉ tìm trong danh sách máy của customer</span>
+        <strong>Mở nhanh đúng trang</strong>
+        <span>Tự mở trang chi tiết khi AI chỉ tìm ra 1 kết quả</span>
       </div>
     </div>
 
     <div class="customer-ai-suggestions" id="customerAiSuggestions">
-      <button type="button" class="customer-ai-suggestion" data-message="Tìm máy Cummins theo serial ABC123">Serial cụ thể</button>
-      <button type="button" class="customer-ai-suggestion" data-message="Cho tôi xem các máy Denyo">Theo thương hiệu</button>
-      <button type="button" class="customer-ai-suggestion" data-message="Tìm thiết bị ở nhà máy Bình Dương">Theo vị trí</button>
+      <button type="button" class="customer-ai-suggestion" data-message="Tìm thiết bị sở hữu của tôi theo serial ABC123">Thiết bị sở hữu</button>
+      <button type="button" class="customer-ai-suggestion" data-message="Tìm tài liệu public model Denyo">Tài liệu public</button>
+      <button type="button" class="customer-ai-suggestion" data-message="Tìm máy của tôi ở nhà máy Bình Dương">Theo vị trí máy</button>
     </div>
 
     <div class="customer-ai-body" id="customerAiMessages">
       <div class="customer-ai-message bot">
-        <div class="customer-ai-bubble">Xin chào! Tôi là trợ lý AI của Gen-CMS. Bạn có thể yêu cầu tôi tìm thiết bị theo <strong>model</strong>, <strong>serial</strong>, <strong>thương hiệu</strong> hoặc <strong>vị trí hiện tại</strong>.</div>
+        <div class="customer-ai-bubble">Xin chào! Tôi có thể giúp bạn tìm <strong>thiết bị sở hữu</strong> (có serial, thuộc danh sách máy của bạn) hoặc <strong>device tài liệu public</strong> (chỉ có model / thông số, không có serial).</div>
       </div>
     </div>
 
     <div class="customer-ai-footer">
       <form class="customer-ai-form" id="customerAiForm">
-        <textarea class="form-control" id="customerAiInput" placeholder="Ví dụ: tìm máy Cummins serial ABC123 hoặc máy ở kho Hà Nội"></textarea>
+        <textarea class="form-control" id="customerAiInput" placeholder="Ví dụ: tìm máy của tôi serial ABC123 hoặc tìm tài liệu public model Cummins C220"></textarea>
         <button type="submit" class="customer-ai-send" aria-label="Gửi câu hỏi cho AI">
           <i class="fas fa-paper-plane"></i>
         </button>
@@ -387,7 +387,7 @@
 
     appendMessage('user', message);
     input.value = '';
-    status.textContent = 'AI đang phân tích yêu cầu của bạn...';
+    status.textContent = 'AI đang xác định đây là thiết bị sở hữu hay tài liệu public...';
 
     try {
       const response = await fetch('<c:url value="/customer/ai-chat"/>', {
@@ -434,12 +434,27 @@
         const link = document.createElement('a');
         link.className = 'customer-ai-result';
         link.href = item.detailUrl || '#';
+        const serialOrDoc = item.serialNumber
+          ? '<div class="small text-muted mt-1">Serial: ' + escapeHtml(item.serialNumber) + '</div>'
+          : '<div class="small text-muted mt-1">Loại dữ liệu: tài liệu public, không có serial number</div>';
+        const locationPill = item.currentLocation
+          ? '<span class="customer-ai-pill"><i class="fas fa-location-dot"></i>' + escapeHtml(item.currentLocation) + '</span>'
+          : '';
+        const statusPill = item.status
+          ? '<span class="customer-ai-pill"><i class="fas fa-signal"></i>' + escapeHtml(item.status) + '</span>'
+          : '';
+        const typePill = '<span class="customer-ai-pill"><i class="fas fa-layer-group"></i>' + escapeHtml(item.deviceTypeLabel || 'Device') + '</span>';
+        const description = item.description
+          ? '<div class="small text-muted mt-2">' + escapeHtml(item.description) + '</div>'
+          : '';
         link.innerHTML = '<div class="fw-bold text-primary">' + escapeHtml(item.modelName || 'Thiết bị') + '</div>'
-          + '<div class="small text-muted mt-1">Serial: ' + escapeHtml(item.serialNumber || '-') + '</div>'
+          + serialOrDoc
+          + description
           + '<div class="customer-ai-result-meta">'
+          + typePill
           + '<span class="customer-ai-pill"><i class="fas fa-industry"></i>' + escapeHtml(item.brandName || '-') + '</span>'
-          + '<span class="customer-ai-pill"><i class="fas fa-location-dot"></i>' + escapeHtml(item.currentLocation || '-') + '</span>'
-          + '<span class="customer-ai-pill"><i class="fas fa-signal"></i>' + escapeHtml(item.status || '-') + '</span>'
+          + locationPill
+          + statusPill
           + '</div>';
         list.appendChild(link);
       });

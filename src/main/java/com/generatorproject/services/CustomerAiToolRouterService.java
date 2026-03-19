@@ -13,8 +13,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class CustomerAiToolRouterService {
     private static final Gson GSON = new Gson();
@@ -22,7 +23,7 @@ public class CustomerAiToolRouterService {
     public CustomerAiToolCall route(String message) {
         String normalizedMessage = message == null ? "" : message.trim();
         if (normalizedMessage.isEmpty()) {
-            return CustomerAiToolCall.none("Bạn hãy nhập câu hỏi, ví dụ: tìm máy theo serial hoặc model.");
+            return CustomerAiToolCall.none("Bạn hãy nhập câu hỏi, ví dụ: tìm máy theo serial của bạn hoặc tra tài liệu model public.");
         }
 
         String apiKey = resolveApiKey();
@@ -94,18 +95,18 @@ public class CustomerAiToolRouterService {
         }
 
         String tool = toolCall.getTool().trim();
-        if ("searchDevices".equals(tool)) {
+        if ("searchOwnedDevices".equals(tool) || "searchPublicDevices".equals(tool)) {
             String keyword = safe(toolCall.getArg("keyword"));
             if (keyword == null) {
                 return fallbackRoute(originalMessage);
             }
-            return new CustomerAiToolCall("searchDevices", Collections.singletonMap("keyword", keyword));
+            return createSearchToolCall(tool, keyword);
         }
 
         if ("none".equals(tool)) {
             String reply = safe(toolCall.getArg("reply"));
             if (reply == null) {
-                reply = "Xin chào, tôi có thể giúp bạn tìm thiết bị theo model hoặc serial.";
+                reply = "Xin chào, tôi có thể giúp bạn phân biệt máy sở hữu có serial và tài liệu public theo model.";
             }
             return CustomerAiToolCall.none(reply);
         }
@@ -115,11 +116,49 @@ public class CustomerAiToolRouterService {
 
     private CustomerAiToolCall fallbackRoute(String message) {
         String normalized = message.toLowerCase(Locale.ROOT);
-        if (normalized.contains("tìm") || normalized.contains("máy") || normalized.contains("model")
-                || normalized.contains("serial") || normalized.contains("thiết bị") || normalized.contains("generator")) {
-            return new CustomerAiToolCall("searchDevices", Collections.singletonMap("keyword", message.trim()));
+        if (looksLikeOwnedDeviceSearch(normalized)) {
+            return createSearchToolCall("searchOwnedDevices", message.trim());
         }
-        return CustomerAiToolCall.none("Xin chào, tôi có thể giúp bạn tìm thiết bị theo model hoặc serial.");
+        if (looksLikePublicDeviceSearch(normalized)) {
+            return createSearchToolCall("searchPublicDevices", message.trim());
+        }
+        if (normalized.contains("tìm") || normalized.contains("máy") || normalized.contains("model")
+                || normalized.contains("thiết bị") || normalized.contains("generator")) {
+            return createSearchToolCall("searchPublicDevices", message.trim());
+        }
+        return CustomerAiToolCall.none("Xin chào, tôi có thể giúp bạn tìm 2 loại device: máy sở hữu có serial hoặc tài liệu public theo model.");
+    }
+
+    private boolean looksLikeOwnedDeviceSearch(String normalized) {
+        return normalized.contains("serial")
+                || normalized.contains("sở hữu")
+                || normalized.contains("của tôi")
+                || normalized.contains("máy của tôi")
+                || normalized.contains("thiết bị của tôi")
+                || normalized.contains("đang dùng")
+                || normalized.contains("vị trí")
+                || normalized.contains("nhà máy")
+                || normalized.contains("kho")
+                || normalized.contains("contract")
+                || normalized.contains("hợp đồng");
+    }
+
+    private boolean looksLikePublicDeviceSearch(String normalized) {
+        return normalized.contains("public")
+                || normalized.contains("tài liệu")
+                || normalized.contains("manual")
+                || normalized.contains("catalog")
+                || normalized.contains("catalogue")
+                || normalized.contains("thông số")
+                || normalized.contains("spec")
+                || normalized.contains("mẫu")
+                || normalized.contains("sản phẩm mẫu");
+    }
+
+    private CustomerAiToolCall createSearchToolCall(String tool, String keyword) {
+        Map<String, String> args = new LinkedHashMap<String, String>();
+        args.put("keyword", keyword);
+        return new CustomerAiToolCall(tool, args);
     }
 
     private JsonObject makeTextContent(String role, String text) {
@@ -137,14 +176,20 @@ public class CustomerAiToolRouterService {
 
     private String buildSystemPrompt() {
         return "Bạn là AI assistant cho web app hỗ trợ khách hàng. "
+                + "Hệ thống có 2 loại device: "
+                + "(1) device sở hữu của customer: có serial_number, thuộc danh sách máy của customer; "
+                + "(2) device tài liệu public: là model public để xem thông số/tài liệu, không có serial_number. "
                 + "Nhiệm vụ của bạn là chọn internal tool phù hợp. "
                 + "Bạn phải chỉ trả về JSON. Không markdown. Không giải thích. "
                 + "Allowed tools: "
-                + "1. searchDevices args: keyword(string). "
-                + "2. none args: reply(string). "
-                + "Rules: chỉ chọn searchDevices khi người dùng muốn tìm thiết bị, máy, model, serial, generator; "
-                + "nếu chào hỏi hoặc chưa rõ thì chọn none; không tự tạo URL; không tự tạo ID; không nói về kỹ thuật nội bộ. "
-                + "Output ví dụ: {\"tool\":\"searchDevices\",\"args\":{\"keyword\":\"abc\"}}";
+                + "1. searchOwnedDevices args: keyword(string). "
+                + "2. searchPublicDevices args: keyword(string). "
+                + "3. none args: reply(string). "
+                + "Rules: nếu người dùng nhắc serial, máy của tôi, thiết bị của tôi, vị trí máy, hợp đồng thì chọn searchOwnedDevices; "
+                + "nếu người dùng nhắc tài liệu, model public, manual, catalogue, thông số, sản phẩm mẫu thì chọn searchPublicDevices; "
+                + "nếu chỉ chào hỏi hoặc chưa rõ thì chọn none; không tự tạo URL; không tự tạo ID; không nói về kỹ thuật nội bộ. "
+                + "Output ví dụ 1: {\"tool\":\"searchOwnedDevices\",\"args\":{\"keyword\":\"serial abc123\"}} "
+                + "Output ví dụ 2: {\"tool\":\"searchPublicDevices\",\"args\":{\"keyword\":\"manual cummins c220\"}}";
     }
 
     private String resolveApiKey() {

@@ -9,6 +9,9 @@ public class DeviceSearchResultDto {
     private String currentLocation;
     private String status;
     private String detailUrl;
+    private String deviceType;
+    private String deviceTypeLabel;
+    private String description;
 
     public Long getProductId() {
         return productId;
@@ -72,5 +75,29 @@ public class DeviceSearchResultDto {
 
     public void setDetailUrl(String detailUrl) {
         this.detailUrl = detailUrl;
+    }
+
+    public String getDeviceType() {
+        return deviceType;
+    }
+
+    public void setDeviceType(String deviceType) {
+        this.deviceType = deviceType;
+    }
+
+    public String getDeviceTypeLabel() {
+        return deviceTypeLabel;
+    }
+
+    public void setDeviceTypeLabel(String deviceTypeLabel) {
+        this.deviceTypeLabel = deviceTypeLabel;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
