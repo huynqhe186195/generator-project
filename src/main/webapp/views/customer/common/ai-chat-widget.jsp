@@ -241,6 +241,7 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
+
     background: #34d399;
     box-shadow: 0 0 0 6px rgba(52,211,153,.18);
   }
