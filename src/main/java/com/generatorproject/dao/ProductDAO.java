@@ -118,6 +118,34 @@ public class ProductDAO extends GenericDAO<Product> {
      * Lấy danh sách sản phẩm theo filter (keyword / modelId / customerId / status / year range ...)
      * Bạn muốn filter nào thì mở comment/ thêm điều kiện tương ứng.
      */
+    public List<Product> searchCustomerDevices(long customerId, String keyword, int limit) {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+        if (normalizedKeyword.isEmpty()) {
+            return new ArrayList<Product>();
+        }
+
+        String sql = """
+            SELECT p.*,
+                   pm.name AS model_name,
+                   b.name AS brand_name
+            FROM products p
+            LEFT JOIN product_models pm ON p.model_id = pm.id
+            LEFT JOIN brands b ON pm.brand_id = b.id
+            WHERE p.customer_id = ?
+              AND (LOWER(p.serial_number) LIKE ?
+                   OR LOWER(pm.name) LIKE ?
+                   OR LOWER(b.name) LIKE ?)
+            ORDER BY
+                CASE WHEN LOWER(p.serial_number) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(pm.name) = ? THEN 0 ELSE 1 END,
+                p.id DESC
+            LIMIT ?
+        """;
+
+        String likeKeyword = "%" + normalizedKeyword + "%";
+        return query(sql, mapper, customerId, likeKeyword, likeKeyword, likeKeyword, normalizedKeyword, normalizedKeyword, limit);
+    }
+
     public List<Product> findByFilter(String keyword, Long modelId, Long customerId, String status,
                                       Integer yearFrom, Integer yearTo) {
 
