@@ -66,7 +66,7 @@ public class CustomerAiChatServlet extends HttpServlet {
             List<DeviceSearchResultDto> results = toolService.searchOwnedDevices(user.getId(), toolCall.getArg("keyword"), req.getContextPath());
             response.setResults(results);
             if (results.isEmpty()) {
-                response.setReply("Tôi chưa tìm thấy thiết bị sở hữu phù hợp trong danh sách máy của bạn. Bạn có thể thử lại bằng serial, vị trí hoặc tên model cụ thể hơn.");
+                response.setReply("Tôi chưa tìm thấy thiết bị sở hữu phù hợp trong danh sách máy của bạn. Bạn có thể thử lại bằng serial, vị trí, trạng thái, tên model hoặc yêu cầu liệt kê tất cả máy bạn đang sở hữu.");
                 response.setActionType(CustomerAiResponse.ACTION_NONE);
                 return;
             }
@@ -86,7 +86,7 @@ public class CustomerAiChatServlet extends HttpServlet {
             List<DeviceSearchResultDto> results = toolService.searchPublicDevices(toolCall.getArg("keyword"), req.getContextPath());
             response.setResults(results);
             if (results.isEmpty()) {
-                response.setReply("Tôi chưa tìm thấy tài liệu public phù hợp. Bạn có thể thử lại bằng model, thương hiệu hoặc từ khóa như manual / thông số.");
+                response.setReply("Tôi chưa tìm thấy tài liệu public phù hợp. Bạn có thể thử lại bằng model, thương hiệu, thông số, nhiên liệu, xuất xứ hoặc yêu cầu liệt kê tài liệu public.");
                 response.setActionType(CustomerAiResponse.ACTION_NONE);
                 return;
             }

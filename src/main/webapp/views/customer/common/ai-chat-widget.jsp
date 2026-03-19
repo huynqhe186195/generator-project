@@ -83,7 +83,6 @@
   }
   .customer-ai-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .customer-ai-title h5 { margin: 0; font-size: 1.2rem; font-weight: 800; }
-  .customer-ai-title p { margin: 4px 0 0; font-size: .92rem; opacity: .88; }
   .customer-ai-close {
     width: 40px;
     height: 40px;
@@ -273,7 +272,6 @@
       <div class="customer-ai-title">
         <div>
           <h5>Phân biệt đúng 2 loại device</h5>
-          <p>Tôi nhận diện được máy sở hữu có serial và mẫu máy public chỉ có tài liệu / thông số.</p>
         </div>
         <button type="button" class="customer-ai-close" id="customerAiClose" aria-label="Đóng AI chat">
           <i class="fas fa-times"></i>
@@ -295,7 +293,7 @@
 
     <div class="customer-ai-footer">
       <form class="customer-ai-form" id="customerAiForm">
-        <textarea class="form-control" id="customerAiInput" placeholder="Ví dụ: tìm máy của tôi serial ABC123 hoặc tìm tài liệu public model Cummins C220"></textarea>
+        <textarea class="form-control" id="customerAiInput" placeholder="Ví dụ: liệt kê tất cả máy tôi đang sở hữu hoặc tìm tài liệu public Cummins C220"></textarea>
         <button type="submit" class="customer-ai-send" aria-label="Gửi câu hỏi cho AI">
           <i class="fas fa-paper-plane"></i>
         </button>
