@@ -55,32 +55,54 @@ public class CustomerAiChatServlet extends HttpServlet {
 
     private void buildResponse(HttpServletRequest req, CustomerAiResponse response, Users user, CustomerAiToolCall toolCall) {
         if (toolCall == null || toolCall.getTool() == null || "none".equals(toolCall.getTool())) {
-            response.setReply(toolCall == null ? "Xin chào, tôi có thể giúp bạn tìm thiết bị của bạn." : toolCall.getArg("reply"));
+            response.setReply(toolCall == null
+                    ? "Xin chào, tôi có thể giúp bạn tìm máy sở hữu có serial hoặc mẫu máy public không có serial."
+                    : toolCall.getArg("reply"));
             response.setActionType(CustomerAiResponse.ACTION_NONE);
             return;
         }
 
-        if ("searchDevices".equals(toolCall.getTool())) {
-            List<DeviceSearchResultDto> results = toolService.searchDevices(user.getId(), toolCall.getArg("keyword"), req.getContextPath());
+        if ("searchOwnedDevices".equals(toolCall.getTool())) {
+            List<DeviceSearchResultDto> results = toolService.searchOwnedDevices(user.getId(), toolCall.getArg("keyword"), req.getContextPath());
             response.setResults(results);
             if (results.isEmpty()) {
-                response.setReply("Tôi chưa tìm thấy thiết bị phù hợp trong danh sách máy của bạn. Hãy thử bằng model hoặc serial cụ thể hơn.");
+                response.setReply("Tôi chưa tìm thấy thiết bị sở hữu phù hợp trong danh sách máy của bạn. Bạn có thể thử lại bằng serial, vị trí, trạng thái, tên model hoặc yêu cầu liệt kê tất cả máy bạn đang sở hữu.");
                 response.setActionType(CustomerAiResponse.ACTION_NONE);
                 return;
             }
             if (results.size() == 1) {
                 DeviceSearchResultDto item = results.get(0);
-                response.setReply("Tôi đã tìm thấy đúng 1 thiết bị phù hợp và sẽ mở trang chi tiết mẫu máy cho bạn.");
+                response.setReply("Tôi đã tìm thấy đúng 1 thiết bị sở hữu của bạn và sẽ mở trang chi tiết model liên quan.");
                 response.setActionType(CustomerAiResponse.ACTION_REDIRECT);
                 response.setRedirectUrl(item.getDetailUrl());
                 return;
             }
-            response.setReply("Tôi tìm thấy nhiều thiết bị phù hợp. Bạn chọn giúp tôi đúng máy bạn muốn xem.");
+            response.setReply("Tôi tìm thấy " + results.size() + " thiết bị sở hữu của bạn. Bạn hãy chọn đúng máy theo serial, vị trí hoặc trạng thái.");
             response.setActionType(CustomerAiResponse.ACTION_SHOW_RESULTS);
             return;
         }
 
-        response.setReply("Hiện tôi mới hỗ trợ tìm thiết bị của bạn theo model hoặc serial.");
+        if ("searchPublicDevices".equals(toolCall.getTool())) {
+            List<DeviceSearchResultDto> results = toolService.searchPublicDevices(toolCall.getArg("keyword"), req.getContextPath());
+            response.setResults(results);
+            if (results.isEmpty()) {
+                response.setReply("Tôi chưa tìm thấy tài liệu public phù hợp. Bạn có thể thử lại bằng model, thương hiệu, thông số, nhiên liệu, xuất xứ hoặc yêu cầu liệt kê tài liệu public.");
+                response.setActionType(CustomerAiResponse.ACTION_NONE);
+                return;
+            }
+            if (results.size() == 1) {
+                DeviceSearchResultDto item = results.get(0);
+                response.setReply("Tôi đã tìm thấy đúng 1 mẫu máy public và sẽ mở trang tài liệu / thông tin chi tiết cho bạn.");
+                response.setActionType(CustomerAiResponse.ACTION_REDIRECT);
+                response.setRedirectUrl(item.getDetailUrl());
+                return;
+            }
+            response.setReply("Tôi tìm thấy " + results.size() + " mẫu máy public. Bạn chọn giúp tôi đúng model tài liệu bạn muốn xem.");
+            response.setActionType(CustomerAiResponse.ACTION_SHOW_RESULTS);
+            return;
+        }
+
+        response.setReply("Hiện tôi hỗ trợ 2 loại device: thiết bị sở hữu có serial và tài liệu public theo model.");
         response.setActionType(CustomerAiResponse.ACTION_NONE);
     }
 
