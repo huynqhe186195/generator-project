@@ -95,22 +95,6 @@
     align-items: center;
     justify-content: center;
   }
-  .customer-ai-summary {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 14px 18px;
-    background: linear-gradient(180deg, rgba(239,246,255,.96), rgba(248,250,252,.98));
-    border-bottom: 1px solid rgba(148,163,184,.16);
-  }
-  .customer-ai-stat {
-    border-radius: 18px;
-    padding: 12px;
-    background: rgba(255,255,255,.9);
-    border: 1px solid rgba(191,219,254,.7);
-  }
-  .customer-ai-stat strong { display: block; color: #0f172a; font-size: .86rem; }
-  .customer-ai-stat span { color: #64748b; font-size: .74rem; }
   .customer-ai-body {
     padding: 18px;
     overflow-y: auto;
@@ -268,7 +252,6 @@
     .customer-ai-widget { right: 12px; bottom: 12px; left: 12px; align-items: stretch; }
     .customer-ai-hint { max-width: none; }
     .customer-ai-panel { width: 100%; height: min(74vh, 640px); }
-    .customer-ai-summary { grid-template-columns: 1fr; }
     .customer-ai-suggestions { padding-top: 6px; }
     .customer-ai-toggle { align-self: flex-end; }
   }
@@ -294,21 +277,6 @@
         <button type="button" class="customer-ai-close" id="customerAiClose" aria-label="Đóng AI chat">
           <i class="fas fa-times"></i>
         </button>
-      </div>
-    </div>
-
-    <div class="customer-ai-summary">
-      <div class="customer-ai-stat">
-        <strong>Thiết bị sở hữu</strong>
-        <span>Có serial number, vị trí và trạng thái vận hành</span>
-      </div>
-      <div class="customer-ai-stat">
-        <strong>Tài liệu public</strong>
-        <span>Chỉ là model public, không có serial number</span>
-      </div>
-      <div class="customer-ai-stat">
-        <strong>Mở nhanh đúng trang</strong>
-        <span>Tự mở trang chi tiết khi AI chỉ tìm ra 1 kết quả</span>
       </div>
     </div>
 
@@ -378,6 +346,13 @@
       setOpenState(true);
       input.focus();
     });
+  });
+
+  input.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
   });
 
   form.addEventListener('submit', async function (event) {
