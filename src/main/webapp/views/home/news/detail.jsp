@@ -502,7 +502,7 @@
                   </c:when>
                   <c:otherwise>
                     <li class="nav-item">
-                      <a class="nav-link nav-pill px-3" href="<c:url value='/product-list'/>">Sản phẩm</a>
+                      <a class="nav-link nav-pill px-3" href="<c:url value='/product-list'/>">Hợp đồng</a>
                     </li>
                   </c:otherwise>
                 </c:choose>

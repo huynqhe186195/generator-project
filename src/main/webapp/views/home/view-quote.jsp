@@ -240,7 +240,7 @@
                 })
                 .then(data => {
                     alert(action === 'ACCEPT' ? "Cảm ơn bạn đã xác nhận. Chúng tôi sẽ tiến hành sửa chữa!" : "Đã hủy yêu cầu sửa chữa.");
-                    window.location.href = "<c:url value='/product-list'/>"; // Trở về trang danh sách máy
+                    window.location.href = "<c:url value='/product-list'/>"; // Trở về trang tra cứu hợp đồng
                 })
                 .catch(err => alert(err.message));
         }
