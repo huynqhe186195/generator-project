@@ -290,10 +290,22 @@
         radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.16), transparent 25%);
     }
 
-    .hero-slide-generator {
-      background-size: auto 84%;
-      background-position: right 4% center;
+    .hero-slide-primary {
+      background-size: auto 62%;
+      background-position: right 8% center;
       background-color: #13192a;
+    }
+
+    .hero-slide-monitor {
+      background-size: auto 58%;
+      background-position: right 10% center;
+      background-color: #10172a;
+    }
+
+    .hero-slide-service {
+      background-size: auto 56%;
+      background-position: right 12% center;
+      background-color: #111827;
     }
 
     .hero-content {
@@ -804,9 +816,19 @@
         padding: 124px 0 86px;
       }
 
-      .hero-slide-generator {
-        background-size: auto 78%;
-        background-position: center right;
+      .hero-slide-primary {
+        background-size: auto 54%;
+        background-position: right 6% center;
+      }
+
+      .hero-slide-monitor {
+        background-size: auto 52%;
+        background-position: right 6% center;
+      }
+
+      .hero-slide-service {
+        background-size: auto 50%;
+        background-position: right 8% center;
       }
 
       .hero-grid {
@@ -849,7 +871,9 @@
         padding: 112px 0 76px;
       }
 
-      .hero-slide-generator {
+      .hero-slide-primary,
+      .hero-slide-monitor,
+      .hero-slide-service {
         background-size: cover;
         background-position: center;
       }
@@ -972,7 +996,7 @@
 
       <div class="carousel-inner">
         <div class="carousel-item active">
-          <div class="hero-slide hero-slide-generator" style="background-image: url('<c:url value='/template/images/slide1.jpg'/>');">
+          <div class="hero-slide hero-slide-primary" style="background-image: url('<c:url value='/template/images/slide1.jpg'/>');">
             <div class="container hero-content">
               <div class="row g-4 hero-grid">
                 <div class="col-lg-6">
@@ -1060,7 +1084,7 @@
         </div>
 
         <div class="carousel-item">
-          <div class="hero-slide" style="background-image: url('<c:url value='/template/images/slide2.jpg'/>');">
+          <div class="hero-slide hero-slide-monitor" style="background-image: url('<c:url value='/template/images/slide2.jpg'/>');">
             <div class="container hero-content">
               <div class="row g-4 hero-grid">
                 <div class="col-lg-6">
@@ -1110,7 +1134,7 @@
         </div>
 
         <div class="carousel-item">
-          <div class="hero-slide" style="background-image: url('<c:url value='/template/images/slide3.jpg'/>');">
+          <div class="hero-slide hero-slide-service" style="background-image: url('<c:url value='/template/images/slide3.jpg'/>');">
             <div class="container hero-content">
               <div class="row g-4 hero-grid">
                 <div class="col-lg-6">
