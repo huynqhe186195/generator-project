@@ -26,6 +26,38 @@
         .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: .4px; color: #64748b; }
         .kv-table td { padding: .5rem 0; }
         .timeline-table td, .timeline-table th { vertical-align: middle; }
+        .owner-trigger {
+            color: #198754;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+        .owner-trigger:hover { color: #146c43; }
+        .device-detail-card {
+            border: 1px solid #e9eef5;
+            border-radius: 12px;
+            padding: 14px 16px;
+            background: #f8fbff;
+        }
+        .device-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: .75rem;
+        }
+        .device-detail-item {
+            background: #fff;
+            border: 1px solid #eef2f7;
+            border-radius: 10px;
+            padding: .75rem;
+        }
+        .device-detail-item .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            color: #64748b;
+            margin-bottom: .25rem;
+        }
     </style>
 </head>
 
@@ -140,80 +172,82 @@
             </div>
 
             <div class="card soft-card mb-4">
-                <div class="card-header"><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</div>
-                <div class="card-body">
-                    <div class="fw-bold fs-5 text-success">${u.fullName}</div>
-                    <div class="mt-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
-                    <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
-                </div>
-            </div>
-
-            <div class="card soft-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span><i class="fa fa-server text-primary"></i> Thiết bị thuộc hợp đồng</span>
-                    <span class="badge bg-primary">${products != null ? products.size() : 0}</span>
+                    <span><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</span>
+                    <span class="badge bg-primary">${products != null ? products.size() : 0} thiết bị</span>
                 </div>
-                <div class="card-body p-0">
-                    <c:choose>
-                        <c:when test="${products == null || products.isEmpty()}">
-                            <div class="p-3 text-muted">Chưa có thiết bị nào được gán cho hợp đồng này.</div>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                    <tr>
-                                        <th>Serial</th>
-                                        <th>Tên thiết bị</th>
-                                        <th class="text-end">Giờ chạy</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <c:forEach var="x" items="${products}">
-                                        <tr style="cursor:pointer"
-                                            class="${(p != null && p.serialNumber == x.serialNumber) ? 'table-primary' : ''}"
-                                            onclick="window.location='${pageContext.request.contextPath}/manager/contracts?action=detail&id=${c.id}&serial=${x.serialNumber}'">
-                                            <td class="fw-semibold">${x.serialNumber}</td>
-                                            <td>${not empty x.modelName ? x.modelName : (not empty x.brandName ? x.brandName : '—')}</td>
-                                            <td class="text-end">${x.totalRunningHours}h</td>
-                                        </tr>
-                                    </c:forEach>
-                                    </tbody>
-                                </table>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        <a class="fw-bold fs-5 owner-trigger" data-bs-toggle="collapse" href="#ownerDevices" role="button" aria-expanded="true" aria-controls="ownerDevices">
+                            <span>${u.fullName}</span>
+                            <i class="fa fa-chevron-down small"></i>
+                        </a>
+                        <div><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
+                        <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+                    </div>
+
+                    <div class="collapse show mt-3" id="ownerDevices">
+                        <div class="border-top pt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="fw-semibold text-primary">
+                                    <i class="fa fa-server me-2"></i>Danh sách thiết bị thuộc hợp đồng
+                                </div>
+                                <span class="text-muted small">Bấm tên chủ sở hữu để thu gọn / mở rộng</span>
                             </div>
-                        </c:otherwise>
-                    </c:choose>
+
+                            <c:choose>
+                                <c:when test="${products == null || products.isEmpty()}">
+                                    <div class="text-muted">Chưa có thiết bị nào được gán cho hợp đồng này.</div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="d-flex flex-column gap-3">
+                                        <c:forEach var="x" items="${products}">
+                                            <div class="device-detail-card">
+                                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                                                    <div>
+                                                        <div class="fw-bold text-primary fs-6">${not empty x.modelName ? x.modelName : (not empty x.brandName ? x.brandName : 'Thiết bị chưa có tên')}</div>
+                                                        <div class="text-muted small">Serial: <span class="fw-semibold">${x.serialNumber}</span></div>
+                                                    </div>
+                                                    <span class="badge ${x.status == 'RUNNING' ? 'bg-success' : 'bg-warning text-dark'}">${empty x.status ? 'Chưa cập nhật trạng thái' : x.status}</span>
+                                                </div>
+                                                <div class="device-detail-grid">
+                                                    <div class="device-detail-item">
+                                                        <div class="label">Brand</div>
+                                                        <div class="fw-semibold">${not empty x.brandName ? x.brandName : '—'}</div>
+                                                    </div>
+                                                    <div class="device-detail-item">
+                                                        <div class="label">Category</div>
+                                                        <div class="fw-semibold">${not empty x.categoryName ? x.categoryName : '—'}</div>
+                                                    </div>
+                                                    <div class="device-detail-item">
+                                                        <div class="label">Năm sản xuất</div>
+                                                        <div class="fw-semibold">${x.manufactureYear != null ? x.manufactureYear : 'N/A'}</div>
+                                                    </div>
+                                                    <div class="device-detail-item">
+                                                        <div class="label">Vị trí lắp đặt</div>
+                                                        <div class="fw-semibold">${not empty x.currentLocation ? x.currentLocation : 'Chưa cập nhật'}</div>
+                                                    </div>
+                                                    <div class="device-detail-item">
+                                                        <div class="label">Giờ chạy</div>
+                                                        <div class="fw-semibold">${x.totalRunningHours}h</div>
+                                                    </div>
+                                                    <div class="device-detail-item">
+                                                        <div class="label">Ngày mua</div>
+                                                        <div class="fw-semibold"><fmt:formatDate value="${x.purchaseDate}" pattern="dd/MM/yyyy"/></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <div class="card soft-card mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <span><i class="fa fa-microchip"></i> Hồ sơ thiết bị</span>
-                    <span class="badge bg-light text-primary">${p != null ? p.serialNumber : 'Chưa chọn thiết bị'}</span>
-                </div>
-                <div class="card-body">
-                    <c:if test="${p == null}">
-                        <div class="text-muted">Chưa có thiết bị để hiển thị. Hãy gán serial trước hoặc chọn thiết bị ở danh sách.</div>
-                    </c:if>
-
-                    <c:if test="${p != null}">
-                        <div class="row g-3 mb-3 text-center">
-                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Brand</div><div class="fw-bold">${p.brandName != null ? p.brandName : '—'}</div></div></div>
-                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Category</div><div class="fw-bold">${p.categoryName != null ? p.categoryName : '—'}</div></div></div>
-                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Năm SX</div><div class="fw-bold">${p.manufactureYear != null ? p.manufactureYear : 'N/A'}</div></div></div>
-                        </div>
-
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between"><span>Vị trí lắp đặt</span><span class="fw-semibold">${p.currentLocation != null ? p.currentLocation : 'Chưa cập nhật'}</span></li>
-                            <li class="list-group-item d-flex justify-content-between"><span>Trạng thái máy</span><span class="fw-semibold text-${p.status == 'RUNNING' ? 'success' : 'warning'}">${p.status}</span></li>
-                            <li class="list-group-item d-flex justify-content-between"><span>Lần bảo trì gần nhất</span><span class="text-muted">--/--/----</span></li>
-                        </ul>
-                    </c:if>
-                </div>
-            </div>
-
             <div class="card soft-card">
                 <div class="card-header"><i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng</div>
                 <div class="card-body p-0">
