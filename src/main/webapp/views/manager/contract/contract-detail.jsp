@@ -90,11 +90,13 @@
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-5">
-            <div class="card soft-card mb-4">
-                <div class="card-header"><i class="fa fa-info-circle text-primary"></i> Tổng quan hợp đồng</div>
-                <div class="card-body">
-                    <table class="table table-borderless kv-table mb-0">
+        <div class="col-12">
+            <div class="row g-4 align-items-start">
+                <div class="col-lg-6">
+                    <div class="card soft-card h-100">
+                        <div class="card-header"><i class="fa fa-info-circle text-primary"></i> Tổng quan hợp đồng</div>
+                        <div class="card-body">
+                            <table class="table table-borderless kv-table mb-0">
                         <tr>
                             <td class="text-muted" style="width:45%;">Trạng thái</td>
                             <td>
@@ -121,133 +123,137 @@
                                 <td class="fw-semibold"><fmt:formatDate value="${c.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/></td>
                             </tr>
                         </c:if>
-                    </table>
+                            </table>
 
-                    <c:if test="${c.status == 'PENDING_SERIAL'}">
-                        <div class="alert alert-warning mt-3 mb-0">Hợp đồng chưa có thiết bị, vui lòng gán serial để tạo tài sản.</div>
-                    </c:if>
+                            <c:if test="${c.status == 'PENDING_SERIAL'}">
+                                <div class="alert alert-warning mt-3 mb-0">Hợp đồng chưa có thiết bị, vui lòng gán serial để tạo tài sản.</div>
+                            </c:if>
 
-                    <c:if test="${c.status == 'TERMINATED' && terminatedEvent != null}">
-                        <div class="alert alert-secondary mt-3 mb-0">
-                            <div><b>Reason code:</b> ${terminatedEvent.reasonCode}</div>
-                            <div><b>Lý do:</b> ${empty terminatedEvent.terminatedReason ? '—' : terminatedEvent.terminatedReason}</div>
-                            <div><b>Decision doc:</b> ${empty terminatedEvent.decisionDoc ? '—' : terminatedEvent.decisionDoc}</div>
-                            <div><b>Ghi chú:</b> ${empty terminatedEvent.note ? '—' : terminatedEvent.note}</div>
-                            <div><b>Actor:</b> ${empty terminatedEvent.actorId ? '—' : terminatedEvent.actorId}</div>
-                        </div>
-                    </c:if>
-
-                    <c:if test="${c.status != 'TERMINATED'}">
-                        <form class="mt-3" method="post" action="${pageContext.request.contextPath}/manager/contracts">
-                            <input type="hidden" name="action" value="terminate"/>
-                            <input type="hidden" name="id" value="${c.id}"/>
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <label class="form-label mb-1">Reason code</label>
-                                    <select name="reasonCode" class="form-select form-select-sm">
-                                        <option value="CONTRACT_VIOLATION">CONTRACT_VIOLATION</option>
-                                        <option value="NON_PAYMENT">NON_PAYMENT</option>
-                                        <option value="OTHER">OTHER</option>
-                                    </select>
+                            <c:if test="${c.status == 'TERMINATED' && terminatedEvent != null}">
+                                <div class="alert alert-secondary mt-3 mb-0">
+                                    <div><b>Reason code:</b> ${terminatedEvent.reasonCode}</div>
+                                    <div><b>Lý do:</b> ${empty terminatedEvent.terminatedReason ? '—' : terminatedEvent.terminatedReason}</div>
+                                    <div><b>Decision doc:</b> ${empty terminatedEvent.decisionDoc ? '—' : terminatedEvent.decisionDoc}</div>
+                                    <div><b>Ghi chú:</b> ${empty terminatedEvent.note ? '—' : terminatedEvent.note}</div>
+                                    <div><b>Actor:</b> ${empty terminatedEvent.actorId ? '—' : terminatedEvent.actorId}</div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label mb-1">Decision doc</label>
-                                    <input type="text" name="decisionDoc" class="form-control form-control-sm" placeholder="QĐ-123/2026"/>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label mb-1">Lý do chấm dứt</label>
-                                    <input type="text" name="terminatedReason" class="form-control form-control-sm"/>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label mb-1">Ghi chú (bắt buộc nếu OTHER)</label>
-                                    <textarea name="note" rows="2" class="form-control form-control-sm"></textarea>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-danger btn-sm mt-3" onclick="return confirm('Bạn chắc chắn muốn chấm dứt hợp đồng này?');">
-                                <i class="fa fa-ban"></i> Chấm dứt hợp đồng
-                            </button>
-                        </form>
-                    </c:if>
-                </div>
-            </div>
+                            </c:if>
 
-            <div class="card soft-card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</span>
-                    <span class="badge bg-primary">${products != null ? products.size() : 0} thiết bị</span>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex flex-column gap-2">
-                        <a class="fw-bold fs-5 owner-trigger" data-bs-toggle="collapse" href="#ownerDevices" role="button" aria-expanded="true" aria-controls="ownerDevices">
-                            <span>${u.fullName}</span>
-                            <i class="fa fa-chevron-down small"></i>
-                        </a>
-                        <div><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
-                        <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
-                    </div>
-
-                    <div class="collapse show mt-3" id="ownerDevices">
-                        <div class="border-top pt-3">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="fw-semibold text-primary">
-                                    <i class="fa fa-server me-2"></i>Danh sách thiết bị thuộc hợp đồng
-                                </div>
-                                <span class="text-muted small">Bấm tên chủ sở hữu để thu gọn / mở rộng</span>
-                            </div>
-
-                            <c:choose>
-                                <c:when test="${products == null || products.isEmpty()}">
-                                    <div class="text-muted">Chưa có thiết bị nào được gán cho hợp đồng này.</div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div class="d-flex flex-column gap-3">
-                                        <c:forEach var="x" items="${products}">
-                                            <div class="device-detail-card">
-                                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
-                                                    <div>
-                                                        <div class="fw-bold text-primary fs-6">${not empty x.modelName ? x.modelName : (not empty x.brandName ? x.brandName : 'Thiết bị chưa có tên')}</div>
-                                                        <div class="text-muted small">Serial: <span class="fw-semibold">${x.serialNumber}</span></div>
-                                                    </div>
-                                                    <span class="badge ${x.status == 'RUNNING' ? 'bg-success' : 'bg-warning text-dark'}">${empty x.status ? 'Chưa cập nhật trạng thái' : x.status}</span>
-                                                </div>
-                                                <div class="device-detail-grid">
-                                                    <div class="device-detail-item">
-                                                        <div class="label">Brand</div>
-                                                        <div class="fw-semibold">${not empty x.brandName ? x.brandName : '—'}</div>
-                                                    </div>
-                                                    <div class="device-detail-item">
-                                                        <div class="label">Category</div>
-                                                        <div class="fw-semibold">${not empty x.categoryName ? x.categoryName : '—'}</div>
-                                                    </div>
-                                                    <div class="device-detail-item">
-                                                        <div class="label">Năm sản xuất</div>
-                                                        <div class="fw-semibold">${x.manufactureYear != null ? x.manufactureYear : 'N/A'}</div>
-                                                    </div>
-                                                    <div class="device-detail-item">
-                                                        <div class="label">Vị trí lắp đặt</div>
-                                                        <div class="fw-semibold">${not empty x.currentLocation ? x.currentLocation : 'Chưa cập nhật'}</div>
-                                                    </div>
-                                                    <div class="device-detail-item">
-                                                        <div class="label">Giờ chạy</div>
-                                                        <div class="fw-semibold">${x.totalRunningHours}h</div>
-                                                    </div>
-                                                    <div class="device-detail-item">
-                                                        <div class="label">Ngày mua</div>
-                                                        <div class="fw-semibold"><fmt:formatDate value="${x.purchaseDate}" pattern="dd/MM/yyyy"/></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </c:forEach>
+                            <c:if test="${c.status != 'TERMINATED'}">
+                                <form class="mt-3" method="post" action="${pageContext.request.contextPath}/manager/contracts">
+                                    <input type="hidden" name="action" value="terminate"/>
+                                    <input type="hidden" name="id" value="${c.id}"/>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label mb-1">Reason code</label>
+                                            <select name="reasonCode" class="form-select form-select-sm">
+                                                <option value="CONTRACT_VIOLATION">CONTRACT_VIOLATION</option>
+                                                <option value="NON_PAYMENT">NON_PAYMENT</option>
+                                                <option value="OTHER">OTHER</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label mb-1">Decision doc</label>
+                                            <input type="text" name="decisionDoc" class="form-control form-control-sm" placeholder="QĐ-123/2026"/>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label mb-1">Lý do chấm dứt</label>
+                                            <input type="text" name="terminatedReason" class="form-control form-control-sm"/>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label mb-1">Ghi chú (bắt buộc nếu OTHER)</label>
+                                            <textarea name="note" rows="2" class="form-control form-control-sm"></textarea>
+                                        </div>
                                     </div>
-                                </c:otherwise>
-                            </c:choose>
+                                    <button type="submit" class="btn btn-danger btn-sm mt-3" onclick="return confirm('Bạn chắc chắn muốn chấm dứt hợp đồng này?');">
+                                        <i class="fa fa-ban"></i> Chấm dứt hợp đồng
+                                    </button>
+                                </form>
+                            </c:if>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card soft-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</span>
+                            <span class="badge bg-primary">${products != null ? products.size() : 0} thiết bị</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex flex-column gap-2">
+                                <a class="fw-bold fs-5 owner-trigger" data-bs-toggle="collapse" href="#ownerDevices" role="button" aria-expanded="true" aria-controls="ownerDevices">
+                                    <span>${u.fullName}</span>
+                                    <i class="fa fa-chevron-down small"></i>
+                                </a>
+                                <div><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
+                                <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+                            </div>
+
+                            <div class="collapse show mt-3" id="ownerDevices">
+                                <div class="border-top pt-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="fw-semibold text-primary">
+                                            <i class="fa fa-server me-2"></i>Danh sách thiết bị thuộc hợp đồng
+                                        </div>
+                                        <span class="text-muted small">Bấm tên chủ sở hữu để thu gọn / mở rộng</span>
+                                    </div>
+
+                                    <c:choose>
+                                        <c:when test="${products == null || products.isEmpty()}">
+                                            <div class="text-muted">Chưa có thiết bị nào được gán cho hợp đồng này.</div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="d-flex flex-column gap-3">
+                                                <c:forEach var="x" items="${products}">
+                                                    <div class="device-detail-card">
+                                                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                                                            <div>
+                                                                <div class="fw-bold text-primary fs-6">${not empty x.modelName ? x.modelName : (not empty x.brandName ? x.brandName : 'Thiết bị chưa có tên')}</div>
+                                                                <div class="text-muted small">Serial: <span class="fw-semibold">${x.serialNumber}</span></div>
+                                                            </div>
+                                                            <span class="badge ${x.status == 'RUNNING' ? 'bg-success' : 'bg-warning text-dark'}">${empty x.status ? 'Chưa cập nhật trạng thái' : x.status}</span>
+                                                        </div>
+                                                        <div class="device-detail-grid">
+                                                            <div class="device-detail-item">
+                                                                <div class="label">Brand</div>
+                                                                <div class="fw-semibold">${not empty x.brandName ? x.brandName : '—'}</div>
+                                                            </div>
+                                                            <div class="device-detail-item">
+                                                                <div class="label">Category</div>
+                                                                <div class="fw-semibold">${not empty x.categoryName ? x.categoryName : '—'}</div>
+                                                            </div>
+                                                            <div class="device-detail-item">
+                                                                <div class="label">Năm sản xuất</div>
+                                                                <div class="fw-semibold">${x.manufactureYear != null ? x.manufactureYear : 'N/A'}</div>
+                                                            </div>
+                                                            <div class="device-detail-item">
+                                                                <div class="label">Vị trí lắp đặt</div>
+                                                                <div class="fw-semibold">${not empty x.currentLocation ? x.currentLocation : 'Chưa cập nhật'}</div>
+                                                            </div>
+                                                            <div class="device-detail-item">
+                                                                <div class="label">Giờ chạy</div>
+                                                                <div class="fw-semibold">${x.totalRunningHours}h</div>
+                                                            </div>
+                                                            <div class="device-detail-item">
+                                                                <div class="label">Ngày mua</div>
+                                                                <div class="fw-semibold"><fmt:formatDate value="${x.purchaseDate}" pattern="dd/MM/yyyy"/></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </c:forEach>
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-7">
+        <div class="col-12">
             <div class="card soft-card">
                 <div class="card-header"><i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng</div>
                 <div class="card-body p-0">
