@@ -14,61 +14,18 @@
         }
         .soft-card {
             border: 0;
-            border-radius: 14px;
-            box-shadow: 0 10px 26px rgba(18, 38, 63, 0.10);
-            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 8px 22px rgba(18, 38, 63, 0.08);
         }
         .soft-card .card-header {
             border-bottom: 1px solid #edf2f7;
-            background: linear-gradient(180deg, #f9fbff 0%, #f2f7ff 100%);
-            font-weight: 700;
-            color: #1f2a44;
+            background: #f8fafc;
+            font-weight: 600;
         }
         .status-pill { font-size: 12px; padding: 7px 12px; border-radius: 999px; }
         .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: .4px; color: #64748b; }
         .kv-table td { padding: .5rem 0; }
         .timeline-table td, .timeline-table th { vertical-align: middle; }
-        .overview-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .overview-item {
-            border: 1px solid #edf2ff;
-            border-radius: 10px;
-            background: #fff;
-            padding: 10px 12px;
-        }
-        .overview-item .label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
-        .overview-item .value { font-weight: 700; color: #1f2937; }
-        .owner-name-btn {
-            border: 0;
-            padding: 0;
-            background: transparent;
-            font-size: 30px;
-            font-weight: 700;
-            color: #198754;
-            text-align: left;
-        }
-        .owner-name-btn:hover { text-decoration: underline; color: #157347; }
-        .owner-detail-panel {
-            margin-top: 12px;
-            border: 1px dashed #cde7d8;
-            background: #f7fffb;
-            border-radius: 10px;
-            padding: 12px;
-            display: none;
-        }
-        .owner-detail-panel.show { display: block; }
-        .contract-sidebar { position: sticky; top: 90px; }
-        .owner-detail-panel .table td,
-        .owner-detail-panel .table th {
-            white-space: nowrap;
-            font-size: 13px;
-            padding: .45rem .5rem;
-        }
-        @media (max-width: 991.98px) { .contract-sidebar { position: static; top: auto; } }
     </style>
 </head>
 
@@ -101,14 +58,14 @@
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-7">
+        <div class="col-lg-5">
             <div class="card soft-card mb-4">
                 <div class="card-header"><i class="fa fa-info-circle text-primary"></i> Tổng quan hợp đồng</div>
                 <div class="card-body">
-                    <div class="overview-grid">
-                        <div class="overview-item">
-                            <div class="label">Trạng thái</div>
-                            <div class="value">
+                    <table class="table table-borderless kv-table mb-0">
+                        <tr>
+                            <td class="text-muted" style="width:45%;">Trạng thái</td>
+                            <td>
                                 <c:choose>
                                     <c:when test="${c.status == 'PENDING_SERIAL'}"><span class="badge bg-warning text-dark status-pill">PENDING SERIAL</span></c:when>
                                     <c:when test="${c.status == 'ACTIVE'}"><span class="badge bg-success status-pill">ACTIVE</span></c:when>
@@ -116,27 +73,23 @@
                                     <c:when test="${c.status == 'TERMINATED'}"><span class="badge bg-secondary status-pill">TERMINATED</span></c:when>
                                     <c:otherwise><span class="badge bg-dark status-pill">${c.status}</span></c:otherwise>
                                 </c:choose>
-                            </div>
-                        </div>
-                        <div class="overview-item">
-                            <div class="label">Ngày ký</div>
-                            <div class="value"><fmt:formatDate value="${c.createdAt}" pattern="dd/MM/yyyy"/></div>
-                        </div>
-                        <div class="overview-item">
-                            <div class="label">Ngày bắt đầu</div>
-                            <div class="value"><fmt:formatDate value="${c.startDate}" pattern="dd/MM/yyyy"/></div>
-                        </div>
-                        <div class="overview-item">
-                            <div class="label">Ngày kết thúc</div>
-                            <div class="value text-danger"><fmt:formatDate value="${c.endDate}" pattern="dd/MM/yyyy"/></div>
-                        </div>
-                    </div>
-                    <c:if test="${c.terminatedAt != null}">
-                        <div class="overview-item mb-2">
-                            <div class="label">Thời điểm chấm dứt</div>
-                            <div class="value"><fmt:formatDate value="${c.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/></div>
-                        </div>
-                    </c:if>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Ngày bắt đầu</td>
+                            <td class="fw-semibold"><fmt:formatDate value="${c.startDate}" pattern="dd/MM/yyyy"/></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Ngày kết thúc</td>
+                            <td class="fw-semibold text-danger"><fmt:formatDate value="${c.endDate}" pattern="dd/MM/yyyy"/></td>
+                        </tr>
+                        <c:if test="${c.terminatedAt != null}">
+                            <tr>
+                                <td class="text-muted">Thời điểm chấm dứt</td>
+                                <td class="fw-semibold"><fmt:formatDate value="${c.terminatedAt}" pattern="dd/MM/yyyy HH:mm"/></td>
+                            </tr>
+                        </c:if>
+                    </table>
 
                     <c:if test="${c.status == 'PENDING_SERIAL'}">
                         <div class="alert alert-warning mt-3 mb-0">Hợp đồng chưa có thiết bị, vui lòng gán serial để tạo tài sản.</div>
@@ -186,8 +139,83 @@
                 </div>
             </div>
 
+            <div class="card soft-card mb-4">
+                <div class="card-header"><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</div>
+                <div class="card-body">
+                    <div class="fw-bold fs-5 text-success">${u.fullName}</div>
+                    <div class="mt-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
+                    <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
+                </div>
+            </div>
+
             <div class="card soft-card">
-                <div class="card-header d-flex justify-content-between align-items-center"><span><i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng</span><span class="badge bg-light text-dark">${contractEvents != null ? contractEvents.size() : 0}</span></div>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fa fa-server text-primary"></i> Thiết bị thuộc hợp đồng</span>
+                    <span class="badge bg-primary">${products != null ? products.size() : 0}</span>
+                </div>
+                <div class="card-body p-0">
+                    <c:choose>
+                        <c:when test="${products == null || products.isEmpty()}">
+                            <div class="p-3 text-muted">Chưa có thiết bị nào được gán cho hợp đồng này.</div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>Serial</th>
+                                        <th>Tên thiết bị</th>
+                                        <th class="text-end">Giờ chạy</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach var="x" items="${products}">
+                                        <tr style="cursor:pointer"
+                                            class="${(p != null && p.serialNumber == x.serialNumber) ? 'table-primary' : ''}"
+                                            onclick="window.location='${pageContext.request.contextPath}/manager/contracts?action=detail&id=${c.id}&serial=${x.serialNumber}'">
+                                            <td class="fw-semibold">${x.serialNumber}</td>
+                                            <td>${not empty x.modelName ? x.modelName : (not empty x.brandName ? x.brandName : '—')}</td>
+                                            <td class="text-end">${x.totalRunningHours}h</td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card soft-card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span><i class="fa fa-microchip"></i> Hồ sơ thiết bị</span>
+                    <span class="badge bg-light text-primary">${p != null ? p.serialNumber : 'Chưa chọn thiết bị'}</span>
+                </div>
+                <div class="card-body">
+                    <c:if test="${p == null}">
+                        <div class="text-muted">Chưa có thiết bị để hiển thị. Hãy gán serial trước hoặc chọn thiết bị ở danh sách.</div>
+                    </c:if>
+
+                    <c:if test="${p != null}">
+                        <div class="row g-3 mb-3 text-center">
+                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Brand</div><div class="fw-bold">${p.brandName != null ? p.brandName : '—'}</div></div></div>
+                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Category</div><div class="fw-bold">${p.categoryName != null ? p.categoryName : '—'}</div></div></div>
+                            <div class="col-md-4"><div class="p-3 border rounded"><div class="small text-muted">Năm SX</div><div class="fw-bold">${p.manufactureYear != null ? p.manufactureYear : 'N/A'}</div></div></div>
+                        </div>
+
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between"><span>Vị trí lắp đặt</span><span class="fw-semibold">${p.currentLocation != null ? p.currentLocation : 'Chưa cập nhật'}</span></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Trạng thái máy</span><span class="fw-semibold text-${p.status == 'RUNNING' ? 'success' : 'warning'}">${p.status}</span></li>
+                            <li class="list-group-item d-flex justify-content-between"><span>Lần bảo trì gần nhất</span><span class="text-muted">--/--/----</span></li>
+                        </ul>
+                    </c:if>
+                </div>
+            </div>
+
+            <div class="card soft-card">
+                <div class="card-header"><i class="fa fa-stream text-dark"></i> Timeline sự kiện hợp đồng</div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-sm table-striped mb-0 timeline-table">
@@ -219,76 +247,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-5">
-            <div class="contract-sidebar">
-                <div class="card soft-card mb-4">
-                    <div class="card-header"><i class="fa fa-user-tie text-success"></i> Khách hàng / Chủ sở hữu</div>
-                    <div class="card-body">
-                    <button type="button" class="owner-name-btn" id="ownerNameToggle">
-                        ${u.fullName}
-                    </button>
-                    <div class="mb-2"><i class="fa fa-envelope text-muted me-2"></i>${u.email}</div>
-                    <div><i class="fa fa-phone text-muted me-2"></i>${u.phone != null ? u.phone : 'Chưa cập nhật'}</div>
-
-                    <div id="ownerDetailPanel" class="owner-detail-panel">
-
-                            <div class="fw-semibold mb-2 d-flex justify-content-between align-items-center">
-                                <span>Device khách hàng sở hữu trong hợp đồng hiện tại</span>
-                                <span class="badge bg-primary">${products != null ? products.size() : 0}</span>
-                            </div>
-                            <c:choose>
-                                <c:when test="${products == null || products.isEmpty()}">
-                                    <div class="text-muted">Hợp đồng hiện tại chưa có thiết bị nào được gán.</div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-bordered mb-0">
-                                            <thead class="table-light">
-                                            <tr>
-                                                <th>Serial</th>
-                                                <th>Model</th>
-                                                <th>Trạng thái</th>
-                                                <th class="text-end">Giờ chạy</th>
-                                                <th>Năm SX</th>
-                                                <th>Vị trí</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <c:forEach var="d" items="${products}">
-                                                <tr>
-                                                    <td class="fw-semibold">${d.serialNumber}</td>
-                                                    <td>${not empty d.modelName ? d.modelName : (not empty d.brandName ? d.brandName : '—')}</td>
-                                                    <td>${not empty d.status ? d.status : '—'}</td>
-                                                    <td class="text-end">${d.totalRunningHours}h</td>
-                                                    <td>${d.manufactureYear != null ? d.manufactureYear : 'N/A'}</td>
-                                                    <td>${not empty d.currentLocation ? d.currentLocation : '—'}</td>
-                                                </tr>
-                                            </c:forEach>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
-
-<script>
-    (function () {
-        const ownerNameToggle = document.getElementById('ownerNameToggle');
-        const ownerDetailPanel = document.getElementById('ownerDetailPanel');
-        if (!ownerNameToggle || !ownerDetailPanel) {
-            return;
-        }
-
-        ownerNameToggle.addEventListener('click', function () {
-            ownerDetailPanel.classList.toggle('show');
-        });
-    })();
-</script>
 </body>
