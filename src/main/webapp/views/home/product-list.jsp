@@ -423,12 +423,45 @@
                         </div>
                     </div>
                     <div class="detail-item">
+                        <div class="label">Ngày ký</div>
+                        <div class="value">
+                            <c:choose>
+                                <c:when test="${not empty contract.signedDate}">
+                                    <fmt:formatDate value="${contract.signedDate}" pattern="dd/MM/yyyy" />
+                                </c:when>
+                                <c:otherwise>Chưa cập nhật</c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                    <div class="detail-item">
                         <div class="label">Ngày bắt đầu</div>
                         <div class="value"><fmt:formatDate value="${contract.startDate}" pattern="dd/MM/yyyy" /></div>
                     </div>
                     <div class="detail-item">
                         <div class="label">Ngày kết thúc</div>
                         <div class="value"><fmt:formatDate value="${contract.endDate}" pattern="dd/MM/yyyy" /></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Tệp hợp đồng</div>
+                        <div class="value">
+                            <c:choose>
+                                <c:when test="${not empty contract.filePath}">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a class="btn btn-sm btn-outline-primary btn-pill"
+                                           href="<c:url value='/${contract.filePath}'/>"
+                                           target="_blank" rel="noopener noreferrer">
+                                            <i class="fas fa-eye me-1"></i>Xem hợp đồng
+                                        </a>
+                                        <a class="btn btn-sm btn-primary btn-pill"
+                                           href="<c:url value='/${contract.filePath}'/>"
+                                           download>
+                                            <i class="fas fa-download me-1"></i>Tải file
+                                        </a>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>Chưa có file hợp đồng</c:otherwise>
+                            </c:choose>
+                        </div>
                     </div>
                     <div class="detail-item">
                         <div class="label">Ngày tạo</div>

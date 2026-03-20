@@ -12,8 +12,10 @@ public class Contract {
     private Date endDate;
     private String status;
     private int managerId;
+    private Date signedDate;
     private Timestamp createdAt;
     private Timestamp terminatedAt;
+    private String filePath;
     private String customerName;
     private String tempCustomerEmail;
 
@@ -33,8 +35,10 @@ public class Contract {
         this.endDate = builder.endDate;
         this.status = builder.status;
         this.managerId = builder.managerId;
+        this.signedDate = builder.signedDate;
         this.createdAt = builder.createdAt;
         this.terminatedAt = builder.terminatedAt;
+        this.filePath = builder.filePath;
 
         this.customerName = builder.customerName;
         this.productSerial = builder.productSerial;
@@ -106,6 +110,14 @@ public class Contract {
         this.managerId = managerId;
     }
 
+    public Date getSignedDate() {
+        return signedDate;
+    }
+
+    public void setSignedDate(Date signedDate) {
+        this.signedDate = signedDate;
+    }
+
     public Timestamp getCreatedAt() {
         return createdAt;
     }
@@ -120,6 +132,14 @@ public class Contract {
 
     public void setTerminatedAt(Timestamp terminatedAt) {
         this.terminatedAt = terminatedAt;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     public String getCustomerName() {
@@ -175,8 +195,10 @@ public class Contract {
         private Date endDate;
         private String status;
         private int managerId;
+        private Date signedDate;
         private Timestamp createdAt;
         private Timestamp terminatedAt;
+        private String filePath;
         private String customerName;
         private String productSerial;
         private String productModelName;
@@ -222,6 +244,11 @@ public class Contract {
             return this;
         }
 
+        public Builder signedDate(Date signedDate) {
+            this.signedDate = signedDate;
+            return this;
+        }
+
         public Builder createdAt(Timestamp createdAt) {
             this.createdAt = createdAt;
             return this;
@@ -229,6 +256,11 @@ public class Contract {
 
         public Builder terminatedAt(Timestamp terminatedAt) {
             this.terminatedAt = terminatedAt;
+            return this;
+        }
+
+        public Builder filePath(String filePath) {
+            this.filePath = filePath;
             return this;
         }
 
