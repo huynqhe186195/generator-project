@@ -6,7 +6,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Manager Dashboard</title>
+    <title>Dashboard Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -20,10 +20,15 @@
 
     <div class="container-fluid p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-primary fw-bold"><i class="fa fa-tachometer-alt"></i> Tổng quan hoạt động</h2>
-            <a href="${pageContext.request.contextPath}/manager" class="btn btn-sm btn-outline-secondary">
-                <i class="fa fa-sync-alt"></i> Cập nhật dữ liệu
-            </a>
+            <h2 class="text-primary fw-bold"><i class="fa fa-tachometer-alt"></i> Tổng quan dịch vụ sau bán hàng</h2>
+            <div class="d-flex gap-2">
+                <a href="${pageContext.request.contextPath}/manager/reports" class="btn btn-sm btn-primary">
+                    <i class="fa fa-chart-line"></i> Xem dashboard dịch vụ
+                </a>
+                <a href="${pageContext.request.contextPath}/manager" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa fa-sync-alt"></i> Cập nhật dữ liệu
+                </a>
+            </div>
         </div>
 
         <div class="row g-4 mb-5">
@@ -59,12 +64,12 @@
                 <div class="card card-box bg-danger shadow h-100 p-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-uppercase mb-2">Yêu cầu chờ duyệt</h6>
+                            <h6 class="text-uppercase mb-2">Yêu cầu dịch vụ mở</h6>
                             <h2 class="display-6 fw-bold mb-0">${pendingCount}</h2>
                         </div>
                         <div class="icon-box"><i class="fa fa-bell"></i></div>
                     </div>
-                    <small class="mt-3 d-block text-white-50">Cần xử lý ngay</small>
+                    <small class="mt-3 d-block text-white-50">Ưu tiên xử lý ticket đang mở</small>
                 </div>
             </div>
 
@@ -77,7 +82,7 @@
                         </div>
                         <div class="icon-box"><i class="fa fa-server"></i></div>
                     </div>
-                    <small class="mt-3 d-block text-white-50">Hệ thống hoạt động ổn định</small>
+                    <small class="mt-3 d-block text-white-50">Theo dõi thiết bị sau bán</small>
                 </div>
             </div>
         </div>
@@ -147,7 +152,7 @@
                         </c:if>
 
                         <div class="alert alert-info shadow-sm">
-                            <i class="fa fa-info-circle"></i> Kiểm tra định kỳ máy phát tại <strong>Khu công nghiệp VSIP</strong> vào ngày mai.
+                            <i class="fa fa-info-circle"></i> Hiện có <strong>${overdueCount}</strong> yêu cầu dịch vụ đang quá 72 giờ. Mở dashboard dịch vụ để xem chi tiết theo bảo dưỡng, sửa chữa và bảo hành.
                         </div>
                     </div>
                 </div>

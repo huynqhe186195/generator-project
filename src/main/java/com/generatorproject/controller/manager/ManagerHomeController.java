@@ -1,7 +1,8 @@
 package com.generatorproject.controller.manager;
 
 import com.generatorproject.model.Contract;
-import com.generatorproject.model.Users;
+import com.generatorproject.dao.ManagerReportDAO;
+import com.generatorproject.model.ManagerReportStats;
 import com.generatorproject.services.ContractServices;
 import com.generatorproject.services.IContractServices;
 import com.generatorproject.services.IProductServices;
@@ -20,12 +21,12 @@ public class ManagerHomeController extends HttpServlet {
 
     private final IContractServices contractService;
     private final IProductServices productService;
-    // private final IIncidentServices incidentService; // Nếu bạn đã làm module sự cố
+    private final ManagerReportDAO reportDAO;
 
     public ManagerHomeController() {
         contractService = new ContractServices();
         productService = new ProductServices();
-        // incidentService = new IncidentServices();
+        reportDAO = new ManagerReportDAO();
     }
 
     @Override
@@ -35,9 +36,8 @@ public class ManagerHomeController extends HttpServlet {
         int expiringContracts = contractService.countExpiringSoon(30);
         int totalProducts = productService.countAll("");
 
-        // chưa làm module Incident thì để tạm số 0 hoặc query bảng contracts trạng thái PENDING
-        int pendingRequests = 0;
-        // int pendingRequests = incidentService.countByStatus("NEW");
+        ManagerReportStats reportStats = reportDAO.getDashboardStats();
+        int pendingRequests = reportStats.getWaitingRequests();
 
         List<Contract> recentContracts = contractService.findRecent(5);
 
@@ -47,6 +47,7 @@ public class ManagerHomeController extends HttpServlet {
         req.setAttribute("pendingCount", pendingRequests);
 
         req.setAttribute("recentContracts", recentContracts);
+        req.setAttribute("overdueCount", reportStats.getOverdueRequests());
 
         req.getRequestDispatcher("/views/manager/home.jsp").forward(req, resp);
     }

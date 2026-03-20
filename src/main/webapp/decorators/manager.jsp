@@ -101,15 +101,15 @@
                                 </a>
                             </li>
 
-                            <li>
+                            <li class="${pageContext.request.requestURI.contains('/manager/assets') ? 'active' : ''}">
                                 <a href="${pageContext.request.contextPath}/manager/assets">
                                     <i class="fa fa-server me-2"></i> Tài sản Khách hàng
                                 </a>
                             </li>
 
-                            <li>
+                            <li class="${pageContext.request.requestURI.contains('/manager/reports') ? 'active' : ''}">
                                 <a href="${pageContext.request.contextPath}/manager/reports">
-                                    <i class="fa fa-chart-line me-2"></i> Báo cáo
+                                    <i class="fa fa-chart-line me-2"></i> Dashboard dịch vụ
                                 </a>
                             </li>
                         </ul>
