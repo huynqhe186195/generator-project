@@ -444,8 +444,7 @@
                 <i class="fas fa-user-circle me-1"></i> ${user.fullName}
               </a>
               <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
-                <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
-                <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
+
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
               </ul>
@@ -453,7 +452,8 @@
           </c:otherwise>
         </c:choose>
       </ul>
-    </div>
+    </div><li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
+                          <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
   </div>
 </nav>
 
