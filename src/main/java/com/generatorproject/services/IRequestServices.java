@@ -1,6 +1,5 @@
 package com.generatorproject.services;
 
-import com.generatorproject.model.RepairRequestDTO;
 import com.generatorproject.model.SystemRequest;
 
 import java.sql.Date;

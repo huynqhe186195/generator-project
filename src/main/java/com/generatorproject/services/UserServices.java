@@ -4,7 +4,6 @@ import com.generatorproject.dao.TokenDao;
 import com.generatorproject.dao.UserDao;
 import com.generatorproject.model.Users;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 

@@ -143,4 +143,29 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
             return false;
         }
     }
+    /**
+     * Cập nhật trạng thái thanh toán từ VNPay Return/IPN dựa vào Mã Hóa Đơn (invoice_code)
+     */
+    public boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo) {
+        String noteContent = (transactionNo != null && !transactionNo.isEmpty())
+                ? "Thanh toán qua VNPay. Mã GD: " + transactionNo
+                : "Cập nhật thanh toán hệ thống";
+
+        String sql;
+        try {
+            if ("PAID".equalsIgnoreCase(paymentStatus)) {
+                // Nếu thành công thì chốt luôn giờ thanh toán (paid_at = NOW())
+                sql = "UPDATE invoices SET payment_status = ?, payment_method = ?, note = ?, paid_at = NOW() WHERE invoice_code = ?";
+                update(sql, paymentStatus, paymentMethod, noteContent, invoiceCode);
+            } else {
+                // Nếu thất bại/hủy thì không cập nhật paid_at
+                sql = "UPDATE invoices SET payment_status = ?, payment_method = ?, note = ? WHERE invoice_code = ?";
+                update(sql, paymentStatus, paymentMethod, noteContent, invoiceCode);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -23,4 +23,5 @@ public interface IInvoiceService {
     boolean cancelInvoice(Long invoiceId, String reason, Users staff) throws Exception;
     int countInvoices(String keyword, String status);
     public boolean updateTaxRate(Long invoiceId, double newTaxRate);
+    boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo);
 }

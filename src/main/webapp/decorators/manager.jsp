@@ -107,8 +107,8 @@
                                 </a>
                             </li>
 
-                            <li>
-                                <a href="${pageContext.request.contextPath}/manager/reports">
+                            <li class="${pageContext.request.requestURI.contains('system-report') ? 'active' : ''}">
+                                <a href="${pageContext.request.contextPath}/manager/system-report">
                                     <i class="fa fa-chart-line me-2"></i> Báo cáo
                                 </a>
                             </li>

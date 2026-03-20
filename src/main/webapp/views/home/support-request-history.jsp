@@ -64,5 +64,6 @@
         </div>
     </div>
 </div>
+<jsp:include page="/views/customer/ai-chat-widget.jsp" />
 </body>
 </html>

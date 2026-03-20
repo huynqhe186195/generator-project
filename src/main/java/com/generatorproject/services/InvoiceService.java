@@ -3,7 +3,6 @@ package com.generatorproject.services;
 import com.generatorproject.dao.InvoiceDAO;
 import com.generatorproject.dao.QuoteDAO;
 import com.generatorproject.model.Invoice;
-import com.generatorproject.model.Quote;
 import com.generatorproject.model.Users;
 
 import java.util.List;
@@ -78,5 +77,10 @@ public class InvoiceService implements IInvoiceService {
     @Override
     public boolean updateTaxRate(Long invoiceId, double newTaxRate) {
         return invoiceDAO.updateTaxRate(invoiceId,newTaxRate);
+    }
+
+    @Override
+    public boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo) {
+        return invoiceDAO.updatePaymentStatusByCode(invoiceCode,paymentStatus,paymentMethod,transactionNo);
     }
 }

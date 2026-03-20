@@ -61,12 +61,12 @@ public class ContractServices implements IContractServices {
 
     @Override
     public boolean terminateContract(Long contractId,
-                                     String reasonCode,
-                                     String terminatedReason,
-                                     String decisionDoc,
-                                     String note,
-                                     Long actorId,
-                                     String meta) {
+            String reasonCode,
+            String terminatedReason,
+            String decisionDoc,
+            String note,
+            Long actorId,
+            String meta) {
         return contractDAO.terminateContract(contractId, reasonCode, terminatedReason, decisionDoc, note, actorId,
                 meta);
     }
@@ -103,12 +103,13 @@ public class ContractServices implements IContractServices {
 
     @Override
     public Long assignSerialToContract(Long contractId, String serialNumber, Long modelId, Date purchaseDate,
-                                       Integer manufactureYear, String currentLocation) throws Exception {
+            Integer manufactureYear, String currentLocation) throws Exception {
         return contractDAO.assignSerialToContract(contractId, serialNumber, modelId, purchaseDate, manufactureYear,
                 currentLocation);
     }
     @Override
-    public Contract findContractDetailForCustomer(Long contractId, Long customerId) {
-        return contractDAO.findContractDetailForCustomer(contractId, customerId);
+    public void updateContractFilePath(Long contractId, String filePath) {
+        contractDAO.updateFilePath(contractId, filePath);
     }
+
 }

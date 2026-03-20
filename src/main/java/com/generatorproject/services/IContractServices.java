@@ -52,5 +52,5 @@ public interface IContractServices {
             Integer manufactureYear,
             String currentLocation) throws Exception;
 
-    Contract findContractDetailForCustomer(Long contractId, Long customerId);
+    void updateContractFilePath(Long contractId, String filePath);
 }
