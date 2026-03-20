@@ -252,6 +252,13 @@
     .hero-section {
       position: relative;
       overflow: hidden;
+      padding: 18px 18px 0;
+    }
+
+    #heroCarousel {
+      border-radius: 34px;
+      overflow: hidden;
+      box-shadow: 0 30px 90px rgba(15, 23, 42, 0.18);
     }
 
     .hero-section::before {
@@ -264,11 +271,11 @@
     }
 
     .hero-slide {
-      min-height: 100vh;
+      min-height: clamp(720px, 88vh, 860px);
       position: relative;
       display: flex;
       align-items: center;
-      padding: 152px 0 112px;
+      padding: 138px 0 94px;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -287,6 +294,8 @@
       position: relative;
       z-index: 2;
       color: #ffffff;
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
     .hero-grid {
@@ -452,7 +461,7 @@
 
     .stats-band {
       position: relative;
-      margin-top: -58px;
+      margin-top: -42px;
       z-index: 4;
     }
 
@@ -773,9 +782,17 @@
     }
 
     @media (max-width: 991.98px) {
+      .hero-section {
+        padding: 14px 14px 0;
+      }
+
+      #heroCarousel {
+        border-radius: 28px;
+      }
+
       .hero-slide {
         min-height: auto;
-        padding: 128px 0 92px;
+        padding: 124px 0 86px;
       }
 
       .hero-title {
@@ -788,7 +805,7 @@
       }
 
       .stats-band {
-        margin-top: -36px;
+        margin-top: -24px;
       }
 
       .cta-card {
@@ -801,8 +818,16 @@
         padding: 82px 0;
       }
 
+      .hero-section {
+        padding: 10px 10px 0;
+      }
+
+      #heroCarousel {
+        border-radius: 22px;
+      }
+
       .hero-slide {
-        padding: 116px 0 84px;
+        padding: 112px 0 76px;
       }
 
       .hero-actions,
