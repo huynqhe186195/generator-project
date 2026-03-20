@@ -290,6 +290,12 @@
         radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.16), transparent 25%);
     }
 
+    .hero-slide-generator {
+      background-size: auto 84%;
+      background-position: right 4% center;
+      background-color: #13192a;
+    }
+
     .hero-content {
       position: relative;
       z-index: 2;
@@ -795,6 +801,11 @@
         padding: 124px 0 86px;
       }
 
+      .hero-slide-generator {
+        background-size: auto 78%;
+        background-position: center right;
+      }
+
       .hero-title {
         font-size: clamp(2.35rem, 7vw, 4rem);
       }
@@ -828,6 +839,11 @@
 
       .hero-slide {
         padding: 112px 0 76px;
+      }
+
+      .hero-slide-generator {
+        background-size: cover;
+        background-position: center;
       }
 
       .hero-actions,
@@ -948,7 +964,7 @@
 
       <div class="carousel-inner">
         <div class="carousel-item active">
-          <div class="hero-slide" style="background-image: url('<c:url value='/template/images/slide1.jpg'/>');">
+          <div class="hero-slide hero-slide-generator" style="background-image: url('<c:url value='/template/images/slide1.jpg'/>');">
             <div class="container hero-content">
               <div class="row g-4 hero-grid">
                 <div class="col-lg-7">
