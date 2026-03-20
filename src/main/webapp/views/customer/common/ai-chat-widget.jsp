@@ -369,7 +369,7 @@
         body: new URLSearchParams({ message })
       });
       const data = await response.json();
-      appendBotReply(data.reply || 'Tôi chưa có phản hồi phù hợp.', data.results || []);
+      appendBotReply(data.reply || 'Tôi chưa có phản hồi phù hợp.', data.results || [], data.sourcesUsed || [], data.citations || [], data.skillsCalled || []);
       if (data.actionType === 'REDIRECT' && data.redirectUrl) {
         status.textContent = 'Đang mở trang chi tiết thiết bị...';
         window.location.href = data.redirectUrl;
@@ -393,7 +393,7 @@
     messages.scrollTop = messages.scrollHeight;
   }
 
-  function appendBotReply(reply, results) {
+  function appendBotReply(reply, results, sourcesUsed, citations, skillsCalled) {
     const row = document.createElement('div');
     row.className = 'customer-ai-message bot';
     const bubble = document.createElement('div');
@@ -432,6 +432,31 @@
         list.appendChild(link);
       });
       bubble.appendChild(list);
+    }
+
+    if (Array.isArray(skillsCalled) && skillsCalled.length) {
+      const skillInfo = document.createElement('div');
+      skillInfo.className = 'small text-muted mt-2';
+      skillInfo.textContent = 'Skill: ' + skillsCalled.join(', ');
+      bubble.appendChild(skillInfo);
+    }
+
+    if (Array.isArray(sourcesUsed) && sourcesUsed.length) {
+      const sourceWrap = document.createElement('div');
+      sourceWrap.className = 'small text-muted mt-2';
+      sourceWrap.innerHTML = '<strong>Nguồn:</strong> ' + sourcesUsed.map(function (source) {
+        return escapeHtml((source.type || 'Nguồn') + (source.detail ? ' - ' + source.detail : ''));
+      }).join(' | ');
+      bubble.appendChild(sourceWrap);
+    }
+
+    if (Array.isArray(citations) && citations.length) {
+      const citationWrap = document.createElement('div');
+      citationWrap.className = 'small text-muted mt-2';
+      citationWrap.innerHTML = citations.map(function (citation) {
+        return '<div><strong>' + escapeHtml(citation.label || 'Citation') + ':</strong> ' + escapeHtml(citation.detail || '') + '</div>';
+      }).join('');
+      bubble.appendChild(citationWrap);
     }
 
     row.appendChild(bubble);

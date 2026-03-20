@@ -414,6 +414,54 @@ public class MaintenanceDAO extends DbContext {
         return false;
     }
 
+
+    public List<Maintenance> findCompletedByCustomerAndKeyword(long customerId, String keyword, int limit) {
+        List<Maintenance> list = new ArrayList<>();
+        String normalizedKeyword = keyword == null ? "" : keyword.trim();
+        StringBuilder sql = new StringBuilder("""
+        SELECT m.*,
+               p.serial_number AS product_serial_number,
+               pm.name AS product_name
+        FROM maintenances m
+        JOIN products p ON m.product_id = p.id
+        LEFT JOIN product_models pm ON p.model_id = pm.id
+        WHERE p.customer_id = ?
+          AND m.status = 'COMPLETED'
+        """);
+
+        if (!normalizedKeyword.isEmpty()) {
+            sql.append(" AND (LOWER(COALESCE(p.serial_number, '')) LIKE ? ");
+            sql.append(" OR LOWER(COALESCE(pm.name, '')) LIKE ? ");
+            sql.append(" OR LOWER(COALESCE(m.type, '')) LIKE ? ");
+            sql.append(" OR LOWER(COALESCE(m.description, '')) LIKE ? ");
+            sql.append(" OR LOWER(COALESCE(m.actual_description, '')) LIKE ?) ");
+        }
+
+        sql.append(" ORDER BY m.maintenance_date DESC LIMIT ? ");
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            ps.setLong(idx++, customerId);
+            if (!normalizedKeyword.isEmpty()) {
+                String likeKeyword = "%" + normalizedKeyword.toLowerCase() + "%";
+                ps.setString(idx++, likeKeyword);
+                ps.setString(idx++, likeKeyword);
+                ps.setString(idx++, likeKeyword);
+                ps.setString(idx++, likeKeyword);
+                ps.setString(idx++, likeKeyword);
+            }
+            ps.setInt(idx, limit <= 0 ? 5 : limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public List<Maintenance> getHistoryCompletedPaging(
             int technicianId,
             String serial,

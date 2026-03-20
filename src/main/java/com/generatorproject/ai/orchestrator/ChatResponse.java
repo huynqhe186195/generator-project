@@ -1,36 +1,23 @@
-package com.generatorproject.model.ai;
+package com.generatorproject.ai.orchestrator;
 
 import com.generatorproject.ai.response.ChatAction;
 import com.generatorproject.ai.response.ChatCitation;
 import com.generatorproject.ai.response.ChatSourceUsage;
+import com.generatorproject.model.ai.DeviceSearchResultDto;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomerAiResponse {
-    public static final String ACTION_NONE = "NONE";
-    public static final String ACTION_REDIRECT = "REDIRECT";
-    public static final String ACTION_SHOW_RESULTS = "SHOW_RESULTS";
-
-    private boolean success;
+public class ChatResponse {
+    private boolean success = true;
     private String reply;
-    private String actionType;
+    private String actionType = "NONE";
     private String redirectUrl;
-    private List<DeviceSearchResultDto> results;
-    private List<ChatCitation> citations;
-    private List<ChatSourceUsage> sourcesUsed;
-    private List<String> skillsCalled;
-    private List<ChatAction> actions;
-
-    public CustomerAiResponse() {
-        this.success = true;
-        this.actionType = ACTION_NONE;
-        this.results = new ArrayList<>();
-        this.citations = new ArrayList<>();
-        this.sourcesUsed = new ArrayList<>();
-        this.skillsCalled = new ArrayList<>();
-        this.actions = new ArrayList<>();
-    }
+    private List<DeviceSearchResultDto> results = new ArrayList<>();
+    private List<ChatCitation> citations = new ArrayList<>();
+    private List<ChatSourceUsage> sourcesUsed = new ArrayList<>();
+    private List<String> skillsCalled = new ArrayList<>();
+    private List<ChatAction> actions = new ArrayList<>();
 
     public boolean isSuccess() { return success; }
     public void setSuccess(boolean success) { this.success = success; }
