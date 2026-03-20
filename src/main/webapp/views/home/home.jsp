@@ -724,5 +724,6 @@
     else mainNav.classList.remove('navbar-scrolled');
   });
 </script>
+<jsp:include page="/views/customer/ai-chat-widget.jsp" />
 </body>
 </html>
