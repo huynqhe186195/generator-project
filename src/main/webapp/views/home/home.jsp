@@ -155,6 +155,8 @@
       color: rgba(255, 255, 255, 0.92) !important;
       font-weight: 600;
       transition: all 0.25s ease;
+      white-space: nowrap;
+      font-size: 0.98rem;
     }
 
     .navbar-scrolled .nav-link {
@@ -173,7 +175,7 @@
     }
 
     .nav-pill {
-      padding: 0.72rem 1rem !important;
+      padding: 0.72rem 0.82rem !important;
       border-radius: 999px;
     }
 
@@ -186,6 +188,9 @@
       border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 999px;
       padding: 0.72rem 1rem !important;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .navbar-scrolled .user-dropdown-toggle {
@@ -290,22 +295,12 @@
         radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.16), transparent 25%);
     }
 
-    .hero-slide-primary {
-      background-size: auto 62%;
+    .hero-slide-primary,
+    .hero-slide-monitor,
+    .hero-slide-service {
+      background-size: auto 58%;
       background-position: right 8% center;
       background-color: #13192a;
-    }
-
-    .hero-slide-monitor {
-      background-size: auto 58%;
-      background-position: right 10% center;
-      background-color: #10172a;
-    }
-
-    .hero-slide-service {
-      background-size: auto 56%;
-      background-position: right 12% center;
-      background-color: #111827;
     }
 
     .hero-content {
@@ -802,6 +797,17 @@
       transform: scale(1.15);
     }
 
+    @media (min-width: 992px) {
+      .navbar-nav {
+        flex-wrap: nowrap;
+        gap: 0 !important;
+      }
+
+      .navbar-collapse {
+        justify-content: flex-end;
+      }
+    }
+
     @media (max-width: 991.98px) {
       .hero-section {
         padding: 14px 14px 0;
@@ -816,19 +822,11 @@
         padding: 124px 0 86px;
       }
 
-      .hero-slide-primary {
-        background-size: auto 54%;
-        background-position: right 6% center;
-      }
-
-      .hero-slide-monitor {
+      .hero-slide-primary,
+      .hero-slide-monitor,
+      .hero-slide-service {
         background-size: auto 52%;
         background-position: right 6% center;
-      }
-
-      .hero-slide-service {
-        background-size: auto 50%;
-        background-position: right 8% center;
       }
 
       .hero-grid {
