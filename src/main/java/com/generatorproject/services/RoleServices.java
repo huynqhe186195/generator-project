@@ -4,7 +4,6 @@ import com.generatorproject.dao.RoleDAO;
 import com.generatorproject.model.Permission;
 import com.generatorproject.model.Role;
 
-import java.util.Collections;
 import java.util.List;
 
 public class RoleServices implements IRoleServices{
