@@ -1,750 +1,966 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-  <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-    <c:set var="user" value="${sessionScope.USERMODEL}" />
-
-    <!DOCTYPE html>
-    <html lang="vi">
-
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Gen-CMS | Hệ thống Quản trị Máy phát điện</title>
-
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-      <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-
-      <style>
-        :root {
-          --primary: #4e73df;
-          --secondary: #224abe;
-          --ink: #0f172a;
-          --muted: #64748b;
-          --card: #ffffff;
-          --bg: #f6f8ff;
-          --ring: rgba(78, 115, 223, .22);
-        }
-
-        body {
-          font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-          overflow-x: hidden;
-          background: radial-gradient(1200px 600px at 10% -10%, rgba(78, 115, 223, .20), transparent 55%),
-            radial-gradient(900px 500px at 95% 0%, rgba(34, 74, 190, .18), transparent 60%),
-            var(--bg);
-          color: var(--ink);
-        }
-
-        /* Navbar */
-        .navbar-landing {
-          background: transparent;
-          padding: 18px 0;
-          transition: all .35s ease;
-          z-index: 1050;
-        }
-
-        .navbar-scrolled {
-          background: rgba(255, 255, 255, .85) !important;
-          backdrop-filter: blur(12px);
-          padding: 10px 0;
-          border-bottom: 1px solid rgba(15, 23, 42, .06);
-          box-shadow: 0 10px 30px rgba(15, 23, 42, .10);
-        }
-
-        .navbar-brand {
-          font-weight: 900;
-          font-size: 1.7rem;
-          letter-spacing: .2px;
-          color: #fff !important;
-          transition: .3s;
-        }
-
-        .navbar-scrolled .navbar-brand {
-          color: var(--primary) !important;
-        }
-
-        .nav-link {
-          color: rgba(255, 255, 255, .92) !important;
-          font-weight: 600;
-          transition: .25s;
-          position: relative;
-        }
-
-        .navbar-scrolled .nav-link {
-          color: rgba(15, 23, 42, .78) !important;
-        }
-
-        .navbar-scrolled .nav-link:hover {
-          color: var(--primary) !important;
-        }
-
-        .nav-link:hover {
-          transform: translateY(-1px);
-        }
-
-        .nav-pill {
-          border-radius: 999px;
-          padding: .55rem .95rem !important;
-        }
-
-        .navbar-scrolled .nav-pill:hover {
-          background: rgba(78, 115, 223, .08);
-        }
-
-        /* Hero Slider */
-        .hero-section {
-          position: relative;
-          overflow: hidden;
-        }
-
-        .hero-slide {
-          position: relative;
-          min-height: 100vh;
-          padding: 170px 0 110px;
-          color: #fff;
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          overflow: hidden;
-        }
-
-        .hero-slide::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background:
-            linear-gradient(115deg, rgba(15, 23, 42, .38) 0%, rgba(37, 99, 235, .30) 45%, rgba(15, 23, 42, .50) 100%),
-            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, .10), transparent 30%),
-            radial-gradient(circle at 80% 18%, rgba(255, 255, 255, .08), transparent 28%);
-          backdrop-filter: blur(1px);
-          pointer-events: none;
-        }
-
-        .hero-content {
-          position: relative;
-          z-index: 1;
-        }
-
-        .hero-title {
-          font-weight: 900;
-          font-size: clamp(2.4rem, 5vw, 4.5rem);
-          line-height: 1.05;
-          margin-bottom: 18px;
-          letter-spacing: -1.6px;
-          max-width: 12ch;
-          text-shadow: 0 10px 30px rgba(0, 0, 0, .22);
-        }
-
-        .hero-desc {
-          font-size: 1.08rem;
-          opacity: .96;
-          max-width: 58ch;
-          margin-bottom: 34px;
-          color: rgba(255, 255, 255, .92);
-          text-shadow: 0 6px 18px rgba(0, 0, 0, .18);
-        }
-
-        .stat-badge {
-          background: rgba(255, 255, 255, .12);
-          padding: 22px 18px;
-          border-radius: 22px;
-          backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, .22);
-          text-align: center;
-          transition: all .35s ease;
-          box-shadow: 0 18px 45px rgba(15, 23, 42, .18);
-        }
-
-        .stat-badge:hover {
-          background: rgba(255, 255, 255, .18);
-          transform: translateY(-8px);
-          box-shadow: 0 24px 55px rgba(15, 23, 42, .24);
-        }
-
-        .stat-number {
-          font-size: 2.2rem;
-          font-weight: 900;
-          display: block;
-          letter-spacing: -.5px;
-          color: #fff;
-          line-height: 1;
-          margin-bottom: 8px;
-        }
-
-        .stat-label {
-          font-size: .82rem;
-          text-transform: uppercase;
-          letter-spacing: 1.5px;
-          opacity: .92;
-          color: rgba(255, 255, 255, .86);
-        }
-
-        .btn-white {
-          background: #fff;
-          color: var(--primary);
-          font-weight: 800;
-          border-radius: 999px;
-          padding: 13px 30px;
-          border: none;
-          transition: all .28s ease;
-          text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          box-shadow: 0 16px 35px rgba(0, 0, 0, .18);
-        }
-
-        .btn-white:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 22px 45px rgba(0, 0, 0, .22);
-          color: var(--secondary);
-        }
-
-        .btn-ghost {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          border-radius: 999px;
-          padding: 13px 24px;
-          font-weight: 700;
-          color: rgba(255, 255, 255, .96);
-          border: 1px solid rgba(255, 255, 255, .28);
-          background: rgba(255, 255, 255, .08);
-          backdrop-filter: blur(12px);
-          text-decoration: none;
-          transition: all .28s ease;
-        }
-
-        .btn-ghost:hover {
-          transform: translateY(-3px);
-          background: rgba(255, 255, 255, .14);
-          color: #fff;
-        }
-
-
-        .user-dropdown-toggle {
-          border-radius: 999px;
-          padding: .55rem .95rem !important;
-          background: rgba(255, 255, 255, .16);
-          color: #fff !important;
-          border: 1px solid rgba(255, 255, 255, .35);
-        }
-
-        .navbar-scrolled .user-dropdown-toggle {
-          color: var(--primary) !important;
-          border-color: rgba(78, 115, 223, .35);
-          background: rgba(78, 115, 223, .06);
-        }
-
-        /* Sections */
-        .section-title {
-          font-weight: 900;
-          letter-spacing: -.2px;
-          margin-bottom: 10px;
-        }
-
-        .section-sub {
-          color: var(--muted);
-          margin: 0 auto;
-          max-width: 62ch;
-        }
-
-        /* Feature cards */
-        .feature-card {
-          border: 1px solid rgba(15, 23, 42, .06);
-          border-radius: 22px;
-          padding: 34px 28px;
-          background: var(--card);
-          box-shadow: 0 12px 30px rgba(15, 23, 42, .06);
-          transition: .32s;
-          height: 100%;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .feature-card::before {
-          content: "";
-          position: absolute;
-          inset: -2px;
-          background: radial-gradient(500px 140px at 20% 0%, rgba(78, 115, 223, .10), transparent 60%);
-          opacity: .9;
-          pointer-events: none;
-        }
-
-        .feature-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 18px 50px rgba(15, 23, 42, .10);
-          border-color: rgba(78, 115, 223, .18);
-        }
-
-        .feature-icon {
-          width: 72px;
-          height: 72px;
-          border-radius: 18px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.9rem;
-          margin: 0 auto 18px;
-          background: rgba(78, 115, 223, .10);
-          color: var(--primary);
-          box-shadow: 0 10px 20px rgba(78, 115, 223, .18);
-          border: 1px solid rgba(78, 115, 223, .12);
-        }
-
-        /* Brands */
-        .brand-item {
-          padding: 18px 16px;
-          background: #fff;
-          border-radius: 999px;
-          border: 1px solid rgba(15, 23, 42, .08);
-          transition: .25s;
-          text-align: center;
-          box-shadow: 0 10px 25px rgba(15, 23, 42, .05);
-        }
-
-        .brand-item:hover {
-          border-color: rgba(78, 115, 223, .35);
-          transform: translateY(-4px);
-          box-shadow: 0 16px 40px rgba(15, 23, 42, .10);
-        }
-
-        .carousel-item {
-          transition: transform 1.2s ease-in-out, opacity 1.2s ease-in-out;
-        }
-
-        .carousel-fade .carousel-item {
-          opacity: 0;
-          transition-property: opacity;
-          transform: none;
-        }
-
-        .carousel-fade .carousel-item.active,
-        .carousel-fade .carousel-item-next.carousel-item-start,
-        .carousel-fade .carousel-item-prev.carousel-item-end {
-          opacity: 1;
-        }
-
-
-        .carousel-control-prev,
-        .carousel-control-next {
-          width: 7%;
-          z-index: 5;
-          opacity: .9;
-        }
-
-        .carousel-control-prev-icon,
-        .carousel-control-next-icon {
-          width: 2.8rem;
-          height: 2.8rem;
-          border-radius: 50%;
-          background-color: rgba(255, 255, 255, .10);
-          backdrop-filter: blur(10px);
-          background-size: 45% 45%;
-        }
-
-        .carousel-indicators {
-          z-index: 6;
-          margin-bottom: 1.4rem;
-        }
-
-        .carousel-indicators .active {
-          background-color: #fff;
-          transform: scale(1.15);
-        }
-
-        .carousel-indicators [data-bs-target] {
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          border: 0;
-          margin: 0 5px;
-          background-color: rgba(255, 255, 255, .45);
-        }
-
-        /* Footer */
-        footer {
-          background: #0b1224;
-          color: rgba(255, 255, 255, .70);
-          padding: 58px 0 26px;
-          border-top: 1px solid rgba(255, 255, 255, .06);
-        }
-
-        .footer-link {
-          color: rgba(255, 255, 255, .75);
-        }
-
-        .footer-link:hover {
-          color: #fff;
-        }
-
-        .shadow-2xl {
-          box-shadow: 0 22px 70px rgba(0, 0, 0, .22) !important;
-        }
-
-        @media (max-width: 991.98px) {
-          .hero-slide {
-            min-height: 88vh;
-            padding: 130px 0 85px;
-          }
-
-          .hero-title {
-            font-size: 2.5rem;
-            max-width: 100%;
-            line-height: 1.12;
-          }
-
-          .hero-desc {
-            font-size: 1rem;
-            max-width: 100%;
-          }
-
-          .stat-number {
-            font-size: 1.5rem;
-          }
-
-          .stat-badge {
-            padding: 16px 12px;
-            border-radius: 18px;
-          }
-
-          .carousel-control-prev,
-          .carousel-control-next {
-            display: none;
-          }
-        }
-      </style>
-    </head>
-
-    <body>
-
-      <nav class="navbar navbar-expand-lg navbar-landing fixed-top" id="mainNav">
-        <div class="container">
-          <a class="navbar-brand" href="<c:url value='/'/>">
-            <i class="fas fa-bolt me-2 text-warning"></i>Gen-CMS
-          </a>
-
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center gap-lg-1">
-              <li class="nav-item">
-                <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công
-                  ty</a>
-              </li>
-
-              <li class="nav-item">
-                <a class="nav-link nav-pill px-3" href="<c:url value='/news'/>">Tin tức</a>
-              </li>
-
-              <li class="nav-item">
-                <a class="nav-link nav-pill px-3" href="<c:url value='/products'/>">Sản phẩm mẫu</a>
-              </li>
-
-              <c:choose>
-                <c:when test="${empty user}">
-                </c:when>
-                <c:otherwise>
-                  <li class="nav-item">
-                    <a class="nav-link nav-pill px-3" href="<c:url value='/product-list'/>">Sản phẩm</a>
-                  </li>
-                </c:otherwise>
-              </c:choose>
-
-              <li class="nav-item">
-                <a class="nav-link nav-pill px-3" href="#brands">Thương hiệu</a>
-              </li>
-
-              <c:if test="${not empty user}">
-                <li class="nav-item">
-                  <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách
-                    hàng</a>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<c:set var="user" value="${sessionScope.USERMODEL}" />
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gen-CMS | Nền tảng điều phối vận hành máy phát điện</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #081120;
+      --bg-soft: #0f1b31;
+      --surface: rgba(9, 18, 33, 0.78);
+      --surface-2: rgba(255, 255, 255, 0.06);
+      --card: #ffffff;
+      --text: #e5eefc;
+      --muted: #9cb0cc;
+      --dark: #081120;
+      --line: rgba(255, 255, 255, 0.08);
+      --primary: #4f8cff;
+      --primary-2: #6d5efc;
+      --accent: #2dd4bf;
+      --warning: #fbbf24;
+      --shadow: 0 30px 80px rgba(3, 8, 20, 0.35);
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(79, 140, 255, 0.28), transparent 28%),
+        radial-gradient(circle at 85% 10%, rgba(45, 212, 191, 0.14), transparent 24%),
+        linear-gradient(180deg, #081120 0%, #0b1730 44%, #eef4ff 44%, #f4f7fb 100%);
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .page-shell {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .page-shell::before,
+    .page-shell::after {
+      content: "";
+      position: fixed;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      filter: blur(24px);
+      opacity: 0.35;
+      z-index: -1;
+    }
+
+    .page-shell::before {
+      background: rgba(79, 140, 255, 0.36);
+      top: -120px;
+      left: -80px;
+    }
+
+    .page-shell::after {
+      background: rgba(109, 94, 252, 0.28);
+      top: 180px;
+      right: -110px;
+    }
+
+    .navbar-landing {
+      padding: 22px 0;
+      transition: all 0.28s ease;
+      background: transparent;
+    }
+
+    .navbar-landing.navbar-scrolled {
+      background: rgba(8, 17, 32, 0.84);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .navbar-brand {
+      font-weight: 900;
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+      color: #fff !important;
+    }
+
+    .navbar-brand-mark {
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 16px 34px rgba(79, 140, 255, 0.35);
+    }
+
+    .nav-link {
+      color: rgba(229, 238, 252, 0.78) !important;
+      font-weight: 600;
+      padding: 0.75rem 1rem !important;
+      border-radius: 999px;
+      transition: all 0.24s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus {
+      color: #fff !important;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-cta,
+    .user-chip {
+      border-radius: 999px;
+      padding: 0.8rem 1.2rem !important;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .nav-cta {
+      color: var(--dark) !important;
+      background: linear-gradient(135deg, #fff, #d9e7ff);
+      box-shadow: 0 16px 28px rgba(255, 255, 255, 0.16);
+    }
+
+    .user-chip {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff !important;
+    }
+
+    .hero-section {
+      padding: 132px 0 88px;
+      position: relative;
+    }
+
+    .hero-panel {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(10, 20, 37, 0.72);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(79, 140, 255, 0.16), transparent 36%, rgba(45, 212, 191, 0.1) 100%);
+      pointer-events: none;
+    }
+
+    .hero-copy,
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.55rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #cfe0ff;
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 1.1rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.75rem, 5vw, 5.2rem);
+      line-height: 0.98;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      margin-bottom: 1.35rem;
+      max-width: 10.5ch;
+    }
+
+    .hero-title .highlight {
+      color: #8db6ff;
+    }
+
+    .hero-desc {
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.8;
+      max-width: 62ch;
+      margin-bottom: 1.8rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .btn-primary-gradient,
+    .btn-secondary-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7rem;
+      border-radius: 999px;
+      padding: 0.95rem 1.5rem;
+      font-weight: 800;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .btn-primary-gradient {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 18px 40px rgba(79, 140, 255, 0.34);
+    }
+
+    .btn-primary-gradient:hover,
+    .btn-secondary-ghost:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary-ghost {
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .mini-proof {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .mini-proof-item {
+      min-width: 170px;
+      padding: 0.95rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .mini-proof-item strong {
+      display: block;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    .mini-proof-item span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .status-board {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 28px;
+      padding: 1.4rem;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #d8fff9;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(45, 212, 191, 0.12);
+      margin-bottom: 1rem;
+    }
+
+    .pulse {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.65);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.65); }
+      70% { box-shadow: 0 0 0 15px rgba(45, 212, 191, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0); }
+    }
+
+    .status-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 1.4rem;
+    }
+
+    .status-top h3 {
+      font-size: 1.25rem;
+      margin: 0 0 0.35rem;
+      font-weight: 800;
+    }
+
+    .status-top p {
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.7;
+    }
+
+    .status-chip {
+      border-radius: 16px;
+      padding: 0.8rem 0.95rem;
+      background: rgba(255, 255, 255, 0.08);
+      text-align: center;
+      min-width: 96px;
+    }
+
+    .status-chip strong {
+      display: block;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .metric-card {
+      border-radius: 22px;
+      padding: 1.15rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .metric-card .label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      color: #d6e4ff;
+      font-weight: 700;
+      margin-bottom: 0.65rem;
+    }
+
+    .metric-card .value {
+      font-size: 1.95rem;
+      font-weight: 900;
+      margin-bottom: 0.65rem;
+    }
+
+    .progress-track {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: inherit;
+    }
+
+    .glass-list {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .glass-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.95rem 1rem;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: #dbe7fa;
+    }
+
+    .glass-row small {
+      display: block;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+
+    .section-block {
+      padding: 96px 0;
+      color: var(--dark);
+    }
+
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      color: var(--primary);
+      font-size: 0.92rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 900;
+      letter-spacing: -0.045em;
+      margin-bottom: 1rem;
+      color: #081120;
+    }
+
+    .section-subtitle {
+      color: #5c6e8a;
+      font-size: 1.04rem;
+      line-height: 1.8;
+      max-width: 62ch;
+      margin: 0;
+    }
+
+    .feature-card,
+    .insight-card,
+    .brand-card,
+    .cta-panel {
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(8, 17, 32, 0.06);
+      border-radius: 28px;
+      box-shadow: 0 18px 55px rgba(15, 23, 42, 0.07);
+    }
+
+    .feature-card {
+      padding: 2rem;
+      height: 100%;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .feature-card:hover,
+    .brand-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+    }
+
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      color: #fff;
+      margin-bottom: 1.2rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 18px 35px rgba(79, 140, 255, 0.28);
+    }
+
+    .feature-card p,
+    .insight-card p,
+    .brand-card p {
+      color: #5c6e8a;
+      line-height: 1.75;
+      margin-bottom: 0;
+    }
+
+    .insight-card {
+      padding: 2rem;
+      height: 100%;
+    }
+
+    .insight-stat {
+      font-size: 2.7rem;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      color: #081120;
+      line-height: 1;
+      margin-bottom: 0.7rem;
+    }
+
+    .brand-card {
+      padding: 1.4rem;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      background: rgba(79, 140, 255, 0.1);
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .cta-wrap {
+      padding-bottom: 110px;
+    }
+
+    .cta-panel {
+      padding: 2.2rem;
+      background: linear-gradient(135deg, #081120, #0f2245);
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .cta-panel::before {
+      content: "";
+      position: absolute;
+      inset: auto -10% -50% auto;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: rgba(79, 140, 255, 0.18);
+      filter: blur(8px);
+    }
+
+    .cta-panel > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-note {
+      color: rgba(229, 238, 252, 0.72);
+      line-height: 1.8;
+      margin: 0;
+    }
+
+    .footer {
+      background: #07101f;
+      color: rgba(229, 238, 252, 0.72);
+      padding: 36px 0 46px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .footer a {
+      color: rgba(229, 238, 252, 0.82);
+    }
+
+    .footer a:hover {
+      color: #fff;
+    }
+
+    @media (max-width: 991.98px) {
+      .hero-section {
+        padding-top: 110px;
+      }
+
+      .hero-title {
+        max-width: none;
+      }
+
+      .status-top {
+        flex-direction: column;
+      }
+
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .navbar-collapse {
+        background: rgba(8, 17, 32, 0.94);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 1rem;
+        margin-top: 1rem;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .hero-panel {
+        padding: 20px;
+      }
+
+      .section-block {
+        padding: 78px 0;
+      }
+
+      .feature-card,
+      .insight-card,
+      .brand-card,
+      .cta-panel {
+        border-radius: 22px;
+      }
+
+      .mini-proof-item,
+      .glass-row,
+      .metric-card {
+        padding: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-landing fixed-top" id="mainNav">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-3" href="<c:url value='/'/>">
+          <span class="navbar-brand-mark"><i class="fas fa-bolt"></i></span>
+          <span>Gen-CMS</span>
+        </a>
+
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+            <li class="nav-item"><a class="nav-link" href="#overview">Tổng quan</a></li>
+            <li class="nav-item"><a class="nav-link" href="#solutions">Giải pháp</a></li>
+            <li class="nav-item"><a class="nav-link" href="#brands">Thương hiệu</a></li>
+            <li class="nav-item"><a class="nav-link" href="<c:url value='/news'/>">Tin tức</a></li>
+            <li class="nav-item"><a class="nav-link" href="<c:url value='/products'/>">Sản phẩm mẫu</a></li>
+
+            <c:if test="${not empty user}">
+              <li class="nav-item"><a class="nav-link" href="<c:url value='/product-list'/>">Sản phẩm của tôi</a></li>
+            </c:if>
+
+            <c:choose>
+              <c:when test="${empty user}">
+                <li class="nav-item ms-lg-2">
+                  <a href="<c:url value='/account/login'/>" class="nav-link nav-cta">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    Đăng nhập hệ thống
+                  </a>
                 </li>
-              </c:if>
-
-              <c:choose>
-                <c:when test="${empty user}">
-                  <li class="nav-item ms-lg-3">
-                    <a href="<c:url value='/account/login'/>" class="btn btn-white px-4">
-                      <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
-                    </a>
-                  </li>
-                </c:when>
-
-                <c:otherwise>
-                  <li class="nav-item dropdown ms-lg-3">
-                    <a class="nav-link dropdown-toggle user-dropdown-toggle" href="#" role="button"
-                      data-bs-toggle="dropdown">
-                      <i class="fas fa-user-circle me-1"></i> ${user.fullName}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
-                      <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i
-                            class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
-                      <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i
-                            class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
-                      <li>
-                        <hr class="dropdown-divider">
-                      </li>
-                      <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i
-                            class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
-                    </ul>
-                  </li>
-                </c:otherwise>
-              </c:choose>
-            </ul>
-          </div>
+              </c:when>
+              <c:otherwise>
+                <li class="nav-item dropdown ms-lg-2">
+                  <a class="nav-link dropdown-toggle user-chip" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-user-circle"></i>
+                    ${user.fullName}
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3">
+                    <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
+                    <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
+                    <c:if test="${not empty user.roleUrl}">
+                      <li><a class="dropdown-item py-2" href="<c:url value='${user.roleUrl}'/>"><i class="fas fa-gauge-high me-2"></i>Vào trang quản trị</a></li>
+                    </c:if>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                  </ul>
+                </li>
+              </c:otherwise>
+            </c:choose>
+          </ul>
         </div>
-      </nav>
+      </div>
+    </nav>
 
-      <section class="hero-section p-0">
-        <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000"
-          data-bs-pause="false">
+    <main>
+      <section class="hero-section">
+        <div class="container">
+          <div class="hero-panel">
+            <div class="row align-items-center g-4 g-xl-5">
+              <div class="col-lg-7 hero-copy">
+                <span class="eyebrow"><i class="fas fa-satellite-dish"></i> Nền tảng vận hành thế hệ mới</span>
+                <h1 class="hero-title">Xây trạm điều phối <span class="highlight">máy phát điện</span> rõ ràng, hiện đại và dễ dùng.</h1>
+                <p class="hero-desc">
+                  Gen-CMS gom toàn bộ dữ liệu vận hành, lịch bảo trì, cảnh báo sự cố và chăm sóc khách hàng vào một giao diện duy nhất để đội kỹ thuật và quản lý ra quyết định nhanh hơn.
+                </p>
 
-          <div class="carousel-indicators">
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true"
-              aria-label="Slide 1"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-          </div>
-
-          <div class="carousel-inner">
-
-            <!-- Slide 1 -->
-            <div class="carousel-item active">
-              <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide1.jpg" />');">
-              <div class="container position-relative hero-content">
-                <div class="row align-items-center">
-                  <div class="col-lg-12" data-aos="fade-right">
-                    <h1 class="hero-title">Quản lý hệ thống máy phát điện thông minh</h1>
-                    <p class="hero-desc">Theo dõi, cảnh báo và tối ưu hóa quy trình bảo trì chuyên nghiệp với công nghệ
-                      IoT thời gian thực.</p>
-
-                    <div class="row g-3 mb-5 mt-1">
-                      <div class="col-4">
-                        <div class="stat-badge">
-                          <span class="stat-number">
-                            <c:choose>
-                              <c:when test="${not empty stats}">
-                                ${stats.totalProductModels}
-                              </c:when>
-                              <c:otherwise>150</c:otherwise>
-                            </c:choose>
-                          </span>
-                          <span class="stat-label">Máy phát</span>
-                        </div>
-                      </div>
-
-                      <div class="col-4">
-                        <div class="stat-badge">
-                          <span class="stat-number">
-                            <c:choose>
-                              <c:when test="${not empty stats}">
-                                ${stats.totalHours}
-                              </c:when>
-                              <c:otherwise>1200</c:otherwise>
-                            </c:choose>
-                          </span>
-                          <span class="stat-label">Giờ chạy</span>
-                        </div>
-                      </div>
-
-                      <div class="col-4">
-                        <div class="stat-badge">
-                          <span class="stat-number">
-                            <c:choose>
-                              <c:when test="${not empty stats}">
-                                ${stats.totalUsers}
-                              </c:when>
-                              <c:otherwise>45</c:otherwise>
-                            </c:choose>
-                          </span>
-                          <span class="stat-label">Người dùng</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="d-flex flex-wrap gap-3">
-                      <c:choose>
-                        <c:when test="${empty user}">
-                          <a href="<c:url value='/account/login'/>" class="btn btn-white">
-                            <i class="fa-solid fa-rocket"></i> Bắt đầu ngay
-                          </a>
-                        </c:when>
-                        <c:otherwise>
-                          <a href="<c:url value='/admin/dashboard'/>" class="btn btn-white">
-                            <i class="fa-solid fa-gauge-high"></i> Vào Dashboard
-                          </a>
-                        </c:otherwise>
-                      </c:choose>
-
-                      <a href="#features" class="btn-ghost">
-                        <i class="fa-solid fa-circle-info"></i> Xem tính năng
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Slide 2 -->
-          <div class="carousel-item">
-            <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide2.jpg" />');">
-            <div class="container position-relative hero-content">
-              <div class="row align-items-center">
-                <div class="col-lg-12" data-aos="fade-right">
-                  <h1 class="hero-title">Giám sát thiết bị theo thời gian thực</h1>
-                  <p class="hero-desc">Theo dõi trạng thái hoạt động của từng máy 24/7, phát hiện sự cố sớm và hỗ trợ
-                    vận hành ổn định hơn.</p>
-
-                  <div class="d-flex flex-wrap gap-3">
-                    <c:choose>
-                      <c:when test="${empty user}">
-                        <a href="<c:url value='/account/login'/>" class="btn btn-white">
-                          <i class="fa-solid fa-rocket"></i> Bắt đầu ngay
-                        </a>
-                      </c:when>
-                      <c:otherwise>
-                        <a href="<c:url value='/admin/dashboard'/>" class="btn btn-white">
-                          <i class="fa-solid fa-gauge-high"></i> Vào Dashboard
-                        </a>
-                      </c:otherwise>
-                    </c:choose>
-
-                    <a href="#features" class="btn-ghost">
-                      <i class="fa-solid fa-circle-info"></i> Xem tính năng
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Slide 3 -->
-        <div class="carousel-item">
-          <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide3.jpg" />');">
-          <div class="container position-relative hero-content">
-            <div class="row align-items-center">
-              <div class="col-lg-12" data-aos="fade-right">
-                <h1 class="hero-title">Tối ưu bảo trì và cảnh báo tức thì</h1>
-                <p class="hero-desc">Lên lịch bảo trì, quản lý lịch sử sửa chữa và nhận cảnh báo nhanh khi hệ thống phát
-                  sinh lỗi.</p>
-
-                <div class="d-flex flex-wrap gap-3">
+                <div class="hero-actions">
                   <c:choose>
                     <c:when test="${empty user}">
-                      <a href="<c:url value='/account/login'/>" class="btn btn-white">
-                        <i class="fa-solid fa-rocket"></i> Bắt đầu ngay
+                      <a href="<c:url value='/account/login'/>" class="btn-primary-gradient">
+                        <i class="fas fa-rocket"></i>
+                        Truy cập hệ thống
+                      </a>
+                    </c:when>
+                    <c:when test="${not empty user.roleUrl}">
+                      <a href="<c:url value='${user.roleUrl}'/>" class="btn-primary-gradient">
+                        <i class="fas fa-gauge-high"></i>
+                        Mở dashboard của tôi
                       </a>
                     </c:when>
                     <c:otherwise>
-                      <a href="<c:url value='/admin/dashboard'/>" class="btn btn-white">
-                        <i class="fa-solid fa-gauge-high"></i> Vào Dashboard
+                      <a href="<c:url value='/product-list'/>" class="btn-primary-gradient">
+                        <i class="fas fa-boxes-stacked"></i>
+                        Xem sản phẩm của tôi
                       </a>
                     </c:otherwise>
                   </c:choose>
 
-                  <a href="#features" class="btn-ghost">
-                    <i class="fa-solid fa-circle-info"></i> Xem tính năng
+                  <a href="#solutions" class="btn-secondary-ghost">
+                    <i class="fas fa-circle-play"></i>
+                    Xem giải pháp mới
                   </a>
+                </div>
+
+                <div class="mini-proof">
+                  <div class="mini-proof-item">
+                    <strong>1 giao diện</strong>
+                    <span>Cho kỹ thuật, quản lý và khách hàng phối hợp mượt hơn.</span>
+                  </div>
+                  <div class="mini-proof-item">
+                    <strong>24/7 sẵn sàng</strong>
+                    <span>Theo dõi chỉ số vận hành và nhắc lịch bảo trì liên tục.</span>
+                  </div>
+                  <div class="mini-proof-item">
+                    <strong>Dễ mở rộng</strong>
+                    <span>Tích hợp dữ liệu sản phẩm, thương hiệu và hỗ trợ khách hàng.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-5 hero-visual">
+                <div class="status-board">
+                  <span class="live-badge"><span class="pulse"></span> Live system status</span>
+
+                  <div class="status-top">
+                    <div>
+                      <h3>Điều phối tập trung</h3>
+                      <p>Giao diện mới ưu tiên khả năng đọc nhanh trạng thái, truy cập tác vụ quan trọng và nhìn ra điểm nghẽn vận hành ngay lập tức.</p>
+                    </div>
+                    <div class="status-chip">
+                      <strong><c:out value="${total}" default="0" /></strong>
+                      <span>Tổng máy</span>
+                    </div>
+                  </div>
+
+                  <div class="status-grid">
+                    <div class="metric-card">
+                      <div class="label"><span>Đang hoạt động</span><i class="fas fa-circle text-success"></i></div>
+                      <div class="value"><c:out value="${running}" default="0" /></div>
+                      <div class="progress-track"><div class="progress-fill bg-success" style="width: 82%"></div></div>
+                    </div>
+                    <div class="metric-card">
+                      <div class="label"><span>Đang bảo trì</span><i class="fas fa-screwdriver-wrench text-warning"></i></div>
+                      <div class="value"><c:out value="${maintenance}" default="0" /></div>
+                      <div class="progress-track"><div class="progress-fill" style="width: 36%; background: linear-gradient(90deg, #f59e0b, #fbbf24)"></div></div>
+                    </div>
+                    <div class="metric-card">
+                      <div class="label"><span>Sự cố cần xử lý</span><i class="fas fa-triangle-exclamation text-danger"></i></div>
+                      <div class="value"><c:out value="${error}" default="0" /></div>
+                      <div class="progress-track"><div class="progress-fill bg-danger" style="width: 18%"></div></div>
+                    </div>
+                    <div class="metric-card">
+                      <div class="label"><span>Giờ vận hành</span><i class="fas fa-clock text-info"></i></div>
+                      <div class="value"><c:out value="${stats.totalHours}" default="0" /></div>
+                      <div class="progress-track"><div class="progress-fill" style="width: 74%; background: linear-gradient(90deg, #38bdf8, #6366f1)"></div></div>
+                    </div>
+                  </div>
+
+                  <div class="glass-list">
+                    <div class="glass-row">
+                      <div>
+                        <strong>Danh mục thiết bị</strong>
+                        <small><c:out value="${stats.totalProductModels}" default="0" /> model đang sẵn sàng quản lý</small>
+                      </div>
+                      <i class="fas fa-microchip"></i>
+                    </div>
+                    <div class="glass-row">
+                      <div>
+                        <strong>Người dùng đang khai thác</strong>
+                        <small><c:out value="${stats.totalUsers}" default="0" /> tài khoản kết nối hệ thống</small>
+                      </div>
+                      <i class="fas fa-users"></i>
+                    </div>
+                    <div class="glass-row">
+                      <div>
+                        <strong>Hỗ trợ khách hàng</strong>
+                        <small>Liên kết quy trình báo giá, hỗ trợ và theo dõi yêu cầu trong một luồng.</small>
+                      </div>
+                      <i class="fas fa-headset"></i>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        </div>
-
-        </div>
-
-        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon"></span>
-          <span class="visually-hidden">Previous</span>
-        </button>
-
-        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
-        </div>
       </section>
 
-      <section id="features" class="py-5">
-        <div class="container py-5">
-          <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="section-title display-6">Tính năng vượt trội</h2>
-            <p class="section-sub">Đem lại hiệu quả tối đa cho việc vận hành trạm máy</p>
+      <section class="section-block" id="overview">
+        <div class="container">
+          <div class="row align-items-end g-4 mb-4">
+            <div class="col-lg-7">
+              <span class="section-kicker"><i class="fas fa-layer-group"></i> Tổng quan nền tảng</span>
+              <h2 class="section-title">Giao diện mới tập trung vào thông tin quan trọng thay vì làm người dùng bị ngợp.</h2>
+              <p class="section-subtitle">Bố cục được làm lại theo hướng dashboard landing hiện đại: có chiều sâu thị giác, phân tầng nội dung rõ ràng và đặt các CTA quan trọng đúng nơi người dùng cần.</p>
+            </div>
           </div>
 
           <div class="row g-4">
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
-              <div class="feature-card text-center">
-                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                <h4 class="fw-bold mb-2">Giám sát thời gian thực</h4>
-                <p class="text-secondary-emphasis mb-0" style="color: var(--muted)!important;">Theo dõi trạng thái hoạt
-                  động của từng máy 24/7.</p>
+            <div class="col-md-6 col-xl-3">
+              <div class="insight-card">
+                <div class="insight-stat"><c:out value="${stats.totalProductModels}" default="0" /></div>
+                <h5 class="fw-bold mb-2">Model thiết bị</h5>
+                <p>Tập trung dữ liệu các dòng máy phát để tra cứu và quản trị nhất quán.</p>
               </div>
             </div>
-
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-              <div class="feature-card text-center">
-                <div class="feature-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                <h4 class="fw-bold mb-2">Cảnh báo tức thì</h4>
-                <p class="text-secondary-emphasis mb-0" style="color: var(--muted)!important;">Nhận thông báo tức thời
-                  qua Email/SMS khi có sự cố phát sinh.</p>
+            <div class="col-md-6 col-xl-3">
+              <div class="insight-card">
+                <div class="insight-stat"><c:out value="${stats.totalUsers}" default="0" /></div>
+                <h5 class="fw-bold mb-2">Người dùng hệ thống</h5>
+                <p>Phân quyền linh hoạt cho admin, manager, kỹ thuật viên và khách hàng.</p>
               </div>
             </div>
-
-            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-              <div class="feature-card text-center">
-                <div class="feature-icon"><i class="fas fa-tasks"></i></div>
-                <h4 class="fw-bold mb-2">Quản lý bảo trì</h4>
-                <p class="text-secondary-emphasis mb-0" style="color: var(--muted)!important;">Lên lịch bảo trì, lưu
-                  lịch sử sửa chữa và quản lý đội ngũ kỹ thuật hiệu quả.</p>
+            <div class="col-md-6 col-xl-3">
+              <div class="insight-card">
+                <div class="insight-stat"><c:out value="${running}" default="0" /></div>
+                <h5 class="fw-bold mb-2">Máy đang hoạt động</h5>
+                <p>Nhìn nhanh nhóm thiết bị ổn định để tối ưu nhân lực giám sát mỗi ngày.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="insight-card">
+                <div class="insight-stat"><c:out value="${maintenance}" default="0" /></div>
+                <h5 class="fw-bold mb-2">Ca bảo trì hiện tại</h5>
+                <p>Nhắc việc đúng thời điểm để hạn chế downtime ngoài kế hoạch.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="brands" class="py-5">
-        <div class="container py-4">
-          <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="section-title">Đối tác Thương hiệu</h2>
-            <p class="section-sub">Hỗ trợ kết nối với hầu hết các dòng máy phát điện hiện nay</p>
+      <section class="section-block pt-0" id="solutions">
+        <div class="container">
+          <div class="row align-items-end g-4 mb-4">
+            <div class="col-lg-7">
+              <span class="section-kicker"><i class="fas fa-wand-magic-sparkles"></i> Giải pháp</span>
+              <h2 class="section-title">Một landing page mang cảm giác sản phẩm công nghệ chứ không còn là giao diện cũ đơn điệu.</h2>
+              <p class="section-subtitle">Tôi đã thay hướng thiết kế bằng các khối nội dung giàu tương phản, card bo tròn lớn và bảng trạng thái trực quan để trang chủ trông cao cấp hơn ngay từ lần nhìn đầu tiên.</p>
+            </div>
           </div>
 
-          <div class="row g-3 justify-content-center">
+          <div class="row g-4">
+            <div class="col-md-6 col-xl-3">
+              <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-gauge-high"></i></div>
+                <h5 class="fw-bold mb-3">Hero đậm chất dashboard</h5>
+                <p>Khối mở đầu thể hiện ngay trạng thái hệ thống, số liệu chính và hành động tiếp theo cho từng loại người dùng.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <h5 class="fw-bold mb-3">Thông tin có thứ bậc rõ</h5>
+                <p>Tách phần số liệu, năng lực nền tảng và đối tác để người xem đọc nhanh mà không bị rối mắt.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-bell"></i></div>
+                <h5 class="fw-bold mb-3">Cảm giác realtime</h5>
+                <p>Badge live, progress bar và trạng thái hoạt động giúp homepage trông sống động và hiện đại hơn.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+              <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-mobile-screen-button"></i></div>
+                <h5 class="fw-bold mb-3">Responsive tốt hơn</h5>
+                <p>Bố cục được tổ chức lại để hiển thị ổn trên mobile mà vẫn giữ cảm giác premium.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block pt-0" id="brands">
+        <div class="container">
+          <div class="row align-items-end g-4 mb-4">
+            <div class="col-lg-7">
+              <span class="section-kicker"><i class="fas fa-handshake-angle"></i> Thương hiệu tương thích</span>
+              <h2 class="section-title">Hệ thống sẵn sàng làm việc cùng nhiều dòng máy phát điện phổ biến.</h2>
+              <p class="section-subtitle">Phần thương hiệu được chuyển sang dạng card hiện đại để bớt cảm giác khô cứng và tăng độ tin cậy cho trang giới thiệu.</p>
+            </div>
+          </div>
+
+          <div class="row g-4">
             <c:choose>
               <c:when test="${not empty brands}">
                 <c:forEach var="brand" items="${brands}">
-                  <div class="col-6 col-md-3 col-lg-2" data-aos="zoom-in">
-                    <div class="brand-item">
-                      <i class="fas fa-industry me-2 text-primary"></i>
-                      <span class="fw-bold">${brand.name}</span>
+                  <div class="col-sm-6 col-lg-4 col-xl-3">
+                    <div class="brand-card">
+                      <div class="brand-mark"><i class="fas fa-industry"></i></div>
+                      <div>
+                        <h6 class="fw-bold mb-1">${brand.name}</h6>
+                        <p>Tối ưu quản trị, bảo trì và đồng bộ dữ liệu vận hành trên cùng nền tảng.</p>
+                      </div>
                     </div>
                   </div>
                 </c:forEach>
               </c:when>
-
               <c:otherwise>
-                <div class="col-6 col-md-3 col-lg-2" data-aos="zoom-in">
-                  <div class="brand-item"><i class="fas fa-industry me-2 text-primary"></i><b>CUMMINS</b></div>
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                  <div class="brand-card">
+                    <div class="brand-mark"><i class="fas fa-industry"></i></div>
+                    <div>
+                      <h6 class="fw-bold mb-1">Cummins</h6>
+                      <p>Tương thích tốt với nhu cầu theo dõi, bảo trì và chăm sóc khách hàng hiện đại.</p>
+                    </div>
+                  </div>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2" data-aos="zoom-in">
-                  <div class="brand-item"><i class="fas fa-industry me-2 text-primary"></i><b>PERKINS</b></div>
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                  <div class="brand-card">
+                    <div class="brand-mark"><i class="fas fa-industry"></i></div>
+                    <div>
+                      <h6 class="fw-bold mb-1">Perkins</h6>
+                      <p>Tương thích tốt với nhu cầu theo dõi, bảo trì và chăm sóc khách hàng hiện đại.</p>
+                    </div>
+                  </div>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2" data-aos="zoom-in">
-                  <div class="brand-item"><i class="fas fa-industry me-2 text-primary"></i><b>DENYO</b></div>
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                  <div class="brand-card">
+                    <div class="brand-mark"><i class="fas fa-industry"></i></div>
+                    <div>
+                      <h6 class="fw-bold mb-1">Denyo</h6>
+                      <p>Tương thích tốt với nhu cầu theo dõi, bảo trì và chăm sóc khách hàng hiện đại.</p>
+                    </div>
+                  </div>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2" data-aos="zoom-in">
-                  <div class="brand-item"><i class="fas fa-industry me-2 text-primary"></i><b>MITSUBISHI</b></div>
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                  <div class="brand-card">
+                    <div class="brand-mark"><i class="fas fa-industry"></i></div>
+                    <div>
+                      <h6 class="fw-bold mb-1">Mitsubishi</h6>
+                      <p>Tương thích tốt với nhu cầu theo dõi, bảo trì và chăm sóc khách hàng hiện đại.</p>
+                    </div>
+                  </div>
                 </div>
               </c:otherwise>
             </c:choose>
@@ -752,40 +968,71 @@
         </div>
       </section>
 
-      <footer>
+      <section class="cta-wrap">
         <div class="container">
-          <div class="row gy-4 align-items-center">
-            <div class="col-lg-6 text-center text-lg-start">
-              <a href="<c:url value='/'/>" class="text-white text-decoration-none fw-bold fs-4">
-                <i class="fas fa-bolt me-2 text-warning"></i>Gen-CMS
-              </a>
-              <p class="mt-2 mb-0">Giải pháp số hóa hệ thống năng lượng dự phòng hàng đầu.</p>
-            </div>
-
-            <div class="col-lg-6 text-center text-lg-end">
-              <p class="small mb-2">&copy; 2026 Gen-CMS Corporation. Bảo lưu mọi quyền.</p>
-              <div class="d-inline-flex gap-3">
-                <a href="#" class="footer-link"><i class="fab fa-facebook fs-5"></i></a>
-                <a href="#" class="footer-link"><i class="fab fa-linkedin fs-5"></i></a>
-                <a href="#" class="footer-link"><i class="fas fa-envelope fs-5"></i></a>
+          <div class="cta-panel">
+            <div class="row align-items-center g-4">
+              <div class="col-lg-8">
+                <span class="section-kicker text-white-50 mb-3"><i class="fas fa-sparkles"></i> Sẵn sàng nâng cấp trải nghiệm</span>
+                <h2 class="fw-bold display-6 mb-3">Trang chủ mới đã gọn hơn, sang hơn và có định hướng hành động rõ ràng hơn.</h2>
+                <p class="cta-note">Nếu muốn, bước tiếp theo tôi có thể làm tiếp các trang con như danh sách sản phẩm, tin tức hoặc dashboard quản trị để đồng bộ cùng phong cách này.</p>
+              </div>
+              <div class="col-lg-4 text-lg-end">
+                <c:choose>
+                  <c:when test="${empty user}">
+                    <a href="<c:url value='/account/login'/>" class="btn-primary-gradient">
+                      <i class="fas fa-arrow-right"></i>
+                      Bắt đầu ngay
+                    </a>
+                  </c:when>
+                  <c:otherwise>
+                    <a href="<c:url value='/news'/>" class="btn-primary-gradient">
+                      <i class="fas fa-newspaper"></i>
+                      Xem cập nhật mới
+                    </a>
+                  </c:otherwise>
+                </c:choose>
               </div>
             </div>
           </div>
         </div>
-      </footer>
+      </section>
+    </main>
 
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-      <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-      <script>
-        AOS.init({ duration: 850, once: true });
+    <footer class="footer">
+      <div class="container">
+        <div class="row gy-4 align-items-center">
+          <div class="col-lg-6 text-center text-lg-start">
+            <a href="<c:url value='/'/>" class="d-inline-flex align-items-center gap-3 fw-bold fs-4">
+              <span class="navbar-brand-mark"><i class="fas fa-bolt"></i></span>
+              <span>Gen-CMS</span>
+            </a>
+            <p class="mt-3 mb-0">Giải pháp số hóa vận hành máy phát điện với trải nghiệm giao diện hiện đại và trực quan hơn.</p>
+          </div>
+          <div class="col-lg-6 text-center text-lg-end">
+            <p class="mb-2">© 2026 Gen-CMS. Tối ưu vận hành, bảo trì và hỗ trợ khách hàng trên một nền tảng.</p>
+            <div class="d-inline-flex gap-3 fs-5">
+              <a href="<c:url value='/news'/>"><i class="fas fa-newspaper"></i></a>
+              <a href="<c:url value='/products'/>"><i class="fas fa-box-open"></i></a>
+              <a href="<c:url value='/account/login'/>"><i class="fas fa-right-to-bracket"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
 
-        const mainNav = document.getElementById('mainNav');
-        window.addEventListener('scroll', () => {
-          if (window.scrollY > 50) mainNav.classList.add('navbar-scrolled');
-          else mainNav.classList.remove('navbar-scrolled');
-        });
-      </script>
-      <jsp:include page="/views/customer/ai-chat-widget.jsp" />
-    </body>
-
-    </html>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const mainNav = document.getElementById('mainNav');
+    window.addEventListener('scroll', function () {
+      if (window.scrollY > 24) {
+        mainNav.classList.add('navbar-scrolled');
+      } else {
+        mainNav.classList.remove('navbar-scrolled');
+      }
+    });
+  </script>
+  <jsp:include page="/views/customer/ai-chat-widget.jsp" />
+</body>
+</html>
