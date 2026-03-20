@@ -69,7 +69,7 @@ public class CustomerAiChatServlet extends HttpServlet {
                 response.setActionType(CustomerAiResponse.ACTION_NONE);
                 return;
             }
-            if (results.size() == 1) {
+            if (results.size() == 1 && !toolService.shouldPreferShowingResults(toolCall.getArg("keyword"))) {
                 DeviceSearchResultDto item = results.get(0);
                 response.setReply("Tôi đã tìm thấy đúng 1 thiết bị sở hữu của bạn và sẽ mở trang chi tiết model liên quan.");
                 response.setActionType(CustomerAiResponse.ACTION_REDIRECT);
@@ -89,7 +89,7 @@ public class CustomerAiChatServlet extends HttpServlet {
                 response.setActionType(CustomerAiResponse.ACTION_NONE);
                 return;
             }
-            if (results.size() == 1) {
+            if (results.size() == 1 && !toolService.shouldPreferShowingResults(toolCall.getArg("keyword"))) {
                 DeviceSearchResultDto item = results.get(0);
                 response.setReply("Tôi đã tìm thấy đúng 1 mẫu máy public và sẽ mở trang tài liệu / thông tin chi tiết cho bạn.");
                 response.setActionType(CustomerAiResponse.ACTION_REDIRECT);

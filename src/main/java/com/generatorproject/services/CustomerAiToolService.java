@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 public class CustomerAiToolService {
     public static final String DEVICE_TYPE_OWNED = "OWNED";
@@ -19,6 +20,7 @@ public class CustomerAiToolService {
     private static final int DEFAULT_SEARCH_LIMIT = 12;
     private static final int LIST_ALL_LIMIT = 50;
     private static final int PUBLIC_LIST_ALL_LIMIT = 24;
+    private static final Pattern MULTIPLE_SPACES = Pattern.compile("\\s+");
 
     private final ProductDAO productDAO;
     private final ProductModelDAO productModelDAO;
@@ -60,9 +62,32 @@ public class CustomerAiToolService {
             dto.setDetailUrl(buildModelDetailUrl(contextPath, product.getModelId()));
             dto.setDeviceType(DEVICE_TYPE_OWNED);
             dto.setDeviceTypeLabel("Thiết bị sở hữu");
-            dto.setDescription("Thiết bị thuộc danh sách máy của bạn, có serial để theo dõi vận hành và lịch sử sử dụng.");results.add(dto);
+            dto.setDescription("Thiết bị thuộc danh sách máy của bạn, có serial để theo dõi vận hành và lịch sử sử dụng.");
+            results.add(dto);
         }
         return results;
+    }
+
+    public boolean shouldPreferShowingResults(String keyword) {
+        String normalizedKeyword = normalizeKeyword(keyword);
+        if (normalizedKeyword == null) {
+            return false;
+        }
+
+        String normalized = normalizedKeyword.toLowerCase(Locale.ROOT);
+        return isListAllIntent(normalizedKeyword)
+                || normalized.contains("danh sách")
+                || normalized.contains("liệt kê")
+                || normalized.contains("vị trí")
+                || normalized.contains("ở ")
+                || normalized.startsWith("ở")
+                || normalized.contains("tại ")
+                || normalized.startsWith("tại")
+                || normalized.contains("trong ")
+                || normalized.startsWith("trong")
+                || normalized.contains("kho")
+                || normalized.contains("nhà máy")
+                || normalized.contains("location");
     }
 
     public List<DeviceSearchResultDto> searchPublicDevices(String keyword, String contextPath) {
@@ -122,11 +147,13 @@ public class CustomerAiToolService {
                 "thiết bị", "device", "máy", "model", "public", "tài liệu",
                 "manual", "catalog", "catalogue", "thông số", "spec",
                 "của tôi", "máy của tôi", "thiết bị của tôi", "đang sở hữu",
-                "sở hữu", "đang dùng", "cho tôi", "giúp tôi", "hãy", "vui lòng"
+                "sở hữu", "đang dùng", "cho tôi", "giúp tôi", "hãy", "vui lòng",
+                "ở", "tại", "trong", "khu vực", "vị trí", "location", "nơi"
         );
-        for (String token : noiseTokens) {normalized = normalized.replace(token, " ");
+        for (String token : noiseTokens) {
+            normalized = normalized.replace(token, " ");
         }
-        normalized = normalized.replaceAll("\\s+", " ").trim();
+        normalized = MULTIPLE_SPACES.matcher(normalized).replaceAll(" ").trim();
         return normalized.isEmpty() ? null : normalized;
     }
 
