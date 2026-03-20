@@ -53,4 +53,45 @@ public class ReportService implements IReportService {
     public List<Map<String, Object>> getTopSpareParts(int limit) {
         return reportDAO.getTopSpareParts(limit);
     }
+
+    //Inventory
+    @Override
+    public int countCustomers() {
+        return reportDAO.countCustomers();
+    }
+
+    @Override
+    public int countDevices() {
+        return reportDAO.countDevices();
+    }
+
+    @Override
+    public int countDevicesByStatus(String status) {
+        return reportDAO.countDevicesByStatus(status);
+    }
+
+    @Override
+    public int countDevicesBrokenLike() {
+        return reportDAO.countDevicesBrokenLike();
+    }
+
+    @Override
+    public List<Map<String, Object>> getDevicesByBrand() {
+        return reportDAO.getDevicesByBrand();
+    }
+
+    @Override
+    public List<Map<String, Object>> getDevicesByCategory() {
+        return reportDAO.getDevicesByCategory();
+    }
+
+    @Override
+    public List<Map<String, Object>> getDevicesByKvaBucket() {
+        return reportDAO.getDevicesByKvaBucket();
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopModels(int limit) {
+        return reportDAO.getTopModels(limit);
+    }
 }

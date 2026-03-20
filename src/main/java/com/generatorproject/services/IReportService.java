@@ -17,4 +17,16 @@ public interface IReportService {
     List<Map<String, Object>> getContractRenewRateByMonth(int year);
     Map<String, Integer> getIncidentsByPriority(int year);
     List<Map<String, Object>> getTopSpareParts(int limit);
+
+    //Inventory
+    int countCustomers();
+    int countDevices();
+    int countDevicesByStatus(String status);
+    int countDevicesBrokenLike();
+
+    List<Map<String, Object>> getDevicesByBrand();
+    List<Map<String, Object>> getDevicesByCategory();
+    List<Map<String, Object>> getDevicesByKvaBucket();
+
+    List<Map<String, Object>> getTopModels(int limit);
 }
