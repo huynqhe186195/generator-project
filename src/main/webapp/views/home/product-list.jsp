@@ -192,7 +192,16 @@
             gap: 18px;
             padding: 0 0 8px;
         }
-        .device-card{ padding: 20px; }
+        .device-card{ padding: 20px; cursor:pointer; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+        .device-card:hover{
+            transform: translateY(-4px);
+            box-shadow: 0 22px 45px rgba(16,24,40,.12);
+            border-color: rgba(78,115,223,.25);
+        }
+        .device-card:focus-visible{
+            outline: 3px solid rgba(78,115,223,.25);
+            outline-offset: 3px;
+        }
         .device-head{
             display:flex;
             align-items:flex-start;
@@ -255,6 +264,11 @@
             display:inline-flex;
             align-items:center;
             gap:8px;
+        }
+        .detail-actions{
+            display:flex;
+            flex-wrap:wrap;
+            gap:12px;
         }
 
         footer{
@@ -481,7 +495,22 @@
                         <c:when test="${not empty contractDevices}">
                             <div class="device-grid">
                                 <c:forEach items="${contractDevices}" var="p">
-                                    <div class="device-card">
+                                    <div class="device-card"
+                                         role="button"
+                                         tabindex="0"
+                                         onclick="openDeviceDetail(this)"
+                                         onkeydown="handleDeviceCardKeydown(event, this)"
+                                         data-product-id="${p.id}"
+                                         data-model-name="${fn:escapeXml(not empty p.modelName ? p.modelName : 'Chưa có tên model')}"
+                                         data-brand-name="${fn:escapeXml(not empty p.brandName ? p.brandName : 'Chưa cập nhật thương hiệu')}"
+                                         data-serial-number="${fn:escapeXml(p.serialNumber)}"
+                                         data-status="${fn:escapeXml(p.status)}"
+                                         data-location="${fn:escapeXml(not empty p.currentLocation ? p.currentLocation : 'Chưa cập nhật')}"
+                                         data-manufacture-year="${p.manufactureYear != null ? p.manufactureYear : 'Chưa cập nhật'}"
+                                         data-purchase-date="${not empty p.purchaseDate ? fn:escapeXml(p.purchaseDate) : ''}"
+                                         data-running-hours="${p.totalRunningHours != null ? p.totalRunningHours : 0}"
+                                         data-category-name="${fn:escapeXml(not empty p.categoryName ? p.categoryName : 'Chưa cập nhật')}"
+                                         data-contract-status="${fn:escapeXml(contract.status)}">
                                         <div class="device-head">
                                             <div>
                                                 <div class="serial-pill mb-3"><i class="fas fa-barcode"></i>${p.serialNumber}</div>
@@ -533,37 +562,9 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <a href="<c:url value='/user/quote-history?productId=${p.id}'/>"
-                                               class="btn btn-sm btn-outline-info btn-pill">
-                                                <i class="fas fa-history me-1"></i>Lịch sử báo giá
-                                            </a>
-
-                                            <c:choose>
-                                                <c:when test="${contract.status == 'TERMINATED'}">
-                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-pill" disabled>
-                                                        <i class="fas fa-ban me-1"></i>Hợp đồng đã dừng
-                                                    </button>
-                                                </c:when>
-                                                <c:when test="${p.status == 'RECEIVED_QUOTE'}">
-                                                    <a href="<c:url value='/user/view-quote?productId=${p.id}'/>"
-                                                       class="btn btn-sm btn-primary btn-pill">
-                                                        <i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá
-                                                    </a>
-                                                </c:when>
-                                                <c:when test="${p.status == 'MAINTENANCE'}">
-                                                    <button type="button" class="btn btn-sm btn-secondary btn-pill" disabled>
-                                                        <i class="fas fa-hourglass-half me-1"></i>Đã gửi yêu cầu
-                                                    </button>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <button type="button"
-                                                            class="btn btn-sm btn-outline-danger btn-pill"
-                                                            onclick="openReportModal('${p.id}', '${fn:escapeXml(p.modelName)}', '${fn:escapeXml(p.serialNumber)}')">
-                                                        <i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố
-                                                    </button>
-                                                </c:otherwise>
-                                            </c:choose>
+                                        <div class="text-primary fw-bold small d-flex align-items-center gap-2 mt-4">
+                                            <i class="fas fa-circle-info"></i>
+                                            Nhấn để xem chi tiết thiết bị
                                         </div>
                                     </div>
                                 </c:forEach>
@@ -611,6 +612,66 @@
         </div>
     </div>
 </footer>
+
+<div class="modal fade" id="deviceDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <div>
+                    <div class="small text-uppercase opacity-75 fw-bold">Chi tiết thiết bị</div>
+                    <h5 class="modal-title fw-bold mb-0" id="deviceDetailName">-</h5>
+                    <div class="small mt-1">Serial: <span class="font-monospace fw-bold" id="deviceDetailSerial"></span></div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold mb-1">Thương hiệu</div>
+                        <div class="fw-bold fs-5" id="deviceDetailBrand">-</div>
+                    </div>
+                    <div id="deviceDetailStatus"></div>
+                </div>
+
+                <div class="detail-grid p-0">
+                    <div class="detail-item">
+                        <div class="label">Model thiết bị</div>
+                        <div class="value" id="deviceDetailModel">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Danh mục</div>
+                        <div class="value" id="deviceDetailCategory">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Địa điểm hiện tại</div>
+                        <div class="value" id="deviceDetailLocation">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Năm sản xuất</div>
+                        <div class="value" id="deviceDetailManufactureYear">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Ngày mua</div>
+                        <div class="value" id="deviceDetailPurchaseDate">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">Tổng giờ chạy</div>
+                        <div class="value" id="deviceDetailRunningHours">-</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light justify-content-between gap-2">
+                <div class="detail-actions">
+                    <a href="#" id="deviceHistoryButton" class="btn btn-outline-info btn-pill">
+                        <i class="fas fa-history me-1"></i>Lịch sử báo giá
+                    </a>
+                    <span id="deviceActionContainer"></span>
+                </div>
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -681,10 +742,86 @@
 <script>
     AOS.init({ duration: 800, once: true });
 
+    function getStatusBadgeMarkup(status) {
+        switch (status) {
+            case 'RUNNING':
+                return '<span class="badge bg-success-subtle text-success border border-success-subtle">Đang hoạt động</span>';
+            case 'MAINTENANCE':
+                return '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Đang bảo trì</span>';
+            case 'BROKEN':
+                return '<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Hỏng hóc</span>';
+            case 'RECEIVED_QUOTE':
+                return '<span class="badge bg-primary-subtle text-primary border border-primary-subtle">Có báo giá</span>';
+            default:
+                return '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">' + (status || 'Chưa cập nhật') + '</span>';
+        }
+    }
+
+    function formatDisplayDate(rawDate) {
+        if (!rawDate) {
+            return 'Chưa cập nhật';
+        }
+        const parsedDate = new Date(rawDate);
+        if (Number.isNaN(parsedDate.getTime())) {
+            return rawDate;
+        }
+        const day = String(parsedDate.getDate()).padStart(2, '0');
+        const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+        const year = parsedDate.getFullYear();
+        return day + '/' + month + '/' + year;
+    }
+
+    function openDeviceDetail(card) {
+        const data = card.dataset;
+        document.getElementById('deviceDetailName').innerText = data.modelName;
+        document.getElementById('deviceDetailSerial').innerText = data.serialNumber;
+        document.getElementById('deviceDetailBrand').innerText = data.brandName;
+        document.getElementById('deviceDetailModel').innerText = data.modelName;
+        document.getElementById('deviceDetailCategory').innerText = data.categoryName;
+        document.getElementById('deviceDetailLocation').innerText = data.location;
+        document.getElementById('deviceDetailManufactureYear').innerText = data.manufactureYear;
+        document.getElementById('deviceDetailPurchaseDate').innerText = formatDisplayDate(data.purchaseDate);
+        document.getElementById('deviceDetailRunningHours').innerText = (data.runningHours || 0) + ' giờ';
+        document.getElementById('deviceDetailStatus').innerHTML = getStatusBadgeMarkup(data.status);
+
+        const historyButton = document.getElementById('deviceHistoryButton');
+        historyButton.href = '<c:url value="/user/quote-history"/>' + '?productId=' + data.productId;
+
+        const actionContainer = document.getElementById('deviceActionContainer');
+        if (data.contractStatus === 'TERMINATED') {
+            actionContainer.innerHTML = '<button type="button" class="btn btn-outline-danger btn-pill" disabled><i class="fas fa-ban me-1"></i>Hợp đồng đã dừng</button>';
+        } else if (data.status === 'RECEIVED_QUOTE') {
+            actionContainer.innerHTML = '<a href="' + '<c:url value="/user/view-quote"/>' + '?productId=' + data.productId + '" class="btn btn-primary btn-pill"><i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá</a>';
+        } else if (data.status === 'MAINTENANCE') {
+            actionContainer.innerHTML = '<button type="button" class="btn btn-secondary btn-pill" disabled><i class="fas fa-hourglass-half me-1"></i>Đã gửi yêu cầu</button>';
+        } else {
+            actionContainer.innerHTML = '<button type="button" class="btn btn-outline-danger btn-pill"><i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố</button>';
+            actionContainer.querySelector('button').addEventListener('click', function () {
+                openReportModal(data.productId, data.modelName, data.serialNumber);
+            }, { once: true });
+        }
+
+        var detailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
+        detailModal.show();
+    }
+
+    function handleDeviceCardKeydown(event, element) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openDeviceDetail(element);
+        }
+    }
+
     function openReportModal(id, name, serial) {
         document.getElementById('modalProductId').value = id;
         document.getElementById('modalProductName').innerText = name;
         document.getElementById('modalProductSerial').innerText = serial;
+
+        var detailModalElement = document.getElementById('deviceDetailModal');
+        var detailModalInstance = bootstrap.Modal.getInstance(detailModalElement);
+        if (detailModalInstance) {
+            detailModalInstance.hide();
+        }
 
         var myModal = new bootstrap.Modal(document.getElementById('reportModal'));
         myModal.show();
