@@ -173,6 +173,49 @@ public class ProductModelDAO extends GenericDAO<ProductModel> {
                 model.getStatus()
         );
     }
+
+    public List<ProductModel> searchPublicDeviceModels(String keyword, int limit) {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+
+        if (normalizedKeyword.isEmpty()) {
+            String sql = """
+                SELECT pm.*
+                FROM product_models pm
+                WHERE pm.status = 'ACTIVE'
+                ORDER BY pm.id DESC
+                LIMIT ?
+            """;
+            return query(sql, new ProductModelMapper(), limit);
+        }
+
+        String sql = """
+            SELECT pm.*
+            FROM product_models pm
+            LEFT JOIN brands b ON pm.brand_id = b.id
+            LEFT JOIN categories c ON pm.category_id = c.id
+            WHERE pm.status = 'ACTIVE'
+              AND (LOWER(COALESCE(pm.name, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.slug, '')) LIKE ?
+                   OR LOWER(COALESCE(b.name, '')) LIKE ?
+                   OR LOWER(COALESCE(c.name, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.origin, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.fuel_type, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.description, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.specifications, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.manual_url, '')) LIKE ?)
+            ORDER BY
+                CASE WHEN LOWER(COALESCE(pm.name, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(pm.slug, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(b.name, '')) = ? THEN 0 ELSE 1 END,
+                pm.id DESC
+            LIMIT ?
+        """;
+
+        String likeKeyword = "%" + normalizedKeyword + "%";
+        return query(sql, new ProductModelMapper(), likeKeyword, likeKeyword, likeKeyword, likeKeyword,
+                likeKeyword, likeKeyword, likeKeyword, likeKeyword, likeKeyword,
+                normalizedKeyword, normalizedKeyword, normalizedKeyword, limit);
+    }
     public void updateProductModel(ProductModel model) {
         String sql =
                 "UPDATE product_models SET " +
