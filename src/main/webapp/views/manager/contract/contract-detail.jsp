@@ -196,7 +196,6 @@
                                         <div class="fw-semibold text-primary">
                                             <i class="fa fa-server me-2"></i>Danh sách thiết bị thuộc hợp đồng
                                         </div>
-                                        <span class="text-muted small">Bấm tên chủ sở hữu để thu gọn / mở rộng</span>
                                     </div>
 
                                     <c:choose>
