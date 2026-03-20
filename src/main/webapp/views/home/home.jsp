@@ -306,23 +306,26 @@
 
     .hero-grid {
       align-items: center;
+      justify-content: space-between;
+      --bs-gutter-x: 3rem;
     }
 
     .hero-copy {
-      max-width: 700px;
+      max-width: 620px;
     }
 
     .hero-title {
-      font-size: clamp(2.6rem, 5vw, 5rem);
-      line-height: 1.02;
+      font-size: clamp(2.45rem, 4.5vw, 4.45rem);
+      line-height: 1.06;
       font-weight: 800;
       letter-spacing: -0.05em;
       margin: 22px 0 18px;
+      max-width: 11ch;
     }
 
     .hero-desc {
-      max-width: 58ch;
-      font-size: 1.06rem;
+      max-width: 52ch;
+      font-size: 1.02rem;
       line-height: 1.85;
       color: rgba(255, 255, 255, 0.88);
       margin-bottom: 28px;
@@ -360,13 +363,13 @@
       position: relative;
       z-index: 2;
       margin-left: auto;
-      width: min(100%, 470px);
+      width: min(100%, 438px);
       border-radius: var(--radius-xl);
       background: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.18);
       box-shadow: var(--shadow);
       backdrop-filter: blur(18px);
-      padding: 26px;
+      padding: 24px;
       color: #ffffff;
     }
 
@@ -806,8 +809,13 @@
         background-position: center right;
       }
 
+      .hero-grid {
+        --bs-gutter-x: 2rem;
+      }
+
       .hero-title {
-        font-size: clamp(2.35rem, 7vw, 4rem);
+        font-size: clamp(2.2rem, 6vw, 3.65rem);
+        max-width: 100%;
       }
 
       .hero-panel {
@@ -967,7 +975,7 @@
           <div class="hero-slide hero-slide-generator" style="background-image: url('<c:url value='/template/images/slide1.jpg'/>');">
             <div class="container hero-content">
               <div class="row g-4 hero-grid">
-                <div class="col-lg-7">
+                <div class="col-lg-6">
                   <div class="hero-copy" data-aos="fade-right">
                     <span class="eyebrow"><i class="fas fa-wave-square"></i>Nền tảng quản trị thế hệ mới</span>
                     <h1 class="hero-title">Điều hành toàn bộ hệ sinh thái máy phát điện trên một giao diện đẳng cấp.</h1>
@@ -1055,7 +1063,7 @@
           <div class="hero-slide" style="background-image: url('<c:url value='/template/images/slide2.jpg'/>');">
             <div class="container hero-content">
               <div class="row g-4 hero-grid">
-                <div class="col-lg-7">
+                <div class="col-lg-6">
                   <div class="hero-copy" data-aos="fade-right">
                     <span class="eyebrow"><i class="fas fa-tower-broadcast"></i>Giám sát liên tục</span>
                     <h2 class="hero-title">Nắm trạng thái thiết bị 24/7 và hành động trước khi sự cố xảy ra.</h2>
@@ -1105,7 +1113,7 @@
           <div class="hero-slide" style="background-image: url('<c:url value='/template/images/slide3.jpg'/>');">
             <div class="container hero-content">
               <div class="row g-4 hero-grid">
-                <div class="col-lg-7">
+                <div class="col-lg-6">
                   <div class="hero-copy" data-aos="fade-right">
                     <span class="eyebrow"><i class="fas fa-screwdriver-wrench"></i>Bảo trì tối ưu</span>
                     <h2 class="hero-title">Biến quy trình bảo trì thành trải nghiệm chuyên nghiệp và có thể mở rộng.</h2>
