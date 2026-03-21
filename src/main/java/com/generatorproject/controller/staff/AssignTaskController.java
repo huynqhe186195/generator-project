@@ -77,7 +77,7 @@ public class AssignTaskController extends HttpServlet {
             Maintenance taskData = new Maintenance();
             taskData.setProductId(incident.getProductId());
             taskData.setTechnicianId(technicianId);
-            taskData.setIncidentId((int) incidentId);
+            taskData.setIncidentId(incidentId.intValue());
             taskData.setIncidentPlanId(incidentPlanId.intValue());
             taskData.setMaintenanceDate(new Date(scheduledStart.getTime()));
             taskData.setScheduledStart(scheduledStart);
