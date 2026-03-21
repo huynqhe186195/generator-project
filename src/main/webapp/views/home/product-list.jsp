@@ -388,11 +388,6 @@
                     Xóa
                 </a>
             </form>
-
-            <div class="lookup-hint">
-                <i class="fas fa-shield-halved me-2"></i>
-                Vì lý do bảo mật, khách hàng sẽ không được liệt kê sẵn các hợp đồng đang sở hữu.
-            </div>
         </div>
 
         <c:if test="${lookupPerformed and not empty lookupError}">
