@@ -9,8 +9,8 @@ import java.util.List;
 
 public class InvoiceService implements IInvoiceService {
 
-    private InvoiceDAO invoiceDAO = new InvoiceDAO();
-    private QuoteDAO quoteDAO = new QuoteDAO();
+    private final InvoiceDAO invoiceDAO = new InvoiceDAO();
+    private final QuoteDAO quoteDAO = new QuoteDAO();
 
 
     @Override

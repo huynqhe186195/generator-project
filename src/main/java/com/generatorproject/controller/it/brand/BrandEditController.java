@@ -108,13 +108,10 @@ public class BrandEditController extends HttpServlet {
             finalLogo = "uploads/brands/" + fileName;
         } else {
             // không upload file
+            // clear logo
             if ("1".equals(keepLogo)) {
                 finalLogo = old.getLogoUrl(); // giữ
-            } else if (logoUrlInput != null) {
-                finalLogo = logoUrlInput;     // đổi sang link / path nhập tay
-            } else {
-                finalLogo = null;             // clear logo
-            }
+            } else finalLogo = logoUrlInput;     // đổi sang link / path nhập tay
         }
 
         Brand updated = new Brand();

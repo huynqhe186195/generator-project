@@ -10,7 +10,7 @@ import java.sql.Date;
 import java.util.List;
 
 public class ContractServices implements IContractServices {
-    private ContractDAO contractDAO;
+    private final ContractDAO contractDAO;
 
     public ContractServices() {
         contractDAO = new ContractDAO();

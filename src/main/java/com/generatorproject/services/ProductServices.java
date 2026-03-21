@@ -6,7 +6,7 @@ import com.generatorproject.model.Product;
 import java.util.List;
 
 public class ProductServices implements IProductServices {
-    private ProductDAO productDAO;
+    private final ProductDAO productDAO;
 
     public ProductServices() {
         productDAO = new ProductDAO();

@@ -433,16 +433,15 @@ public class ProductDAO extends GenericDAO<Product> {
 
 
     public Long save(Product product) {
-        StringBuilder sql = new StringBuilder("INSERT INTO products (");
-        sql.append("serial_number, customer_id, contract_id, status, total_running_hours, ");
-        sql.append("manufacture_year, purchase_date, current_location, model_id, created_at");
-        sql.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        String sql = "INSERT INTO products (" + "serial_number, customer_id, contract_id, status, total_running_hours, " +
+                "manufacture_year, purchase_date, current_location, model_id, created_at" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
         if (product.getContractId() == null) {
             throw new IllegalArgumentException("contractId không được null vì product phải thuộc hợp đồng");
         }
 
-        return insert(sql.toString(),
+        return insert(sql,
                 product.getSerialNumber(),
                 product.getCustomerId(),
                 product.getContractId(),

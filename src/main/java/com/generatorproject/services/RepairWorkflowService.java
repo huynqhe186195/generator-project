@@ -7,10 +7,10 @@ import com.google.gson.Gson;
 
 public class RepairWorkflowService implements IRepairWorkflowService {
 
-    private RequestDAO requestDAO = new RequestDAO();
-    private SparePartDAO sparePartDAO = new SparePartDAO();
-    private ProductDAO productDAO = new ProductDAO();
-    private QuoteDAO quoteDAO = new QuoteDAO();
+    private final RequestDAO requestDAO = new RequestDAO();
+    private final SparePartDAO sparePartDAO = new SparePartDAO();
+    private final ProductDAO productDAO = new ProductDAO();
+    private final QuoteDAO quoteDAO = new QuoteDAO();
 
     // ==========================================
     // LẤY DỮ LIỆU BÁO GIÁ ĐỂ HIỂN THỊ

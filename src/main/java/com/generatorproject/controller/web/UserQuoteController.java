@@ -20,11 +20,11 @@ import java.io.IOException;
 @WebServlet(urlPatterns = {"/user/view-quote", "/user/repair-quote/respond"})
 public class UserQuoteController extends HttpServlet {
 
-    private ProductServices productServices = new ProductServices();
-    private RequestDAO requestDAO = new RequestDAO();
+    private final ProductServices productServices = new ProductServices();
+    private final RequestDAO requestDAO = new RequestDAO();
 
     // KHỞI TẠO SERVICE CHUNG
-    private RepairWorkflowService repairWorkflowService = new RepairWorkflowService();
+    private final RepairWorkflowService repairWorkflowService = new RepairWorkflowService();
 
     // ===============================================
     // HIỂN THỊ TRANG CHI TIẾT BÁO GIÁ (GET)

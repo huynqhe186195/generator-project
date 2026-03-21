@@ -584,23 +584,6 @@
               <div class="row g-4">
                 <div class="col-lg-8">
                   <article class="article-card">
-                    <c:choose>
-                      <c:when test="${not empty news.imageUrl and fn:startsWith(news.imageUrl, 'http')}">
-                        <img src="${news.imageUrl}" class="article-cover" alt="${news.title}">
-                      </c:when>
-                      <c:when
-                        test="${not empty news.imageUrl and (fn:startsWith(news.imageUrl, '/') or fn:startsWith(news.imageUrl, 'uploads/') or fn:startsWith(news.imageUrl, 'news-images/'))}">
-                        <img src="${ctx}${fn:startsWith(news.imageUrl, '/') ? '' : '/'}${news.imageUrl}"
-                          class="article-cover" alt="${news.title}">
-                      </c:when>
-                      <c:when test="${not empty news.imageUrl}">
-                        <img src="${ctx}/uploads/news-images/${news.imageUrl}" class="article-cover"
-                          alt="${news.title}">
-                      </c:when>
-                      <c:otherwise>
-                        <img src="${ctx}/uploads/download.jpg" class="article-cover" alt="${news.title}">
-                      </c:otherwise>
-                    </c:choose>
 
                     <div class="article-body">
                       <div class="article-badge">

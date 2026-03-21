@@ -18,7 +18,7 @@ public class CustomerAiToolCall {
 
     public CustomerAiToolCall(String tool, Map<String, String> args) {
         this.tool = tool;
-        this.args = args == null ? Collections.<String, String>emptyMap() : args;
+        this.args = args == null ? Collections.emptyMap() : args;
     }
 
     public static CustomerAiToolCall none(String reply) {
@@ -26,7 +26,7 @@ public class CustomerAiToolCall {
     }
 
     public Map<String, String> getArgs() {
-        return args == null ? Collections.<String, String>emptyMap() : args;
+        return args == null ? Collections.emptyMap() : args;
     }
 
     public String getArg(String key) {
