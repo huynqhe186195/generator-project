@@ -58,6 +58,7 @@ public class ReportIncidentController extends HttpServlet {
             int parsedProductId = Integer.parseInt(productId);
             String issueType = req.getParameter("issueType");
             String preferredDate = req.getParameter("preferredDate");
+            String preferredTimeSlot = req.getParameter("preferredTimeSlot");
             String title = req.getParameter("title");
             String description = req.getParameter("description");
 
@@ -86,7 +87,7 @@ public class ReportIncidentController extends HttpServlet {
             incident.setPreferredDate(preferredDate == null || preferredDate.isBlank() ? null : Date.valueOf(preferredDate));
             incident.setPreferredTimeFrom(null);
             incident.setPreferredTimeTo(null);
-            incident.setPreferredTimeSlot(null);
+            incident.setPreferredTimeSlot(preferredTimeSlot == null || preferredTimeSlot.isBlank() ? "ANYTIME" : preferredTimeSlot);
             incident.setFlexibleTime(false);
             incident.setUrgencyLevel("MEDIUM");
             incident.setCustomerNote(null);
@@ -106,6 +107,7 @@ public class ReportIncidentController extends HttpServlet {
             requestDataMap.put("productId", productId);
             requestDataMap.put("issueType", issueType);
             requestDataMap.put("preferredDate", preferredDate);
+            requestDataMap.put("preferredTimeSlot", preferredTimeSlot);
             requestDataMap.put("title", title);
             requestDataMap.put("description", description);
 
