@@ -142,46 +142,6 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4 mb-4">
-                                <label class="form-label">Khung giờ mong muốn</label>
-                                <select name="preferredTimeSlot" class="form-select py-2">
-                                    <option value="ANYTIME">Bất kỳ</option>
-                                    <option value="MORNING">Buổi sáng</option>
-                                    <option value="AFTERNOON">Buổi chiều</option>
-                                    <option value="EVENING">Buổi tối</option>
-                                    <option value="URGENT">Khẩn cấp ngay</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-4">
-                                <label class="form-label">Giờ bắt đầu mong muốn</label>
-                                <input type="time" name="preferredTimeFrom" class="form-control py-2">
-                            </div>
-                            <div class="col-md-4 mb-4">
-                                <label class="form-label">Giờ kết thúc mong muốn</label>
-                                <input type="time" name="preferredTimeTo" class="form-control py-2">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-4">
-                                <label class="form-label">Mức độ khẩn cấp</label>
-                                <select name="urgencyLevel" class="form-select py-2">
-                                    <option value="LOW">Thấp</option>
-                                    <option value="MEDIUM" selected>Trung bình</option>
-                                    <option value="HIGH">Cao</option>
-                                    <option value="CRITICAL">Khẩn cấp</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-4">
-                                <label class="form-label d-block">Linh động thời gian</label>
-                                <div class="form-check form-switch mt-2">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="isFlexibleTime" name="isFlexibleTime" value="1">
-                                    <label class="form-check-label" for="isFlexibleTime">Có thể sắp xếp sang khung giờ gần nhất</label>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="mb-4">
                             <label class="form-label">Tiêu đề ngắn <span class="text-danger">*</span></label>
                             <input type="text" name="title" class="form-control py-2" placeholder="VD: Máy kêu to khi chạy tải..." required>
@@ -190,11 +150,6 @@
                         <div class="mb-4">
                             <label class="form-label">Mô tả chi tiết hiện tượng</label>
                             <textarea name="description" class="form-control" rows="5" placeholder="Mô tả kỹ hơn: Đèn báo lỗi gì sáng? Xảy ra khi nào?"></textarea>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label">Ghi chú thêm cho kỹ thuật viên</label>
-                            <textarea name="customerNote" class="form-control" rows="3" placeholder="Ví dụ: Chỉ có người nhận máy sau 14h, vui lòng gọi trước khi đến..."></textarea>
                         </div>
 
                         <div class="d-flex justify-content-end gap-3 mt-5">

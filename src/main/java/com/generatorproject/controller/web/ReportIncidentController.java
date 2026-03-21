@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
-import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,14 +58,8 @@ public class ReportIncidentController extends HttpServlet {
             int parsedProductId = Integer.parseInt(productId);
             String issueType = req.getParameter("issueType");
             String preferredDate = req.getParameter("preferredDate");
-            String preferredTimeSlot = req.getParameter("preferredTimeSlot");
-            String preferredTimeFrom = req.getParameter("preferredTimeFrom");
-            String preferredTimeTo = req.getParameter("preferredTimeTo");
-            String urgencyLevel = req.getParameter("urgencyLevel");
-            String flexibleTime = req.getParameter("isFlexibleTime");
             String title = req.getParameter("title");
             String description = req.getParameter("description");
-            String customerNote = req.getParameter("customerNote");
 
             // 3. Validate server-side: product thuộc user login + contract còn cho phép dịch vụ
             ProductDAO productDAO = new ProductDAO();
@@ -88,15 +81,15 @@ public class ReportIncidentController extends HttpServlet {
             incident.setReportedBy(user.getId());
             incident.setTitle(title);
             incident.setDescription(description);
-            incident.setPriority(urgencyLevel == null || urgencyLevel.isBlank() ? "MEDIUM" : urgencyLevel);
+            incident.setPriority("MEDIUM");
             incident.setStatus("NEW");
             incident.setPreferredDate(preferredDate == null || preferredDate.isBlank() ? null : Date.valueOf(preferredDate));
-            incident.setPreferredTimeFrom(preferredTimeFrom == null || preferredTimeFrom.isBlank() ? null : Time.valueOf(preferredTimeFrom + ":00"));
-            incident.setPreferredTimeTo(preferredTimeTo == null || preferredTimeTo.isBlank() ? null : Time.valueOf(preferredTimeTo + ":00"));
-            incident.setPreferredTimeSlot(preferredTimeSlot);
-            incident.setFlexibleTime("1".equals(flexibleTime) || "true".equalsIgnoreCase(flexibleTime) || "on".equalsIgnoreCase(flexibleTime));
-            incident.setUrgencyLevel(urgencyLevel);
-            incident.setCustomerNote(customerNote);
+            incident.setPreferredTimeFrom(null);
+            incident.setPreferredTimeTo(null);
+            incident.setPreferredTimeSlot(null);
+            incident.setFlexibleTime(false);
+            incident.setUrgencyLevel("MEDIUM");
+            incident.setCustomerNote(null);
             incident.setLocationSnapshot(product.getCurrentLocation());
             incident.setContractId(product.getContractId() == null ? 0 : product.getContractId().intValue());
             incident.setInputSerialNumber(product.getSerialNumber());
@@ -113,7 +106,6 @@ public class ReportIncidentController extends HttpServlet {
             requestDataMap.put("productId", productId);
             requestDataMap.put("issueType", issueType);
             requestDataMap.put("preferredDate", preferredDate);
-            requestDataMap.put("preferredTimeSlot", preferredTimeSlot);
             requestDataMap.put("title", title);
             requestDataMap.put("description", description);
 
