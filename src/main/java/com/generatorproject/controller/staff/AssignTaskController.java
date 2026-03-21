@@ -86,7 +86,7 @@ public class AssignTaskController extends HttpServlet {
             taskData.setMaintenanceDate(new Date(scheduledStart.getTime()));
             taskData.setScheduledStart(scheduledStart);
             taskData.setScheduledEnd(scheduledEnd);
-            taskData.setType(plan.getWorkType());
+            taskData.setType(normalizeMaintenanceType(plan.getWorkType()));
             taskData.setDescription(incident.getTitle() + " - " + (plan.getStaffNote() == null ? incident.getDescription() : plan.getStaffNote()));
             taskData.setScheduleStatus("MANAGER_APPROVED");
             taskData.setExecutionStatus("PENDING");
@@ -130,6 +130,23 @@ public class AssignTaskController extends HttpServlet {
             return Long.parseLong(s);
         } catch (Exception ignored) {
             return null;
+        }
+    }
+
+    private String normalizeMaintenanceType(String planType) {
+        if (planType == null || planType.isBlank()) {
+            return "REPAIR";
+        }
+
+        switch (planType.trim().toUpperCase()) {
+            case "REPLACEMENT":
+                return "REPAIR";
+            case "REPAIR":
+            case "INSPECTION":
+            case "PERIODIC":
+                return planType.trim().toUpperCase();
+            default:
+                return "REPAIR";
         }
     }
 }
