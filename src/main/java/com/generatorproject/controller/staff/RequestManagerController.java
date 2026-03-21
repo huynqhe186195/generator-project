@@ -73,7 +73,7 @@ public class RequestManagerController extends HttpServlet {
             }
 
             IncidentPlan plan = new IncidentPlan();
-            plan.setIncidentId((int) incidentId);
+            plan.setIncidentId(incidentId.intValue());
             plan.setPlannedBy(user.getId());
             plan.setWorkType(type);
             plan.setEstimatedDurationMinutes(parseIntOrDefault(estimatedDuration, 120));
