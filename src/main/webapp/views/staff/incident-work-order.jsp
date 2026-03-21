@@ -15,6 +15,17 @@
             <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Tạo work order từ plan đã duyệt</h5>
         </div>
         <div class="card-body">
+            <c:if test="${param.error == 'conflict_schedule'}">
+                <div class="alert alert-danger">
+                    Kỹ thuật viên đã có lịch trùng trong khung giờ này. Vui lòng chọn kỹ thuật viên khác hoặc đổi thời gian.
+                </div>
+            </c:if>
+            <c:if test="${param.error == 'invalid_time'}">
+                <div class="alert alert-warning">
+                    Thời gian kết thúc phải lớn hơn thời gian bắt đầu.
+                </div>
+            </c:if>
+
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <div class="small text-muted">Sự cố</div>

@@ -77,6 +77,15 @@ public class AssignTaskController extends HttpServlet {
 
             Timestamp scheduledStart = Timestamp.valueOf(scheduledStartRaw.replace("T", " ") + ":00");
             Timestamp scheduledEnd = Timestamp.valueOf(scheduledEndRaw.replace("T", " ") + ":00");
+            if (!scheduledEnd.after(scheduledStart)) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident/work-order?id=" + requestId + "&error=invalid_time");
+                return;
+            }
+
+            if (maintenanceAssignmentDAO.hasScheduleConflict(technicianId, scheduledStart, scheduledEnd)) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident/work-order?id=" + requestId + "&error=conflict_schedule");
+                return;
+            }
 
             Maintenance taskData = new Maintenance();
             taskData.setProductId(incident.getProductId());

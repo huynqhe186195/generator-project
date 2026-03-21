@@ -2,6 +2,8 @@ package com.generatorproject.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 public class MaintenanceAssignmentDAO extends DbContext {
     public boolean insertPrimaryAssignment(int maintenanceId, int technicianId, Integer assignedBy, String note) {
@@ -21,5 +23,42 @@ public class MaintenanceAssignmentDAO extends DbContext {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean hasScheduleConflict(int technicianId, Timestamp scheduledStart, Timestamp scheduledEnd) {
+        String sql = """
+                SELECT COUNT(DISTINCT m.id)
+                FROM maintenances m
+                LEFT JOIN maintenance_assignments ma
+                    ON ma.maintenance_id = m.id
+                   AND ma.assigned_status NOT IN ('CANCELLED', 'DECLINED')
+                WHERE (
+                        m.technician_id = ?
+                        OR ma.technician_id = ?
+                      )
+                  AND m.scheduled_start IS NOT NULL
+                  AND m.scheduled_end IS NOT NULL
+                  AND COALESCE(m.execution_status, 'PENDING') <> 'CANCELLED'
+                  AND COALESCE(m.schedule_status, 'DRAFT') <> 'REJECTED'
+                  AND ? < m.scheduled_end
+                  AND ? > m.scheduled_start
+                """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, technicianId);
+            ps.setInt(2, technicianId);
+            ps.setTimestamp(3, scheduledStart);
+            ps.setTimestamp(4, scheduledEnd);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

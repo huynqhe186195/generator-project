@@ -143,7 +143,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">Khung giờ kỹ thuật viên có thể đến</label>
+                            <label class="form-label">Khung giờ khách có thể tiếp nhận kiểm tra</label>
                             <select name="preferredTimeSlot" class="form-select py-2">
                                 <option value="ANYTIME" selected>-- Linh động cả ngày --</option>
                                 <option value="MORNING">Buổi sáng (08:00 - 12:00)</option>
@@ -151,7 +151,7 @@
                                 <option value="EVENING">Buổi tối</option>
                                 <option value="URGENT">Càng sớm càng tốt</option>
                             </select>
-                            <div class="form-text small">Giúp staff và manager đề xuất kỹ thuật viên phù hợp hơn.</div>
+                            <div class="form-text small">Giúp staff sắp lịch và điều phối kỹ thuật viên phù hợp hơn.</div>
                         </div>
 
                         <div class="mb-4">
