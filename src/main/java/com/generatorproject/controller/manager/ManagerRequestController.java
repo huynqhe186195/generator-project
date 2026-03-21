@@ -3,12 +3,17 @@ package com.generatorproject.controller.manager;
 import com.generatorproject.services.IRequestServices;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.IProductServices;
+import com.generatorproject.services.IIncidentPlanService;
+import com.generatorproject.services.IIncidentServices;
 import com.generatorproject.services.RequestServices;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.Users;
+import com.generatorproject.model.Incident;
 import com.generatorproject.services.UserServices;
 import com.generatorproject.services.ProductServices;
+import com.generatorproject.services.IncidentPlanService;
+import com.generatorproject.services.IncidentServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -38,12 +43,16 @@ public class ManagerRequestController extends HttpServlet {
     private final IRequestServices requestService;
     private final IUserServices userService;
     private final IProductServices productService;
+    private final IIncidentPlanService incidentPlanService;
+    private final IIncidentServices incidentService;
     private final Gson gson;
 
     public ManagerRequestController() {
         requestService = new RequestServices();
         userService = new UserServices();
         productService = new ProductServices();
+        incidentPlanService = new IncidentPlanService();
+        incidentService = new IncidentServices();
         gson = new Gson();
     }
 
@@ -93,6 +102,7 @@ public class ManagerRequestController extends HttpServlet {
     private void attachReferenceDisplayData(HttpServletRequest req, List<SystemRequest> requests) {
         Map<Long, String> technicianDisplayById = new HashMap<>();
         Map<Long, String> productDisplayById = new HashMap<>();
+        Map<Long, String> incidentStatusById = new HashMap<>();
 
         if (requests != null) {
             for (SystemRequest item : requests) {
@@ -132,11 +142,20 @@ public class ManagerRequestController extends HttpServlet {
 
                     productDisplayById.put(productId, modelName + " - " + serial);
                 }
+
+                Long incidentId = asLong(data.get("incidentId"));
+                if (incidentId != null && !incidentStatusById.containsKey(incidentId)) {
+                    Incident incident = incidentService.findById(incidentId);
+                    if (incident != null) {
+                        incidentStatusById.put(incidentId, incident.getStatus());
+                    }
+                }
             }
         }
 
         req.setAttribute("technicianDisplayMap", technicianDisplayById);
         req.setAttribute("productDisplayMap", productDisplayById);
+        req.setAttribute("incidentStatusMap", incidentStatusById);
         req.setAttribute("technicianDisplayJson", gson.toJson(technicianDisplayById));
         req.setAttribute("productDisplayJson", gson.toJson(productDisplayById));
     }
@@ -194,6 +213,17 @@ public class ManagerRequestController extends HttpServlet {
             }
 
             long approverId = currentUser.getId();
+            SystemRequest request = requestService.findById(requestId);
+            if (request != null && request.getInfo() != null) {
+                Long incidentPlanId = asLong(request.getInfo().get("incidentPlanId"));
+                Long incidentId = asLong(request.getInfo().get("incidentId"));
+                if (incidentPlanId != null) {
+                    incidentPlanService.approve(incidentPlanId, (int) approverId);
+                }
+                if (incidentId != null) {
+                    incidentService.updateStatus(incidentId, "PLAN_APPROVED");
+                }
+            }
 
             // Approve request
             requestService.approve(requestId, approverId, "STAFF", "Đã duyệt");
@@ -218,6 +248,17 @@ public class ManagerRequestController extends HttpServlet {
             }
 
             long id = Long.parseLong(idStr);
+            SystemRequest request = requestService.findById(id);
+            if (request != null && request.getInfo() != null) {
+                Long incidentPlanId = asLong(request.getInfo().get("incidentPlanId"));
+                Long incidentId = asLong(request.getInfo().get("incidentId"));
+                if (incidentPlanId != null) {
+                    incidentPlanService.reject(incidentPlanId, reason);
+                }
+                if (incidentId != null) {
+                    incidentService.updateStatus(incidentId, "VERIFIED");
+                }
+            }
 
             requestService.reject(id, reason);
 

@@ -27,6 +27,8 @@ public class StaffManagementController extends HttpServlet {
     private final IInvoiceService invoiceService;
     private final MaintenanceDAO maintenanceDAO;
     private final IProductModelServices productModelServices;
+    private final IIncidentServices incidentServices;
+    private final IIncidentPlanService incidentPlanService;
 
     public StaffManagementController() {
         userServices = new UserServices();
@@ -37,6 +39,8 @@ public class StaffManagementController extends HttpServlet {
         invoiceService = new InvoiceService();
         maintenanceDAO = new MaintenanceDAO();
         productModelServices = new ProductModelServices();
+        incidentServices = new IncidentServices();
+        incidentPlanService = new IncidentPlanService();
     }
 
     @Override
@@ -82,6 +86,9 @@ public class StaffManagementController extends HttpServlet {
                 break;
             case "/incident-view":
                 showIncidentDetail(req, resp);
+                break;
+            case "/incident/work-order":
+                handleIncidentWorkOrder(req, resp);
                 break;
             case "/invoice-list":
                 listInvoices(req, resp);
@@ -590,16 +597,48 @@ public class StaffManagementController extends HttpServlet {
             // 3. Lấy thông tin máy (Product)
             Product product = getProductFromRequest(sysReq);
 
-            // 4. Lấy danh sách Kỹ thuật viên
-            List<Users> listTechnicians = userServices.findUserByRoleId(4);
+            Incident incident = null;
+            if (sysReq.getInfo() != null && sysReq.getInfo().get("incidentId") != null) {
+                incident = incidentServices.findById(Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentId"))));
+            }
 
-            // 5. Gửi dữ liệu sang JSP
+            // 4. Gửi dữ liệu sang JSP
             req.setAttribute("req", sysReq);
             req.setAttribute("prod", product);
-            req.setAttribute("listTechnicians", listTechnicians);
+            req.setAttribute("incidentEntity", incident);
 
             req.getRequestDispatcher("/views/staff/incident-escalate.jsp").forward(req, resp);
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
+
+    private void handleIncidentWorkOrder(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            long requestId = Long.parseLong(req.getParameter("id"));
+            SystemRequest sysReq = requestServices.findById(requestId);
+            if (sysReq == null || sysReq.getInfo() == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
+
+            Long incidentId = Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentId")));
+            Long incidentPlanId = Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentPlanId")));
+
+            Incident incident = incidentServices.findById(incidentId);
+            IncidentPlan incidentPlan = incidentPlanService.findById(incidentPlanId);
+            Product product = incident != null ? productServices.getProductById(incident.getProductId()) : null;
+            List<Users> listTechnicians = userServices.findUserByRoleId(4);
+
+            req.setAttribute("req", sysReq);
+            req.setAttribute("incidentEntity", incident);
+            req.setAttribute("incidentPlan", incidentPlan);
+            req.setAttribute("prod", product);
+            req.setAttribute("listTechnicians", listTechnicians);
+            req.getRequestDispatcher("/views/staff/incident-work-order.jsp").forward(req, resp);
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");

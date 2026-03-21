@@ -13,6 +13,14 @@ public class Incident {
     private String priority; // ENUM: LOW, MEDIUM, HIGH, CRITICAL
     private String status;   // ENUM: NEW, VERIFYING, WAITING_MANAGER, APPROVED...
     private int technicianId;
+    private java.sql.Date preferredDate;
+    private java.sql.Time preferredTimeFrom;
+    private java.sql.Time preferredTimeTo;
+    private String preferredTimeSlot;
+    private boolean flexibleTime;
+    private String urgencyLevel;
+    private String customerNote;
+    private String locationSnapshot;
     private Timestamp createdAt;
     private Timestamp resolvedAt;
 
@@ -41,6 +49,14 @@ public class Incident {
         this.priority = builder.priority;
         this.status = builder.status;
         this.technicianId = builder.technicianId;
+        this.preferredDate = builder.preferredDate;
+        this.preferredTimeFrom = builder.preferredTimeFrom;
+        this.preferredTimeTo = builder.preferredTimeTo;
+        this.preferredTimeSlot = builder.preferredTimeSlot;
+        this.flexibleTime = builder.flexibleTime;
+        this.urgencyLevel = builder.urgencyLevel;
+        this.customerNote = builder.customerNote;
+        this.locationSnapshot = builder.locationSnapshot;
         this.createdAt = builder.createdAt;
         this.resolvedAt = builder.resolvedAt;
 
@@ -83,6 +99,30 @@ public class Incident {
     public int getTechnicianId() { return technicianId; }
     public void setTechnicianId(int technicianId) { this.technicianId = technicianId; }
 
+    public java.sql.Date getPreferredDate() { return preferredDate; }
+    public void setPreferredDate(java.sql.Date preferredDate) { this.preferredDate = preferredDate; }
+
+    public java.sql.Time getPreferredTimeFrom() { return preferredTimeFrom; }
+    public void setPreferredTimeFrom(java.sql.Time preferredTimeFrom) { this.preferredTimeFrom = preferredTimeFrom; }
+
+    public java.sql.Time getPreferredTimeTo() { return preferredTimeTo; }
+    public void setPreferredTimeTo(java.sql.Time preferredTimeTo) { this.preferredTimeTo = preferredTimeTo; }
+
+    public String getPreferredTimeSlot() { return preferredTimeSlot; }
+    public void setPreferredTimeSlot(String preferredTimeSlot) { this.preferredTimeSlot = preferredTimeSlot; }
+
+    public boolean isFlexibleTime() { return flexibleTime; }
+    public void setFlexibleTime(boolean flexibleTime) { this.flexibleTime = flexibleTime; }
+
+    public String getUrgencyLevel() { return urgencyLevel; }
+    public void setUrgencyLevel(String urgencyLevel) { this.urgencyLevel = urgencyLevel; }
+
+    public String getCustomerNote() { return customerNote; }
+    public void setCustomerNote(String customerNote) { this.customerNote = customerNote; }
+
+    public String getLocationSnapshot() { return locationSnapshot; }
+    public void setLocationSnapshot(String locationSnapshot) { this.locationSnapshot = locationSnapshot; }
+
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
@@ -121,6 +161,14 @@ public class Incident {
         private String priority;
         private String status;
         private int technicianId;
+        private java.sql.Date preferredDate;
+        private java.sql.Time preferredTimeFrom;
+        private java.sql.Time preferredTimeTo;
+        private String preferredTimeSlot;
+        private boolean flexibleTime;
+        private String urgencyLevel;
+        private String customerNote;
+        private String locationSnapshot;
         private Timestamp createdAt;
         private Timestamp resolvedAt;
 
@@ -143,6 +191,14 @@ public class Incident {
         public Builder setPriority(String priority) { this.priority = priority; return this; }
         public Builder setStatus(String status) { this.status = status; return this; }
         public Builder setTechnicianId(int technicianId) { this.technicianId = technicianId; return this; }
+        public Builder setPreferredDate(java.sql.Date preferredDate) { this.preferredDate = preferredDate; return this; }
+        public Builder setPreferredTimeFrom(java.sql.Time preferredTimeFrom) { this.preferredTimeFrom = preferredTimeFrom; return this; }
+        public Builder setPreferredTimeTo(java.sql.Time preferredTimeTo) { this.preferredTimeTo = preferredTimeTo; return this; }
+        public Builder setPreferredTimeSlot(String preferredTimeSlot) { this.preferredTimeSlot = preferredTimeSlot; return this; }
+        public Builder setFlexibleTime(boolean flexibleTime) { this.flexibleTime = flexibleTime; return this; }
+        public Builder setUrgencyLevel(String urgencyLevel) { this.urgencyLevel = urgencyLevel; return this; }
+        public Builder setCustomerNote(String customerNote) { this.customerNote = customerNote; return this; }
+        public Builder setLocationSnapshot(String locationSnapshot) { this.locationSnapshot = locationSnapshot; return this; }
         public Builder setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
         public Builder setResolvedAt(Timestamp resolvedAt) { this.resolvedAt = resolvedAt; return this; }
 

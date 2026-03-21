@@ -1,12 +1,17 @@
 package com.generatorproject.controller.staff;
 
+import com.generatorproject.dao.IncidentPlanDAO;
+import com.generatorproject.dao.MaintenanceAssignmentDAO;
 import com.generatorproject.dao.MaintenanceDAO;
+import com.generatorproject.model.Incident;
+import com.generatorproject.model.IncidentPlan;
 import com.generatorproject.model.Maintenance;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.IIncidentServices;
 import com.generatorproject.services.IRequestServices;
+import com.generatorproject.services.IncidentServices;
 import com.generatorproject.services.RequestServices;
-import com.google.gson.Gson;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,14 +20,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Date;
+import java.sql.Timestamp;
 
 @WebServlet(urlPatterns = {"/staff/assign-task"})
 public class AssignTaskController extends HttpServlet {
 
     private final IRequestServices requestServices;
+    private final IIncidentServices incidentServices;
+    private final IncidentPlanDAO incidentPlanDAO;
+    private final MaintenanceDAO maintenanceDAO;
+    private final MaintenanceAssignmentDAO maintenanceAssignmentDAO;
 
     public AssignTaskController() {
         requestServices = new RequestServices();
+        incidentServices = new IncidentServices();
+        incidentPlanDAO = new IncidentPlanDAO();
+        maintenanceDAO = new MaintenanceDAO();
+        maintenanceAssignmentDAO = new MaintenanceAssignmentDAO();
     }
 
     @Override
@@ -34,39 +49,59 @@ public class AssignTaskController extends HttpServlet {
 
 
         try {
-            // 1. Lấy ID từ form (Tham số 'id' từ <input type="hidden" name="id">)
             String idStr = req.getParameter("id");
+            String technicianIdRaw = req.getParameter("technicianId");
+            String scheduledStartRaw = req.getParameter("scheduledStart");
+            String scheduledEndRaw = req.getParameter("scheduledEnd");
             long requestId = Long.parseLong(idStr);
+            int technicianId = Integer.parseInt(technicianIdRaw);
 
-            // 2. Tìm SystemRequest
             SystemRequest sysReq = requestServices.findById(requestId);
-
-            if (sysReq != null && sysReq.getRequestData() != null) {
-                // 3. Lấy JSON info (đã có đủ technicianId, maintenanceType... từ bước trước)
-                String jsonInfo = sysReq.getRequestData();
-
-                // 4. Parse JSON sang object Maintenance
-                Gson gson = new Gson();
-                Maintenance taskData = gson.fromJson(jsonInfo, Maintenance.class);
-
-                if (taskData != null) {
-                    // 5. Insert vào bảng maintenances
-                    MaintenanceDAO maintenanceDAO = new MaintenanceDAO();
-                    boolean isSuccess = maintenanceDAO.insertMaintenance(taskData);
-
-                    if (isSuccess) {
-                        // Cập nhật trạng thái SystemRequest thành DONE hoặc TASK_CREATED
-                        sysReq.setStatus("TASK_CREATED");
-                        requestServices.update(sysReq);
-
-                        resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=task_created_success");
-                    } else {
-                        resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=insert_error");
-                    }
-                }
-            } else {
+            if (sysReq == null || sysReq.getInfo() == null) {
                 resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
             }
+
+            Long incidentId = Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentId")));
+            Long incidentPlanId = Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentPlanId")));
+            Incident incident = incidentServices.findById(incidentId);
+            IncidentPlan plan = incidentPlanDAO.findById(incidentPlanId);
+            if (incident == null || plan == null || !"APPROVED".equalsIgnoreCase(plan.getManagerReviewStatus())) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
+
+            Timestamp scheduledStart = Timestamp.valueOf(scheduledStartRaw.replace("T", " ") + ":00");
+            Timestamp scheduledEnd = Timestamp.valueOf(scheduledEndRaw.replace("T", " ") + ":00");
+
+            Maintenance taskData = new Maintenance();
+            taskData.setProductId(incident.getProductId());
+            taskData.setTechnicianId(technicianId);
+            taskData.setIncidentId((int) incidentId);
+            taskData.setIncidentPlanId(incidentPlanId.intValue());
+            taskData.setMaintenanceDate(new Date(scheduledStart.getTime()));
+            taskData.setScheduledStart(scheduledStart);
+            taskData.setScheduledEnd(scheduledEnd);
+            taskData.setType(plan.getWorkType());
+            taskData.setDescription(incident.getTitle() + " - " + (plan.getStaffNote() == null ? incident.getDescription() : plan.getStaffNote()));
+            taskData.setScheduleStatus("MANAGER_APPROVED");
+            taskData.setExecutionStatus("PENDING");
+            taskData.setCreatedBy(user == null ? null : user.getId());
+
+            Integer maintenanceId = maintenanceDAO.insertScheduledMaintenance(taskData);
+            if (maintenanceId == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=insert_error");
+                return;
+            }
+
+            maintenanceAssignmentDAO.insertPrimaryAssignment(maintenanceId, technicianId, user == null ? null : user.getId(),
+                    "Assigned after manager-approved incident plan");
+
+            sysReq.setStatus("TASK_CREATED");
+            requestServices.update(sysReq);
+            incidentServices.updateStatus(incidentId, "WORK_ORDER_CREATED");
+
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=task_created_success");
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=system_error");

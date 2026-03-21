@@ -31,16 +31,17 @@
                         </div>
 
                         <div class="card bg-white border-0 shadow-sm p-3">
-                            <h6 class="text-secondary fw-bold mb-3 border-bottom pb-2">Đề xuất phương án xử lý</h6>
+                            <h6 class="text-secondary fw-bold mb-3 border-bottom pb-2">Tạo phương án xử lý trình Manager</h6>
 
                             <div class="row g-3">
-                                <div class="col-12">
-                                    <label class="form-label fw-bold">Chỉ định Kỹ thuật viên <span class="text-danger">*</span></label>
-                                    <select name="technician_id" class="form-select py-2" required>
-                                        <option value="">-- Chọn nhân viên phụ trách --</option>
-                                        <c:forEach items="${listTechnicians}" var="tech">
-                                            <option value="${tech.id}">${tech.fullName} - ${tech.email}</option>
-                                        </c:forEach>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Loại hình xử lý</label>
+                                    <select name="type" class="form-select">
+                                        <option value="REPAIR">Sửa chữa (Repair)</option>
+                                        <option value="REPLACEMENT">Thay thế phụ tùng</option>
+                                        <option value="INSPECTION">Kiểm tra hiện trường (Inspection)</option>
+                                        <option value="PERIODIC">Bảo trì định kỳ (Maintenance)</option>
+
                                     </select>
                                 </div>
 
@@ -55,13 +56,31 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">Loại hình xử lý</label>
-                                    <select name="type" class="form-select">
-                                        <option value="REPAIR">Sửa chữa (Repair)</option>
-                                        <option value="INSPECTION">Kiểm tra hiện trường (Inspection)</option>
-                                        <option value="PERIODIC">Bảo trì định kỳ (Maintenance)</option>
+                                    <label class="form-label fw-bold">Thời lượng dự kiến (phút)</label>
+                                    <input type="number" name="estimated_duration_minutes" class="form-control" min="30" step="30" value="120" required>
+                                </div>
 
-                                    </select>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Số kỹ thuật viên cần</label>
+                                    <input type="number" name="required_technician_count" class="form-control" min="1" max="5" value="1" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Địa điểm xử lý</label>
+                                    <input type="text" name="service_location" class="form-control" value="${not empty incidentEntity.locationSnapshot ? incidentEntity.locationSnapshot : prod.currentLocation}" placeholder="Địa điểm thực hiện sửa chữa">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold d-block">Cần chuẩn bị phụ tùng</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" name="requires_parts_preparation" id="requiresPartsPreparation" value="1">
+                                        <label class="form-check-label" for="requiresPartsPreparation">Có chuẩn bị vật tư/phụ tùng trước</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Ghi chú vật tư / kỹ năng cần</label>
+                                    <textarea name="parts_note" class="form-control" rows="2" placeholder="Ví dụ: Kiểm tra ATS, chuẩn bị lọc gió và dây curoa nếu cần..."></textarea>
                                 </div>
 
                                 <div class="col-12">

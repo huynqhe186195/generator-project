@@ -1,11 +1,14 @@
 package com.generatorproject.controller.web;
 
 import com.generatorproject.dao.ProductDAO;
+import com.generatorproject.model.Incident;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.IIncidentServices;
 import com.generatorproject.services.IProductServices;
 import com.generatorproject.services.IRequestServices;
+import com.generatorproject.services.IncidentServices;
 import com.generatorproject.services.ProductServices;
 import com.generatorproject.services.RequestServices;
 
@@ -18,19 +21,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.sql.Date;
+import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
 
 // URL này phải khớp với action trong form: <form action="<c:url value='/customer/incident/create.jsp'/>" ...>
-@WebServlet(urlPatterns = {"/report-incident"})
+@WebServlet(urlPatterns = {"/report-incident", "/customer/incident/create"})
 public class ReportIncidentController extends HttpServlet {
 
     private final IRequestServices requestServices;
     private final IProductServices productServices;
+    private final IIncidentServices incidentServices;
 
     public ReportIncidentController() {
         this.requestServices = new RequestServices();
         productServices = new ProductServices();
+        incidentServices = new IncidentServices();
     }
 
     @Override
@@ -52,8 +59,14 @@ public class ReportIncidentController extends HttpServlet {
             int parsedProductId = Integer.parseInt(productId);
             String issueType = req.getParameter("issueType");
             String preferredDate = req.getParameter("preferredDate");
+            String preferredTimeSlot = req.getParameter("preferredTimeSlot");
+            String preferredTimeFrom = req.getParameter("preferredTimeFrom");
+            String preferredTimeTo = req.getParameter("preferredTimeTo");
+            String urgencyLevel = req.getParameter("urgencyLevel");
+            String flexibleTime = req.getParameter("isFlexibleTime");
             String title = req.getParameter("title");
             String description = req.getParameter("description");
+            String customerNote = req.getParameter("customerNote");
 
             // 3. Validate server-side: product thuộc user login + contract còn cho phép dịch vụ
             ProductDAO productDAO = new ProductDAO();
@@ -70,12 +83,37 @@ public class ReportIncidentController extends HttpServlet {
                 return;
             }
 
-            // 4. Đóng gói dữ liệu vào Map để chuyển thành JSON
-            // (Lưu tất cả vào JSON giúp bảng system_requests gọn gàng, không cần thêm cột)
+            Incident incident = new Incident();
+            incident.setProductId(parsedProductId);
+            incident.setReportedBy(user.getId());
+            incident.setTitle(title);
+            incident.setDescription(description);
+            incident.setPriority(urgencyLevel == null || urgencyLevel.isBlank() ? "MEDIUM" : urgencyLevel);
+            incident.setStatus("NEW");
+            incident.setPreferredDate(preferredDate == null || preferredDate.isBlank() ? null : Date.valueOf(preferredDate));
+            incident.setPreferredTimeFrom(preferredTimeFrom == null || preferredTimeFrom.isBlank() ? null : Time.valueOf(preferredTimeFrom + ":00"));
+            incident.setPreferredTimeTo(preferredTimeTo == null || preferredTimeTo.isBlank() ? null : Time.valueOf(preferredTimeTo + ":00"));
+            incident.setPreferredTimeSlot(preferredTimeSlot);
+            incident.setFlexibleTime("1".equals(flexibleTime) || "true".equalsIgnoreCase(flexibleTime) || "on".equalsIgnoreCase(flexibleTime));
+            incident.setUrgencyLevel(urgencyLevel);
+            incident.setCustomerNote(customerNote);
+            incident.setLocationSnapshot(product.getCurrentLocation());
+            incident.setContractId(product.getContractId() == null ? 0 : product.getContractId().intValue());
+            incident.setInputSerialNumber(product.getSerialNumber());
+
+            Long incidentId = incidentServices.createIncident(incident);
+            if (incidentId == null) {
+                resp.sendRedirect(req.getContextPath() + "/product-list?message=error");
+                return;
+            }
+
+            // 4. Đóng gói dữ liệu tối thiểu cho workflow request
             Map<String, String> requestDataMap = new HashMap<>();
+            requestDataMap.put("incidentId", String.valueOf(incidentId));
             requestDataMap.put("productId", productId);
             requestDataMap.put("issueType", issueType);
             requestDataMap.put("preferredDate", preferredDate);
+            requestDataMap.put("preferredTimeSlot", preferredTimeSlot);
             requestDataMap.put("title", title);
             requestDataMap.put("description", description);
 
