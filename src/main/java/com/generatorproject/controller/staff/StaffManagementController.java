@@ -599,7 +599,10 @@ public class StaffManagementController extends HttpServlet {
 
             Incident incident = null;
             if (sysReq.getInfo() != null && sysReq.getInfo().get("incidentId") != null) {
-                incident = incidentServices.findById(Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentId"))));
+                Long incidentId = parseLongValue(sysReq.getInfo().get("incidentId"));
+                if (incidentId != null) {
+                    incident = incidentServices.findById(incidentId);
+                }
             }
 
             // 4. Gửi dữ liệu sang JSP
@@ -625,8 +628,12 @@ public class StaffManagementController extends HttpServlet {
                 return;
             }
 
-            Long incidentId = Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentId")));
-            Long incidentPlanId = Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentPlanId")));
+            Long incidentId = parseLongValue(sysReq.getInfo().get("incidentId"));
+            Long incidentPlanId = parseLongValue(sysReq.getInfo().get("incidentPlanId"));
+            if (incidentId == null || incidentPlanId == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
 
             Incident incident = incidentServices.findById(incidentId);
             IncidentPlan incidentPlan = incidentPlanService.findById(incidentPlanId);
@@ -786,5 +793,26 @@ public class StaffManagementController extends HttpServlet {
             }
         }
         return null;
+    }
+
+    private Long parseLongValue(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw instanceof Number) {
+            return ((Number) raw).longValue();
+        }
+        try {
+            String value = String.valueOf(raw).trim();
+            if (value.isEmpty()) {
+                return null;
+            }
+            if (value.contains(".")) {
+                return (long) Double.parseDouble(value);
+            }
+            return Long.parseLong(value);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

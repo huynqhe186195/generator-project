@@ -62,8 +62,12 @@ public class AssignTaskController extends HttpServlet {
                 return;
             }
 
-            Long incidentId = Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentId")));
-            Long incidentPlanId = Long.parseLong(String.valueOf(sysReq.getInfo().get("incidentPlanId")));
+            Long incidentId = parseLongValue(sysReq.getInfo().get("incidentId"));
+            Long incidentPlanId = parseLongValue(sysReq.getInfo().get("incidentPlanId"));
+            if (incidentId == null || incidentPlanId == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
             Incident incident = incidentServices.findById(incidentId);
             IncidentPlan plan = incidentPlanDAO.findById(incidentPlanId);
             if (incident == null || plan == null || !"APPROVED".equalsIgnoreCase(plan.getManagerReviewStatus())) {
@@ -99,7 +103,7 @@ public class AssignTaskController extends HttpServlet {
 
             sysReq.setStatus("TASK_CREATED");
             requestServices.update(sysReq);
-            incidentServices.updateStatus(incidentId, "WORK_ORDER_CREATED");
+            incidentServices.updateStatus(incidentId, "TASK_CREATED");
 
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=task_created_success");
         } catch (Exception e) {
@@ -112,5 +116,20 @@ public class AssignTaskController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doPost(req, resp);
+    }
+
+    private Long parseLongValue(Object raw) {
+        if (raw == null) return null;
+        if (raw instanceof Number) return ((Number) raw).longValue();
+        try {
+            String s = String.valueOf(raw).trim();
+            if (s.isEmpty()) return null;
+            if (s.contains(".")) {
+                return (long) Double.parseDouble(s);
+            }
+            return Long.parseLong(s);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

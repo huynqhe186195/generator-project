@@ -166,6 +166,9 @@ public class ManagerRequestController extends HttpServlet {
         try {
             String s = String.valueOf(raw).trim();
             if (s.isEmpty()) return null;
+            if (s.contains(".")) {
+                return (long) Double.parseDouble(s);
+            }
             return Long.parseLong(s);
         } catch (Exception e) {
             return null;
@@ -221,7 +224,7 @@ public class ManagerRequestController extends HttpServlet {
                     incidentPlanService.approve(incidentPlanId, (int) approverId);
                 }
                 if (incidentId != null) {
-                    incidentService.updateStatus(incidentId, "PLAN_APPROVED");
+                    incidentService.updateStatus(incidentId, "APPROVED");
                 }
             }
 

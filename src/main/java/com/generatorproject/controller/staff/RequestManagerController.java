@@ -61,7 +61,11 @@ public class RequestManagerController extends HttpServlet {
             // 2. Lấy Request cũ từ DB để cập nhật thêm thông tin vào JSON
             SystemRequest sysReq = requestServices.findById(requestId);
             Map<String, Object> info = sysReq.getInfo();
-            long incidentId = Long.parseLong(String.valueOf(info.get("incidentId")));
+            Long incidentId = parseLongValue(info.get("incidentId"));
+            if (incidentId == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+                return;
+            }
             Incident incident = incidentServices.findById(incidentId);
             if (incident == null) {
                 resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
@@ -127,6 +131,21 @@ public class RequestManagerController extends HttpServlet {
             return value == null || value.isBlank() ? defaultValue : Integer.parseInt(value);
         } catch (Exception ignored) {
             return defaultValue;
+        }
+    }
+
+    private Long parseLongValue(Object raw) {
+        if (raw == null) return null;
+        if (raw instanceof Number) return ((Number) raw).longValue();
+        try {
+            String s = String.valueOf(raw).trim();
+            if (s.isEmpty()) return null;
+            if (s.contains(".")) {
+                return (long) Double.parseDouble(s);
+            }
+            return Long.parseLong(s);
+        } catch (Exception ignored) {
+            return null;
         }
     }
 }
