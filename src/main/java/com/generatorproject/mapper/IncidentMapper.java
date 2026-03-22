@@ -31,6 +31,7 @@ public class IncidentMapper implements RowMapper<Incident> {
                     .setUrgencyLevel(rs.getString("urgency_level"))
                     .setCustomerNote(rs.getString("customer_note"))
                     .setLocationSnapshot(rs.getString("location_snapshot"))
+                    .setPreferredDurationMinutes((Integer) rs.getObject("preferred_duration_minutes"))
                     .setCreatedAt(rs.getTimestamp("created_at"))
                     .setResolvedAt(rs.getTimestamp("resolved_at"))
 

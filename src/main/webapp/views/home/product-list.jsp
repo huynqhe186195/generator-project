@@ -711,11 +711,12 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Khung giờ khách có thể tiếp nhận kiểm tra</label>
                             <select name="preferredTimeSlot" class="form-select py-2">
-                                <option value="ANYTIME" selected>-- Linh động cả ngày --</option>
-                                <option value="MORNING">Buổi sáng (08:00 - 12:00)</option>
-                                <option value="AFTERNOON">Buổi chiều (13:00 - 17:00)</option>
-                                <option value="EVENING">Buổi tối</option>
-                                <option value="URGENT">Càng sớm càng tốt</option>
+                                <option value="">-- Chọn khung giờ 120 phút --</option>
+                                <option value="08:00|10:00|MORNING">08:00 - 10:00</option>
+                                <option value="10:00|12:00|MORNING">10:00 - 12:00</option>
+                                <option value="12:00|14:00|AFTERNOON">12:00 - 14:00</option>
+                                <option value="14:00|16:00|AFTERNOON">14:00 - 16:00</option>
+                                <option value="16:00|18:00|AFTERNOON">16:00 - 18:00</option>
                             </select>
                         </div>
 

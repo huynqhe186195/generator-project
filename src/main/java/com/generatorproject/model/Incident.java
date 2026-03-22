@@ -21,6 +21,7 @@ public class Incident {
     private String urgencyLevel;
     private String customerNote;
     private String locationSnapshot;
+    private Integer preferredDurationMinutes;
     private Timestamp createdAt;
     private Timestamp resolvedAt;
 
@@ -57,6 +58,7 @@ public class Incident {
         this.urgencyLevel = builder.urgencyLevel;
         this.customerNote = builder.customerNote;
         this.locationSnapshot = builder.locationSnapshot;
+        this.preferredDurationMinutes = builder.preferredDurationMinutes;
         this.createdAt = builder.createdAt;
         this.resolvedAt = builder.resolvedAt;
 
@@ -123,6 +125,9 @@ public class Incident {
     public String getLocationSnapshot() { return locationSnapshot; }
     public void setLocationSnapshot(String locationSnapshot) { this.locationSnapshot = locationSnapshot; }
 
+    public Integer getPreferredDurationMinutes() { return preferredDurationMinutes; }
+    public void setPreferredDurationMinutes(Integer preferredDurationMinutes) { this.preferredDurationMinutes = preferredDurationMinutes; }
+
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
@@ -169,6 +174,7 @@ public class Incident {
         private String urgencyLevel;
         private String customerNote;
         private String locationSnapshot;
+        private Integer preferredDurationMinutes;
         private Timestamp createdAt;
         private Timestamp resolvedAt;
 
@@ -199,6 +205,7 @@ public class Incident {
         public Builder setUrgencyLevel(String urgencyLevel) { this.urgencyLevel = urgencyLevel; return this; }
         public Builder setCustomerNote(String customerNote) { this.customerNote = customerNote; return this; }
         public Builder setLocationSnapshot(String locationSnapshot) { this.locationSnapshot = locationSnapshot; return this; }
+        public Builder setPreferredDurationMinutes(Integer preferredDurationMinutes) { this.preferredDurationMinutes = preferredDurationMinutes; return this; }
         public Builder setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
         public Builder setResolvedAt(Timestamp resolvedAt) { this.resolvedAt = resolvedAt; return this; }
 

@@ -14,8 +14,9 @@ public class IncidentDAO extends GenericDAO<Incident> {
                 INSERT INTO incidents
                 (product_id, reported_by, title, description, priority, status, preferred_date,
                  preferred_time_from, preferred_time_to, preferred_time_slot, is_flexible_time,
-                 urgency_level, customer_note, location_snapshot, contract_id, input_serial_number)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 urgency_level, customer_note, location_snapshot, preferred_duration_minutes,
+                 contract_id, input_serial_number)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         return insert(sql,
                 incident.getProductId(),
@@ -32,6 +33,7 @@ public class IncidentDAO extends GenericDAO<Incident> {
                 incident.getUrgencyLevel(),
                 incident.getCustomerNote(),
                 incident.getLocationSnapshot(),
+                incident.getPreferredDurationMinutes(),
                 incident.getContractId() == 0 ? null : incident.getContractId(),
                 incident.getInputSerialNumber());
     }
