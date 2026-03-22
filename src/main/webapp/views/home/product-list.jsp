@@ -697,15 +697,28 @@
                             <label class="form-label fw-bold">Loại sự cố <span class="text-danger">*</span></label>
                             <select name="issueType" class="form-select py-2" required>
                                 <option value="">-- Chọn loại yêu cầu --</option>
-                                <option value="PERIODIC">Bảo dưỡng định kỳ</option>
-                                <option value="REPAIR">Thay thế phụ tùng</option>
-                                <option value="INSPECTION">Báo Lỗi / Hỏng hóc</option>
+                                <option value="MAINTENANCE">Bảo dưỡng định kỳ</option>
+                                <option value="REPLACEMENT">Thay thế phụ tùng</option>
+                                <option value="BROKEN">Báo Lỗi / Hỏng hóc</option>
+                                <option value="OTHER">Vấn đề khác</option>
                             </select>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Ngày đề xuất kiểm tra</label>
                             <input type="date" name="preferredDate" id="preferredDateInput" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Khung giờ khách có thể tiếp nhận kiểm tra</label>
+                            <select name="preferredTimeSlot" class="form-select py-2">
+                                <option value="">-- Chọn khung giờ 120 phút --</option>
+                                <option value="08:00|10:00|MORNING">08:00 - 10:00</option>
+                                <option value="10:00|12:00|MORNING">10:00 - 12:00</option>
+                                <option value="12:00|14:00|AFTERNOON">12:00 - 14:00</option>
+                                <option value="14:00|16:00|AFTERNOON">14:00 - 16:00</option>
+                                <option value="16:00|18:00|AFTERNOON">16:00 - 18:00</option>
+                            </select>
                         </div>
 
                         <div class="col-12">

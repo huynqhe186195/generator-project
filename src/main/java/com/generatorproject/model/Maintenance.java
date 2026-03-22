@@ -21,6 +21,11 @@ public class Maintenance {
 
     private Timestamp createdAt;  // created_at
     private Integer createdBy;    // created_by
+    private Integer incidentPlanId;
+    private Timestamp scheduledStart;
+    private Timestamp scheduledEnd;
+    private String scheduleStatus;
+    private String executionStatus;
 
     private Timestamp completedAt;
     private String customerName;
@@ -126,4 +131,19 @@ public class Maintenance {
 
     public Integer getCreatedBy() { return createdBy; }
     public void setCreatedBy(Integer createdBy) { this.createdBy = createdBy; }
+
+    public Integer getIncidentPlanId() { return incidentPlanId; }
+    public void setIncidentPlanId(Integer incidentPlanId) { this.incidentPlanId = incidentPlanId; }
+
+    public Timestamp getScheduledStart() { return scheduledStart; }
+    public void setScheduledStart(Timestamp scheduledStart) { this.scheduledStart = scheduledStart; }
+
+    public Timestamp getScheduledEnd() { return scheduledEnd; }
+    public void setScheduledEnd(Timestamp scheduledEnd) { this.scheduledEnd = scheduledEnd; }
+
+    public String getScheduleStatus() { return scheduleStatus; }
+    public void setScheduleStatus(String scheduleStatus) { this.scheduleStatus = scheduleStatus; }
+
+    public String getExecutionStatus() { return executionStatus; }
+    public void setExecutionStatus(String executionStatus) { this.executionStatus = executionStatus; }
 }

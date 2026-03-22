@@ -23,6 +23,15 @@ public class IncidentMapper implements RowMapper<Incident> {
                     .setPriority(rs.getString("priority"))
                     .setStatus(rs.getString("status"))
                     .setTechnicianId(rs.getInt("technician_id")) // Trả về 0 nếu null
+                    .setPreferredDate(rs.getDate("preferred_date"))
+                    .setPreferredTimeFrom(rs.getTime("preferred_time_from"))
+                    .setPreferredTimeTo(rs.getTime("preferred_time_to"))
+                    .setPreferredTimeSlot(rs.getString("preferred_time_slot"))
+                    .setFlexibleTime(rs.getBoolean("is_flexible_time"))
+                    .setUrgencyLevel(rs.getString("urgency_level"))
+                    .setCustomerNote(rs.getString("customer_note"))
+                    .setLocationSnapshot(rs.getString("location_snapshot"))
+                    .setPreferredDurationMinutes((Integer) rs.getObject("preferred_duration_minutes"))
                     .setCreatedAt(rs.getTimestamp("created_at"))
                     .setResolvedAt(rs.getTimestamp("resolved_at"))
 
