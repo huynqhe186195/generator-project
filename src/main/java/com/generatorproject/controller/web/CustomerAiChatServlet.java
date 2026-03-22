@@ -47,7 +47,7 @@ public class CustomerAiChatServlet extends HttpServlet {
         } catch (Exception ex) {
             response.setSuccess(false);
             response.setReply("Xin lỗi, tôi chưa xử lý được yêu cầu của bạn. Vui lòng thử lại sau.");
-            response.setResults(Collections.<DeviceSearchResultDto>emptyList());
+            response.setResults(Collections.emptyList());
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write(gson.toJson(response));
         }
@@ -56,8 +56,7 @@ public class CustomerAiChatServlet extends HttpServlet {
     private void buildResponse(HttpServletRequest req, CustomerAiResponse response, Users user, CustomerAiToolCall toolCall) {
         if (toolCall == null || toolCall.getTool() == null || "none".equals(toolCall.getTool())) {
             response.setReply(toolCall == null
-                    ? "Xin chào, tôi có thể giúp bạn tìm máy sở hữu có serial hoặc mẫu máy public không có serial."
-                    : toolCall.getArg("reply"));
+                    ? "Xin chào, tôi có thể giúp bạn tìm máy sở hữu có serial hoặc mẫu máy public không có serial.": toolCall.getArg("reply"));
             response.setActionType(CustomerAiResponse.ACTION_NONE);
             return;
         }

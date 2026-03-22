@@ -66,8 +66,7 @@ public class CustomerAiToolRouterService {
             throw new IllegalStateException("Gemini API failed: HTTP " + response.statusCode());
         }
 
-        JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-        JsonArray candidates = json.getAsJsonArray("candidates");
+        JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();JsonArray candidates = json.getAsJsonArray("candidates");
         if (candidates == null || candidates.size() == 0) {
             throw new IllegalStateException("Gemini returned no candidates");
         }
@@ -128,8 +127,7 @@ public class CustomerAiToolRouterService {
                 return createSearchToolCall("searchOwnedDevices", message.trim());
             }
             return createSearchToolCall("searchPublicDevices", message.trim());
-        }
-        return CustomerAiToolCall.none("Xin chào, tôi có thể giúp bạn tìm 2 loại device: máy sở hữu có serial hoặc tài liệu public theo model.");
+        }return CustomerAiToolCall.none("Xin chào, tôi có thể giúp bạn tìm 2 loại device: máy sở hữu có serial hoặc tài liệu public theo model.");
     }
 
     private boolean looksLikeOwnedDeviceSearch(String normalized) {
@@ -192,22 +190,21 @@ public class CustomerAiToolRouterService {
         return content;
     }
 
-    private String buildSystemPrompt() {
-        return "Bạn là AI assistant cho web app hỗ trợ khách hàng. "
-                + "Hệ thống có 2 loại device: "
-                + "(1) device sở hữu của customer: có serial_number, thuộc danh sách máy của customer; "
-                + "(2) device tài liệu public: là model public để xem thông số/tài liệu, không có serial_number. "
-                + "Nhiệm vụ của bạn là chọn internal tool phù hợp. "
-                + "Bạn phải chỉ trả về JSON. Không markdown. Không giải thích. "
-                + "Allowed tools: "
-                + "1. searchOwnedDevices args: keyword(string). "
-                + "2. searchPublicDevices args: keyword(string). "
-                + "3. none args: reply(string). "
-                + "Rules: nếu người dùng nhắc serial, máy của tôi, thiết bị của tôi, vị trí máy, trạng thái, bảo trì, sửa chữa, hợp đồng, danh sách máy hoặc tất cả máy thì chọn searchOwnedDevices; "
-                + "nếu người dùng nhắc tài liệu, model public, manual, catalogue, thông số, sản phẩm mẫu, xuất xứ, nhiên liệu hoặc đặc tả kỹ thuật thì chọn searchPublicDevices; "
-                + "nếu chỉ chào hỏi hoặc chưa rõ thì chọn none; không tự tạo URL; không tự tạo ID; không nói về kỹ thuật nội bộ. "
-                + "Output ví dụ 1: {\"tool\":\"searchOwnedDevices\",\"args\":{\"keyword\":\"serial abc123\"}} "
-                + "Output ví dụ 2: {\"tool\":\"searchPublicDevices\",\"args\":{\"keyword\":\"manual cummins c220\"}}";
+    private String buildSystemPrompt() {return "Bạn là AI assistant cho web app hỗ trợ khách hàng. "
+            + "Hệ thống có 2 loại device: "
+            + "(1) device sở hữu của customer: có serial_number, thuộc danh sách máy của customer; "
+            + "(2) device tài liệu public: là model public để xem thông số/tài liệu, không có serial_number. "
+            + "Nhiệm vụ của bạn là chọn internal tool phù hợp. "
+            + "Bạn phải chỉ trả về JSON. Không markdown. Không giải thích. "
+            + "Allowed tools: "
+            + "1. searchOwnedDevices args: keyword(string). "
+            + "2. searchPublicDevices args: keyword(string). "
+            + "3. none args: reply(string). "
+            + "Rules: nếu người dùng nhắc serial, máy của tôi, thiết bị của tôi, vị trí máy, trạng thái, bảo trì, sửa chữa, hợp đồng, danh sách máy hoặc tất cả máy thì chọn searchOwnedDevices; "
+            + "nếu người dùng nhắc tài liệu, model public, manual, catalogue, thông số, sản phẩm mẫu, xuất xứ, nhiên liệu hoặc đặc tả kỹ thuật thì chọn searchPublicDevices; "
+            + "nếu chỉ chào hỏi hoặc chưa rõ thì chọn none; không tự tạo URL; không tự tạo ID; không nói về kỹ thuật nội bộ. "
+            + "Output ví dụ 1: {\"tool\":\"searchOwnedDevices\",\"args\":{\"keyword\":\"serial abc123\"}} "
+            + "Output ví dụ 2: {\"tool\":\"searchPublicDevices\",\"args\":{\"keyword\":\"manual cummins c220\"}}";
     }
 
     private String resolveApiKey() {

@@ -17,8 +17,8 @@ import java.util.List;
 @WebServlet(urlPatterns = {"/user/quote-history"})
 public class QuoteHistoryController extends HttpServlet {
 
-    private QuoteDAO quoteDAO = new QuoteDAO();
-    private ProductDAO productDAO = new ProductDAO();
+    private final QuoteDAO quoteDAO = new QuoteDAO();
+    private final ProductDAO productDAO = new ProductDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

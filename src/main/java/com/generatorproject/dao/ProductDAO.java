@@ -118,37 +118,6 @@ public class ProductDAO extends GenericDAO<Product> {
      * Lấy danh sách sản phẩm theo filter (keyword / modelId / customerId / status / year range ...)
      * Bạn muốn filter nào thì mở comment/ thêm điều kiện tương ứng.
      */
-    public List<Product> searchCustomerDevices(long customerId, String keyword, int limit) {
-        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
-        if (normalizedKeyword.isEmpty()) {
-            return new ArrayList<Product>();
-        }
-
-        String sql = """
-            SELECT p.*,
-                   pm.name AS model_name,
-                   b.name AS brand_name
-            FROM products p
-            LEFT JOIN product_models pm ON p.model_id = pm.id
-            LEFT JOIN brands b ON pm.brand_id = b.id
-            WHERE p.customer_id = ?
-              AND (LOWER(COALESCE(p.serial_number, '')) LIKE ?
-                   OR LOWER(COALESCE(pm.name, '')) LIKE ?
-                   OR LOWER(COALESCE(b.name, '')) LIKE ?
-                   OR LOWER(COALESCE(p.current_location, '')) LIKE ?
-                   OR LOWER(COALESCE(p.status, '')) LIKE ?)
-            ORDER BY
-                CASE WHEN LOWER(COALESCE(p.serial_number, '')) = ? THEN 0 ELSE 1 END,
-                CASE WHEN LOWER(COALESCE(pm.name, '')) = ? THEN 0 ELSE 1 END,
-                CASE WHEN LOWER(COALESCE(p.current_location, '')) = ? THEN 0 ELSE 1 END,
-                p.id DESC
-            LIMIT ?
-        """;
-
-        String likeKeyword = "%" + normalizedKeyword + "%";
-        return query(sql, mapper, customerId, likeKeyword, likeKeyword, likeKeyword, likeKeyword, likeKeyword, normalizedKeyword, normalizedKeyword, normalizedKeyword, limit);
-    }
-
     public List<Product> findByFilter(String keyword, Long modelId, Long customerId, String status,
                                       Integer yearFrom, Integer yearTo) {
 
@@ -180,6 +149,37 @@ public class ProductDAO extends GenericDAO<Product> {
 
         sql.append(" ORDER BY p.id DESC ");
         return query(sql.toString(), mapper, params.toArray());
+    }
+
+    public List<Product> searchCustomerDevices(long customerId, String keyword, int limit) {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+        if (normalizedKeyword.isEmpty()) {
+            return new ArrayList<Product>();
+        }
+
+        String sql = """
+            SELECT p.*,
+                   pm.name AS model_name,
+                   b.name AS brand_name
+            FROM products p
+            LEFT JOIN product_models pm ON p.model_id = pm.id
+            LEFT JOIN brands b ON pm.brand_id = b.id
+            WHERE p.customer_id = ?
+              AND (LOWER(COALESCE(p.serial_number, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.name, '')) LIKE ?
+                   OR LOWER(COALESCE(b.name, '')) LIKE ?
+                   OR LOWER(COALESCE(p.current_location, '')) LIKE ?
+                   OR LOWER(COALESCE(p.status, '')) LIKE ?)
+            ORDER BY
+                CASE WHEN LOWER(COALESCE(p.serial_number, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(pm.name, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(p.current_location, '')) = ? THEN 0 ELSE 1 END,
+                p.id DESC
+            LIMIT ?
+        """;
+
+        String likeKeyword = "%" + normalizedKeyword + "%";
+        return query(sql, mapper, customerId, likeKeyword, likeKeyword, likeKeyword, likeKeyword, likeKeyword, normalizedKeyword, normalizedKeyword, normalizedKeyword, limit);
     }
 
 
@@ -433,16 +433,15 @@ public class ProductDAO extends GenericDAO<Product> {
 
 
     public Long save(Product product) {
-        StringBuilder sql = new StringBuilder("INSERT INTO products (");
-        sql.append("serial_number, customer_id, contract_id, status, total_running_hours, ");
-        sql.append("manufacture_year, purchase_date, current_location, model_id, created_at");
-        sql.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        String sql = "INSERT INTO products (" + "serial_number, customer_id, contract_id, status, total_running_hours, " +
+                "manufacture_year, purchase_date, current_location, model_id, created_at" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
         if (product.getContractId() == null) {
             throw new IllegalArgumentException("contractId không được null vì product phải thuộc hợp đồng");
         }
 
-        return insert(sql.toString(),
+        return insert(sql,
                 product.getSerialNumber(),
                 product.getCustomerId(),
                 product.getContractId(),
@@ -468,7 +467,7 @@ public class ProductDAO extends GenericDAO<Product> {
         return list.isEmpty() ? null : list.get(0);
     }
     public List<Product> getAllProductByCustomerId(int id){
-        String sql = "select p1.*, p2.name as model_name FROM products p1 LEFT JOIN product_models p2 ON p1.model_id = p2.id WHERE p1.customer_id = ? ORDER BY p1.id DESC";
+        String sql = "select p1.*, p2.name as model_name FROM products p1 LEFT JOIN product_models p2 ON p1.model_id = p2.id WHERE p1.customer_id = ?";
         List<Product> list = query(sql, new ProductMapper(), id);
         return list.isEmpty() ? null : list;
     }
@@ -519,6 +518,18 @@ public class ProductDAO extends GenericDAO<Product> {
 
         return count(sql, searchPattern, searchPattern);
     }
+    public Product findByIdAndCustomerId(Long productId, Long customerId) {
+        String sql = """
+        SELECT p.*, pm.name AS model_name, b.name AS brand_name
+        FROM products p
+        LEFT JOIN product_models pm ON p.model_id = pm.id
+        LEFT JOIN brands b ON pm.brand_id = b.id
+        WHERE p.id = ? AND p.customer_id = ?
+        LIMIT 1
+    """;
 
+        List<Product> list = query(sql, new ProductMapper(), productId, customerId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
+    }
 
 }

@@ -15,11 +15,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -469,7 +465,7 @@ public class ContractDAO extends GenericDAO<Contract> {
     }
 
     private boolean safeEquals(Object a, Object b) {
-        return a == null ? b == null : a.equals(b);
+        return Objects.equals(a, b);
     }
 
     public List<Contract> findByProductId(Long productId) {
@@ -505,5 +501,17 @@ public class ContractDAO extends GenericDAO<Contract> {
                 "JOIN users u ON c.customer_id = u.id " +
                 "ORDER BY c.created_at DESC LIMIT ?";
         return query(sql, new ContractMapper(), limit);
+    }
+    public Contract findContractDetailForCustomer(Long contractId, Long customerId) {
+        String sql = """
+        SELECT c.*
+        FROM contracts c
+        WHERE c.id = ?
+          AND c.customer_id = ?
+        LIMIT 1
+    """;
+
+        List<Contract> list = query(sql, new ContractMapper(), contractId, customerId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
     }
 }

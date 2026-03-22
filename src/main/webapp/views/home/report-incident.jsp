@@ -168,7 +168,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<jsp:include page="/views/customer/common/ai-chat-widget.jsp" />
-
+<jsp:include page="/views/customer/ai-chat-widget.jsp" />
 </body>
 </html>

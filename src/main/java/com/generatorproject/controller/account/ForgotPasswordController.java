@@ -18,7 +18,7 @@ import java.util.UUID;
 @WebServlet(urlPatterns = { "/handleForgotPassword" })
 public class ForgotPasswordController extends HttpServlet {
 
-    private IUserServices userServices = new UserServices();
+    private final IUserServices userServices = new UserServices();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

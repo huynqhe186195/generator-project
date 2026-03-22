@@ -100,11 +100,7 @@ public class AiDeviceExtractionController extends HttpServlet {
         }
 
         String apiKeyFromSystemProp = normalizeApiKey(System.getProperty("GEMINI_API_KEY"));
-        if (apiKeyFromSystemProp != null) {
-            return apiKeyFromSystemProp;
-        }
-
-        return null;
+        return apiKeyFromSystemProp;
     }
 
     private String normalizeApiKey(String value) {

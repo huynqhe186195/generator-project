@@ -7,7 +7,7 @@ import java.sql.Date;
 import java.util.List;
 
 public class RequestServices implements IRequestServices {
-    private RequestDAO requestDAO;
+    private final RequestDAO requestDAO;
 
     public RequestServices() {
         requestDAO = new RequestDAO();

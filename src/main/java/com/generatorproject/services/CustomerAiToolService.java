@@ -60,8 +60,7 @@ public class CustomerAiToolService {
             dto.setDetailUrl(buildModelDetailUrl(contextPath, product.getModelId()));
             dto.setDeviceType(DEVICE_TYPE_OWNED);
             dto.setDeviceTypeLabel("Thiết bị sở hữu");
-            dto.setDescription("Thiết bị thuộc danh sách máy của bạn, có serial để theo dõi vận hành và lịch sử sử dụng.");
-            results.add(dto);
+            dto.setDescription("Thiết bị thuộc danh sách máy của bạn, có serial để theo dõi vận hành và lịch sử sử dụng.");results.add(dto);
         }
         return results;
     }
@@ -125,8 +124,7 @@ public class CustomerAiToolService {
                 "của tôi", "máy của tôi", "thiết bị của tôi", "đang sở hữu",
                 "sở hữu", "đang dùng", "cho tôi", "giúp tôi", "hãy", "vui lòng"
         );
-        for (String token : noiseTokens) {
-            normalized = normalized.replace(token, " ");
+        for (String token : noiseTokens) {normalized = normalized.replace(token, " ");
         }
         normalized = normalized.replaceAll("\\s+", " ").trim();
         return normalized.isEmpty() ? null : normalized;
