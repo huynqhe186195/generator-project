@@ -130,7 +130,7 @@ public class ReportIncidentController extends HttpServlet {
         incident.setDescription(description);
         incident.setPriority(DEFAULT_INCIDENT_PRIORITY);
         incident.setStatus(DEFAULT_INCIDENT_STATUS);
-        incident.setPreferredDate(preferredDate == null || preferredDate.isBlank() ? null : Date.valueOf(preferredDate));
+        incident.setPreferredDate(hasText(preferredDate) ? Date.valueOf(preferredDate.trim()) : null);
         incident.setPreferredTimeFrom(preferredSchedule.timeFrom());
         incident.setPreferredTimeTo(preferredSchedule.timeTo());
         incident.setPreferredTimeSlot(preferredSchedule.slotLabel());
@@ -201,9 +201,14 @@ public class ReportIncidentController extends HttpServlet {
         return null;
     }
 
+
+    private static boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
     private Integer parseInteger(String value) {
         try {
-            return value == null || value.isBlank() ? null : Integer.parseInt(value.trim());
+            return hasText(value) ? Integer.parseInt(value.trim()) : null;
         } catch (NumberFormatException ignored) {
             return null;
         }
@@ -211,27 +216,47 @@ public class ReportIncidentController extends HttpServlet {
 
     private Long parseLong(String value) {
         try {
-            return value == null || value.isBlank() ? null : Long.parseLong(value.trim());
+            return hasText(value) ? Long.parseLong(value.trim()) : null;
         } catch (NumberFormatException ignored) {
             return null;
         }
     }
 
     private String normalizeIssueType(String rawIssueType) {
-        if (rawIssueType == null || rawIssueType.isBlank()) {
+        if (!hasText(rawIssueType)) {
             return "OTHER";
         }
-        return switch (rawIssueType.trim().toUpperCase()) {
-            case "PERIODIC", "MAINTENANCE" -> "MAINTENANCE";
-            case "REPAIR", "REPLACEMENT" -> "REPLACEMENT";
-            case "INSPECTION", "BROKEN" -> "BROKEN";
-            default -> "OTHER";
-        };
+        String normalizedIssueType = rawIssueType.trim().toUpperCase();
+        switch (normalizedIssueType) {
+            case "PERIODIC":
+            case "MAINTENANCE":
+                return "MAINTENANCE";
+            case "REPAIR":
+            case "REPLACEMENT":
+                return "REPLACEMENT";
+            case "INSPECTION":
+            case "BROKEN":
+                return "BROKEN";
+            default:
+                return "OTHER";
+        }
     }
 
-    private record PreferredSchedule(Time timeFrom, Time timeTo, String slotLabel, Integer durationMinutes) {
+    private static final class PreferredSchedule {
+        private final Time timeFrom;
+        private final Time timeTo;
+        private final String slotLabel;
+        private final Integer durationMinutes;
+
+        private PreferredSchedule(Time timeFrom, Time timeTo, String slotLabel, Integer durationMinutes) {
+            this.timeFrom = timeFrom;
+            this.timeTo = timeTo;
+            this.slotLabel = slotLabel;
+            this.durationMinutes = durationMinutes;
+        }
+
         private static PreferredSchedule from(String rawSlot) {
-            if (rawSlot == null || rawSlot.isBlank()) {
+            if (!hasText(rawSlot)) {
                 return new PreferredSchedule(null, null, DEFAULT_TIME_SLOT, null);
             }
 
@@ -241,12 +266,28 @@ public class ReportIncidentController extends HttpServlet {
             }
 
             try {
-                Time timeFrom = Time.valueOf(slotParts[0] + ":00");
-                Time timeTo = Time.valueOf(slotParts[1] + ":00");
-                return new PreferredSchedule(timeFrom, timeTo, slotParts[2], FIXED_SLOT_DURATION_MINUTES);
+                Time parsedTimeFrom = Time.valueOf(slotParts[0] + ":00");
+                Time parsedTimeTo = Time.valueOf(slotParts[1] + ":00");
+                return new PreferredSchedule(parsedTimeFrom, parsedTimeTo, slotParts[2], FIXED_SLOT_DURATION_MINUTES);
             } catch (IllegalArgumentException ex) {
                 return new PreferredSchedule(null, null, DEFAULT_TIME_SLOT, null);
             }
+        }
+
+        private Time timeFrom() {
+            return timeFrom;
+        }
+
+        private Time timeTo() {
+            return timeTo;
+        }
+
+        private String slotLabel() {
+            return slotLabel;
+        }
+
+        private Integer durationMinutes() {
+            return durationMinutes;
         }
     }
 }
