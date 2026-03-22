@@ -11,7 +11,6 @@ import com.generatorproject.services.IRequestServices;
 import com.generatorproject.services.IncidentServices;
 import com.generatorproject.services.ProductServices;
 import com.generatorproject.services.RequestServices;
-
 import com.google.gson.Gson;
 
 import javax.servlet.ServletException;
@@ -27,9 +26,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// URL này phải khớp với action trong form báo sự cố của customer.
 @WebServlet(urlPatterns = {"/report-incident", "/customer/incident/create"})
 public class ReportIncidentController extends HttpServlet {
+
+    private static final String DEFAULT_INCIDENT_PRIORITY = "MEDIUM";
+    private static final String DEFAULT_INCIDENT_STATUS = "NEW";
+    private static final String DEFAULT_TIME_SLOT = "ANYTIME";
+    private static final int FIXED_SLOT_DURATION_MINUTES = 120;
 
     private final IRequestServices requestServices;
     private final IProductServices productServices;
@@ -37,8 +40,8 @@ public class ReportIncidentController extends HttpServlet {
 
     public ReportIncidentController() {
         this.requestServices = new RequestServices();
-        productServices = new ProductServices();
-        incidentServices = new IncidentServices();
+        this.productServices = new ProductServices();
+        this.incidentServices = new IncidentServices();
     }
 
     @Override
@@ -46,16 +49,12 @@ public class ReportIncidentController extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
 
         try {
-            // 1. Kiểm tra đăng nhập
-            HttpSession session = req.getSession();
-            Users user = (Users) session.getAttribute("USERMODEL");
-
+            Users user = getLoggedInUser(req);
             if (user == null) {
                 resp.sendRedirect(req.getContextPath() + "/account/login");
                 return;
             }
 
-            // 2. Lấy dữ liệu từ Form Modal
             ProductDAO productDAO = new ProductDAO();
             Product product = resolveReportedProduct(req, user, productDAO);
             if (product == null) {
@@ -63,54 +62,19 @@ public class ReportIncidentController extends HttpServlet {
                 return;
             }
 
-            int parsedProductId = product.getId().intValue();
-            String issueType = normalizeIssueType(req.getParameter("issueType"));
-            String productId = String.valueOf(parsedProductId);
-            String preferredDate = req.getParameter("preferredDate");
-            String preferredScheduleSlot = req.getParameter("preferredTimeSlot");
-            String title = req.getParameter("title");
-            String description = req.getParameter("description");
-
-            // 3. Validate server-side: product thuộc user login + contract còn cho phép dịch vụ
-            String contractStatus = product.getContractStatus();
-            boolean serviceAllowed = "ACTIVE".equalsIgnoreCase(contractStatus) || "EXPIRED".equalsIgnoreCase(contractStatus);
-            if (!serviceAllowed) {
+            if (!isServiceAllowed(product)) {
                 resp.sendRedirect(req.getContextPath() + "/product-list?message=contract_terminated");
                 return;
             }
 
-            String normalizedTimeSlot = "ANYTIME";
-            Time preferredTimeFrom = null;
-            Time preferredTimeTo = null;
-            Integer preferredDurationMinutes = null;
-            if (preferredScheduleSlot != null && !preferredScheduleSlot.isBlank()) {
-                String[] slotParts = preferredScheduleSlot.split("\\|");
-                if (slotParts.length == 3) {
-                    preferredTimeFrom = Time.valueOf(slotParts[0] + ":00");
-                    preferredTimeTo = Time.valueOf(slotParts[1] + ":00");
-                    normalizedTimeSlot = slotParts[2];
-                    preferredDurationMinutes = 120;
-                }
-            }
+            String issueType = normalizeIssueType(req.getParameter("issueType"));
+            String preferredDate = req.getParameter("preferredDate");
+            String preferredTimeSlot = req.getParameter("preferredTimeSlot");
+            String title = req.getParameter("title");
+            String description = req.getParameter("description");
 
-            Incident incident = new Incident();
-            incident.setProductId(parsedProductId);
-            incident.setReportedBy(user.getId());
-            incident.setTitle(title);
-            incident.setDescription(description);
-            incident.setPriority("MEDIUM");
-            incident.setStatus("NEW");
-            incident.setPreferredDate(preferredDate == null || preferredDate.isBlank() ? null : Date.valueOf(preferredDate));
-            incident.setPreferredTimeFrom(preferredTimeFrom);
-            incident.setPreferredTimeTo(preferredTimeTo);
-            incident.setPreferredTimeSlot(normalizedTimeSlot);
-            incident.setFlexibleTime(false);
-            incident.setUrgencyLevel("MEDIUM");
-            incident.setCustomerNote(null);
-            incident.setLocationSnapshot(product.getCurrentLocation());
-            incident.setPreferredDurationMinutes(preferredDurationMinutes);
-            incident.setContractId(product.getContractId() == null ? 0 : product.getContractId().intValue());
-            incident.setInputSerialNumber(product.getSerialNumber());
+            PreferredSchedule preferredSchedule = PreferredSchedule.from(preferredTimeSlot);
+            Incident incident = buildIncident(product, user, preferredDate, title, description, preferredSchedule);
 
             Long incidentId = incidentServices.createIncident(incident);
             if (incidentId == null) {
@@ -118,86 +82,139 @@ public class ReportIncidentController extends HttpServlet {
                 return;
             }
 
-            // 4. Đóng gói dữ liệu tối thiểu cho workflow request
-            Map<String, String> requestDataMap = new HashMap<>();
-            requestDataMap.put("incidentId", String.valueOf(incidentId));
-            requestDataMap.put("productId", productId);
-            requestDataMap.put("issueType", issueType);
-            requestDataMap.put("preferredDate", preferredDate);
-            requestDataMap.put("preferredTimeSlot", normalizedTimeSlot);
-            requestDataMap.put("preferredTimeFrom", preferredTimeFrom == null ? "" : preferredTimeFrom.toString());
-            requestDataMap.put("preferredTimeTo", preferredTimeTo == null ? "" : preferredTimeTo.toString());
-            requestDataMap.put("preferredDurationMinutes", preferredDurationMinutes == null ? "" : String.valueOf(preferredDurationMinutes));
-            requestDataMap.put("title", title);
-            requestDataMap.put("description", description);
-
-            // Lưu thêm thông tin người báo để tiện tra cứu nhanh
-            requestDataMap.put("reporterName", user.getFullName());
-            requestDataMap.put("reporterPhone", user.getPhone());
-            requestDataMap.put("reporterEmail", user.getEmail());
-
-            // Chuyển Map thành chuỗi JSON
-            String jsonData = new Gson().toJson(requestDataMap);
-
-            // 5. Tạo đối tượng SystemRequest
-            SystemRequest request = new SystemRequest();
-            request.setSenderId((long) user.getId());     // Người gửi là khách hàng
-            request.setReceiverRole("STAFF");         // Người nhận là bộ phận Kỹ thuật (hoặc STAFF)
-            request.setRequestType("INCIDENT_REPORT");    // Loại yêu cầu
-            request.setRequestData(jsonData);             // Dữ liệu JSON
-            request.setStatus("NEW");                 // Trạng thái ban đầu
-
-            // 6. Lưu vào Database
+            SystemRequest request = buildIncidentRequest(
+                    user,
+                    product.getId(),
+                    incidentId,
+                    issueType,
+                    preferredDate,
+                    title,
+                    description,
+                    preferredSchedule
+            );
             requestServices.save(request);
-            Product productToUpdate = productServices.getProductById(parsedProductId);
+
+            Product productToUpdate = productServices.getProductById(product.getId());
             if (productToUpdate != null) {
                 productToUpdate.setStatus("MAINTENANCE");
                 productServices.update(productToUpdate);
             }
-            // 7. Chuyển hướng về trang danh sách với thông báo thành công
-            resp.sendRedirect(req.getContextPath() + "/product-list?message=success");
 
+            resp.sendRedirect(req.getContextPath() + "/product-list?message=success");
         } catch (Exception e) {
             e.printStackTrace();
-            // Nếu lỗi thì chuyển hướng về trang cũ kèm thông báo lỗi
             resp.sendRedirect(req.getContextPath() + "/product-list?message=error");
         }
     }
 
+    private Users getLoggedInUser(HttpServletRequest req) {
+        HttpSession session = req.getSession();
+        return (Users) session.getAttribute("USERMODEL");
+    }
+
+    private boolean isServiceAllowed(Product product) {
+        String contractStatus = product.getContractStatus();
+        return "ACTIVE".equalsIgnoreCase(contractStatus) || "EXPIRED".equalsIgnoreCase(contractStatus);
+    }
+
+    private Incident buildIncident(Product product,
+                                   Users user,
+                                   String preferredDate,
+                                   String title,
+                                   String description,
+                                   PreferredSchedule preferredSchedule) {
+        Incident incident = new Incident();
+        incident.setProductId(product.getId());
+        incident.setReportedBy(user.getId());
+        incident.setTitle(title);
+        incident.setDescription(description);
+        incident.setPriority(DEFAULT_INCIDENT_PRIORITY);
+        incident.setStatus(DEFAULT_INCIDENT_STATUS);
+        incident.setPreferredDate(preferredDate == null || preferredDate.isBlank() ? null : Date.valueOf(preferredDate));
+        incident.setPreferredTimeFrom(preferredSchedule.timeFrom());
+        incident.setPreferredTimeTo(preferredSchedule.timeTo());
+        incident.setPreferredTimeSlot(preferredSchedule.slotLabel());
+        incident.setFlexibleTime(false);
+        incident.setUrgencyLevel(DEFAULT_INCIDENT_PRIORITY);
+        incident.setCustomerNote(null);
+        incident.setLocationSnapshot(product.getCurrentLocation());
+        incident.setPreferredDurationMinutes(preferredSchedule.durationMinutes());
+        incident.setContractId(product.getContractId() == null ? 0 : product.getContractId().intValue());
+        incident.setInputSerialNumber(product.getSerialNumber());
+        return incident;
+    }
+
+    private SystemRequest buildIncidentRequest(Users user,
+                                               int productId,
+                                               Long incidentId,
+                                               String issueType,
+                                               String preferredDate,
+                                               String title,
+                                               String description,
+                                               PreferredSchedule preferredSchedule) {
+        Map<String, String> requestDataMap = new HashMap<>();
+        requestDataMap.put("incidentId", String.valueOf(incidentId));
+        requestDataMap.put("productId", String.valueOf(productId));
+        requestDataMap.put("issueType", issueType);
+        requestDataMap.put("preferredDate", preferredDate);
+        requestDataMap.put("preferredTimeSlot", preferredSchedule.slotLabel());
+        requestDataMap.put("preferredTimeFrom", preferredSchedule.timeFrom() == null ? "" : preferredSchedule.timeFrom().toString());
+        requestDataMap.put("preferredTimeTo", preferredSchedule.timeTo() == null ? "" : preferredSchedule.timeTo().toString());
+        requestDataMap.put("preferredDurationMinutes", preferredSchedule.durationMinutes() == null ? "" : String.valueOf(preferredSchedule.durationMinutes()));
+        requestDataMap.put("title", title);
+        requestDataMap.put("description", description);
+        requestDataMap.put("reporterName", user.getFullName());
+        requestDataMap.put("reporterPhone", user.getPhone());
+        requestDataMap.put("reporterEmail", user.getEmail());
+
+        SystemRequest request = new SystemRequest();
+        request.setSenderId((long) user.getId());
+        request.setReceiverRole("STAFF");
+        request.setRequestType("INCIDENT_REPORT");
+        request.setRequestData(new Gson().toJson(requestDataMap));
+        request.setStatus(DEFAULT_INCIDENT_STATUS);
+        return request;
+    }
+
     private Product resolveReportedProduct(HttpServletRequest req, Users user, ProductDAO productDAO) {
-        String productIdParam = req.getParameter("productId");
-        if (productIdParam != null && !productIdParam.isBlank()) {
-            try {
-                int parsedProductId = Integer.parseInt(productIdParam);
-                return productDAO.findCustomerProductWithContract(parsedProductId, user.getId());
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
+        Integer productId = parseInteger(req.getParameter("productId"));
+        if (productId != null) {
+            return productDAO.findCustomerProductWithContract(productId, user.getId());
         }
 
-        String contractIdParam = req.getParameter("contractId");
-        if (contractIdParam == null || contractIdParam.isBlank()) {
+        Long contractId = parseLong(req.getParameter("contractId"));
+        if (contractId == null) {
             return null;
         }
 
+        List<Product> products = productServices.findByContractId(contractId);
+        if (products == null || products.isEmpty()) {
+            return null;
+        }
+
+        for (Product candidate : products) {
+            Product authorizedProduct = productDAO.findCustomerProductWithContract(candidate.getId(), user.getId());
+            if (authorizedProduct != null) {
+                return authorizedProduct;
+            }
+        }
+        return null;
+    }
+
+    private Integer parseInteger(String value) {
         try {
-            List<Product> products = productServices.findByContractId(Long.parseLong(contractIdParam));
-            if (products == null) {
-                return null;
-            }
-            for (Product candidate : products) {
-                if (candidate == null || candidate.getId() == null) {
-                    continue;
-                }
-                Product authorizedProduct = productDAO.findCustomerProductWithContract(candidate.getId().intValue(), user.getId());
-                if (authorizedProduct != null) {
-                    return authorizedProduct;
-                }
-            }
+            return value == null || value.isBlank() ? null : Integer.parseInt(value.trim());
         } catch (NumberFormatException ignored) {
             return null;
         }
-        return null;
+    }
+
+    private Long parseLong(String value) {
+        try {
+            return value == null || value.isBlank() ? null : Long.parseLong(value.trim());
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private String normalizeIssueType(String rawIssueType) {
@@ -212,4 +229,24 @@ public class ReportIncidentController extends HttpServlet {
         };
     }
 
+    private record PreferredSchedule(Time timeFrom, Time timeTo, String slotLabel, Integer durationMinutes) {
+        private static PreferredSchedule from(String rawSlot) {
+            if (rawSlot == null || rawSlot.isBlank()) {
+                return new PreferredSchedule(null, null, DEFAULT_TIME_SLOT, null);
+            }
+
+            String[] slotParts = rawSlot.split("\\|");
+            if (slotParts.length != 3) {
+                return new PreferredSchedule(null, null, DEFAULT_TIME_SLOT, null);
+            }
+
+            try {
+                Time timeFrom = Time.valueOf(slotParts[0] + ":00");
+                Time timeTo = Time.valueOf(slotParts[1] + ":00");
+                return new PreferredSchedule(timeFrom, timeTo, slotParts[2], FIXED_SLOT_DURATION_MINUTES);
+            } catch (IllegalArgumentException ex) {
+                return new PreferredSchedule(null, null, DEFAULT_TIME_SLOT, null);
+            }
+        }
+    }
 }
