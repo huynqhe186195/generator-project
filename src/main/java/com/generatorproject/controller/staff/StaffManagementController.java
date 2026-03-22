@@ -94,6 +94,9 @@ public class StaffManagementController extends HttpServlet {
             case "/incident/work-order":
                 handleIncidentWorkOrder(req, resp);
                 break;
+            case "/technician-availability":
+                handleTechnicianAvailability(req, resp);
+                break;
             case "/invoice-list":
                 listInvoices(req, resp);
                 break;
@@ -651,33 +654,69 @@ public class StaffManagementController extends HttpServlet {
             IncidentPlan incidentPlan = incidentPlanService.findById(incidentPlanId);
             Product product = incident != null ? productServices.getProductById(incident.getProductId()) : null;
             List<Users> listTechnicians = userServices.findUserByRoleId(4);
-            Map<Integer, List<MaintenanceAssignmentDAO.TechnicianScheduleItem>> technicianSchedules = new HashMap<>();
-            if (listTechnicians != null && !listTechnicians.isEmpty()) {
-                List<Integer> technicianIds = new java.util.ArrayList<>();
-                for (Users technician : listTechnicians) {
-                    technicianIds.add(technician.getId());
-                }
-                Timestamp scheduleWindowStart = new Timestamp(System.currentTimeMillis());
-                Timestamp scheduleWindowEnd = new Timestamp(scheduleWindowStart.getTime() + 7L * 24 * 60 * 60 * 1000);
-                technicianSchedules = maintenanceAssignmentDAO.findUpcomingSchedulesByTechnicianIds(
-                        technicianIds,
-                        scheduleWindowStart,
-                        scheduleWindowEnd
-                );
-                req.setAttribute("scheduleWindowStart", scheduleWindowStart);
-                req.setAttribute("scheduleWindowEnd", scheduleWindowEnd);
-            }
 
             req.setAttribute("req", sysReq);
             req.setAttribute("incidentEntity", incident);
             req.setAttribute("incidentPlan", incidentPlan);
             req.setAttribute("prod", product);
             req.setAttribute("listTechnicians", listTechnicians);
-            req.setAttribute("technicianSchedules", technicianSchedules);
             req.getRequestDispatcher("/views/staff/incident-work-order.jsp").forward(req, resp);
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
+
+    private void handleTechnicianAvailability(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+
+        Map<String, Object> payload = new HashMap<>();
+        try {
+            String technicianIdRaw = req.getParameter("technicianId");
+            if (technicianIdRaw == null || technicianIdRaw.trim().isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                payload.put("message", "Thiếu technicianId");
+                resp.getWriter().write(new Gson().toJson(payload));
+                return;
+            }
+
+            int technicianId = Integer.parseInt(technicianIdRaw.trim());
+            Timestamp selectedStart = parseDateTimeLocal(req.getParameter("scheduledStart"));
+            Timestamp selectedEnd = parseDateTimeLocal(req.getParameter("scheduledEnd"));
+
+            Timestamp windowStart = selectedStart != null
+                    ? Timestamp.valueOf(selectedStart.toLocalDateTime().toLocalDate().atStartOfDay())
+                    : new Timestamp(System.currentTimeMillis());
+            Timestamp windowEnd = selectedEnd != null
+                    ? Timestamp.valueOf(selectedEnd.toLocalDateTime().toLocalDate().plusDays(1).atStartOfDay())
+                    : new Timestamp(windowStart.getTime() + 7L * 24 * 60 * 60 * 1000);
+
+            Users technician = userServices.findUserById(technicianId);
+            boolean hasConflict = selectedStart != null && selectedEnd != null
+                    && maintenanceAssignmentDAO.hasScheduleConflict(technicianId, selectedStart, selectedEnd);
+
+            payload.put("technicianId", technicianId);
+            payload.put("technicianName", technician == null ? "Kỹ thuật viên #" + technicianId : technician.getFullName());
+            payload.put("hasConflict", hasConflict);
+            payload.put("windowStart", windowStart);
+            payload.put("windowEnd", windowEnd);
+            payload.put("schedules", maintenanceAssignmentDAO.findSchedulesForTechnician(technicianId, windowStart, windowEnd));
+            resp.getWriter().write(new Gson().toJson(payload));
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            payload.put("message", "Không thể tải lịch kỹ thuật viên");
+            resp.getWriter().write(new Gson().toJson(payload));
+        }
+    }
+
+    private Timestamp parseDateTimeLocal(String rawValue) {
+        try {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
+                return null;
+            }
+            return Timestamp.valueOf(rawValue.trim().replace("T", " ") + ":00");
+        } catch (Exception e) {
+            return null;
         }
     }
 

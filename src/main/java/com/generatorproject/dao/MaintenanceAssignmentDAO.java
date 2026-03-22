@@ -6,9 +6,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MaintenanceAssignmentDAO extends DbContext {
     public boolean insertPrimaryAssignment(int maintenanceId, int technicianId, Integer assignedBy, String note) {
@@ -67,20 +65,18 @@ public class MaintenanceAssignmentDAO extends DbContext {
         return false;
     }
 
-    public Map<Integer, List<TechnicianScheduleItem>> findUpcomingSchedulesByTechnicianIds(List<Integer> technicianIds, Timestamp windowStart, Timestamp windowEnd) {
-        Map<Integer, List<TechnicianScheduleItem>> schedulesByTechnician = new HashMap<>();
-        if (technicianIds == null || technicianIds.isEmpty() || windowStart == null || windowEnd == null) {
-            return schedulesByTechnician;
+    public List<TechnicianScheduleItem> findSchedulesForTechnician(int technicianId, Timestamp windowStart, Timestamp windowEnd) {
+        List<TechnicianScheduleItem> schedules = new ArrayList<>();
+        if (windowStart == null || windowEnd == null) {
+            return schedules;
         }
 
-        String placeholders = String.join(",", java.util.Collections.nCopies(technicianIds.size(), "?"));
         String sql = "SELECT schedule_view.technician_id, schedule_view.maintenance_id, schedule_view.scheduled_start, " +
                 "schedule_view.scheduled_end, schedule_view.description, schedule_view.type, p.serial_number " +
                 "FROM (" +
                 "    SELECT m.technician_id AS technician_id, m.id AS maintenance_id, m.scheduled_start, m.scheduled_end, m.description, m.type, m.product_id " +
                 "    FROM maintenances m " +
-                "    WHERE m.technician_id IS NOT NULL " +
-                "      AND m.technician_id IN (" + placeholders + ") " +
+                "    WHERE m.technician_id = ? " +
                 "      AND m.scheduled_start IS NOT NULL " +
                 "      AND m.scheduled_end IS NOT NULL " +
                 "      AND COALESCE(m.execution_status, 'PENDING') <> 'CANCELLED' " +
@@ -90,7 +86,7 @@ public class MaintenanceAssignmentDAO extends DbContext {
                 "    SELECT ma.technician_id AS technician_id, m.id AS maintenance_id, m.scheduled_start, m.scheduled_end, m.description, m.type, m.product_id " +
                 "    FROM maintenances m " +
                 "    JOIN maintenance_assignments ma ON ma.maintenance_id = m.id " +
-                "    WHERE ma.technician_id IN (" + placeholders + ") " +
+                "    WHERE ma.technician_id = ? " +
                 "      AND ma.assigned_status NOT IN ('CANCELLED', 'DECLINED') " +
                 "      AND (m.technician_id IS NULL OR m.technician_id <> ma.technician_id) " +
                 "      AND m.scheduled_start IS NOT NULL " +
@@ -100,40 +96,33 @@ public class MaintenanceAssignmentDAO extends DbContext {
                 "      AND m.scheduled_end >= ? AND m.scheduled_start <= ? " +
                 ") schedule_view " +
                 "LEFT JOIN products p ON p.id = schedule_view.product_id " +
-                "ORDER BY schedule_view.technician_id, schedule_view.scheduled_start";
+                "ORDER BY schedule_view.scheduled_start";
 
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            int index = 1;
-            for (Integer technicianId : technicianIds) {
-                ps.setInt(index++, technicianId);
-            }
-            ps.setTimestamp(index++, windowStart);
-            ps.setTimestamp(index++, windowEnd);
-            for (Integer technicianId : technicianIds) {
-                ps.setInt(index++, technicianId);
-            }
-            ps.setTimestamp(index++, windowStart);
-            ps.setTimestamp(index, windowEnd);
+            ps.setInt(1, technicianId);
+            ps.setTimestamp(2, windowStart);
+            ps.setTimestamp(3, windowEnd);
+            ps.setInt(4, technicianId);
+            ps.setTimestamp(5, windowStart);
+            ps.setTimestamp(6, windowEnd);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Integer technicianId = rs.getInt("technician_id");
-                    TechnicianScheduleItem item = new TechnicianScheduleItem(
+                    schedules.add(new TechnicianScheduleItem(
                             rs.getInt("maintenance_id"),
                             rs.getTimestamp("scheduled_start"),
                             rs.getTimestamp("scheduled_end"),
                             rs.getString("description"),
                             rs.getString("type"),
                             rs.getString("serial_number")
-                    );
-                    schedulesByTechnician.computeIfAbsent(technicianId, key -> new ArrayList<>()).add(item);
+                    ));
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return schedulesByTechnician;
+        return schedules;
     }
 
     public static class TechnicianScheduleItem {

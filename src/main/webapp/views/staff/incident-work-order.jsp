@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <title>Tạo work order</title>
 
@@ -56,65 +55,24 @@
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                         <div>
                             <h6 class="mb-1 fw-bold text-dark"><i class="fas fa-user-clock me-2 text-primary"></i>Lịch trình kỹ thuật viên</h6>
-                            <div class="small text-muted">Hiển thị lịch trong 7 ngày tới để staff biết ai đang bận và ai còn trống trước khi giao task.</div>
-                        </div>
-                        <div class="small text-muted">
-                            <fmt:formatDate value="${scheduleWindowStart}" pattern="dd/MM/yyyy HH:mm" />
-                            -
-                            <fmt:formatDate value="${scheduleWindowEnd}" pattern="dd/MM/yyyy HH:mm" />
+                            <div class="small text-muted">Chỉ tải lịch của kỹ thuật viên đang chọn để staff biết ngay người đó bận hay rảnh, không cần preload toàn bộ danh sách.</div>
                         </div>
                     </div>
 
-                    <div class="row g-3">
-                        <c:forEach items="${listTechnicians}" var="tech">
-                            <c:set var="techSchedules" value="${technicianSchedules[tech.id]}" />
-                            <div class="col-md-6">
-                                <div class="card h-100 border ${empty techSchedules ? 'border-success' : 'border-warning'} technician-schedule-card" data-tech-id="${tech.id}">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                                            <div>
-                                                <div class="fw-bold">${tech.fullName}</div>
-                                                <div class="small text-muted">${tech.email}</div>
-                                            </div>
-                                            <c:choose>
-                                                <c:when test="${empty techSchedules}">
-                                                    <span class="badge bg-success">Đang rảnh</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="badge bg-warning text-dark">${techSchedules.size()} lịch sắp tới</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </div>
+                    <div id="technicianAvailabilityEmpty" class="alert alert-secondary mb-0">
+                        Chọn kỹ thuật viên và thời gian dự kiến để xem lịch thực tế của người đó.
+                    </div>
 
-                                        <c:choose>
-                                            <c:when test="${empty techSchedules}">
-                                                <div class="small text-success mb-0">Chưa có lịch nào trong khung 7 ngày tới.</div>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <ul class="list-group list-group-flush small">
-                                                    <c:forEach items="${techSchedules}" var="schedule">
-                                                        <li class="list-group-item px-0">
-                                                            <div class="fw-semibold">
-                                                                <fmt:formatDate value="${schedule.scheduledStart}" pattern="dd/MM HH:mm" />
-                                                                -
-                                                                <fmt:formatDate value="${schedule.scheduledEnd}" pattern="HH:mm" />
-                                                            </div>
-                                                            <div class="text-muted">
-                                                                ${schedule.type} | WO #${schedule.maintenanceId}
-                                                                <c:if test="${not empty schedule.productSerialNumber}">
-                                                                    | SN: ${schedule.productSerialNumber}
-                                                                </c:if>
-                                                            </div>
-                                                            <div>${schedule.description}</div>
-                                                        </li>
-                                                    </c:forEach>
-                                                </ul>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </div>
-                                </div>
+                    <div id="technicianAvailabilityPanel" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <div class="fw-bold" id="availabilityTechnicianName">-</div>
+                                <div class="small text-muted" id="availabilityWindowLabel"></div>
                             </div>
-                        </c:forEach>
+                            <span class="badge" id="availabilityStatusBadge">Đang tải</span>
+                        </div>
+                        <div id="availabilityConflictAlert" class="alert alert-warning d-none"></div>
+                        <div id="availabilitySchedules"></div>
                     </div>
                 </div>
             </div>
@@ -134,12 +92,12 @@
 
                 <div class="col-md-3">
                     <label class="form-label fw-bold">Bắt đầu</label>
-                    <input type="datetime-local" name="scheduledStart" class="form-control" required>
+                    <input type="datetime-local" name="scheduledStart" id="scheduledStartInput" class="form-control" required>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label fw-bold">Kết thúc</label>
-                    <input type="datetime-local" name="scheduledEnd" class="form-control" required>
+                    <input type="datetime-local" name="scheduledEnd" id="scheduledEndInput" class="form-control" required>
                 </div>
 
                 <div class="col-12">
@@ -161,20 +119,133 @@
 <script>
     (function () {
         const technicianSelect = document.getElementById('technicianIdSelect');
-        const scheduleCards = document.querySelectorAll('.technician-schedule-card');
+        const scheduledStartInput = document.getElementById('scheduledStartInput');
+        const scheduledEndInput = document.getElementById('scheduledEndInput');
+        const emptyState = document.getElementById('technicianAvailabilityEmpty');
+        const panel = document.getElementById('technicianAvailabilityPanel');
+        const technicianName = document.getElementById('availabilityTechnicianName');
+        const windowLabel = document.getElementById('availabilityWindowLabel');
+        const statusBadge = document.getElementById('availabilityStatusBadge');
+        const conflictAlert = document.getElementById('availabilityConflictAlert');
+        const schedulesContainer = document.getElementById('availabilitySchedules');
 
-        function highlightSelectedTechnician() {
-            const selectedId = technicianSelect ? technicianSelect.value : '';
-            scheduleCards.forEach(function (card) {
-                const isSelected = selectedId && card.dataset.techId === selectedId;
-                card.classList.toggle('border-primary', !!isSelected);
-                card.classList.toggle('shadow', !!isSelected);
-            });
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatDateTime(rawValue) {
+            if (!rawValue) {
+                return '-';
+            }
+            const parsed = new Date(rawValue);
+            if (Number.isNaN(parsed.getTime())) {
+                return rawValue;
+            }
+            const day = String(parsed.getDate()).padStart(2, '0');
+            const month = String(parsed.getMonth() + 1).padStart(2, '0');
+            const year = parsed.getFullYear();
+            const hours = String(parsed.getHours()).padStart(2, '0');
+            const minutes = String(parsed.getMinutes()).padStart(2, '0');
+            return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
+        }
+
+        function renderSchedules(items) {
+            if (!items || !items.length) {
+                schedulesContainer.innerHTML = '<div class="alert alert-success mb-0">Không có lịch nào trong khoảng thời gian đang xem.</div>';
+                return;
+            }
+
+            const html = items.map(function (item) {
+                const serial = item.productSerialNumber ? ' | SN: ' + escapeHtml(item.productSerialNumber) : '';
+                return '' +
+                    '<div class="border rounded p-3 mb-2 bg-white">' +
+                        '<div class="fw-semibold">' + formatDateTime(item.scheduledStart) + ' - ' + formatDateTime(item.scheduledEnd) + '</div>' +
+                        '<div class="small text-muted">' + escapeHtml(item.type) + ' | WO #' + escapeHtml(item.maintenanceId) + serial + '</div>' +
+                        '<div>' + escapeHtml(item.description) + '</div>' +
+                    '</div>';
+            }).join('');
+            schedulesContainer.innerHTML = html;
+        }
+
+        function setLoadingState() {
+            emptyState.classList.add('d-none');
+            panel.classList.remove('d-none');
+            technicianName.textContent = 'Đang tải...';
+            windowLabel.textContent = '';
+            statusBadge.className = 'badge bg-secondary';
+            statusBadge.textContent = 'Đang tải';
+            conflictAlert.classList.add('d-none');
+            schedulesContainer.innerHTML = '<div class="small text-muted">Đang tải lịch...</div>';
+        }
+
+        function resetAvailability() {
+            emptyState.classList.remove('d-none');
+            panel.classList.add('d-none');
+            conflictAlert.classList.add('d-none');
+            schedulesContainer.innerHTML = '';
+        }
+
+        async function loadAvailability() {
+            const technicianId = technicianSelect ? technicianSelect.value : '';
+            if (!technicianId) {
+                resetAvailability();
+                return;
+            }
+
+            setLoadingState();
+            const params = new URLSearchParams({ technicianId: technicianId });
+            if (scheduledStartInput && scheduledStartInput.value) {
+                params.set('scheduledStart', scheduledStartInput.value);
+            }
+            if (scheduledEndInput && scheduledEndInput.value) {
+                params.set('scheduledEnd', scheduledEndInput.value);
+            }
+
+            try {
+                const response = await fetch('<c:url value="/staff/technician-availability"/>' + '?' + params.toString(), {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Không thể tải lịch kỹ thuật viên');
+                }
+
+                technicianName.textContent = data.technicianName || 'Kỹ thuật viên';
+                windowLabel.textContent = 'Khung đang xem: ' + formatDateTime(data.windowStart) + ' - ' + formatDateTime(data.windowEnd);
+                if (data.hasConflict) {
+                    statusBadge.className = 'badge bg-danger';
+                    statusBadge.textContent = 'Trùng lịch';
+                    conflictAlert.className = 'alert alert-danger';
+                    conflictAlert.textContent = 'Kỹ thuật viên này đang có lịch trùng với khung giờ bạn chọn.';
+                } else {
+                    statusBadge.className = 'badge bg-success';
+                    statusBadge.textContent = 'Có thể phân công';
+                    conflictAlert.classList.add('d-none');
+                }
+                renderSchedules(data.schedules || []);
+            } catch (error) {
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.textContent = 'Lỗi tải dữ liệu';
+                technicianName.textContent = 'Không thể tải lịch';
+                conflictAlert.className = 'alert alert-warning';
+                conflictAlert.textContent = error.message || 'Không thể tải lịch kỹ thuật viên.';
+                schedulesContainer.innerHTML = '';
+            }
         }
 
         if (technicianSelect) {
-            technicianSelect.addEventListener('change', highlightSelectedTechnician);
-            highlightSelectedTechnician();
+            technicianSelect.addEventListener('change', loadAvailability);
+        }
+        if (scheduledStartInput) {
+            scheduledStartInput.addEventListener('change', loadAvailability);
+        }
+        if (scheduledEndInput) {
+            scheduledEndInput.addEventListener('change', loadAvailability);
         }
     })();
 </script>
