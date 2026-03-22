@@ -697,9 +697,10 @@
                             <label class="form-label fw-bold">Loại sự cố <span class="text-danger">*</span></label>
                             <select name="issueType" class="form-select py-2" required>
                                 <option value="">-- Chọn loại yêu cầu --</option>
-                                <option value="PERIODIC">Bảo dưỡng định kỳ</option>
-                                <option value="REPAIR">Thay thế phụ tùng</option>
-                                <option value="INSPECTION">Báo Lỗi / Hỏng hóc</option>
+                                <option value="MAINTENANCE">Bảo dưỡng định kỳ</option>
+                                <option value="REPLACEMENT">Thay thế phụ tùng</option>
+                                <option value="BROKEN">Báo Lỗi / Hỏng hóc</option>
+                                <option value="OTHER">Vấn đề khác</option>
                             </select>
                         </div>
 

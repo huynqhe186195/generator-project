@@ -24,9 +24,10 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-// URL này phải khớp với action trong form: <form action="<c:url value='/customer/incident/create.jsp'/>" ...>
+// URL này phải khớp với action trong form báo sự cố của customer.
 @WebServlet(urlPatterns = {"/report-incident", "/customer/incident/create"})
 public class ReportIncidentController extends HttpServlet {
 
@@ -55,22 +56,22 @@ public class ReportIncidentController extends HttpServlet {
             }
 
             // 2. Lấy dữ liệu từ Form Modal
-            String productId = req.getParameter("productId");
-            int parsedProductId = Integer.parseInt(productId);
-            String issueType = req.getParameter("issueType");
+            ProductDAO productDAO = new ProductDAO();
+            Product product = resolveReportedProduct(req, user, productDAO);
+            if (product == null) {
+                resp.sendRedirect(req.getContextPath() + "/product-list?message=unauthorized_product");
+                return;
+            }
+
+            int parsedProductId = product.getId().intValue();
+            String issueType = normalizeIssueType(req.getParameter("issueType"));
+            String productId = String.valueOf(parsedProductId);
             String preferredDate = req.getParameter("preferredDate");
             String preferredScheduleSlot = req.getParameter("preferredTimeSlot");
             String title = req.getParameter("title");
             String description = req.getParameter("description");
 
             // 3. Validate server-side: product thuộc user login + contract còn cho phép dịch vụ
-            ProductDAO productDAO = new ProductDAO();
-            Product product = productDAO.findCustomerProductWithContract(parsedProductId, user.getId());
-            if (product == null) {
-                resp.sendRedirect(req.getContextPath() + "/product-list?message=unauthorized_product");
-                return;
-            }
-
             String contractStatus = product.getContractStatus();
             boolean serviceAllowed = "ACTIVE".equalsIgnoreCase(contractStatus) || "EXPIRED".equalsIgnoreCase(contractStatus);
             if (!serviceAllowed) {
@@ -162,4 +163,53 @@ public class ReportIncidentController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/product-list?message=error");
         }
     }
+
+    private Product resolveReportedProduct(HttpServletRequest req, Users user, ProductDAO productDAO) {
+        String productIdParam = req.getParameter("productId");
+        if (productIdParam != null && !productIdParam.isBlank()) {
+            try {
+                int parsedProductId = Integer.parseInt(productIdParam);
+                return productDAO.findCustomerProductWithContract(parsedProductId, user.getId());
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+
+        String contractIdParam = req.getParameter("contractId");
+        if (contractIdParam == null || contractIdParam.isBlank()) {
+            return null;
+        }
+
+        try {
+            List<Product> products = productServices.findByContractId(Long.parseLong(contractIdParam));
+            if (products == null) {
+                return null;
+            }
+            for (Product candidate : products) {
+                if (candidate == null || candidate.getId() == null) {
+                    continue;
+                }
+                Product authorizedProduct = productDAO.findCustomerProductWithContract(candidate.getId().intValue(), user.getId());
+                if (authorizedProduct != null) {
+                    return authorizedProduct;
+                }
+            }
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+        return null;
+    }
+
+    private String normalizeIssueType(String rawIssueType) {
+        if (rawIssueType == null || rawIssueType.isBlank()) {
+            return "OTHER";
+        }
+        return switch (rawIssueType.trim().toUpperCase()) {
+            case "PERIODIC", "MAINTENANCE" -> "MAINTENANCE";
+            case "REPAIR", "REPLACEMENT" -> "REPLACEMENT";
+            case "INSPECTION", "BROKEN" -> "BROKEN";
+            default -> "OTHER";
+        };
+    }
+
 }

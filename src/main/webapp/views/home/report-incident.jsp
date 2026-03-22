@@ -105,15 +105,15 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <input type="hidden" name="contractId" value="${targetContract.id}">
+                                    <input type="hidden" name="productId" value="${targetContract.productId}">
                                 </c:when>
 
                                 <%-- TRƯỜNG HỢP 2: Chọn từ danh sách --%>
                                 <c:otherwise>
-                                    <select name="contractId" class="form-select py-3" required>
+                                    <select name="productId" class="form-select py-3" required>
                                         <option value="">-- Vui lòng chọn máy --</option>
                                         <c:forEach items="${myContracts}" var="c">
-                                            <option value="${c.id}">
+                                            <option value="${c.productId}">
                                                     ${c.productName} - (SN: ${c.serialNumber})
                                             </option>
                                         </c:forEach>
