@@ -658,11 +658,14 @@ public class StaffManagementController extends HttpServlet {
             Product product = incident != null ? productServices.getProductById(incident.getProductId()) : null;
             List<Users> listTechnicians = userServices.findUserByRoleId(4);
 
+            Long recommendedTechnicianId = parseLongValue(sysReq.getInfo().get("technicianId"));
+
             req.setAttribute("req", sysReq);
             req.setAttribute("incidentEntity", incident);
             req.setAttribute("incidentPlan", incidentPlan);
             req.setAttribute("prod", product);
             req.setAttribute("listTechnicians", listTechnicians);
+            req.setAttribute("recommendedTechnicianId", recommendedTechnicianId);
             req.getRequestDispatcher("/views/staff/incident-work-order.jsp").forward(req, resp);
         } catch (Exception e) {
             e.printStackTrace();

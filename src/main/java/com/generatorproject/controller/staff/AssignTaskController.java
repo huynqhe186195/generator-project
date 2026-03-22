@@ -9,9 +9,14 @@ import com.generatorproject.model.Maintenance;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
 import com.generatorproject.services.IIncidentServices;
+import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.IRequestServices;
 import com.generatorproject.services.IncidentServices;
 import com.generatorproject.services.RequestServices;
+import com.generatorproject.services.UserServices;
+import com.google.gson.Gson;
+
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -31,6 +36,7 @@ public class AssignTaskController extends HttpServlet {
     private final IncidentPlanDAO incidentPlanDAO;
     private final MaintenanceDAO maintenanceDAO;
     private final MaintenanceAssignmentDAO maintenanceAssignmentDAO;
+    private final IUserServices userServices;
 
     public AssignTaskController() {
         requestServices = new RequestServices();
@@ -38,6 +44,7 @@ public class AssignTaskController extends HttpServlet {
         incidentPlanDAO = new IncidentPlanDAO();
         maintenanceDAO = new MaintenanceDAO();
         maintenanceAssignmentDAO = new MaintenanceAssignmentDAO();
+        userServices = new UserServices();
     }
 
     @Override
@@ -110,6 +117,13 @@ public class AssignTaskController extends HttpServlet {
             maintenanceAssignmentDAO.insertPrimaryAssignment(maintenanceId, technicianId, user == null ? null : user.getId(),
                     "Assigned after manager-approved incident plan");
 
+            Map<String, Object> info = sysReq.getInfo();
+            info.put("technicianId", technicianId);
+            Users assignedTechnician = userServices.findUserById(technicianId);
+            info.put("technicianName", assignedTechnician != null && assignedTechnician.getFullName() != null
+                    ? assignedTechnician.getFullName()
+                    : "Kỹ thuật viên #" + technicianId);
+            sysReq.setRequestData(new Gson().toJson(info));
             sysReq.setStatus("TASK_CREATED");
             requestServices.update(sysReq);
             incidentServices.updateStatus(incidentId, "IN_PROGRESS");

@@ -58,6 +58,8 @@ public class RequestManagerController extends HttpServlet {
             String selectedRecommendationCode = req.getParameter("selected_recommendation_code");
             String selectedRecommendationTitle = req.getParameter("selected_recommendation_title");
             String selectedSuggestedTechnicianIds = req.getParameter("selected_suggested_technician_ids");
+            String selectedSuggestedTechnicianId = req.getParameter("selected_suggested_technician_id");
+            String selectedSuggestedTechnicianName = req.getParameter("selected_suggested_technician_name");
             String selectedRequiredSkillCodes = req.getParameter("selected_required_skill_codes");
 
             long requestId = Long.parseLong(idStr);
@@ -81,7 +83,7 @@ public class RequestManagerController extends HttpServlet {
             plan.setPlannedBy(user.getId());
             plan.setWorkType(type);
             plan.setEstimatedDurationMinutes(parseIntOrDefault(estimatedDuration, 120));
-            plan.setRequiredTechnicianCount(parseIntOrDefault(technicianCount, 1));
+            plan.setRequiredTechnicianCount(1);
             plan.setRequiresPartsPreparation("1".equals(requiresPartsPreparation) || "on".equalsIgnoreCase(requiresPartsPreparation));
             plan.setPartsNote(partsNote);
             plan.setServiceLocation(serviceLocation == null || serviceLocation.isBlank() ? incident.getLocationSnapshot() : serviceLocation);
@@ -101,7 +103,7 @@ public class RequestManagerController extends HttpServlet {
             info.put("maintenanceType", type);
             info.put("staffNote", staffNote);
             info.put("estimatedDurationMinutes", plan.getEstimatedDurationMinutes());
-            info.put("requiredTechnicianCount", plan.getRequiredTechnicianCount());
+            info.put("requiredTechnicianCount", 1);
             info.put("serviceLocation", plan.getServiceLocation());
             info.put("workflowKind", "INCIDENT_PLAN_APPROVAL");
             if (selectedRecommendationCode != null && !selectedRecommendationCode.trim().isEmpty()) {
@@ -109,6 +111,16 @@ public class RequestManagerController extends HttpServlet {
                 info.put("selectedRecommendationTitle", selectedRecommendationTitle);
                 info.put("selectedSuggestedTechnicianIds", selectedSuggestedTechnicianIds);
                 info.put("selectedRequiredSkillCodes", selectedRequiredSkillCodes);
+            }
+            Long recommendedTechnicianId = parseLongValue(selectedSuggestedTechnicianId);
+            if (recommendedTechnicianId == null) {
+                recommendedTechnicianId = parseFirstTechnicianId(selectedSuggestedTechnicianIds);
+            }
+            if (recommendedTechnicianId != null) {
+                info.put("technicianId", recommendedTechnicianId);
+            }
+            if (selectedSuggestedTechnicianName != null && !selectedSuggestedTechnicianName.trim().isEmpty()) {
+                info.put("technicianName", selectedSuggestedTechnicianName.trim());
             }
 
 
@@ -142,6 +154,14 @@ public class RequestManagerController extends HttpServlet {
         } catch (Exception ignored) {
             return defaultValue;
         }
+    }
+
+    private Long parseFirstTechnicianId(String rawIds) {
+        if (rawIds == null || rawIds.trim().isEmpty()) {
+            return null;
+        }
+        String first = rawIds.split(",")[0].trim();
+        return parseLongValue(first);
     }
 
     private Long parseLongValue(Object raw) {

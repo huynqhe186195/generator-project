@@ -61,6 +61,9 @@
 
                     <div id="technicianAvailabilityEmpty" class="alert alert-secondary mb-0">
                         Chọn kỹ thuật viên và thời gian dự kiến để xem lịch thực tế của người đó.
+                        <c:if test="${not empty recommendedTechnicianId}">
+                            <div class="mt-2 small">Hệ thống đã pre-select kỹ thuật viên được gợi ý từ bước trình manager.</div>
+                        </c:if>
                     </div>
 
                     <div id="technicianAvailabilityPanel" class="d-none">
@@ -85,7 +88,7 @@
                     <select name="technicianId" id="technicianIdSelect" class="form-select" required>
                         <option value="">-- Chọn kỹ thuật viên --</option>
                         <c:forEach items="${listTechnicians}" var="tech">
-                            <option value="${tech.id}">${tech.fullName} - ${tech.email}</option>
+                            <option value="${tech.id}" ${recommendedTechnicianId == tech.id ? 'selected' : ''}>${tech.fullName} - ${tech.email}</option>
                         </c:forEach>
                     </select>
                 </div>
