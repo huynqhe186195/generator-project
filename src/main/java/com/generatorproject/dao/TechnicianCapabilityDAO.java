@@ -1,5 +1,10 @@
 package com.generatorproject.dao;
 
+import com.generatorproject.model.SkillCatalog;
+import com.generatorproject.model.TechnicianProfile;
+import com.generatorproject.model.TechnicianSkill;
+import com.generatorproject.model.TechnicianUnavailability;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,6 +53,80 @@ public class TechnicianCapabilityDAO extends DbContext {
         return profiles;
     }
 
+    public TechnicianProfile findProfileByTechnicianId(int technicianId) {
+        String sql = "SELECT technician_id, service_area, home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name " +
+                "FROM technician_profiles WHERE technician_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, technicianId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    TechnicianProfile profile = new TechnicianProfile();
+                    profile.setTechnicianId(rs.getInt("technician_id"));
+                    profile.setServiceArea(rs.getString("service_area"));
+                    profile.setHomeBase(rs.getString("home_base"));
+                    profile.setWorkingHoursStart(rs.getTime("working_hours_start"));
+                    profile.setWorkingHoursEnd(rs.getTime("working_hours_end"));
+                    profile.setMaxTasksPerDay(rs.getInt("max_tasks_per_day"));
+                    profile.setActiveStatus(rs.getBoolean("active_status"));
+                    profile.setTimezoneName(rs.getString("timezone_name"));
+                    return profile;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean upsertProfile(TechnicianProfile profile) {
+        if (profile == null) {
+            return false;
+        }
+
+        if (findProfileByTechnicianId(profile.getTechnicianId()) == null) {
+            String insertSql = "INSERT INTO technician_profiles (technician_id, service_area, home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                ps.setInt(1, profile.getTechnicianId());
+                ps.setString(2, profile.getServiceArea());
+                ps.setString(3, profile.getHomeBase());
+                ps.setTime(4, profile.getWorkingHoursStart());
+                ps.setTime(5, profile.getWorkingHoursEnd());
+                if (profile.getMaxTasksPerDay() == null) {
+                    ps.setNull(6, java.sql.Types.INTEGER);
+                } else {
+                    ps.setInt(6, profile.getMaxTasksPerDay());
+                }
+                ps.setBoolean(7, profile.isActiveStatus());
+                ps.setString(8, profile.getTimezoneName());
+                return ps.executeUpdate() > 0;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        String updateSql = "UPDATE technician_profiles SET service_area = ?, home_base = ?, working_hours_start = ?, working_hours_end = ?, max_tasks_per_day = ?, active_status = ?, timezone_name = ? WHERE technician_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(updateSql)) {
+            ps.setString(1, profile.getServiceArea());
+            ps.setString(2, profile.getHomeBase());
+            ps.setTime(3, profile.getWorkingHoursStart());
+            ps.setTime(4, profile.getWorkingHoursEnd());
+            if (profile.getMaxTasksPerDay() == null) {
+                ps.setNull(5, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(5, profile.getMaxTasksPerDay());
+            }
+            ps.setBoolean(6, profile.isActiveStatus());
+            ps.setString(7, profile.getTimezoneName());
+            ps.setInt(8, profile.getTechnicianId());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public Map<Integer, Set<String>> findTechnicianSkillCodes(List<Integer> technicianIds) {
         Map<Integer, Set<String>> skillMap = new HashMap<>();
         if (technicianIds == null || technicianIds.isEmpty()) {
@@ -75,6 +154,59 @@ public class TechnicianCapabilityDAO extends DbContext {
         return skillMap;
     }
 
+    public List<TechnicianSkill> findSkillsByTechnicianId(int technicianId) {
+        List<TechnicianSkill> result = new ArrayList<>();
+        String sql = "SELECT ts.technician_id, ts.skill_code, ts.expires_at, sc.name, sc.active_status " +
+                "FROM technician_skills ts LEFT JOIN skill_catalog sc ON sc.code = ts.skill_code " +
+                "WHERE ts.technician_id = ? ORDER BY ts.skill_code ASC";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, technicianId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    TechnicianSkill skill = new TechnicianSkill();
+                    skill.setTechnicianId(rs.getInt("technician_id"));
+                    skill.setSkillCode(rs.getString("skill_code"));
+                    skill.setSkillName(rs.getString("name"));
+                    skill.setExpiresAt(rs.getTimestamp("expires_at"));
+                    skill.setCatalogActive(rs.getBoolean("active_status"));
+                    result.add(skill);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public boolean assignSkill(int technicianId, String skillCode, Timestamp expiresAt) {
+        String sql = "INSERT INTO technician_skills (technician_id, skill_code, expires_at) VALUES (?, ?, ?)";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, technicianId);
+            ps.setString(2, skillCode);
+            if (expiresAt == null) {
+                ps.setNull(3, java.sql.Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(3, expiresAt);
+            }
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean removeSkill(int technicianId, String skillCode) {
+        String sql = "DELETE FROM technician_skills WHERE technician_id = ? AND skill_code = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, technicianId);
+            ps.setString(2, skillCode);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public Map<String, String> findSkillNames(List<String> skillCodes) {
         Map<String, String> skillNames = new HashMap<>();
         if (skillCodes == null || skillCodes.isEmpty()) {
@@ -97,6 +229,68 @@ public class TechnicianCapabilityDAO extends DbContext {
             e.printStackTrace();
         }
         return skillNames;
+    }
+
+    public List<SkillCatalog> findAllSkillCatalog() {
+        List<SkillCatalog> result = new ArrayList<>();
+        String sql = "SELECT code, name, active_status FROM skill_catalog ORDER BY active_status DESC, code ASC";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                SkillCatalog skill = new SkillCatalog();
+                skill.setCode(rs.getString("code"));
+                skill.setName(rs.getString("name"));
+                skill.setActiveStatus(rs.getBoolean("active_status"));
+                result.add(skill);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public SkillCatalog findSkillCatalogByCode(String code) {
+        String sql = "SELECT code, name, active_status FROM skill_catalog WHERE code = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    SkillCatalog skill = new SkillCatalog();
+                    skill.setCode(rs.getString("code"));
+                    skill.setName(rs.getString("name"));
+                    skill.setActiveStatus(rs.getBoolean("active_status"));
+                    return skill;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean insertSkillCatalog(SkillCatalog skill) {
+        String sql = "INSERT INTO skill_catalog (code, name, active_status) VALUES (?, ?, ?)";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, skill.getCode());
+            ps.setString(2, skill.getName());
+            ps.setBoolean(3, skill.isActiveStatus());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateSkillCatalog(SkillCatalog skill) {
+        String sql = "UPDATE skill_catalog SET name = ?, active_status = ? WHERE code = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, skill.getName());
+            ps.setBoolean(2, skill.isActiveStatus());
+            ps.setString(3, skill.getCode());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public Map<Integer, Boolean> findUnavailability(List<Integer> technicianIds, Timestamp from, Timestamp to) {
@@ -124,6 +318,68 @@ public class TechnicianCapabilityDAO extends DbContext {
             e.printStackTrace();
         }
         return unavailable;
+    }
+
+    public List<TechnicianUnavailability> findUnavailabilityByTechnicianId(int technicianId) {
+        List<TechnicianUnavailability> result = new ArrayList<>();
+        String sql = "SELECT technician_id, unavailable_start, unavailable_end FROM technician_unavailability WHERE technician_id = ? ORDER BY unavailable_start DESC";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, technicianId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    TechnicianUnavailability item = new TechnicianUnavailability();
+                    item.setTechnicianId(rs.getInt("technician_id"));
+                    item.setUnavailableStart(rs.getTimestamp("unavailable_start"));
+                    item.setUnavailableEnd(rs.getTimestamp("unavailable_end"));
+                    result.add(item);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public boolean addUnavailability(TechnicianUnavailability item) {
+        String sql = "INSERT INTO technician_unavailability (technician_id, unavailable_start, unavailable_end) VALUES (?, ?, ?)";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, item.getTechnicianId());
+            ps.setTimestamp(2, item.getUnavailableStart());
+            ps.setTimestamp(3, item.getUnavailableEnd());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean hasSkillAssignment(int technicianId, String skillCode) {
+        String sql = "SELECT 1 FROM technician_skills WHERE technician_id = ? AND skill_code = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, technicianId);
+            ps.setString(2, skillCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean hasUnavailabilityOverlap(int technicianId, Timestamp start, Timestamp end) {
+        String sql = "SELECT 1 FROM technician_unavailability WHERE technician_id = ? AND unavailable_start < ? AND unavailable_end > ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, technicianId);
+            ps.setTimestamp(2, end);
+            ps.setTimestamp(3, start);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public Map<Integer, Integer> countTasksPerDay(List<Integer> technicianIds, java.sql.Date targetDate) {

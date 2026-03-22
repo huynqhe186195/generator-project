@@ -107,6 +107,12 @@
                                 </a>
                             </li>
 
+                            <li class="${pageContext.request.requestURI.contains('/manager/technician-capability') ? 'active' : ''}">
+                                <a href="${pageContext.request.contextPath}/manager/technician-capability">
+                                    <i class="fa fa-user-gear me-2"></i> Technician Capability
+                                </a>
+                            </li>
+
                             <li class="${pageContext.request.requestURI.contains('system-report') ? 'active' : ''}">
                                 <a href="${pageContext.request.contextPath}/manager/system-report">
                                     <i class="fa fa-chart-line me-2"></i> Báo cáo
