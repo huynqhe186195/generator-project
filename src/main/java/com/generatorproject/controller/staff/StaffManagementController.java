@@ -169,12 +169,20 @@ public class StaffManagementController extends HttpServlet {
             }
 
             Product product = null;
-            if (incident.getInfo() != null && getProductFromRequest(incident).getId() > 0) {
-                product = productServices.getProductById(getProductFromRequest(incident).getId());
+            Product requestProduct = getProductFromRequest(incident);
+            if (requestProduct != null && requestProduct.getId() > 0) {
+                product = productServices.getProductById(requestProduct.getId());
+            }
+
+            Incident incidentEntity = null;
+            Long incidentEntityId = extractIdFromRequestInfo(incident, "incidentId");
+            if (incidentEntityId != null) {
+                incidentEntity = incidentServices.findById(incidentEntityId);
             }
 
             // 4. Truyền ra JSP
             req.setAttribute("incident", incident);
+            req.setAttribute("incidentEntity", incidentEntity);
             req.setAttribute("product", product);
 
             req.getRequestDispatcher("/views/staff/incident-detail.jsp").forward(req, resp);
