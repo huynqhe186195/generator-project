@@ -298,34 +298,26 @@
             <div class="section-card mb-4">
                 <div class="card-header">
                     <h5 class="mb-1 fw-bold text-secondary"><i class="fa fa-id-card me-2"></i>Profile điều phối</h5>
-                    <div class="section-hint">Cấu hình service area, home base, giờ làm việc và mức tải tối đa trong ngày cho technician.</div>
+                    <div class="section-hint">Cấu hình giờ làm việc, mức tải tối đa trong ngày và timezone cho technician.</div>
                 </div>
                 <div class="card-body">
                     <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3">
                         <input type="hidden" name="action" value="save_profile">
                         <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
 
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Service area</label>
-                            <input type="text" class="form-control" name="serviceArea" value="${profile.serviceArea}" placeholder="Ví dụ: HCM, Bình Dương">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Home base</label>
-                            <input type="text" class="form-control" name="homeBase" value="${profile.homeBase}" placeholder="Ví dụ: Thủ Đức">
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label fw-semibold">Start</label>
                             <input type="time" class="form-control" name="workingHoursStart" value="${workingHoursStartValue}" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label fw-semibold">End</label>
                             <input type="time" class="form-control" name="workingHoursEnd" value="${workingHoursEndValue}" required>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label fw-semibold">Max task/day</label>
                             <input type="number" class="form-control" min="1" name="maxTasksPerDay" value="${profile.maxTasksPerDay}">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label fw-semibold">Timezone</label>
                             <input type="text" class="form-control" name="timezoneName" value="${profile.timezoneName}" placeholder="Asia/Ho_Chi_Minh">
                         </div>
