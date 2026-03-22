@@ -468,56 +468,28 @@
                       <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
                     </a>
                   </li>
+                </c:when>
 
-                  <li class="nav-item">
-                    <a class="nav-link nav-pill px-3" href="<c:url value='/products'/>">Sản phẩm mẫu</a>
-                  </li>
-
-                  <c:choose>
-                    <c:when test="${empty user}">
-                    </c:when>
-                    <c:otherwise>
-                      <li class="nav-item">
-                        <a class="nav-link nav-pill px-3" href="<c:url value='/product-list'/>">Hợp đồng</a>
-                      </li>
-                    </c:otherwise>
-                  </c:choose>
-
-                  <li class="nav-item">
-                    <a class="nav-link nav-pill px-3" href="#brands">Thương hiệu</a>
-                  </li>
-
-                  <c:if test="${not empty user}">
-                    <li class="nav-item">
-                      <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách
-                        hàng</a>
-                    </li>
-                  </c:if>
-
-                  <c:choose>
-                    <c:when test="${empty user}">
-                      <li class="nav-item ms-lg-3">
-                        <a href="<c:url value='/account/login'/>" class="btn btn-white px-4">
-                          <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
-                        </a>
-                      </li>
-                      <li>
-                        <a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>">
-                          <i class="fas fa-key me-2"></i>Đổi mật khẩu
-                        </a>
-                      </li>
+                <c:otherwise>
+                  <li class="nav-item dropdown ms-lg-3">
+                    <a class="nav-link dropdown-toggle user-dropdown-toggle" href="#" role="button"
+                      data-bs-toggle="dropdown">
+                      <i class="fas fa-user-circle me-1"></i> ${user.fullName}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
+                      <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i
+                            class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
+                      <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i
+                            class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
                       <li>
                         <hr class="dropdown-divider">
                       </li>
-                      <li>
-                        <a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>">
-                          <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
-                        </a>
-                      </li>
-            </ul>
-            </li>
-            </c:otherwise>
-            </c:choose>
+                      <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i
+                            class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                  </li>
+                </c:otherwise>
+              </c:choose>
             </ul>
           </div>
         </div>
