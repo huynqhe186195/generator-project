@@ -5,93 +5,93 @@ import com.generatorproject.dao.ReportDAO;
 import java.util.List;
 import java.util.Map;
 
-public class ReportService implements IReportService {
+public class ReportService implements  IReportService{
 
     private final ReportDAO reportDAO = new ReportDAO();
 
     @Override
-    public int countActiveContracts() {
+    public int countActiveContracts(){
         return reportDAO.countActiveContracts();
     }
 
     @Override
-    public int countNewCustomersThisMonth() {
+    public int countNewCustomersThisMonth(){
         return reportDAO.countNewCustomersThisMonth();
     }
 
     @Override
-    public int countPendingIncidents() {
+    public int countPendingIncidents(){
         return reportDAO.countPendingIncidents();
     }
 
     @Override
-    public int countMaintenanceThisMonth() {
+    public int countMaintenanceThisMonth(){
         return reportDAO.countMaintenanceThisMonth();
     }
 
     @Override
-    public Map<Integer, Integer> getNewCustomersByMonth(int year) {
-        return reportDAO.getNewCustomersByMonth(year);
+    public Map<Integer, Integer> getNewCustomersByMonth(int year){
+        return reportDAO.getNewCustomersByMoth(year);
     }
 
     @Override
-    public Map<String, Integer> getMaintenanceStatusCount(int year) {
+    public Map<String, Integer> getMaintenanceStatusCount(int year){
         return reportDAO.getMaintenanceStatusCount(year);
     }
 
     @Override
-    public List<Map<String, Object>> getContractRenewRateByMonth(int year) {
+    public List<Map<String, Object>> getContractRenewRateByMonth(int year){
         return reportDAO.getContractRenewRateByMonth(year);
     }
 
     @Override
-    public Map<String, Integer> getIncidentsByPriority(int year) {
+    public Map<String, Integer> getIncidentsByPriority(int year){
         return reportDAO.getIncidentsByPriority(year);
     }
 
     @Override
-    public List<Map<String, Object>> getTopSpareParts(int limit) {
+    public List<Map<String, Object>> getTopSpareParts(int limit){
         return reportDAO.getTopSpareParts(limit);
     }
 
-    //Inventory
+    // Dashboard v2 - Inventory
     @Override
-    public int countCustomers() {
+    public int countCustomers(){
         return reportDAO.countCustomers();
     }
 
     @Override
-    public int countDevices() {
+    public int countDevices(){
         return reportDAO.countDevices();
     }
 
     @Override
     public int countDevicesByStatus(String status) {
-        return reportDAO.countDevicesByStatus(status);
+        return 0;
     }
 
     @Override
-    public int countDevicesBrokenLike() {
+    public int countDevicesBrokenLike(){
         return reportDAO.countDevicesBrokenLike();
     }
 
     @Override
-    public List<Map<String, Object>> getDevicesByBrand() {
+    public List<Map<String, Object>> getDevicesByBrand(){
         return reportDAO.getDevicesByBrand();
     }
 
     @Override
-    public List<Map<String, Object>> getDevicesByCategory() {
-        return reportDAO.getDevicesByCategory();
+    public List<Map<String, Object>> getDevicesByCategory(){
+        return reportDAO.getDevicesByBrand();
     }
 
     @Override
-    public List<Map<String, Object>> getDevicesByKvaBucket() {
+    public List<Map<String, Object>> getDevicesByKvaBucket(){
         return reportDAO.getDevicesByKvaBucket();
     }
 
     @Override
-    public List<Map<String, Object>> getTopModels(int limit) {
+    public List<Map<String, Object>> getTopModels(int limit){
         return reportDAO.getTopModels(limit);
     }
 }
