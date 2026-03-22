@@ -97,8 +97,7 @@
         <div class="col-md-3">
             <a class="card kpi-card bg-primary shadow p-3 h-100
                ${section == 'inventory' ? 'active' : ''}"
-               href="${pageContext.request.contextPath}/manager/system-report
-                     ?section=inventory&year=${selectedYear}">
+               href="${pageContext.request.contextPath}/manager/system-report?section=inventory&year=${selectedYear}">
                 <div class="kpi-title">Quy mô tài sản</div>
                 <div class="kpi-subtitle">Asset & Database Overview</div>
             </a>
@@ -107,8 +106,7 @@
         <div class="col-md-3">
             <a class="card kpi-card bg-success shadow p-3 h-100
                ${section == 'service' ? 'active' : ''}"
-               href="${pageContext.request.contextPath}/manager/system-report
-                     ?section=service&year=${selectedYear}">
+               href="${pageContext.request.contextPath}/manager/system-report?section=service&year=${selectedYear}">
                 <div class="kpi-title">Vận hành & Bảo trì</div>
                 <div class="kpi-subtitle">Service & Maintenance KPIs</div>
             </a>
@@ -117,8 +115,7 @@
         <div class="col-md-3">
             <a class="card kpi-card bg-danger shadow p-3 h-100
                ${section == 'financial' ? 'active' : ''}"
-               href="${pageContext.request.contextPath}/manager/system-report
-                     ?section=financial&year=${selectedYear}">
+               href="${pageContext.request.contextPath}/manager/system-report?section=financial&year=${selectedYear}">
                 <div class="kpi-title">Tài chính dịch vụ lẻ</div>
                 <div class="kpi-subtitle">Ad-hoc Service Profitability</div>
             </a>
@@ -127,8 +124,7 @@
         <div class="col-md-3">
             <a class="card kpi-card bg-warning shadow p-3 h-100 text-dark
                ${section == 'risk' ? 'active' : ''}"
-               href="${pageContext.request.contextPath}/manager/system-report
-                     ?section=risk&year=${selectedYear}">
+               href="${pageContext.request.contextPath}/manager/system-report?section=risk&year=${selectedYear}">
                 <div class="kpi-title">Rủi ro & Giữ chân</div>
                 <div class="kpi-subtitle">Risk & Retention</div>
             </a>

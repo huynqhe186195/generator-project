@@ -31,7 +31,7 @@ public class ReportService implements  IReportService{
 
     @Override
     public Map<Integer, Integer> getNewCustomersByMonth(int year){
-        return reportDAO.getNewCustomersByMoth(year);
+        return reportDAO.getNewCustomersByMonth(year);
     }
 
     @Override
@@ -66,8 +66,8 @@ public class ReportService implements  IReportService{
     }
 
     @Override
-    public int countDevicesByStatus(String status) {
-        return 0;
+    public int countDevicesByStatus(String status){
+        return reportDAO.countDevicesByStatus(status);
     }
 
     @Override
@@ -82,7 +82,7 @@ public class ReportService implements  IReportService{
 
     @Override
     public List<Map<String, Object>> getDevicesByCategory(){
-        return reportDAO.getDevicesByBrand();
+        return reportDAO.getDevicesByCategory();
     }
 
     @Override
@@ -93,5 +93,36 @@ public class ReportService implements  IReportService{
     @Override
     public List<Map<String, Object>> getTopModels(int limit){
         return reportDAO.getTopModels(limit);
+    }
+
+    // Service module (Warranty)
+    @Override
+    public int countIncidentsInWarrantyByYear(int year) {
+        return reportDAO.countIncidentsInWarrantyByYear(year);
+    }
+
+    @Override
+    public int countIncidentsOutWarrantyByYear(int year) {
+        return reportDAO.countIncidentsOutWarrantyByYear(year);
+    }
+
+    @Override
+    public int countMaintenancesInWarrantyByYear(int year) {
+        return reportDAO.countMaintenancesInWarrantyByYear(year);
+    }
+
+    @Override
+    public int countMaintenancesOutWarrantyByYear(int year) {
+        return reportDAO.countMaintenancesOutWarrantyByYear(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getIncidentsWarrantyByMonth(int year) {
+        return reportDAO.getIncidentsWarrantyByMonth(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMaintenancesWarrantyByMonth(int year) {
+        return reportDAO.getMaintenancesWarrantyByMonth(year);
     }
 }

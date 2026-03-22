@@ -5,16 +5,11 @@ import java.util.Map;
 
 public interface IReportService {
 
+    //KPI
     int countActiveContracts();
     int countNewCustomersThisMonth();
     int countPendingIncidents();
     int countMaintenanceThisMonth();
-
-    // Dashboard v2 - Inventory
-    int countCustomers();
-    int countDevices();
-    int countDevicesByStatus(String status);
-    int countDevicesBrokenLike();
 
     Map<Integer, Integer> getNewCustomersByMonth(int year);
     Map<String, Integer> getMaintenanceStatusCount(int year);
@@ -23,9 +18,23 @@ public interface IReportService {
     List<Map<String, Object>> getTopSpareParts(int limit);
 
     // Dashboard v2 - Inventory
+    int countCustomers();
+    int countDevices();
+    int countDevicesByStatus(String status);
+    int countDevicesBrokenLike();
+
     List<Map<String, Object>> getDevicesByBrand();
     List<Map<String, Object>> getDevicesByCategory();
     List<Map<String, Object>> getDevicesByKvaBucket();
 
     List<Map<String, Object>> getTopModels(int limit);
+
+    //Service module
+    int countIncidentsInWarrantyByYear(int year);
+    int countIncidentsOutWarrantyByYear(int year);
+    int countMaintenancesInWarrantyByYear(int year);
+    int countMaintenancesOutWarrantyByYear(int year);
+
+    List<Map<String, Object>> getIncidentsWarrantyByMonth(int year);
+    List<Map<String, Object>> getMaintenancesWarrantyByMonth(int year);
 }

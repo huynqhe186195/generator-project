@@ -13,11 +13,11 @@ public class ReportDAO extends GenericDAO<Object>{
 
     //kpi card
     public int countActiveContracts(){
-        return count("SELECT COUNT(*) FROM contracts WHERE status = 'Active' ");
+        return count("SELECT COUNT(*) FROM contracts WHERE status = 'ACTIVE' ");
     }
 
     public int countNewCustomersThisMonth(){
-        return count("SELECT COUNT(*) FROM users WHERE role_id = 5" +
+        return count("SELECT COUNT(*) FROM users WHERE role_id = 5 " +
                 "AND MONTH(created_at) = MONTH(CURDATE()) " +
                 "AND YEAR(created_at) = YEAR(CURDATE()) " );
     }
@@ -49,11 +49,13 @@ public class ReportDAO extends GenericDAO<Object>{
 
     public int countDevicesBrokenLike(){
         return count("SELECT COUNT(*) FROM products " +
-                "WHERE status IN 'BROKEN', 'REPAIRING' ");
+                "WHERE status IN ('BROKEN', 'REPAIRING') ");
     }
 
+    //================================================================
+
     //charts
-    public Map<Integer, Integer> getNewCustomersByMoth(int year){
+    public Map<Integer, Integer> getNewCustomersByMonth(int year){
         String sql = "SELECT MONTH(created_at) AS month, COUNT(*) AS cnt " +
                 "FROM users WHERE role_id = 5 AND YEAR(created_at) = ? " +
                 "GROUP BY MONTH(created_at) ORDER BY month";
@@ -87,7 +89,7 @@ public class ReportDAO extends GenericDAO<Object>{
 
     public Map<String, Integer> getMaintenanceStatusCount(int year){
         String sql = "SELECT status, COUNT(*) AS cnt  FROM maintenances " +
-                "WHERE YEAR(maintenance_data) = ? GROUP BY status ";
+                "WHERE YEAR(maintenance_date) = ? GROUP BY status ";
 
         Map<String, Integer> result = new LinkedHashMap<>();
         result.put("SCHEDULED", 0);
@@ -103,6 +105,10 @@ public class ReportDAO extends GenericDAO<Object>{
             ps = conn.prepareStatement(sql);
             ps.setInt(1, year);
             rs = ps.executeQuery();
+
+            while (rs.next()){
+                result.put(rs.getString("status"), rs.getInt("cnt"));
+            }
 
         }catch (Exception e){
             e.printStackTrace();
@@ -199,10 +205,10 @@ public class ReportDAO extends GenericDAO<Object>{
 
     public List<Map<String, Object>> getTopSpareParts(int limit){
         String sql = "SELECT sp.name, SUM(msp.quantity_used) AS total_used " +
-                "FROM maintenance_spare_parts_msp " +
+                "FROM maintenance_spare_parts msp " +
                 "JOIN spare_parts sp ON msp.spare_part_id = sp.id " +
                 "GROUP BY sp.id, sp.name " +
-                "ORDER BY total_used DBSC " +
+                "ORDER BY total_used DESC " +
                 "LIMIT ? ";
 
         List<Map<String, Object>> result = new ArrayList<>();
@@ -239,6 +245,17 @@ public class ReportDAO extends GenericDAO<Object>{
                 "JOIN product_models pm ON p.model_id = pm.id " +
                 "JOIN brands b ON pm.brand_id = b.id " +
                 "GROUP BY b.id, b.name " +
+                "ORDER BY value DESC";
+
+        return queryLabelValue(sql);
+    }
+
+    public List<Map<String, Object>> getDevicesByCategory() {
+        String sql = "SELECT c.name AS label, COUNT(*) AS value " +
+                "FROM products p " +
+                "JOIN product_models pm ON p.model_id = pm.id " +
+                "JOIN categories c ON pm.category_id = c.id " +
+                "GROUP BY c.id, c.name " +
                 "ORDER BY value DESC";
 
         return queryLabelValue(sql);
@@ -308,7 +325,163 @@ public class ReportDAO extends GenericDAO<Object>{
         ResultSet rs = null;
 
         try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
 
+            while (rs.next()){
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("label", rs.getString("label"));
+                row.put("value", rs.getInt("value"));
+                result.add(row);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return result;
+    }
+
+    //=============================================================
+
+    /**
+    *Service module (Warranty)
+    *Incident warranty: ticket_created_at = incidents.created_at
+    *Contract lookup: ưu tiên incidents.contract_id, fallback products.contract_id
+    **/
+    public int countIncidentsInWarrantyByYear(int year) {
+        String sql = "SELECT COUNT(*) FROM incidents i " +
+                "JOIN products p ON i.product_id = p.id " +
+                "LEFT JOIN contracts c1 ON i.contract_id = c1.id " +
+                "LEFT JOIN contracts c2 ON p.contract_id = c2.id " +
+                "WHERE YEAR(i.created_at) = ? " +
+                "AND DATE(i.created_at) >= COALESCE(c1.start_date, c2.start_date) " +
+                "AND DATE(i.created_at) <= COALESCE(c1.end_date, c2.end_date)";
+
+        return count(sql, year);
+    }
+
+    public int countIncidentsOutWarrantyByYear(int year) {
+        String sql = "SELECT COUNT(*) FROM incidents i " +
+                "JOIN products p ON i.product_id = p.id " +
+                "LEFT JOIN contracts c1 ON i.contract_id = c1.id " +
+                "LEFT JOIN contracts c2 ON p.contract_id = c2.id " +
+                "WHERE YEAR(i.created_at) = ? " +
+                "AND NOT ( " +
+                "  DATE(i.created_at) >= COALESCE(c1.start_date, c2.start_date) " +
+                "  AND DATE(i.created_at) <= COALESCE(c1.end_date, c2.end_date) " +
+                ")";
+
+        return count(sql, year);
+    }
+
+    /**
+     * Maintenance warranty: nếu có incident_id => dùng incident.created_at,
+     *  else dùng maintenances.created_at (ngày tạo phiếu).
+     */
+
+    public int countMaintenancesInWarrantyByYear(int year) {
+        String sql = "SELECT COUNT(*) FROM maintenances m " +
+                "JOIN products p ON m.product_id = p.id " +
+                "LEFT JOIN incidents i ON m.incident_id = i.id " +
+                "LEFT JOIN contracts c ON p.contract_id = c.id " +
+                "WHERE YEAR(COALESCE(i.created_at, m.created_at)) = ? " +
+                "AND DATE(COALESCE(i.created_at, m.created_at)) >= c.start_date " +
+                "AND DATE(COALESCE(i.created_at, m.created_at)) <= c.end_date";
+
+        return count(sql, year);
+    }
+
+    public int countMaintenancesOutWarrantyByYear(int year) {
+        String sql = "SELECT COUNT(*) FROM maintenances m " +
+                "JOIN products p ON m.product_id = p.id " +
+                "LEFT JOIN incidents i ON m.incident_id = i.id " +
+                "LEFT JOIN contracts c ON p.contract_id = c.id " +
+                "WHERE YEAR(COALESCE(i.created_at, m.created_at)) = ? " +
+                "AND NOT ( " +
+                "  DATE(COALESCE(i.created_at, m.created_at)) >= c.start_date " +
+                "  AND DATE(COALESCE(i.created_at, m.created_at)) <= c.end_date " +
+                ")";
+
+        return count(sql, year);
+    }
+
+
+
+    public List<Map<String, Object>> getIncidentsWarrantyByMonth(int year) {
+        String sql = "SELECT MONTH(i.created_at) AS month, SUM(CASE WHEN " +
+                "  DATE(i.created_at) >= COALESCE(c1.start_date, c2.start_date) " +
+                "  AND DATE(i.created_at) <= COALESCE(c1.end_date, c2.end_date) " +
+                "THEN 1 ELSE 0 END) AS in_warranty, " +
+                "SUM(CASE WHEN NOT ( " +
+                "  DATE(i.created_at) >= COALESCE(c1.start_date, c2.start_date) " +
+                "  AND DATE(i.created_at) <= COALESCE(c1.end_date, c2.end_date) " +
+                ") THEN 1 ELSE 0 END) AS out_warranty " +
+                "FROM incidents i " +
+                "JOIN products p ON i.product_id = p.id " +
+                "LEFT JOIN contracts c1 ON i.contract_id = c1.id " +
+                "LEFT JOIN contracts c2 ON p.contract_id = c2.id " +
+                "WHERE YEAR(i.created_at) = ? " +
+                "GROUP BY MONTH(i.created_at) " +
+                "ORDER BY month";
+
+        return queryMonthInOut(sql, year);
+    }
+
+    public List<Map<String, Object>> getMaintenancesWarrantyByMonth(int year) {
+        String sql = " SELECT MONTH(COALESCE(i.created_at, m.created_at)) AS month, " +
+                "SUM(CASE WHEN " +
+                "  DATE(COALESCE(i.created_at, m.created_at)) >= c.start_date " +
+                "  AND DATE(COALESCE(i.created_at, m.created_at)) <= c.end_date " +
+                "THEN 1 ELSE 0 END) AS in_warranty, " +
+                "SUM(CASE WHEN NOT ( " +
+                "  DATE(COALESCE(i.created_at, m.created_at)) >= c.start_date " +
+                "  AND DATE(COALESCE(i.created_at, m.created_at)) <= c.end_date " +
+                ") THEN 1 ELSE 0 END) AS out_warranty " +
+                "FROM maintenances m " +
+                "JOIN products p ON m.product_id = p.id " +
+                "LEFT JOIN incidents i ON m.incident_id = i.id " +
+                "LEFT JOIN contracts c ON p.contract_id = c.id " +
+                "WHERE YEAR(COALESCE(i.created_at, m.created_at)) = ? " +
+                "GROUP BY MONTH(COALESCE(i.created_at, m.created_at)) " +
+                "ORDER BY month";
+
+        return queryMonthInOut(sql, year);
+    }
+
+    private List<Map<String, Object>> queryMonthInOut(String sql, int year) {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        // init 12 months to 0
+        for(int m = 1; m <= 12; m++){
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("month", m);
+            row.put("in", 0);
+            row.put("out", 0);
+            result.add(row);
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            rs = ps.executeQuery();
+
+            while (rs.next()){
+                int month = rs.getInt("month");
+                int inW = rs.getInt("in_warranty");
+                int outW = rs.getInt("out_warranty");
+
+                Map<String, Object> row = result.get(month - 1);
+                row.put("in", inW);
+                row.put("out", outW);
+            }
         }catch (Exception e){
             e.printStackTrace();
         }finally {

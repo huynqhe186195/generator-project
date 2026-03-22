@@ -10,8 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.Year;
+import java.util.Calendar;
 
 @WebServlet("/manager/system-report")
 public class SystemReportController extends HttpServlet{
@@ -23,8 +22,8 @@ public class SystemReportController extends HttpServlet{
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, IOException {
 
-        int currentYear = LocalDate.now().getYear();
-        int year = Year.now().getValue();
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        int year = parseYear(req.getParameter("year"), currentYear);
 
         String section = normalizeSection(req.getParameter("section"));
         if(section == null){
@@ -40,7 +39,7 @@ public class SystemReportController extends HttpServlet{
         if("inventory".equals(section)){
             loadInventory(req);
         }else if("service".equals(section)){
-            // Placeholder: sẽ làm ở bước sau
+            loadServices(req, year);
         }else if("financial".equals(section)){
             // Placeholder: sẽ làm ở bước sau
         }else if("risk".equals(section)){
@@ -95,5 +94,30 @@ public class SystemReportController extends HttpServlet{
 
         //Table (JSON)
         req.setAttribute("topModelsJson", gson.toJson(reportService.getTopModels(10)));
+    }
+
+    private void loadServices(HttpServletRequest req, int year){
+        //KPI
+        req.setAttribute("svcPendingIncidents", reportService.countPendingIncidents());
+        req.setAttribute("svcIncidentsInWarranty",
+                reportService.countIncidentsInWarrantyByYear(year));
+        req.setAttribute("svcIncidentsOutWarranty",
+                reportService.countIncidentsOutWarrantyByYear(year));
+
+        req.setAttribute("svcMaintInWarranty",
+                reportService.countMaintenancesInWarrantyByYear(year));
+        req.setAttribute("svcMaintOutWarranty",
+                reportService.countMaintenancesOutWarrantyByYear(year));
+
+        req.setAttribute("svcDevicesBroken",
+                reportService.countDevicesBrokenLike());
+
+        // Charts JSON
+        req.setAttribute("svcIncidentsWarrantyByMonthJson",
+                gson.toJson(reportService.getIncidentsWarrantyByMonth(year)));
+        req.setAttribute("svcMaintWarrantyByMonthJson",
+                gson.toJson(reportService.getMaintenancesWarrantyByMonth(year)));
+        req.setAttribute("svcIncidentPriorityJson",
+                gson.toJson(reportService.getIncidentsByPriority(year)));
     }
 }
