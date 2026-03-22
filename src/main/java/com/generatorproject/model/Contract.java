@@ -1,8 +1,13 @@
 package com.generatorproject.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.sql.Date;
 import java.sql.Timestamp;
 
+@Setter
+@Getter
 public class Contract {
     private Long id;
     private String contractNumber;
@@ -22,7 +27,6 @@ public class Contract {
     private String productSerial;
     private String productModelName;
     private Integer productManufactureYear;
-    private Date signedDate;
 
     public Contract() {
     }
@@ -40,155 +44,11 @@ public class Contract {
         this.createdAt = builder.createdAt;
         this.terminatedAt = builder.terminatedAt;
         this.filePath = builder.filePath;
-
         this.customerName = builder.customerName;
+        this.tempCustomerEmail = builder.tempCustomerEmail;
         this.productSerial = builder.productSerial;
         this.productModelName = builder.productModelName;
         this.productManufactureYear = builder.productManufactureYear;
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getContractNumber() {
-        return contractNumber;
-    }
-
-    public void setContractNumber(String contractNumber) {
-        this.contractNumber = contractNumber;
-    }
-
-    public int getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(int customerId) {
-        this.customerId = customerId;
-    }
-
-    public int getProductId() {
-        return productId;
-    }
-
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public int getManagerId() {
-        return managerId;
-    }
-
-    public void setManagerId(int managerId) {
-        this.managerId = managerId;
-    }
-
-    public Date getSignedDate() {
-        return signedDate;
-    }
-
-    public void setSignedDate(Date signedDate) {
-        this.signedDate = signedDate;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Timestamp getTerminatedAt() {
-        return terminatedAt;
-    }
-
-    public void setTerminatedAt(Timestamp terminatedAt) {
-        this.terminatedAt = terminatedAt;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public String getProductSerial() {
-        return productSerial;
-    }
-
-    public void setProductSerial(String productSerial) {
-        this.productSerial = productSerial;
-    }
-
-    public String getProductModelName() {
-        return productModelName;
-    }
-
-    public void setProductModelName(String productModelName) {
-        this.productModelName = productModelName;
-    }
-
-    public Integer getProductManufactureYear() {
-        return productManufactureYear;
-    }
-    public Date getSignedDate() {
-        return signedDate;
-    }
-
-    public void setSignedDate(Date signedDate) {
-        this.signedDate = signedDate;
-    }
-
-    public void setProductManufactureYear(Integer productManufactureYear) {
-        this.productManufactureYear = productManufactureYear;
-    }
-
-    public String getTempCustomerEmail() {
-        return tempCustomerEmail;
-    }
-
-    public void setTempCustomerEmail(String tempCustomerEmail) {
-        this.tempCustomerEmail = tempCustomerEmail;
     }
 
     public static Builder builder() {
@@ -209,10 +69,11 @@ public class Contract {
         private Timestamp terminatedAt;
         private String filePath;
         private String customerName;
+        private String tempCustomerEmail;
         private String productSerial;
         private String productModelName;
         private Integer productManufactureYear;
-        private Date signedDate;
+
         public Builder id(Long id) {
             this.id = id;
             return this;
@@ -278,6 +139,11 @@ public class Contract {
             return this;
         }
 
+        public Builder tempCustomerEmail(String tempCustomerEmail) {
+            this.tempCustomerEmail = tempCustomerEmail;
+            return this;
+        }
+
         public Builder productSerial(String productSerial) {
             this.productSerial = productSerial;
             return this;
@@ -292,35 +158,9 @@ public class Contract {
             this.productManufactureYear = productManufactureYear;
             return this;
         }
-        public Builder signedDate(Date signedDate) {
-            this.signedDate = signedDate;
-            return this;
-        }
 
         public Contract build() {
-            Contract contract = new Contract();
-
-            contract.setId(this.id);
-            contract.setContractNumber(this.contractNumber);
-            contract.setCustomerId(this.customerId);
-            contract.setProductId(this.productId);
-
-            contract.setSignedDate(this.signedDate); // 👈 THÊM Ở ĐÂY
-
-            contract.setStartDate(this.startDate);
-            contract.setEndDate(this.endDate);
-            contract.setStatus(this.status);
-            contract.setManagerId(this.managerId);
-            contract.setCustomerName(this.customerName);
-            contract.setProductSerial(this.productSerial);
-            contract.setProductModelName(this.productModelName);
-            contract.setProductManufactureYear(this.productManufactureYear);
-            contract.setCreatedAt(this.createdAt);
-            contract.setTerminatedAt(this.terminatedAt);
-
-            return contract;
+            return new Contract(this);
         }
-
     }
-
 }

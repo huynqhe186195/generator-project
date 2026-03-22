@@ -151,14 +151,11 @@ public class RequestManagerController extends HttpServlet {
             String s = String.valueOf(raw).trim();
             if (s.isEmpty()) return null;
             if (s.contains(".")) {
-                return (
-            ong) Double.parseDouble(s);
+                return (long) Double.parseDouble(s);
             }
-            
             return Long.parseLong(s);
         } catch (Exception ignored) {
             return null;
-                
         }
     }
 }
