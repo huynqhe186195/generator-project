@@ -232,23 +232,6 @@
         </div>
     </c:if>
 
-    <div class="info-banner mb-4">
-        <div class="row g-3 align-items-stretch">
-            <div class="col-lg-6">
-                <div class="help-mini-card">
-                    <div class="fw-bold text-primary mb-2"><i class="fa fa-shield-halved me-2"></i>`technician_skills` dùng để làm gì?</div>
-                    <div class="text-muted">Bảng này lưu <strong>kỹ năng mà từng technician đang có</strong>. Recommendation sẽ đọc bảng này để biết technician nào đủ skill bắt buộc cho một incident plan.</div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="help-mini-card">
-                    <div class="fw-bold text-warning mb-2"><i class="fa fa-calendar-xmark me-2"></i>`technician_unavailability` dùng để làm gì?</div>
-                    <div class="text-muted">Bảng này lưu <strong>các khoảng thời gian technician không thể nhận việc</strong> như nghỉ phép, training, hoặc bị block. Recommendation và lịch phân công sẽ dùng nó để tránh xếp sai người, sai giờ.</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="row g-4 align-items-start">
         <div class="col-xl-4">
             <div class="glass-card sticky-side">
