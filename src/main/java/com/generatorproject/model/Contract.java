@@ -22,6 +22,7 @@ public class Contract {
     private String productSerial;
     private String productModelName;
     private Integer productManufactureYear;
+    private Date signedDate;
 
     public Contract() {
     }
@@ -44,6 +45,7 @@ public class Contract {
         this.productSerial = builder.productSerial;
         this.productModelName = builder.productModelName;
         this.productManufactureYear = builder.productManufactureYear;
+
     }
 
     public Long getId() {
@@ -169,6 +171,13 @@ public class Contract {
     public Integer getProductManufactureYear() {
         return productManufactureYear;
     }
+    public Date getSignedDate() {
+        return signedDate;
+    }
+
+    public void setSignedDate(Date signedDate) {
+        this.signedDate = signedDate;
+    }
 
     public void setProductManufactureYear(Integer productManufactureYear) {
         this.productManufactureYear = productManufactureYear;
@@ -203,7 +212,7 @@ public class Contract {
         private String productSerial;
         private String productModelName;
         private Integer productManufactureYear;
-
+        private Date signedDate;
         public Builder id(Long id) {
             this.id = id;
             return this;
@@ -283,9 +292,35 @@ public class Contract {
             this.productManufactureYear = productManufactureYear;
             return this;
         }
+        public Builder signedDate(Date signedDate) {
+            this.signedDate = signedDate;
+            return this;
+        }
 
         public Contract build() {
-            return new Contract(this);
+            Contract contract = new Contract();
+
+            contract.setId(this.id);
+            contract.setContractNumber(this.contractNumber);
+            contract.setCustomerId(this.customerId);
+            contract.setProductId(this.productId);
+
+            contract.setSignedDate(this.signedDate); // 👈 THÊM Ở ĐÂY
+
+            contract.setStartDate(this.startDate);
+            contract.setEndDate(this.endDate);
+            contract.setStatus(this.status);
+            contract.setManagerId(this.managerId);
+            contract.setCustomerName(this.customerName);
+            contract.setProductSerial(this.productSerial);
+            contract.setProductModelName(this.productModelName);
+            contract.setProductManufactureYear(this.productManufactureYear);
+            contract.setCreatedAt(this.createdAt);
+            contract.setTerminatedAt(this.terminatedAt);
+
+            return contract;
         }
+
     }
+
 }

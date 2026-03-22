@@ -438,16 +438,15 @@ public class ProductDAO extends GenericDAO<Product> {
 
 
     public Long save(Product product) {
-        StringBuilder sql = new StringBuilder("INSERT INTO products (");
-        sql.append("serial_number, customer_id, contract_id, status, total_running_hours, ");
-        sql.append("manufacture_year, purchase_date, current_location, model_id, created_at");
-        sql.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        String sql = "INSERT INTO products (" + "serial_number, customer_id, contract_id, status, total_running_hours, " +
+                "manufacture_year, purchase_date, current_location, model_id, created_at" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
         if (product.getContractId() == null) {
             throw new IllegalArgumentException("contractId không được null vì product phải thuộc hợp đồng");
         }
 
-        return insert(sql.toString(),
+        return insert(sql,
                 product.getSerialNumber(),
                 product.getCustomerId(),
                 product.getContractId(),
@@ -524,6 +523,18 @@ public class ProductDAO extends GenericDAO<Product> {
 
         return count(sql, searchPattern, searchPattern);
     }
+    public Product findByIdAndCustomerId(Long productId, Long customerId) {
+        String sql = """
+        SELECT p.*, pm.name AS model_name, b.name AS brand_name
+        FROM products p
+        LEFT JOIN product_models pm ON p.model_id = pm.id
+        LEFT JOIN brands b ON pm.brand_id = b.id
+        WHERE p.id = ? AND p.customer_id = ?
+        LIMIT 1
+    """;
 
+        List<Product> list = query(sql, new ProductMapper(), productId, customerId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
+    }
 
 }

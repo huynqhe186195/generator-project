@@ -47,7 +47,7 @@ public class CustomerAiChatServlet extends HttpServlet {
         } catch (Exception ex) {
             response.setSuccess(false);
             response.setReply("Xin lỗi, tôi chưa xử lý được yêu cầu của bạn. Vui lòng thử lại sau.");
-            response.setResults(Collections.<DeviceSearchResultDto>emptyList());
+            response.setResults(Collections.emptyList());
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write(gson.toJson(response));
         }

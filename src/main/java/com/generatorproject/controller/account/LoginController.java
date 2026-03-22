@@ -15,7 +15,7 @@ import java.io.IOException;
 @WebServlet(urlPatterns = { "/hanldeLogin" })
 public class LoginController extends HttpServlet {
 
-    private IUserServices userServices = new UserServices();
+    private final IUserServices userServices = new UserServices();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

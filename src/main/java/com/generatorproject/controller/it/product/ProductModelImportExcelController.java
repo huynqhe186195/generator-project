@@ -43,7 +43,7 @@ public class ProductModelImportExcelController extends HttpServlet {
     private final BrandDAO brandDAO = new BrandDAO();
     private final CategoryDAO categoryDAO = new CategoryDAO();
 
-    private static final Pattern IMG_SRC_PATTERN = Pattern.compile("src\\s*=\\s*[\"\']([^\"\']+)[\"\']",
+    private static final Pattern IMG_SRC_PATTERN = Pattern.compile("src\\s*=\\s*[\"']([^\"']+)[\"']",
             Pattern.CASE_INSENSITIVE);
 
     @Override
@@ -168,7 +168,7 @@ public class ProductModelImportExcelController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             cleanupPersistedFiles(req, persistedFiles);
-            String detail = URLEncoder.encode(safeErrorMessage(e), StandardCharsets.UTF_8.name());
+            String detail = URLEncoder.encode(safeErrorMessage(e), StandardCharsets.UTF_8);
             resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_error&detail=" + detail);
             return;
         }
@@ -177,7 +177,7 @@ public class ProductModelImportExcelController extends HttpServlet {
             cleanupPersistedFiles(req, persistedFiles);
             String detail = buildImportDetail(invalidRequiredCount, invalidBrandCategoryCount, duplicateCount,
                     errorDetails);
-            String encoded = URLEncoder.encode(detail, StandardCharsets.UTF_8.name());
+            String encoded = URLEncoder.encode(detail, StandardCharsets.UTF_8);
             resp.sendRedirect(req.getContextPath() + "/it/products?msg=import_empty&detail=" + encoded);
             return;
         }

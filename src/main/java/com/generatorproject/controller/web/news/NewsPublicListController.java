@@ -24,7 +24,7 @@ public class NewsPublicListController extends HttpServlet {
         String category = req.getParameter("category");
 
         int page = 1;
-        int limit = 9;
+        int limit = 6;
 
         try {
             if (pageStr != null && !pageStr.trim().isEmpty()) {

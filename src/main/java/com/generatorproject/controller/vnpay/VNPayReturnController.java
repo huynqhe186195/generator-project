@@ -22,26 +22,22 @@ import java.util.Map;
 public class VNPayReturnController extends HttpServlet {
 
 
-     private InvoiceService invoiceService = new InvoiceService();
+     private final InvoiceService invoiceService = new InvoiceService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Map<String, String> fields = new HashMap<>();
         for (Enumeration<String> params = req.getParameterNames(); params.hasMoreElements();) {
-            String fieldName = URLEncoder.encode(params.nextElement(), StandardCharsets.US_ASCII.toString());
-            String fieldValue = URLEncoder.encode(req.getParameter(fieldName), StandardCharsets.US_ASCII.toString());
+            String fieldName = URLEncoder.encode(params.nextElement(), StandardCharsets.US_ASCII);
+            String fieldValue = URLEncoder.encode(req.getParameter(fieldName), StandardCharsets.US_ASCII);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
                 fields.put(fieldName, fieldValue);
             }
         }
 
         String vnp_SecureHash = req.getParameter("vnp_SecureHash");
-        if (fields.containsKey("vnp_SecureHashType")) {
-            fields.remove("vnp_SecureHashType");
-        }
-        if (fields.containsKey("vnp_SecureHash")) {
-            fields.remove("vnp_SecureHash");
-        }
+        fields.remove("vnp_SecureHashType");
+        fields.remove("vnp_SecureHash");
 
         // Băm lại dữ liệu để kiểm tra chữ ký
         String signValue = VNPayConfig.hashAllFields(fields);

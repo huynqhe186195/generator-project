@@ -39,7 +39,6 @@
           color: var(--ink);
         }
 
-        /* Navbar */
         .navbar-landing {
           background: transparent;
           padding: 18px 0;
@@ -95,7 +94,6 @@
           background: rgba(78, 115, 223, .08);
         }
 
-        /* Hero Slider */
         .hero-section {
           position: relative;
           overflow: hidden;
@@ -110,23 +108,24 @@
           background-position: center;
           background-repeat: no-repeat;
           overflow: hidden;
+          z-index: 1;
         }
 
         .hero-slide::before {
           content: "";
           position: absolute;
           inset: 0;
+          z-index: 0;
           background:
-            linear-gradient(115deg, rgba(15, 23, 42, .38) 0%, rgba(37, 99, 235, .30) 45%, rgba(15, 23, 42, .50) 100%),
-            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, .10), transparent 30%),
-            radial-gradient(circle at 80% 18%, rgba(255, 255, 255, .08), transparent 28%);
-          backdrop-filter: blur(1px);
+            linear-gradient(115deg, rgba(15, 23, 42, .18) 0%, rgba(37, 99, 235, .12) 45%, rgba(15, 23, 42, .20) 100%),
+            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, .04), transparent 30%),
+            radial-gradient(circle at 80% 18%, rgba(255, 255, 255, .03), transparent 28%);
           pointer-events: none;
         }
 
         .hero-content {
           position: relative;
-          z-index: 1;
+          z-index: 2;
         }
 
         .hero-title {
@@ -225,7 +224,6 @@
           color: #fff;
         }
 
-
         .user-dropdown-toggle {
           border-radius: 999px;
           padding: .55rem .95rem !important;
@@ -240,7 +238,6 @@
           background: rgba(78, 115, 223, .06);
         }
 
-        /* Sections */
         .section-title {
           font-weight: 900;
           letter-spacing: -.2px;
@@ -253,7 +250,6 @@
           max-width: 62ch;
         }
 
-        /* Feature cards */
         .feature-card {
           border: 1px solid rgba(15, 23, 42, .06);
           border-radius: 22px;
@@ -296,7 +292,6 @@
           border: 1px solid rgba(78, 115, 223, .12);
         }
 
-        /* Brands */
         .brand-item {
           padding: 18px 16px;
           background: #fff;
@@ -328,7 +323,6 @@
         .carousel-fade .carousel-item-prev.carousel-item-end {
           opacity: 1;
         }
-
 
         .carousel-control-prev,
         .carousel-control-next {
@@ -366,7 +360,6 @@
           background-color: rgba(255, 255, 255, .45);
         }
 
-        /* Footer */
         footer {
           background: #0b1224;
           color: rgba(255, 255, 255, .70);
@@ -452,7 +445,7 @@
                 </c:when>
                 <c:otherwise>
                   <li class="nav-item">
-                    <a class="nav-link nav-pill px-3" href="<c:url value='/product-list'/>">Hợp đồng</a>
+                    <a class="nav-link nav-pill px-3" href="<c:url value='/product-list'/>">Sản phẩm</a>
                   </li>
                 </c:otherwise>
               </c:choose>
@@ -475,28 +468,56 @@
                       <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
                     </a>
                   </li>
-                </c:when>
 
-                <c:otherwise>
-                  <li class="nav-item dropdown ms-lg-3">
-                    <a class="nav-link dropdown-toggle user-dropdown-toggle" href="#" role="button"
-                      data-bs-toggle="dropdown">
-                      <i class="fas fa-user-circle me-1"></i> ${user.fullName}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
-                      <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i
-                            class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
-                      <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i
-                            class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
+                  <li class="nav-item">
+                    <a class="nav-link nav-pill px-3" href="<c:url value='/products'/>">Sản phẩm mẫu</a>
+                  </li>
+
+                  <c:choose>
+                    <c:when test="${empty user}">
+                    </c:when>
+                    <c:otherwise>
+                      <li class="nav-item">
+                        <a class="nav-link nav-pill px-3" href="<c:url value='/product-list'/>">Hợp đồng</a>
+                      </li>
+                    </c:otherwise>
+                  </c:choose>
+
+                  <li class="nav-item">
+                    <a class="nav-link nav-pill px-3" href="#brands">Thương hiệu</a>
+                  </li>
+
+                  <c:if test="${not empty user}">
+                    <li class="nav-item">
+                      <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách
+                        hàng</a>
+                    </li>
+                  </c:if>
+
+                  <c:choose>
+                    <c:when test="${empty user}">
+                      <li class="nav-item ms-lg-3">
+                        <a href="<c:url value='/account/login'/>" class="btn btn-white px-4">
+                          <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>">
+                          <i class="fas fa-key me-2"></i>Đổi mật khẩu
+                        </a>
+                      </li>
                       <li>
                         <hr class="dropdown-divider">
                       </li>
-                      <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i
-                            class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
-                    </ul>
-                  </li>
-                </c:otherwise>
-              </c:choose>
+                      <li>
+                        <a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>">
+                          <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </a>
+                      </li>
+            </ul>
+            </li>
+            </c:otherwise>
+            </c:choose>
             </ul>
           </div>
         </div>
@@ -515,15 +536,15 @@
 
           <div class="carousel-inner">
 
-            <!-- Slide 1 -->
             <div class="carousel-item active">
               <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide1.jpg" />');">
               <div class="container position-relative hero-content">
                 <div class="row align-items-center">
                   <div class="col-lg-12" data-aos="fade-right">
                     <h1 class="hero-title">Quản lý hệ thống máy phát điện thông minh</h1>
-                    <p class="hero-desc">Theo dõi, cảnh báo và tối ưu hóa quy trình bảo trì chuyên nghiệp với công nghệ
-                      IoT thời gian thực.</p>
+                    <p class="hero-desc">
+                      Theo dõi, cảnh báo và tối ưu hóa quy trình bảo trì chuyên nghiệp với công nghệ IoT thời gian thực.
+                    </p>
 
                     <div class="row g-3 mb-5 mt-1">
                       <div class="col-4">
@@ -593,15 +614,15 @@
             </div>
           </div>
 
-          <!-- Slide 2 -->
           <div class="carousel-item">
             <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide2.jpg" />');">
             <div class="container position-relative hero-content">
               <div class="row align-items-center">
                 <div class="col-lg-12" data-aos="fade-right">
                   <h1 class="hero-title">Giám sát thiết bị theo thời gian thực</h1>
-                  <p class="hero-desc">Theo dõi trạng thái hoạt động của từng máy 24/7, phát hiện sự cố sớm và hỗ trợ
-                    vận hành ổn định hơn.</p>
+                  <p class="hero-desc">
+                    Theo dõi trạng thái hoạt động của từng máy 24/7, phát hiện sự cố sớm và hỗ trợ vận hành ổn định hơn.
+                  </p>
 
                   <div class="d-flex flex-wrap gap-3">
                     <c:choose>
@@ -627,15 +648,15 @@
           </div>
         </div>
 
-        <!-- Slide 3 -->
         <div class="carousel-item">
           <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide3.jpg" />');">
           <div class="container position-relative hero-content">
             <div class="row align-items-center">
               <div class="col-lg-12" data-aos="fade-right">
                 <h1 class="hero-title">Tối ưu bảo trì và cảnh báo tức thì</h1>
-                <p class="hero-desc">Lên lịch bảo trì, quản lý lịch sử sửa chữa và nhận cảnh báo nhanh khi hệ thống phát
-                  sinh lỗi.</p>
+                <p class="hero-desc">
+                  Lên lịch bảo trì, quản lý lịch sử sửa chữa và nhận cảnh báo nhanh khi hệ thống phát sinh lỗi.
+                </p>
 
                 <div class="d-flex flex-wrap gap-3">
                   <c:choose>
@@ -732,7 +753,6 @@
                   </div>
                 </c:forEach>
               </c:when>
-
               <c:otherwise>
                 <div class="col-6 col-md-3 col-lg-2" data-aos="zoom-in">
                   <div class="brand-item"><i class="fas fa-industry me-2 text-primary"></i><b>CUMMINS</b></div>

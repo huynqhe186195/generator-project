@@ -25,9 +25,9 @@ import java.nio.file.Paths;
 )
 @WebServlet(urlPatterns = "/admin/user-list/handleEditUser")
 public class EditUserController extends HttpServlet {
-    private IUserServices userServices;
-    private UserValidate userValidate;
-    private RoleServices roleServices;
+    private final IUserServices userServices;
+    private final UserValidate userValidate;
+    private final RoleServices roleServices;
 
     public EditUserController() {
         userServices = new UserServices();
