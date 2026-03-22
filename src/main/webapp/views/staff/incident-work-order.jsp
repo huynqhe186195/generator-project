@@ -95,17 +95,20 @@
 
                 <div class="col-md-3">
                     <label class="form-label fw-bold">Bắt đầu</label>
-                    <input type="datetime-local" name="scheduledStart" id="scheduledStartInput" class="form-control" required>
+                    <input type="datetime-local" name="scheduledStart" id="scheduledStartInput" class="form-control" value="${preferredScheduledStart}" required>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label fw-bold">Kết thúc</label>
-                    <input type="datetime-local" name="scheduledEnd" id="scheduledEndInput" class="form-control" required>
+                    <input type="datetime-local" name="scheduledEnd" id="scheduledEndInput" class="form-control" value="${preferredScheduledEnd}" required>
                 </div>
 
                 <div class="col-12">
                     <div class="alert alert-info mb-0">
                         Manager đã duyệt plan. Ở bước này staff mới chốt lịch thực tế và gán kỹ thuật viên để tạo work order.
+                        <c:if test="${not empty preferredScheduledStart and not empty preferredScheduledEnd}">
+                            <div class="mt-2">Khung giờ đã được prefill theo thời gian customer mong muốn tiếp nhận kỹ thuật viên.</div>
+                        </c:if>
                     </div>
                 </div>
 
@@ -249,6 +252,10 @@
         }
         if (scheduledEndInput) {
             scheduledEndInput.addEventListener('change', loadAvailability);
+        }
+
+        if (technicianSelect && technicianSelect.value && scheduledStartInput && scheduledStartInput.value && scheduledEndInput && scheduledEndInput.value) {
+            loadAvailability();
         }
     })();
 </script>

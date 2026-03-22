@@ -43,6 +43,7 @@ public class MaintenanceAssignmentDAO extends DbContext {
                   AND m.scheduled_end IS NOT NULL
                   AND COALESCE(m.execution_status, 'PENDING') <> 'CANCELLED'
                   AND COALESCE(m.schedule_status, 'DRAFT') <> 'REJECTED'
+                  AND COALESCE(m.status, 'SCHEDULED') NOT IN ('COMPLETED', 'CANCELLED')
                   AND ? < m.scheduled_end
                   AND ? > m.scheduled_start
                 """;
@@ -80,6 +81,7 @@ public class MaintenanceAssignmentDAO extends DbContext {
                 "      AND m.scheduled_start IS NOT NULL " +
                 "      AND m.scheduled_end IS NOT NULL " +
                 "      AND COALESCE(m.execution_status, 'PENDING') <> 'CANCELLED' " +
+                "      AND COALESCE(m.status, 'SCHEDULED') NOT IN ('COMPLETED', 'CANCELLED') " +
                 "      AND COALESCE(m.schedule_status, 'DRAFT') <> 'REJECTED' " +
                 "      AND m.scheduled_end >= ? AND m.scheduled_start <= ? " +
                 "    UNION ALL " +
@@ -92,6 +94,7 @@ public class MaintenanceAssignmentDAO extends DbContext {
                 "      AND m.scheduled_start IS NOT NULL " +
                 "      AND m.scheduled_end IS NOT NULL " +
                 "      AND COALESCE(m.execution_status, 'PENDING') <> 'CANCELLED' " +
+                "      AND COALESCE(m.status, 'SCHEDULED') NOT IN ('COMPLETED', 'CANCELLED') " +
                 "      AND COALESCE(m.schedule_status, 'DRAFT') <> 'REJECTED' " +
                 "      AND m.scheduled_end >= ? AND m.scheduled_start <= ? " +
                 ") schedule_view " +
