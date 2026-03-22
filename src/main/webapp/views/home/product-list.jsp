@@ -504,7 +504,6 @@
 <section class="hero-section">
     <div class="container position-relative" data-aos="fade-right">
         <h1 class="hero-title">Tra cứu hợp đồng khách hàng</h1>
-        <p class="hero-desc">Khách hàng không xem danh sách toàn bộ hợp đồng. Để xem chi tiết, vui lòng nhập chính xác mã hợp đồng đang sở hữu để tra cứu thông tin hợp đồng và các thiết bị thuộc hợp đồng đó.</p>
     </div>
 </section>
 

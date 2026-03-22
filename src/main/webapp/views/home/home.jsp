@@ -517,7 +517,7 @@
 
             <!-- Slide 1 -->
             <div class="carousel-item active">
-              <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide1.jpg" />');">
+              <div class="hero-slide" style="background-image: url('<c:url value="/template/images/slide1.jpg" />');">
               <div class="container position-relative hero-content">
                 <div class="row align-items-center">
                   <div class="col-lg-12" data-aos="fade-right">
