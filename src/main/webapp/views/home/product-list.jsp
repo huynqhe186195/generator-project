@@ -86,7 +86,7 @@
         .hero-section{
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color:#fff;
-            padding: 46px 0 96px;
+            padding: 46px 0 88px;
             position:relative;
             overflow:hidden;
         }
@@ -121,6 +121,7 @@
             margin:0;
             max-width: 760px;
             line-height: 1.7;
+            padding-bottom: 28px;
         }
 
         main{ flex:1; padding: 18px 0 60px; }
