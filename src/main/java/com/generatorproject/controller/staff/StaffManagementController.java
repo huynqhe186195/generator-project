@@ -32,6 +32,7 @@ public class StaffManagementController extends HttpServlet {
     private final IProductModelServices productModelServices;
     private final IIncidentServices incidentServices;
     private final IIncidentPlanService incidentPlanService;
+    private final IncidentPlanRecommendationService incidentPlanRecommendationService;
 
     public StaffManagementController() {
         userServices = new UserServices();
@@ -45,6 +46,7 @@ public class StaffManagementController extends HttpServlet {
         productModelServices = new ProductModelServices();
         incidentServices = new IncidentServices();
         incidentPlanService = new IncidentPlanService();
+        incidentPlanRecommendationService = new IncidentPlanRecommendationService();
     }
 
     @Override
@@ -105,7 +107,9 @@ public class StaffManagementController extends HttpServlet {
                 break;
         }
     }
-    private void handleProductDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    private void handleProductDetail(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         String idParam = req.getParameter("id");
 
         if (idParam == null || idParam.trim().isEmpty()) {
@@ -146,6 +150,7 @@ public class StaffManagementController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
         }
     }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
@@ -316,7 +321,8 @@ public class StaffManagementController extends HttpServlet {
             // Đẩy DTO sang JSP để in ra màn hình
             req.setAttribute("repairRequest", dto);
 
-            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit (Approve)
+            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit
+            // (Approve)
             req.setAttribute("rawJsonData", new Gson().toJson(dto));
 
             // Chuyển hướng sang trang chi tiết
@@ -371,7 +377,8 @@ public class StaffManagementController extends HttpServlet {
                 page = 1;
 
             // Lấy danh sách Request từ DB
-            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
+            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page,
+                    pageSize);
 
             Map<Long, Product> relatedProducts = new HashMap<>();
             Map<Long, String> technicianNames = new HashMap<>();
@@ -388,7 +395,8 @@ public class StaffManagementController extends HttpServlet {
                         String currentStatus = sysReq.getStatus();
                         // ĐIỂM SỬA QUAN TRỌNG:
                         // Chỉ tự động chuyển sang COMPLETED nếu nó chưa bị đổi thành INVOICED
-                        if (!"COMPLETED".equalsIgnoreCase(currentStatus) && !"INVOICED".equalsIgnoreCase(currentStatus)) {
+                        if (!"COMPLETED".equalsIgnoreCase(currentStatus)
+                                && !"INVOICED".equalsIgnoreCase(currentStatus)) {
                             requestServices.updateStatus(sysReq.getId().intValue(), "COMPLETED");
                             sysReq.setStatus("COMPLETED"); // Cập nhật trên UI
                         }
@@ -624,6 +632,8 @@ public class StaffManagementController extends HttpServlet {
             req.setAttribute("req", sysReq);
             req.setAttribute("prod", product);
             req.setAttribute("incidentEntity", incident);
+            req.setAttribute("planRecommendations",
+                    incidentPlanRecommendationService.buildRecommendations(incident, product));
 
             req.getRequestDispatcher("/views/staff/incident-escalate.jsp").forward(req, resp);
 
@@ -696,11 +706,13 @@ public class StaffManagementController extends HttpServlet {
                     && maintenanceAssignmentDAO.hasScheduleConflict(technicianId, selectedStart, selectedEnd);
 
             payload.put("technicianId", technicianId);
-            payload.put("technicianName", technician == null ? "Kỹ thuật viên #" + technicianId : technician.getFullName());
+            payload.put("technicianName",
+                    technician == null ? "Kỹ thuật viên #" + technicianId : technician.getFullName());
             payload.put("hasConflict", hasConflict);
             payload.put("windowStart", windowStart);
             payload.put("windowEnd", windowEnd);
-            payload.put("schedules", maintenanceAssignmentDAO.findSchedulesForTechnician(technicianId, windowStart, windowEnd));
+            payload.put("schedules",
+                    maintenanceAssignmentDAO.findSchedulesForTechnician(technicianId, windowStart, windowEnd));
             resp.getWriter().write(new Gson().toJson(payload));
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

@@ -22,14 +22,14 @@ import java.io.IOException;
 import java.util.Map;
 
 // Khớp với action: <form action="/staff/request-manager" ...>
-@WebServlet(urlPatterns = {"/staff/request-manager"})
+@WebServlet(urlPatterns = { "/staff/request-manager" })
 public class RequestManagerController extends HttpServlet {
 
     private final IRequestServices requestServices;
     private final IIncidentServices incidentServices;
     private final IIncidentPlanService incidentPlanService;
 
-    public RequestManagerController(){
+    public RequestManagerController() {
         requestServices = new RequestServices();
         incidentServices = new IncidentServices();
         incidentPlanService = new IncidentPlanService();
@@ -55,6 +55,10 @@ public class RequestManagerController extends HttpServlet {
             String serviceLocation = req.getParameter("service_location");
             String partsNote = req.getParameter("parts_note");
             String requiresPartsPreparation = req.getParameter("requires_parts_preparation");
+            String selectedRecommendationCode = req.getParameter("selected_recommendation_code");
+            String selectedRecommendationTitle = req.getParameter("selected_recommendation_title");
+            String selectedSuggestedTechnicianIds = req.getParameter("selected_suggested_technician_ids");
+            String selectedRequiredSkillCodes = req.getParameter("selected_required_skill_codes");
 
             long requestId = Long.parseLong(idStr);
 
@@ -100,6 +104,12 @@ public class RequestManagerController extends HttpServlet {
             info.put("requiredTechnicianCount", plan.getRequiredTechnicianCount());
             info.put("serviceLocation", plan.getServiceLocation());
             info.put("workflowKind", "INCIDENT_PLAN_APPROVAL");
+            if (selectedRecommendationCode != null && !selectedRecommendationCode.trim().isEmpty()) {
+                info.put("selectedRecommendationCode", selectedRecommendationCode);
+                info.put("selectedRecommendationTitle", selectedRecommendationTitle);
+                info.put("selectedSuggestedTechnicianIds", selectedSuggestedTechnicianIds);
+                info.put("selectedRequiredSkillCodes", selectedRequiredSkillCodes);
+            }
 
 
             // Đóng gói lại thành JSON
@@ -141,11 +151,14 @@ public class RequestManagerController extends HttpServlet {
             String s = String.valueOf(raw).trim();
             if (s.isEmpty()) return null;
             if (s.contains(".")) {
-                return (long) Double.parseDouble(s);
+                return (
+            ong) Double.parseDouble(s);
             }
+            
             return Long.parseLong(s);
         } catch (Exception ignored) {
             return null;
+                
         }
     }
 }

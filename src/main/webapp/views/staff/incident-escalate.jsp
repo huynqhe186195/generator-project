@@ -20,6 +20,10 @@
                 <div class="card-body bg-light p-4">
                     <form action="<c:url value='/staff/request-manager'/>" method="POST">
                         <input type="hidden" name="incident_id" value="${req.id}" />
+                        <input type="hidden" name="selected_recommendation_code" id="selectedRecommendationCode" />
+                        <input type="hidden" name="selected_recommendation_title" id="selectedRecommendationTitle" />
+                        <input type="hidden" name="selected_suggested_technician_ids" id="selectedSuggestedTechnicianIds" />
+                        <input type="hidden" name="selected_required_skill_codes" id="selectedRequiredSkillCodes" />
 
                         <div class="alert alert-primary d-flex align-items-center mb-4 border-0 shadow-sm">
                             <i class="fas fa-info-circle fa-2x me-3"></i>
@@ -30,13 +34,88 @@
                             </div>
                         </div>
 
+                        <c:if test="${not empty planRecommendations}">
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-white border-bottom">
+                                    <h6 class="mb-0 fw-bold text-primary"><i class="fas fa-lightbulb me-2"></i>Gợi ý phương án xử lý & kỹ thuật viên phù hợp</h6>
+                                </div>
+                                <div class="card-body bg-light">
+                                    <div class="row g-3">
+                                        <c:forEach items="${planRecommendations}" var="recommendation">
+                                            <div class="col-lg-6">
+                                                <div class="card h-100 border recommendation-card"
+                                                     data-code="${recommendation.recommendationCode}"
+                                                     data-title="${recommendation.title}"
+                                                     data-work-type="${recommendation.recommendedWorkType}"
+                                                     data-priority="${recommendation.recommendedPriority}"
+                                                     data-duration="${recommendation.recommendedDurationMinutes}"
+                                                     data-tech-count="${recommendation.recommendedTechnicianCount}"
+                                                     data-service-location="${recommendation.recommendedServiceLocation}"
+                                                     data-parts-note="${recommendation.recommendedPartsNote}"
+                                                     data-requires-parts="${recommendation.requiresPartsPreparation}"
+                                                     data-suggested-technician-ids="<c:forEach items='${recommendation.technicianSuggestions}' var='tech' varStatus='loop'>${tech.technicianId}<c:if test='${!loop.last}'>,</c:if></c:forEach>"
+                                                     data-required-skill-codes="<c:forEach items='${recommendation.requiredSkills}' var='skill' varStatus='loop'>${skill.skillCode}<c:if test='${!loop.last}'>,</c:if></c:forEach>">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                                            <div>
+                                                                <div class="fw-bold text-dark">${recommendation.title}</div>
+                                                                <div class="small text-muted">${recommendation.reasonSummary}</div>
+                                                            </div>
+                                                            <span class="badge bg-primary">${recommendation.confidenceScore}%</span>
+                                                        </div>
+
+                                                        <div class="row g-2 small mb-3">
+                                                            <div class="col-6"><strong>Work type:</strong> ${recommendation.recommendedWorkType}</div>
+                                                            <div class="col-6"><strong>Ưu tiên:</strong> ${recommendation.recommendedPriority}</div>
+                                                            <div class="col-6"><strong>Thời lượng:</strong> ${recommendation.recommendedDurationMinutes} phút</div>
+                                                            <div class="col-6"><strong>Số kỹ thuật viên:</strong> ${recommendation.recommendedTechnicianCount}</div>
+                                                        </div>
+
+                                                        <div class="mb-2">
+                                                            <div class="small fw-bold text-secondary mb-1">Kỹ năng đề xuất</div>
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                <c:forEach items="${recommendation.requiredSkills}" var="skill">
+                                                                    <span class="badge ${skill.importanceLevel == 'REQUIRED' ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle'}">
+                                                                        ${skill.skillName}
+                                                                    </span>
+                                                                </c:forEach>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <div class="small fw-bold text-secondary mb-1">Top kỹ thuật viên phù hợp</div>
+                                                            <c:forEach items="${recommendation.technicianSuggestions}" var="tech">
+                                                                <div class="border rounded p-2 mb-2 bg-white">
+                                                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                                                        <div>
+                                                                            <div class="fw-semibold">${tech.technicianName}</div>
+                                                                            <div class="small text-muted">${tech.summary}</div>
+                                                                        </div>
+                                                                        <span class="badge ${tech.matchScore >= 80 ? 'bg-success' : tech.matchScore >= 60 ? 'bg-warning text-dark' : 'bg-secondary'}">${tech.matchScore} điểm</span>
+                                                                    </div>
+                                                                </div>
+                                                            </c:forEach>
+                                                        </div>
+
+                                                        <button type="button" class="btn btn-outline-primary btn-sm apply-recommendation-btn">
+                                                            <i class="fas fa-magic me-1"></i>Áp dụng gợi ý này
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:if>
+
                         <div class="card bg-white border-0 shadow-sm p-3">
                             <h6 class="text-secondary fw-bold mb-3 border-bottom pb-2">Tạo phương án xử lý trình Manager</h6>
 
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Loại hình xử lý</label>
-                                    <select name="type" class="form-select">
+                                    <select name="type" id="planTypeInput" class="form-select">
                                         <option value="REPAIR">Sửa chữa (Repair)</option>
                                         <option value="REPLACEMENT">Thay thế phụ tùng</option>
                                         <option value="INSPECTION">Kiểm tra hiện trường (Inspection)</option>
@@ -47,7 +126,7 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Mức độ ưu tiên</label>
-                                    <select name="priority" class="form-select">
+                                    <select name="priority" id="planPriorityInput" class="form-select">
                                         <option value="LOW">Thấp (Không gấp)</option>
                                         <option value="MEDIUM" selected>Trung bình</option>
                                         <option value="HIGH">Cao (Ưu tiên xử lý)</option>
@@ -57,17 +136,17 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Thời lượng dự kiến (phút)</label>
-                                    <input type="number" name="estimated_duration_minutes" class="form-control" min="30" step="30" value="120" required>
+                                    <input type="number" name="estimated_duration_minutes" id="estimatedDurationInput" class="form-control" min="30" step="30" value="120" required>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Số kỹ thuật viên cần</label>
-                                    <input type="number" name="required_technician_count" class="form-control" min="1" max="5" value="1" required>
+                                    <input type="number" name="required_technician_count" id="technicianCountInput" class="form-control" min="1" max="5" value="1" required>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Địa điểm xử lý</label>
-                                    <input type="text" name="service_location" class="form-control" value="${not empty incidentEntity.locationSnapshot ? incidentEntity.locationSnapshot : prod.currentLocation}" placeholder="Địa điểm thực hiện sửa chữa">
+                                    <input type="text" name="service_location" id="serviceLocationInput" class="form-control" value="${not empty incidentEntity.locationSnapshot ? incidentEntity.locationSnapshot : prod.currentLocation}" placeholder="Địa điểm thực hiện sửa chữa">
                                 </div>
 
                                 <div class="col-md-6">
@@ -80,12 +159,12 @@
 
                                 <div class="col-12">
                                     <label class="form-label fw-bold">Ghi chú vật tư / kỹ năng cần</label>
-                                    <textarea name="parts_note" class="form-control" rows="2" placeholder="Ví dụ: Kiểm tra ATS, chuẩn bị lọc gió và dây curoa nếu cần..."></textarea>
+                                    <textarea name="parts_note" id="partsNoteInput" class="form-control" rows="2" placeholder="Ví dụ: Kiểm tra ATS, chuẩn bị lọc gió và dây curoa nếu cần..."></textarea>
                                 </div>
 
                                 <div class="col-12">
                                     <label class="form-label fw-bold">Ghi chú trình Manager</label>
-                                    <textarea name="staff_note" class="form-control" rows="3" placeholder="Ví dụ: Khách báo cần xử lý gấp vào buổi sáng..."></textarea>
+                                    <textarea name="staff_note" id="staffNoteInput" class="form-control" rows="3" placeholder="Ví dụ: Khách báo cần xử lý gấp vào buổi sáng..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -101,3 +180,50 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        const recommendationButtons = document.querySelectorAll('.apply-recommendation-btn');
+        const recommendationCards = document.querySelectorAll('.recommendation-card');
+        const typeInput = document.getElementById('planTypeInput');
+        const priorityInput = document.getElementById('planPriorityInput');
+        const durationInput = document.getElementById('estimatedDurationInput');
+        const technicianCountInput = document.getElementById('technicianCountInput');
+        const serviceLocationInput = document.getElementById('serviceLocationInput');
+        const requiresPartsPreparationInput = document.getElementById('requiresPartsPreparation');
+        const partsNoteInput = document.getElementById('partsNoteInput');
+        const staffNoteInput = document.getElementById('staffNoteInput');
+        const selectedRecommendationCode = document.getElementById('selectedRecommendationCode');
+        const selectedRecommendationTitle = document.getElementById('selectedRecommendationTitle');
+        const selectedSuggestedTechnicianIds = document.getElementById('selectedSuggestedTechnicianIds');
+        const selectedRequiredSkillCodes = document.getElementById('selectedRequiredSkillCodes');
+
+        recommendationButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                const card = button.closest('.recommendation-card');
+                if (!card) {
+                    return;
+                }
+                recommendationCards.forEach(function (item) {
+                    item.classList.remove('border-primary', 'shadow');
+                });
+                card.classList.add('border-primary', 'shadow');
+
+                typeInput.value = card.dataset.workType || typeInput.value;
+                priorityInput.value = card.dataset.priority || priorityInput.value;
+                durationInput.value = card.dataset.duration || durationInput.value;
+                technicianCountInput.value = card.dataset.techCount || technicianCountInput.value;
+                serviceLocationInput.value = card.dataset.serviceLocation || serviceLocationInput.value;
+                partsNoteInput.value = card.dataset.partsNote || partsNoteInput.value;
+                requiresPartsPreparationInput.checked = card.dataset.requiresParts === 'true';
+                if (staffNoteInput && !staffNoteInput.value.trim()) {
+                    staffNoteInput.value = card.dataset.title ? ('Dựa trên gợi ý: ' + card.dataset.title) : staffNoteInput.value;
+                }
+                selectedRecommendationCode.value = card.dataset.code || '';
+                selectedRecommendationTitle.value = card.dataset.title || '';
+                selectedSuggestedTechnicianIds.value = card.dataset.suggestedTechnicianIds || '';
+                selectedRequiredSkillCodes.value = card.dataset.requiredSkillCodes || '';
+            });
+        });
+    })();
+</script>

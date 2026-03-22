@@ -883,22 +883,19 @@
                     <script>
                         AOS.init({ duration: 800, once: true });
 
-                        function getStatusBadgeMarkup(status) {
-                            switch (status) {
-                                case 'RUNNING':
-                                    return '<span class="badge bg-success-subtle text-success border border-success-subtle">Đang hoạt động</span>';
-                                case 'MAINTENANCE':
-                                    return '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Đang bảo trì</span>';
-                                case 'BROKEN':
-                                    return '<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Hỏng hóc</span>';
-                                case 'RECEIVED_QUOTE':
-                                    return '<span class="badge bg-primary-subtle text-primary border border-primary-subtle">Có báo giá</span>';
-                                default:
-                                    return '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">' + (status || 'Chưa cập nhật') + '</span>';
-                            }
-                        }
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Loại sự cố <span class="text-danger">*</span></label>
+                                <select name="issueType" class="form-select py-2" required>
+                                    <option value="">-- Chọn loại yêu cầu --</option>
+                                    <option value="MAINTENANCE">Bảo dưỡng định kỳ</option>
+                                    <option value="REPLACEMENT">Thay thế phụ tùng</option>
+                                    <option value="BROKEN">Báo Lỗi / Hỏng hóc</option>
+                                    <option value="OTHER">Vấn đề khác</option>
+                                </select>
+                            </div>
 
-                        function formatDisplayDate(rawDate) {
+                            function formatDisplayDate(rawDate) {
                             if (!rawDate) {
                                 return 'Chưa cập nhật';
                             }
@@ -912,21 +909,25 @@
                             return day + '/' + month + '/' + year;
                         }
 
-                        function openDeviceDetail(card) {
-                            const data = card.dataset;
-                            document.getElementById('deviceDetailName').innerText = data.modelName;
-                            document.getElementById('deviceDetailSerial').innerText = data.serialNumber;
-                            document.getElementById('deviceDetailBrand').innerText = data.brandName;
-                            document.getElementById('deviceDetailModel').innerText = data.modelName;
-                            document.getElementById('deviceDetailCategory').innerText = data.categoryName;
-                            document.getElementById('deviceDetailLocation').innerText = data.location;
-                            document.getElementById('deviceDetailManufactureYear').innerText = data.manufactureYear;
-                            document.getElementById('deviceDetailPurchaseDate').innerText = formatDisplayDate(data.purchaseDate);
-                            document.getElementById('deviceDetailRunningHours').innerText = (data.runningHours || 0) + ' giờ';
-                            document.getElementById('deviceDetailStatus').innerHTML = getStatusBadgeMarkup(data.status);
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Khung giờ khách có thể tiếp nhận kiểm tra</label>
+                                <select name="preferredTimeSlot" class="form-select py-2">
+                                    <option value="">-- Chọn khung giờ 120 phút --</option>
+                                    <option value="08:00|10:00|MORNING">08:00 - 10:00</option>
+                                    <option value="10:00|12:00|MORNING">10:00 - 12:00</option>
+                                    <option value="12:00|14:00|AFTERNOON">12:00 - 14:00</option>
+                                    <option value="14:00|16:00|AFTERNOON">14:00 - 16:00</option>
+                                    <option value="16:00|18:00|AFTERNOON">16:00 - 18:00</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Tiêu đề ngắn <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control" placeholder="VD: Máy không đề nổ được..." required>
+                            </div>
 
                             const historyButton = document.getElementById('deviceHistoryButton');
-                            historyButton.href = '<c:url value="/user/quote-history"/>' + '?productId=' + data.productId;
+                            historyButton.href = '<c:url value="/user/quote-history" />' + '?productId=' + data.productId;
 
                             const actionContainer = document.getElementById('deviceActionContainer');
                             if (data.contractStatus === 'TERMINATED') {
@@ -937,24 +938,24 @@
                                 actionContainer.innerHTML = '<button type="button" class="btn btn-secondary btn-pill" disabled><i class="fas fa-hourglass-half me-1"></i>Đã gửi yêu cầu</button>';
                             } else {
                                 actionContainer.innerHTML = '<button type="button" class="btn btn-outline-danger btn-pill"><i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố</button>';
-                                actionContainer.querySelector('button').addEventListener('click', function () {
-                                    openReportModal(data.productId, data.modelName, data.serialNumber);
-                                }, { once: true });
+                            actionContainer.querySelector('button').addEventListener('click', function () {
+                                openReportModal(data.productId, data.modelName, data.serialNumber);
+                                }, {once: true });
                             }
 
                             var detailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
                             detailModal.show();
                         }
 
-                        function handleDeviceCardKeydown(event, element) {
+                            function handleDeviceCardKeydown(event, element) {
                             if (event.key === 'Enter' || event.key === ' ') {
                                 event.preventDefault();
-                                openDeviceDetail(element);
+                            openDeviceDetail(element);
                             }
                         }
 
-                        function openReportModal(id, name, serial) {
-                            document.getElementById('modalProductId').value = id;
+                            function openReportModal(id, name, serial) {
+                                document.getElementById('modalProductId').value = id;
                             document.getElementById('modalProductName').innerText = name;
                             document.getElementById('modalProductSerial').innerText = serial;
 
@@ -968,14 +969,14 @@
                             myModal.show();
                         }
 
-                        document.addEventListener("DOMContentLoaded", function () {
+                            document.addEventListener("DOMContentLoaded", function () {
                             const dateInput = document.getElementById('preferredDateInput');
                             if (dateInput) {
                                 const today = new Date();
-                                const year = today.getFullYear();
-                                const month = String(today.getMonth() + 1).padStart(2, '0');
-                                const day = String(today.getDate()).padStart(2, '0');
-                                dateInput.min = year + "-" + month + "-" + day;
+                            const year = today.getFullYear();
+                            const month = String(today.getMonth() + 1).padStart(2, '0');
+                            const day = String(today.getDate()).padStart(2, '0');
+                            dateInput.min = year + "-" + month + "-" + day;
                             }
                         });
                     </script>
