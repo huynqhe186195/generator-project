@@ -112,7 +112,7 @@ public class AssignTaskController extends HttpServlet {
 
             sysReq.setStatus("TASK_CREATED");
             requestServices.update(sysReq);
-            incidentServices.updateStatus(incidentId, "TASK_CREATED");
+            incidentServices.updateStatus(incidentId, "IN_PROGRESS");
 
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=task_created_success");
         } catch (Exception e) {

@@ -361,7 +361,7 @@ public class MaintenanceDAO extends DbContext {
         m.setProductId(rs.getInt("product_id"));
         m.setTechnicianId(rs.getInt("technician_id"));
 
-        m.setIncidentId((Integer) rs.getObject("incident_id"));
+        m.setIncidentId(getNullableInteger(rs, "incident_id"));
         m.setMaintenanceDate(rs.getDate("maintenance_date"));
         m.setType(rs.getString("type"));
         m.setDescription(rs.getString("description"));
@@ -369,15 +369,15 @@ public class MaintenanceDAO extends DbContext {
         m.setStatus(rs.getString("status"));
         m.setLaborCost(rs.getDouble("labor_cost"));
         m.setCreatedAt(rs.getTimestamp("created_at"));
-        m.setCreatedBy((Integer) rs.getObject("created_by"));
-        m.setIncidentPlanId((Integer) rs.getObject("incident_plan_id"));
+        m.setCreatedBy(getNullableInteger(rs, "created_by"));
+        m.setIncidentPlanId(getNullableInteger(rs, "incident_plan_id"));
         m.setScheduledStart(rs.getTimestamp("scheduled_start"));
         m.setScheduledEnd(rs.getTimestamp("scheduled_end"));
         m.setScheduleStatus(rs.getString("schedule_status"));
         m.setExecutionStatus(rs.getString("execution_status"));
         m.setActualDescription(rs.getString("actual_description"));
         m.setAssignmentStatus(rs.getString("assignment_status"));
-        m.setApprovedBy((Integer) rs.getObject("approved_by"));
+        m.setApprovedBy(getNullableInteger(rs, "approved_by"));
         m.setCompletedAt(rs.getTimestamp("completed_at"));
 
         try {
@@ -392,6 +392,17 @@ public class MaintenanceDAO extends DbContext {
 
 
         return m;
+    }
+
+    private Integer getNullableInteger(ResultSet rs, String columnName) throws SQLException {
+        Object rawValue = rs.getObject(columnName);
+        if (rawValue == null) {
+            return null;
+        }
+        if (rawValue instanceof Number) {
+            return ((Number) rawValue).intValue();
+        }
+        return Integer.valueOf(String.valueOf(rawValue));
     }
 
     public boolean insertMaintenance(Maintenance req) {
