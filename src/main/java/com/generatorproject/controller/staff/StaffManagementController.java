@@ -1,5 +1,6 @@
 package com.generatorproject.controller.staff;
 
+import com.generatorproject.dao.MaintenanceAssignmentDAO;
 import com.generatorproject.dao.MaintenanceDAO;
 import com.generatorproject.model.*;
 import com.generatorproject.services.*;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,7 @@ public class StaffManagementController extends HttpServlet {
     private final IRepairWorkflowService repairWorkflowService;
     private final IInvoiceService invoiceService;
     private final MaintenanceDAO maintenanceDAO;
+    private final MaintenanceAssignmentDAO maintenanceAssignmentDAO;
     private final IProductModelServices productModelServices;
     private final IIncidentServices incidentServices;
     private final IIncidentPlanService incidentPlanService;
@@ -38,6 +41,7 @@ public class StaffManagementController extends HttpServlet {
         repairWorkflowService = new RepairWorkflowService();
         invoiceService = new InvoiceService();
         maintenanceDAO = new MaintenanceDAO();
+        maintenanceAssignmentDAO = new MaintenanceAssignmentDAO();
         productModelServices = new ProductModelServices();
         incidentServices = new IncidentServices();
         incidentPlanService = new IncidentPlanService();
@@ -647,12 +651,29 @@ public class StaffManagementController extends HttpServlet {
             IncidentPlan incidentPlan = incidentPlanService.findById(incidentPlanId);
             Product product = incident != null ? productServices.getProductById(incident.getProductId()) : null;
             List<Users> listTechnicians = userServices.findUserByRoleId(4);
+            Map<Integer, List<MaintenanceAssignmentDAO.TechnicianScheduleItem>> technicianSchedules = new HashMap<>();
+            if (listTechnicians != null && !listTechnicians.isEmpty()) {
+                List<Integer> technicianIds = new java.util.ArrayList<>();
+                for (Users technician : listTechnicians) {
+                    technicianIds.add(technician.getId());
+                }
+                Timestamp scheduleWindowStart = new Timestamp(System.currentTimeMillis());
+                Timestamp scheduleWindowEnd = new Timestamp(scheduleWindowStart.getTime() + 7L * 24 * 60 * 60 * 1000);
+                technicianSchedules = maintenanceAssignmentDAO.findUpcomingSchedulesByTechnicianIds(
+                        technicianIds,
+                        scheduleWindowStart,
+                        scheduleWindowEnd
+                );
+                req.setAttribute("scheduleWindowStart", scheduleWindowStart);
+                req.setAttribute("scheduleWindowEnd", scheduleWindowEnd);
+            }
 
             req.setAttribute("req", sysReq);
             req.setAttribute("incidentEntity", incident);
             req.setAttribute("incidentPlan", incidentPlan);
             req.setAttribute("prod", product);
             req.setAttribute("listTechnicians", listTechnicians);
+            req.setAttribute("technicianSchedules", technicianSchedules);
             req.getRequestDispatcher("/views/staff/incident-work-order.jsp").forward(req, resp);
         } catch (Exception e) {
             e.printStackTrace();
