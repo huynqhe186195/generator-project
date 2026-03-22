@@ -708,6 +708,17 @@
                             <input type="date" name="preferredDate" id="preferredDateInput" class="form-control">
                         </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Khung giờ khách có thể tiếp nhận kiểm tra</label>
+                            <select name="preferredTimeSlot" class="form-select py-2">
+                                <option value="ANYTIME" selected>-- Linh động cả ngày --</option>
+                                <option value="MORNING">Buổi sáng (08:00 - 12:00)</option>
+                                <option value="AFTERNOON">Buổi chiều (13:00 - 17:00)</option>
+                                <option value="EVENING">Buổi tối</option>
+                                <option value="URGENT">Càng sớm càng tốt</option>
+                            </select>
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label fw-bold">Tiêu đề ngắn <span class="text-danger">*</span></label>
                             <input type="text" name="title" class="form-control" placeholder="VD: Máy không đề nổ được..." required>
