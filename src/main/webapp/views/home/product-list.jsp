@@ -127,8 +127,7 @@
         main{ flex:1; padding: 18px 0 60px; }
 
         .main-card,
-        .lookup-card,
-        .device-card{
+        .lookup-card{
             border-radius: 22px;
             background:#fff;
             box-shadow: 0 18px 40px rgba(16,24,40,.08);
@@ -196,69 +195,195 @@
             word-break:break-word;
         }
 
-        .device-grid{
+        .device-browser{
             display:grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 18px;
-            padding: 0 0 8px;
+            grid-template-columns: minmax(240px, 0.95fr) minmax(300px, 1.15fr) minmax(320px, 1.3fr);
+            gap:20px;
         }
-        .device-card{ padding: 20px; cursor:pointer; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-        .device-card:hover{
-            transform: translateY(-4px);
-            box-shadow: 0 22px 45px rgba(16,24,40,.12);
-            border-color: rgba(78,115,223,.25);
+        .device-pane{
+            background:#f8fafc;
+            border:1px solid #e5e7eb;
+            border-radius:20px;
+            padding:18px;
+            min-height: 100%;
         }
-        .device-card:focus-visible{
-            outline: 3px solid rgba(78,115,223,.25);
-            outline-offset: 3px;
-        }
-        .device-head{
+        .device-pane-head{
             display:flex;
             align-items:flex-start;
             justify-content:space-between;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap:12px;
+            margin-bottom:16px;
         }
-        .device-name{
-            font-size: 1.05rem;
-            font-weight: 900;
+        .device-pane-title{
+            font-size:1rem;
+            font-weight:900;
+            color:#0f172a;
+            margin:0;
+        }
+        .device-pane-sub{
+            margin:4px 0 0;
+            color:var(--muted);
+            font-size:.85rem;
+        }
+        .device-count-badge{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-width:36px;
+            height:36px;
+            border-radius:999px;
+            background:#e0e7ff;
+            color:#3730a3;
+            font-weight:900;
+            padding:0 12px;
+        }
+        .device-model-list,
+        .device-serial-list{
+            display:grid;
+            gap:12px;
+        }
+        .device-model-card,
+        .device-serial-card{
+            width:100%;
+            border:1px solid #e5e7eb;
+            border-radius:18px;
+            background:#fff;
+            padding:16px;
+            text-align:left;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+            box-shadow: 0 10px 22px rgba(15,23,42,.05);
+        }
+        .device-model-card:hover,
+        .device-serial-card:hover{
+            transform: translateY(-2px);
+            border-color: rgba(78,115,223,.28);
+            box-shadow: 0 16px 28px rgba(15,23,42,.10);
+        }
+        .device-model-card.is-active,
+        .device-serial-card.is-active{
+            border-color: rgba(78,115,223,.45);
+            background: linear-gradient(180deg, rgba(78,115,223,.10), rgba(255,255,255,.96));
+            box-shadow: 0 20px 34px rgba(78,115,223,.14);
+        }
+        .device-model-card:focus-visible,
+        .device-serial-card:focus-visible{
+            outline: 3px solid rgba(78,115,223,.22);
+            outline-offset: 3px;
+        }
+        .device-model-top,
+        .device-serial-top{
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:12px;
+        }
+        .device-model-name,
+        .device-serial-name{
+            font-size:1rem;
+            font-weight:900;
             color:#111827;
             margin:0;
         }
+        .device-model-brand,
+        .device-serial-meta,
+        .device-empty-text{
+            color:var(--muted);
+            font-size:.88rem;
+        }
+        .device-qty-pill,
         .serial-pill{
             display:inline-flex;
             align-items:center;
-            gap: 8px;
-            border-radius: 999px;
+            gap:8px;
+            border-radius:999px;
             background:#eef2ff;
             color:#3730a3;
-            padding: 8px 14px;
-            font-weight: 800;
-            font-size: .92rem;
+            padding:8px 14px;
+            font-weight:800;
+            font-size:.88rem;
         }
-        .info-list{
+        .device-meta-list{
             display:grid;
-            gap: 12px;
+            gap:10px;
+            margin-top:14px;
         }
-        .info-row{
+        .device-meta-row{
             display:flex;
+            align-items:center;
             justify-content:space-between;
-            gap: 16px;
-            border-bottom:1px dashed #e5e7eb;
-            padding-bottom:10px;
+            gap:16px;
+            border-top:1px dashed #e5e7eb;
+            padding-top:10px;
         }
-        .info-row:last-child{
-            border-bottom:none;
-            padding-bottom:0;
-        }
-        .info-label{
+        .device-meta-label{
             color:var(--muted);
             font-weight:700;
         }
-        .info-value{
+        .device-meta-value{
             color:#0f172a;
-            font-weight:700;
+            font-weight:800;
             text-align:right;
+        }
+        .device-detail-card{
+            background:#fff;
+            border:1px solid #e5e7eb;
+            border-radius:18px;
+            padding:20px;
+            min-height:100%;
+            box-shadow: 0 14px 30px rgba(15,23,42,.06);
+        }
+        .device-detail-hero{
+            display:flex;
+            flex-wrap:wrap;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:14px;
+            margin-bottom:18px;
+        }
+        .device-detail-title{
+            font-size:1.2rem;
+            font-weight:900;
+            margin:0;
+            color:#0f172a;
+        }
+        .device-detail-subtitle{
+            margin:6px 0 0;
+            color:var(--muted);
+        }
+        .device-detail-grid{
+            display:grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap:14px;
+        }
+        .device-detail-field{
+            background:#f8fafc;
+            border:1px solid #eaecf0;
+            border-radius:16px;
+            padding:14px;
+        }
+        .device-detail-field .label{
+            color:var(--muted);
+            font-size:.8rem;
+            text-transform:uppercase;
+            letter-spacing:.05em;
+            margin-bottom:6px;
+            font-weight:700;
+        }
+        .device-detail-field .value{
+            color:#0f172a;
+            font-weight:800;
+            word-break:break-word;
+        }
+        .device-empty-state{
+            display:grid;
+            place-items:center;
+            min-height:220px;
+            text-align:center;
+            color:var(--muted);
+            border:1px dashed #d0d5dd;
+            border-radius:18px;
+            padding:24px;
+            background:rgba(255,255,255,.75);
         }
 
         .btn-pill{
@@ -290,9 +415,20 @@
         footer a{ color:#fff; }
         footer a:hover{ opacity:.9; }
 
+        @media (max-width: 1200px){
+            .device-browser{
+                grid-template-columns: 1fr 1fr;
+            }
+            .device-pane.device-detail-pane{
+                grid-column: 1 / -1;
+            }
+        }
+
         @media (max-width: 992px){
             .lookup-form{ grid-template-columns: 1fr; }
             .hero-title{ font-size: 2rem; }
+            .device-browser{ grid-template-columns: 1fr; }
+            .device-pane.device-detail-pane{ grid-column: auto; }
         }
     </style>
 </head>
@@ -498,13 +634,59 @@
                 <div class="p-4">
                     <c:choose>
                         <c:when test="${not empty contractDevices}">
-                            <div class="device-grid">
+                            <div class="device-browser" id="deviceBrowser">
+                                <div class="device-pane">
+                                    <div class="device-pane-head">
+                                        <div>
+                                            <h6 class="device-pane-title">Tên máy phát điện</h6>
+                                            <p class="device-pane-sub">Nhóm theo model thiết bị customer đang sở hữu trong hợp đồng.</p>
+                                        </div>
+                                        <span class="device-count-badge" id="deviceModelCount">0</span>
+                                    </div>
+                                    <div class="device-model-list" id="deviceModelList"></div>
+                                </div>
+
+                                <div class="device-pane">
+                                    <div class="device-pane-head">
+                                        <div>
+                                            <h6 class="device-pane-title">Serial number thuộc máy</h6>
+                                            <p class="device-pane-sub">Chọn một máy để xem các serial tương ứng cùng trạng thái và thương hiệu.</p>
+                                        </div>
+                                        <span class="device-count-badge" id="deviceSerialCount">0</span>
+                                    </div>
+                                    <div class="device-serial-list" id="deviceSerialList">
+                                        <div class="device-empty-state">
+                                            <div>
+                                                <i class="fas fa-arrow-left-long fa-2x mb-3 opacity-50"></i>
+                                                <div class="fw-bold text-dark mb-1">Chưa chọn dòng máy</div>
+                                                <div class="device-empty-text">Hãy chọn tên máy ở cột bên trái để hệ thống hiển thị danh sách serial.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="device-pane device-detail-pane">
+                                    <div class="device-pane-head">
+                                        <div>
+                                            <h6 class="device-pane-title">Chi tiết serial được chọn</h6>
+                                            <p class="device-pane-sub">Thông tin vận hành chi tiết và các thao tác liên quan tới thiết bị.</p>
+                                        </div>
+                                    </div>
+                                    <div class="device-detail-card" id="deviceDetailPanel">
+                                        <div class="device-empty-state">
+                                            <div>
+                                                <i class="fas fa-microchip fa-2x mb-3 opacity-50"></i>
+                                                <div class="fw-bold text-dark mb-1">Chưa chọn serial number</div>
+                                                <div class="device-empty-text">Sau khi chọn một serial ở cột giữa, thông số chi tiết và các nút thao tác sẽ hiển thị tại đây.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-none" id="deviceDataStore">
                                 <c:forEach items="${contractDevices}" var="p">
-                                    <div class="device-card"
-                                         role="button"
-                                         tabindex="0"
-                                         onclick="openDeviceDetail(this)"
-                                         onkeydown="handleDeviceCardKeydown(event, this)"
+                                    <div class="js-device-record"
                                          data-product-id="${p.id}"
                                          data-model-name="${fn:escapeXml(not empty p.modelName ? p.modelName : 'Chưa có tên model')}"
                                          data-brand-name="${fn:escapeXml(not empty p.brandName ? p.brandName : 'Chưa cập nhật thương hiệu')}"
@@ -515,63 +697,7 @@
                                          data-purchase-date="${not empty p.purchaseDate ? fn:escapeXml(p.purchaseDate) : ''}"
                                          data-running-hours="${p.totalRunningHours != null ? p.totalRunningHours : 0}"
                                          data-category-name="${fn:escapeXml(not empty p.categoryName ? p.categoryName : 'Chưa cập nhật')}"
-                                         data-contract-status="${fn:escapeXml(contract.status)}">
-                                        <div class="device-head">
-                                            <div>
-                                                <div class="serial-pill mb-3"><i class="fas fa-barcode"></i>${p.serialNumber}</div>
-                                                <h6 class="device-name">${not empty p.modelName ? p.modelName : 'Chưa có tên model'}</h6>
-                                                <div class="text-muted small mt-1">${not empty p.brandName ? p.brandName : 'Chưa cập nhật thương hiệu'}</div>
-                                            </div>
-                                            <c:choose>
-                                                <c:when test="${p.status == 'RUNNING'}">
-                                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Đang hoạt động</span>
-                                                </c:when>
-                                                <c:when test="${p.status == 'MAINTENANCE'}">
-                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Đang bảo trì</span>
-                                                </c:when>
-                                                <c:when test="${p.status == 'BROKEN'}">
-                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Hỏng hóc</span>
-                                                </c:when>
-                                                <c:when test="${p.status == 'RECEIVED_QUOTE'}">
-                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Có báo giá</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">${p.status}</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </div>
-
-                                        <div class="info-list mb-4">
-                                            <div class="info-row">
-                                                <span class="info-label">Địa điểm hiện tại</span>
-                                                <span class="info-value">${not empty p.currentLocation ? p.currentLocation : 'Chưa cập nhật'}</span>
-                                            </div>
-                                            <div class="info-row">
-                                                <span class="info-label">Năm sản xuất</span>
-                                                <span class="info-value">${p.manufactureYear != null ? p.manufactureYear : 'Chưa cập nhật'}</span>
-                                            </div>
-                                            <div class="info-row">
-                                                <span class="info-label">Ngày mua</span>
-                                                <span class="info-value">
-                                                    <c:choose>
-                                                        <c:when test="${not empty p.purchaseDate}">
-                                                            <fmt:formatDate value="${p.purchaseDate}" pattern="dd/MM/yyyy" />
-                                                        </c:when>
-                                                        <c:otherwise>Chưa cập nhật</c:otherwise>
-                                                    </c:choose>
-                                                </span>
-                                            </div>
-                                            <div class="info-row">
-                                                <span class="info-label">Tổng giờ chạy</span>
-                                                <span class="info-value">${p.totalRunningHours != null ? p.totalRunningHours : 0} giờ</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="text-primary fw-bold small d-flex align-items-center gap-2 mt-4">
-                                            <i class="fas fa-circle-info"></i>
-                                            Nhấn để xem chi tiết thiết bị
-                                        </div>
-                                    </div>
+                                         data-contract-status="${fn:escapeXml(contract.status)}"></div>
                                 </c:forEach>
                             </div>
                         </c:when>
@@ -617,66 +743,6 @@
         </div>
     </div>
 </footer>
-
-<div class="modal fade" id="deviceDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-primary text-white">
-                <div>
-                    <div class="small text-uppercase opacity-75 fw-bold">Chi tiết thiết bị</div>
-                    <h5 class="modal-title fw-bold mb-0" id="deviceDetailName">-</h5>
-                    <div class="small mt-1">Serial: <span class="font-monospace fw-bold" id="deviceDetailSerial"></span></div>
-                </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-                    <div>
-                        <div class="text-muted small text-uppercase fw-bold mb-1">Thương hiệu</div>
-                        <div class="fw-bold fs-5" id="deviceDetailBrand">-</div>
-                    </div>
-                    <div id="deviceDetailStatus"></div>
-                </div>
-
-                <div class="detail-grid p-0">
-                    <div class="detail-item">
-                        <div class="label">Model thiết bị</div>
-                        <div class="value" id="deviceDetailModel">-</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Danh mục</div>
-                        <div class="value" id="deviceDetailCategory">-</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Địa điểm hiện tại</div>
-                        <div class="value" id="deviceDetailLocation">-</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Năm sản xuất</div>
-                        <div class="value" id="deviceDetailManufactureYear">-</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Ngày mua</div>
-                        <div class="value" id="deviceDetailPurchaseDate">-</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">Tổng giờ chạy</div>
-                        <div class="value" id="deviceDetailRunningHours">-</div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer bg-light justify-content-between gap-2">
-                <div class="detail-actions">
-                    <a href="#" id="deviceHistoryButton" class="btn btn-outline-info btn-pill">
-                        <i class="fas fa-history me-1"></i>Lịch sử báo giá
-                    </a>
-                    <span id="deviceActionContainer"></span>
-                </div>
-                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -789,57 +855,200 @@
         return day + '/' + month + '/' + year;
     }
 
-    function openDeviceDetail(card) {
-        const data = card.dataset;
-        document.getElementById('deviceDetailName').innerText = data.modelName;
-        document.getElementById('deviceDetailSerial').innerText = data.serialNumber;
-        document.getElementById('deviceDetailBrand').innerText = data.brandName;
-        document.getElementById('deviceDetailModel').innerText = data.modelName;
-        document.getElementById('deviceDetailCategory').innerText = data.categoryName;
-        document.getElementById('deviceDetailLocation').innerText = data.location;
-        document.getElementById('deviceDetailManufactureYear').innerText = data.manufactureYear;
-        document.getElementById('deviceDetailPurchaseDate').innerText = formatDisplayDate(data.purchaseDate);
-        document.getElementById('deviceDetailRunningHours').innerText = (data.runningHours || 0) + ' giờ';
-        document.getElementById('deviceDetailStatus').innerHTML = getStatusBadgeMarkup(data.status);
-
-        const historyButton = document.getElementById('deviceHistoryButton');
-        historyButton.href = '<c:url value="/user/quote-history"/>' + '?productId=' + data.productId;
-
-        const actionContainer = document.getElementById('deviceActionContainer');
-        if (data.contractStatus === 'TERMINATED') {
-            actionContainer.innerHTML = '<button type="button" class="btn btn-outline-danger btn-pill" disabled><i class="fas fa-ban me-1"></i>Hợp đồng đã dừng</button>';
-        } else if (data.status === 'RECEIVED_QUOTE') {
-            actionContainer.innerHTML = '<a href="' + '<c:url value="/user/view-quote"/>' + '?productId=' + data.productId + '" class="btn btn-primary btn-pill"><i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá</a>';
-        } else if (data.status === 'MAINTENANCE') {
-            actionContainer.innerHTML = '<button type="button" class="btn btn-secondary btn-pill" disabled><i class="fas fa-hourglass-half me-1"></i>Đã gửi yêu cầu</button>';
-        } else {
-            actionContainer.innerHTML = '<button type="button" class="btn btn-outline-danger btn-pill"><i class="fas fa-triangle-exclamation me-1"></i>Báo sự cố</button>';
-            actionContainer.querySelector('button').addEventListener('click', function () {
-                openReportModal(data.productId, data.modelName, data.serialNumber);
-            }, { once: true });
-        }
-
-        var detailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
-        detailModal.show();
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
-    function handleDeviceCardKeydown(event, element) {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            openDeviceDetail(element);
+    function formatModelCount(count) {
+        return count + ' thiết bị';
+    }
+
+    function getStatusText(status) {
+        switch (status) {
+            case 'RUNNING': return 'Đang hoạt động';
+            case 'MAINTENANCE': return 'Đang bảo trì';
+            case 'BROKEN': return 'Hỏng hóc';
+            case 'RECEIVED_QUOTE': return 'Có báo giá';
+            default: return status || 'Chưa cập nhật';
         }
+    }
+
+    function renderDeviceBrowser() {
+        const browser = document.getElementById('deviceBrowser');
+        const modelList = document.getElementById('deviceModelList');
+        const serialList = document.getElementById('deviceSerialList');
+        const detailPanel = document.getElementById('deviceDetailPanel');
+        const modelCount = document.getElementById('deviceModelCount');
+        const serialCount = document.getElementById('deviceSerialCount');
+        const recordNodes = Array.from(document.querySelectorAll('.js-device-record'));
+
+        if (!browser || !modelList || !serialList || !detailPanel || !recordNodes.length) {
+            return;
+        }
+
+        const records = recordNodes.map(function (node, index) {
+            return Object.assign({ modelKey: '', recordIndex: index }, node.dataset);
+        });
+
+        const grouped = [];
+        const groupedMap = new Map();
+        records.forEach(function (record) {
+            const key = [record.modelName || '', record.brandName || '', record.categoryName || ''].join('||');
+            record.modelKey = key;
+            if (!groupedMap.has(key)) {
+                groupedMap.set(key, {
+                    key: key,
+                    modelName: record.modelName,
+                    brandName: record.brandName,
+                    categoryName: record.categoryName,
+                    items: []
+                });
+                grouped.push(groupedMap.get(key));
+            }
+            groupedMap.get(key).items.push(record);
+        });
+
+        let activeModelKey = grouped.length ? grouped[0].key : null;
+        let activeProductId = grouped.length && grouped[0].items.length ? grouped[0].items[0].productId : null;
+
+        function renderModels() {
+            modelList.innerHTML = grouped.map(function (group) {
+                return '' +
+                    '<button type="button" class="device-model-card ' + (group.key === activeModelKey ? 'is-active' : '') + '" data-model-key="' + escapeHtml(group.key) + '">' +
+                        '<div class="device-model-top">' +
+                            '<div>' +
+                                '<h6 class="device-model-name">' + escapeHtml(group.modelName) + '</h6>' +
+                                '<div class="device-model-brand mt-1">' + escapeHtml(group.brandName) + '</div>' +
+                            '</div>' +
+                            '<span class="device-qty-pill"><i class="fas fa-layer-group"></i>' + group.items.length + '</span>' +
+                        '</div>' +
+                        '<div class="device-meta-list">' +
+                            '<div class="device-meta-row"><span class="device-meta-label">Số lượng sở hữu</span><span class="device-meta-value">' + formatModelCount(group.items.length) + '</span></div>' +
+                            '<div class="device-meta-row"><span class="device-meta-label">Danh mục</span><span class="device-meta-value">' + escapeHtml(group.categoryName) + '</span></div>' +
+                        '</div>' +
+                    '</button>';
+            }).join('');
+            modelCount.textContent = grouped.length;
+
+            modelList.querySelectorAll('.device-model-card').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    activeModelKey = button.dataset.modelKey;
+                    const group = groupedMap.get(activeModelKey);
+                    activeProductId = group && group.items.length ? group.items[0].productId : null;
+                    renderModels();
+                    renderSerials();
+                    renderDetail();
+                });
+            });
+        }
+
+        function renderSerials() {
+            const group = groupedMap.get(activeModelKey);
+            if (!group || !group.items.length) {
+                serialCount.textContent = '0';
+                serialList.innerHTML = '<div class="device-empty-state"><div><i class="fas fa-microchip fa-2x mb-3 opacity-50"></i><div class="fw-bold text-dark mb-1">Không có serial</div><div class="device-empty-text">Dòng máy này hiện chưa có serial được gán.</div></div></div>';
+                return;
+            }
+
+            if (!group.items.some(function (item) { return item.productId === activeProductId; })) {
+                activeProductId = group.items[0].productId;
+            }
+
+            serialCount.textContent = group.items.length;
+            serialList.innerHTML = group.items.map(function (item) {
+                return '' +
+                    '<button type="button" class="device-serial-card ' + (item.productId === activeProductId ? 'is-active' : '') + '" data-product-id="' + escapeHtml(item.productId) + '">' +
+                        '<div class="device-serial-top">' +
+                            '<div>' +
+                                '<div class="serial-pill mb-3"><i class="fas fa-barcode"></i>' + escapeHtml(item.serialNumber) + '</div>' +
+                                '<h6 class="device-serial-name">' + escapeHtml(item.modelName) + '</h6>' +
+                                '<div class="device-serial-meta mt-1">' + escapeHtml(item.brandName) + '</div>' +
+                            '</div>' +
+                            getStatusBadgeMarkup(item.status) +
+                        '</div>' +
+                        '<div class="device-meta-list">' +
+                            '<div class="device-meta-row"><span class="device-meta-label">Trạng thái</span><span class="device-meta-value">' + escapeHtml(getStatusText(item.status)) + '</span></div>' +
+                            '<div class="device-meta-row"><span class="device-meta-label">Thương hiệu</span><span class="device-meta-value">' + escapeHtml(item.brandName) + '</span></div>' +
+                        '</div>' +
+                    '</button>';
+            }).join('');
+
+            serialList.querySelectorAll('.device-serial-card').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    activeProductId = button.dataset.productId;
+                    renderSerials();
+                    renderDetail();
+                });
+            });
+        }
+
+        function renderDetail() {
+            const record = records.find(function (item) { return item.productId === activeProductId; });
+            if (!record) {
+                detailPanel.innerHTML = '<div class="device-empty-state"><div><i class="fas fa-microchip fa-2x mb-3 opacity-50"></i><div class="fw-bold text-dark mb-1">Chưa chọn serial number</div><div class="device-empty-text">Sau khi chọn một serial ở cột giữa, thông số chi tiết và các nút thao tác sẽ hiển thị tại đây.</div></div></div>';
+                return;
+            }
+
+            let incidentAction = '';
+            if (record.contractStatus === 'TERMINATED') {
+                incidentAction = '<button type="button" class="btn btn-outline-danger btn-pill" disabled><i class="fas fa-ban me-1"></i>Hợp đồng đã dừng</button>';
+            } else if (record.status === 'MAINTENANCE') {
+                incidentAction = '<button type="button" class="btn btn-secondary btn-pill" disabled><i class="fas fa-hourglass-half me-1"></i>Đang bảo trì</button>';
+            } else {
+                incidentAction = '<button type="button" class="btn btn-outline-danger btn-pill" id="detailReportButton"><i class="fas fa-triangle-exclamation me-1"></i>Báo cáo sự cố</button>';
+            }
+
+            const quoteAction = record.status === 'RECEIVED_QUOTE'
+                ? '<a href="<c:url value="/user/view-quote"/>?productId=' + encodeURIComponent(record.productId) + '" class="btn btn-primary btn-pill"><i class="fas fa-file-invoice-dollar me-1"></i>Xem báo giá</a>'
+                : '';
+
+            detailPanel.innerHTML = '' +
+                '<div class="device-detail-hero">' +
+                    '<div>' +
+                        '<div class="serial-pill mb-3"><i class="fas fa-barcode"></i>' + escapeHtml(record.serialNumber) + '</div>' +
+                        '<h5 class="device-detail-title">' + escapeHtml(record.modelName) + '</h5>' +
+                        '<p class="device-detail-subtitle">Thương hiệu ' + escapeHtml(record.brandName) + ' · Danh mục ' + escapeHtml(record.categoryName) + '</p>' +
+                    '</div>' +
+                    '<div>' + getStatusBadgeMarkup(record.status) + '</div>' +
+                '</div>' +
+                '<div class="device-detail-grid mb-4">' +
+                    '<div class="device-detail-field"><div class="label">Serial number</div><div class="value">' + escapeHtml(record.serialNumber) + '</div></div>' +
+                    '<div class="device-detail-field"><div class="label">Model thiết bị</div><div class="value">' + escapeHtml(record.modelName) + '</div></div>' +
+                    '<div class="device-detail-field"><div class="label">Thương hiệu</div><div class="value">' + escapeHtml(record.brandName) + '</div></div>' +
+                    '<div class="device-detail-field"><div class="label">Trạng thái</div><div class="value">' + escapeHtml(getStatusText(record.status)) + '</div></div>' +
+                    '<div class="device-detail-field"><div class="label">Địa điểm hiện tại</div><div class="value">' + escapeHtml(record.location) + '</div></div>' +
+                    '<div class="device-detail-field"><div class="label">Năm sản xuất</div><div class="value">' + escapeHtml(record.manufactureYear) + '</div></div>' +
+                    '<div class="device-detail-field"><div class="label">Ngày mua</div><div class="value">' + escapeHtml(formatDisplayDate(record.purchaseDate)) + '</div></div>' +
+                    '<div class="device-detail-field"><div class="label">Tổng giờ chạy</div><div class="value">' + escapeHtml((record.runningHours || 0) + ' giờ') + '</div></div>' +
+                '</div>' +
+                '<div class="detail-actions">' +
+                    '<a href="<c:url value="/user/quote-history"/>?productId=' + encodeURIComponent(record.productId) + '" class="btn btn-outline-info btn-pill"><i class="fas fa-history me-1"></i>Lịch sử báo giá</a>' +
+                    incidentAction +
+                    quoteAction +
+                '</div>';
+
+            const reportButton = document.getElementById('detailReportButton');
+            if (reportButton) {
+                reportButton.addEventListener('click', function () {
+                    openReportModal(record.productId, record.modelName, record.serialNumber);
+                });
+            }
+        }
+
+        renderModels();
+        renderSerials();
+        renderDetail();
     }
 
     function openReportModal(id, name, serial) {
         document.getElementById('modalProductId').value = id;
         document.getElementById('modalProductName').innerText = name;
         document.getElementById('modalProductSerial').innerText = serial;
-
-        var detailModalElement = document.getElementById('deviceDetailModal');
-        var detailModalInstance = bootstrap.Modal.getInstance(detailModalElement);
-        if (detailModalInstance) {
-            detailModalInstance.hide();
-        }
 
         var myModal = new bootstrap.Modal(document.getElementById('reportModal'));
         myModal.show();
@@ -854,6 +1063,8 @@
             const day = String(today.getDate()).padStart(2, '0');
             dateInput.min = year + "-" + month + "-" + day;
         }
+
+        renderDeviceBrowser();
     });
 </script>
 
