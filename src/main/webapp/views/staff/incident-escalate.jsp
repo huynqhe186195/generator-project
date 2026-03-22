@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <title>Gửi yêu cầu lên Manager</title>
 
@@ -23,6 +24,8 @@
                         <input type="hidden" name="selected_recommendation_code" id="selectedRecommendationCode" />
                         <input type="hidden" name="selected_recommendation_title" id="selectedRecommendationTitle" />
                         <input type="hidden" name="selected_suggested_technician_ids" id="selectedSuggestedTechnicianIds" />
+                        <input type="hidden" name="selected_suggested_technician_id" id="selectedSuggestedTechnicianId" />
+                        <input type="hidden" name="selected_suggested_technician_name" id="selectedSuggestedTechnicianName" />
                         <input type="hidden" name="selected_required_skill_codes" id="selectedRequiredSkillCodes" />
 
                         <div class="alert alert-primary d-flex align-items-center mb-4 border-0 shadow-sm">
@@ -54,6 +57,8 @@
                                                      data-parts-note="${recommendation.recommendedPartsNote}"
                                                      data-requires-parts="${recommendation.requiresPartsPreparation}"
                                                      data-suggested-technician-ids="<c:forEach items='${recommendation.technicianSuggestions}' var='tech' varStatus='loop'>${tech.technicianId}<c:if test='${!loop.last}'>,</c:if></c:forEach>"
+                                                     data-suggested-technician-id="${not empty recommendation.technicianSuggestions ? recommendation.technicianSuggestions[0].technicianId : ''}"
+                                                     data-suggested-technician-name="${not empty recommendation.technicianSuggestions ? fn:escapeXml(recommendation.technicianSuggestions[0].technicianName) : ''}"
                                                      data-required-skill-codes="<c:forEach items='${recommendation.requiredSkills}' var='skill' varStatus='loop'>${skill.skillCode}<c:if test='${!loop.last}'>,</c:if></c:forEach>">
                                                     <div class="card-body">
                                                         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
@@ -83,18 +88,24 @@
                                                         </div>
 
                                                         <div class="mb-3">
-                                                            <div class="small fw-bold text-secondary mb-1">Top kỹ thuật viên phù hợp</div>
-                                                            <c:forEach items="${recommendation.technicianSuggestions}" var="tech">
-                                                                <div class="border rounded p-2 mb-2 bg-white">
-                                                                    <div class="d-flex justify-content-between align-items-start gap-2">
-                                                                        <div>
-                                                                            <div class="fw-semibold">${tech.technicianName}</div>
-                                                                            <div class="small text-muted">${tech.summary}</div>
+                                                            <div class="small fw-bold text-secondary mb-1">Kỹ thuật viên phù hợp nhất</div>
+                                                            <c:choose>
+                                                                <c:when test="${not empty recommendation.technicianSuggestions}">
+                                                                    <c:set var="tech" value="${recommendation.technicianSuggestions[0]}" />
+                                                                    <div class="border rounded p-2 mb-2 bg-white">
+                                                                        <div class="d-flex justify-content-between align-items-start gap-2">
+                                                                            <div>
+                                                                                <div class="fw-semibold">${tech.technicianName}</div>
+                                                                                <div class="small text-muted">${tech.summary}</div>
+                                                                            </div>
+                                                                            <span class="badge ${tech.matchScore >= 80 ? 'bg-success' : tech.matchScore >= 60 ? 'bg-warning text-dark' : 'bg-secondary'}">${tech.matchScore} điểm</span>
                                                                         </div>
-                                                                        <span class="badge ${tech.matchScore >= 80 ? 'bg-success' : tech.matchScore >= 60 ? 'bg-warning text-dark' : 'bg-secondary'}">${tech.matchScore} điểm</span>
                                                                     </div>
-                                                                </div>
-                                                            </c:forEach>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <div class="small text-muted">Chưa tìm được kỹ thuật viên phù hợp trong thời điểm hiện tại.</div>
+                                                                </c:otherwise>
+                                                            </c:choose>
                                                         </div>
 
                                                         <button type="button" class="btn btn-outline-primary btn-sm apply-recommendation-btn">
@@ -141,7 +152,8 @@
 
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Số kỹ thuật viên cần</label>
-                                    <input type="number" name="required_technician_count" id="technicianCountInput" class="form-control" min="1" max="5" value="1" required>
+                                    <input type="number" name="required_technician_count" id="technicianCountInput" class="form-control" min="1" max="1" value="1" readonly required>
+                                    <div class="form-text">Mỗi báo cáo sự cố chỉ phân công 1 kỹ thuật viên chính để xử lý.</div>
                                 </div>
 
                                 <div class="col-md-6">
@@ -196,34 +208,46 @@
         const selectedRecommendationCode = document.getElementById('selectedRecommendationCode');
         const selectedRecommendationTitle = document.getElementById('selectedRecommendationTitle');
         const selectedSuggestedTechnicianIds = document.getElementById('selectedSuggestedTechnicianIds');
+        const selectedSuggestedTechnicianId = document.getElementById('selectedSuggestedTechnicianId');
+        const selectedSuggestedTechnicianName = document.getElementById('selectedSuggestedTechnicianName');
         const selectedRequiredSkillCodes = document.getElementById('selectedRequiredSkillCodes');
+
+        function applyRecommendation(button) {
+            const card = button.closest('.recommendation-card');
+            if (!card) {
+                return;
+            }
+            recommendationCards.forEach(function (item) {
+                item.classList.remove('border-primary', 'shadow');
+            });
+            card.classList.add('border-primary', 'shadow');
+
+            typeInput.value = card.dataset.workType || typeInput.value;
+            priorityInput.value = card.dataset.priority || priorityInput.value;
+            durationInput.value = card.dataset.duration || durationInput.value;
+            technicianCountInput.value = '1';
+            serviceLocationInput.value = card.dataset.serviceLocation || serviceLocationInput.value;
+            partsNoteInput.value = card.dataset.partsNote || partsNoteInput.value;
+            requiresPartsPreparationInput.checked = card.dataset.requiresParts === 'true';
+            if (staffNoteInput && !staffNoteInput.value.trim()) {
+                staffNoteInput.value = card.dataset.title ? ('Dựa trên gợi ý: ' + card.dataset.title) : staffNoteInput.value;
+            }
+            selectedRecommendationCode.value = card.dataset.code || '';
+            selectedRecommendationTitle.value = card.dataset.title || '';
+            selectedSuggestedTechnicianIds.value = card.dataset.suggestedTechnicianIds || '';
+            selectedSuggestedTechnicianId.value = card.dataset.suggestedTechnicianId || '';
+            selectedSuggestedTechnicianName.value = card.dataset.suggestedTechnicianName || '';
+            selectedRequiredSkillCodes.value = card.dataset.requiredSkillCodes || '';
+        }
 
         recommendationButtons.forEach(function (button) {
             button.addEventListener('click', function () {
-                const card = button.closest('.recommendation-card');
-                if (!card) {
-                    return;
-                }
-                recommendationCards.forEach(function (item) {
-                    item.classList.remove('border-primary', 'shadow');
-                });
-                card.classList.add('border-primary', 'shadow');
-
-                typeInput.value = card.dataset.workType || typeInput.value;
-                priorityInput.value = card.dataset.priority || priorityInput.value;
-                durationInput.value = card.dataset.duration || durationInput.value;
-                technicianCountInput.value = card.dataset.techCount || technicianCountInput.value;
-                serviceLocationInput.value = card.dataset.serviceLocation || serviceLocationInput.value;
-                partsNoteInput.value = card.dataset.partsNote || partsNoteInput.value;
-                requiresPartsPreparationInput.checked = card.dataset.requiresParts === 'true';
-                if (staffNoteInput && !staffNoteInput.value.trim()) {
-                    staffNoteInput.value = card.dataset.title ? ('Dựa trên gợi ý: ' + card.dataset.title) : staffNoteInput.value;
-                }
-                selectedRecommendationCode.value = card.dataset.code || '';
-                selectedRecommendationTitle.value = card.dataset.title || '';
-                selectedSuggestedTechnicianIds.value = card.dataset.suggestedTechnicianIds || '';
-                selectedRequiredSkillCodes.value = card.dataset.requiredSkillCodes || '';
+                applyRecommendation(button);
             });
         });
+
+        if (recommendationButtons.length) {
+            applyRecommendation(recommendationButtons[0]);
+        }
     })();
 </script>

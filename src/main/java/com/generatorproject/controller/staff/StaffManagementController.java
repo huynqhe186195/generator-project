@@ -14,7 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -665,11 +667,18 @@ public class StaffManagementController extends HttpServlet {
             Product product = incident != null ? productServices.getProductById(incident.getProductId()) : null;
             List<Users> listTechnicians = userServices.findUserByRoleId(4);
 
+            Long recommendedTechnicianId = parseLongValue(sysReq.getInfo().get("technicianId"));
+            Timestamp preferredStart = resolvePreferredStart(incident);
+            Timestamp preferredEnd = resolvePreferredEnd(incident, incidentPlan, preferredStart);
+
             req.setAttribute("req", sysReq);
             req.setAttribute("incidentEntity", incident);
             req.setAttribute("incidentPlan", incidentPlan);
             req.setAttribute("prod", product);
             req.setAttribute("listTechnicians", listTechnicians);
+            req.setAttribute("recommendedTechnicianId", recommendedTechnicianId);
+            req.setAttribute("preferredScheduledStart", formatDateTimeLocal(preferredStart));
+            req.setAttribute("preferredScheduledEnd", formatDateTimeLocal(preferredEnd));
             req.getRequestDispatcher("/views/staff/incident-work-order.jsp").forward(req, resp);
         } catch (Exception e) {
             e.printStackTrace();
@@ -719,6 +728,38 @@ public class StaffManagementController extends HttpServlet {
             payload.put("message", "Không thể tải lịch kỹ thuật viên");
             resp.getWriter().write(new Gson().toJson(payload));
         }
+    }
+
+
+    private Timestamp resolvePreferredStart(Incident incident) {
+        if (incident == null || incident.getPreferredDate() == null) {
+            return null;
+        }
+        Time preferredFrom = incident.getPreferredTimeFrom();
+        if (preferredFrom != null) {
+            return Timestamp.valueOf(incident.getPreferredDate().toLocalDate().atTime(preferredFrom.toLocalTime()));
+        }
+        return Timestamp.valueOf(incident.getPreferredDate().toLocalDate().atTime(8, 0));
+    }
+
+    private Timestamp resolvePreferredEnd(Incident incident, IncidentPlan incidentPlan, Timestamp preferredStart) {
+        if (preferredStart == null) {
+            return null;
+        }
+        if (incident != null && incident.getPreferredTimeTo() != null) {
+            return Timestamp.valueOf(incident.getPreferredDate().toLocalDate().atTime(incident.getPreferredTimeTo().toLocalTime()));
+        }
+        int durationMinutes = incidentPlan != null && incidentPlan.getEstimatedDurationMinutes() > 0
+                ? incidentPlan.getEstimatedDurationMinutes()
+                : 120;
+        return new Timestamp(preferredStart.getTime() + durationMinutes * 60L * 1000L);
+    }
+
+    private String formatDateTimeLocal(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").format(timestamp);
     }
 
     private Timestamp parseDateTimeLocal(String rawValue) {

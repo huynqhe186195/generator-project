@@ -77,7 +77,7 @@ public class IncidentPlanRecommendationService {
                     unavailableByTechnician,
                     taskCounts,
                     normalizedSkills,
-                    seed.recommendedTechnicianCount,
+                    1,
                     referenceStart,
                     referenceEnd,
                     seed.recommendedServiceLocation
@@ -89,7 +89,7 @@ public class IncidentPlanRecommendationService {
                     seed.recommendedWorkType,
                     seed.recommendedPriority,
                     seed.recommendedDurationMinutes,
-                    seed.recommendedTechnicianCount,
+                    1,
                     seed.requiresPartsPreparation,
                     seed.recommendedServiceLocation,
                     seed.recommendedPartsNote,
@@ -150,7 +150,7 @@ public class IncidentPlanRecommendationService {
                     && !profile.getServiceArea().toLowerCase(Locale.ROOT).contains(serviceLocation.toLowerCase(Locale.ROOT))) {
                 score -= 10;
             }
-            if (recommendedTechnicianCount > 1) {
+            if (recommendedTechnicianCount >= 1) {
                 score += 3;
             }
             if (score < 0) {
@@ -170,7 +170,7 @@ public class IncidentPlanRecommendationService {
         }
 
         suggestions.sort(Comparator.comparingInt(TechnicianSuggestion::getMatchScore).reversed());
-        return suggestions.size() > 3 ? new ArrayList<TechnicianSuggestion>(suggestions.subList(0, 3)) : suggestions;
+        return suggestions.isEmpty() ? suggestions : new ArrayList<TechnicianSuggestion>(suggestions.subList(0, 1));
     }
 
     private boolean isOutOfWorkingHours(TechnicianCapabilityDAO.TechnicianProfileSnapshot profile, Timestamp referenceStart, Timestamp referenceEnd) {
@@ -271,7 +271,7 @@ public class IncidentPlanRecommendationService {
                 "REPAIR",
                 upgradePriority(defaultPriority(incident.getUrgencyLevel())),
                 180,
-                2,
+                1,
                 true,
                 location,
                 "Chuẩn bị vật tư thay thế cơ bản và kỹ thuật viên có kinh nghiệm sửa chữa máy phát.",
