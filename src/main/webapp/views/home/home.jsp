@@ -587,7 +587,7 @@
           </div>
 
           <div class="carousel-item">
-            <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide2.jpg" />');">
+            <div class="hero-slide" style="background-image: url('<c:url value="/template/images/slide2.jpg" />');">
             <div class="container position-relative hero-content">
               <div class="row align-items-center">
                 <div class="col-lg-12" data-aos="fade-right">
@@ -621,7 +621,7 @@
         </div>
 
         <div class="carousel-item">
-          <div class="hero-slide" style="background-image: url('<c:url value=" /template/images/slide3.jpg" />');">
+          <div class="hero-slide" style="background-image: url('<c:url value="/template/images/slide3.jpg" />');">
           <div class="container position-relative hero-content">
             <div class="row align-items-center">
               <div class="col-lg-12" data-aos="fade-right">
