@@ -86,9 +86,13 @@
         .hero-section{
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color:#fff;
-            padding: 46px 0 64px;
+            padding: 46px 0 96px;
             position:relative;
             overflow:hidden;
+        }
+        .hero-section .container{
+            position:relative;
+            z-index:1;
         }
         .hero-section:before{
             content:"";
@@ -112,7 +116,12 @@
             line-height: 1.15;
             margin:0 0 10px;
         }
-        .hero-desc{ opacity:.92; margin:0; max-width: 760px; }
+        .hero-desc{
+            opacity:.92;
+            margin:0;
+            max-width: 760px;
+            line-height: 1.7;
+        }
 
         main{ flex:1; padding: 18px 0 60px; }
 
