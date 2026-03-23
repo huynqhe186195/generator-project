@@ -25,8 +25,8 @@
         }
 
         #sidebar {
-            min-width: 250px;
-            max-width: 250px;
+            min-width: 290px;
+            max-width: 290px;
             background: #2c3e50;
             color: #fff;
             transition: all 0.3s;
@@ -41,7 +41,7 @@
         #sidebar ul li > a,
         #sidebar ul li > button {
             padding: 15px;
-            font-size: 1.1em;
+            font-size: 1.05em;
             display: block;
             color: #fff;
             text-decoration: none;
@@ -49,6 +49,8 @@
             text-align: left;
             border: 0;
             background: transparent;
+            white-space: normal;
+            line-height: 1.45;
         }
 
         #sidebar ul li > a:hover,
@@ -81,10 +83,14 @@
         }
 
         .sidebar-submenu a {
+            display: block;
+            width: 100%;
             padding: 10px 20px 10px 38px !important;
-            font-size: 0.96rem !important;
-            line-height: 1.5;
+            font-size: 0.95rem !important;
+            line-height: 1.45;
             color: #dbe7f3 !important;
+            white-space: normal;
+            word-break: break-word;
         }
 
         .sidebar-submenu a:hover,
