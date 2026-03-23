@@ -109,7 +109,7 @@
 
                             <li class="${pageContext.request.requestURI.contains('/manager/technician-capability') ? 'active' : ''}">
                                 <a href="${pageContext.request.contextPath}/manager/technician-capability">
-                                    <i class="fa fa-user-gear me-2"></i> Technician Capability
+                                    <i class="fa fa-user-gear me-2"></i> Quản lý năng lực kỹ thuật viên
                                 </a>
                             </li>
 
