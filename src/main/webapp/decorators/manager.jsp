@@ -33,11 +33,6 @@
             overflow-y: auto;
         }
 
-        #sidebar .sidebar-header {
-            padding: 20px;
-            background: #1a252f;
-        }
-
         #sidebar ul.components {
             padding: 20px 0;
             border-bottom: 1px solid #47748b;
@@ -99,12 +94,6 @@
             color: #fff !important;
         }
 
-        .sidebar-submenu-empty {
-            padding: 10px 20px 0 38px;
-            font-size: 0.9rem;
-            color: #cbd5e1;
-        }
-
         #content {
             width: 100%;
             padding: 20px;
@@ -127,27 +116,16 @@
         <nav id="sidebar">
             <ul class="list-unstyled components">
                 <li class="${pageContext.request.requestURI.endsWith('/manager/home.jsp') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/home">
-                        <i class="fa fa-tachometer-alt me-2"></i> Tổng quan
-                    </a>
+                    <a href="${pageContext.request.contextPath}/manager/home"><i class="fa fa-tachometer-alt me-2"></i> Tổng quan</a>
                 </li>
-
                 <li class="${pageContext.request.requestURI.contains('contract') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/contracts">
-                        <i class="fa fa-file-contract me-2"></i> Hợp đồng
-                    </a>
+                    <a href="${pageContext.request.contextPath}/manager/contracts"><i class="fa fa-file-contract me-2"></i> Hợp đồng</a>
                 </li>
-
                 <li class="${pageContext.request.requestURI.contains('/manager/requests') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/requests">
-                        <i class="fa fa-paper-plane me-2"></i> Gửi Yêu cầu
-                    </a>
+                    <a href="${pageContext.request.contextPath}/manager/requests"><i class="fa fa-paper-plane me-2"></i> Gửi Yêu cầu</a>
                 </li>
-
                 <li>
-                    <a href="${pageContext.request.contextPath}/manager/assets">
-                        <i class="fa fa-server me-2"></i> Tài sản Khách hàng
-                    </a>
+                    <a href="${pageContext.request.contextPath}/manager/assets"><i class="fa fa-server me-2"></i> Tài sản Khách hàng</a>
                 </li>
 
                 <li class="${pageContext.request.requestURI.contains('/manager/technician-capability') ? 'active' : ''}">
@@ -155,29 +133,20 @@
                         <span><i class="fa fa-user-gear me-2"></i> Quản lý kỹ thuật viên</span>
                         <i class="fa fa-chevron-down caret-icon"></i>
                     </button>
-
                     <div id="sidebarTechnicianList" class="collapse ${pageContext.request.requestURI.contains('/manager/technician-capability') ? 'show' : ''}">
                         <div class="sidebar-submenu">
-                            <c:choose>
-                                <c:when test="${not empty technicians}">
-                                    <c:forEach items="${technicians}" var="tech">
-                                        <a class="${selectedTechnicianId == tech.id ? 'active' : ''}" href="${pageContext.request.contextPath}/manager/technician-capability?technicianId=${tech.id}">
-                                            <i class="fa fa-graduation-cap me-2"></i>${tech.fullName}
-                                        </a>
-                                    </c:forEach>
-                                </c:when>
-                                <c:otherwise>
-                                    <div class="sidebar-submenu-empty">Mở màn quản lý kỹ thuật viên để xem danh sách.</div>
-                                </c:otherwise>
-                            </c:choose>
+                            <a class="${empty param.section || param.section == 'technicians' ? 'active' : ''}" href="${pageContext.request.contextPath}/manager/technician-capability?section=technicians">
+                                <i class="fa fa-list me-2"></i> Quản lý danh sách kỹ thuật viên
+                            </a>
+                            <a class="${param.section == 'catalog' ? 'active' : ''}" href="${pageContext.request.contextPath}/manager/technician-capability?section=catalog">
+                                <i class="fa fa-book me-2"></i> Quản lý danh sách kỹ năng
+                            </a>
                         </div>
                     </div>
                 </li>
 
                 <li class="${pageContext.request.requestURI.contains('system-report') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/system-report">
-                        <i class="fa fa-chart-line me-2"></i> Báo cáo
-                    </a>
+                    <a href="${pageContext.request.contextPath}/manager/system-report"><i class="fa fa-chart-line me-2"></i> Báo cáo</a>
                 </li>
             </ul>
         </nav>
