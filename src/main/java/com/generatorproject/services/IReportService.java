@@ -5,7 +5,7 @@ import java.util.Map;
 
 public interface IReportService {
 
-    //KPI
+    ///KPI
     int countActiveContracts();
     int countNewCustomersThisMonth();
     int countPendingIncidents();
@@ -17,7 +17,7 @@ public interface IReportService {
     Map<String, Integer> getIncidentsByPriority(int year);
     List<Map<String, Object>> getTopSpareParts(int limit);
 
-    // Dashboard v2 - Inventory
+    /// Dashboard v2 - Inventory
     int countCustomers();
     int countDevices();
     int countDevicesByStatus(String status);
@@ -29,7 +29,7 @@ public interface IReportService {
 
     List<Map<String, Object>> getTopModels(int limit);
 
-    //Service module
+    ///Service module
     int countIncidentsInWarrantyByYear(int year);
     int countIncidentsOutWarrantyByYear(int year);
     int countMaintenancesInWarrantyByYear(int year);
@@ -38,7 +38,7 @@ public interface IReportService {
     List<Map<String, Object>> getIncidentsWarrantyByMonth(int year);
     List<Map<String, Object>> getMaintenancesWarrantyByMonth(int year);
 
-    //Financial module
+    ///Financial module
     double getAverageTicketValueByYear(int year);
     double getTotalServiceRevenueByYear(int year);
     int getTotalPartsQuantityUsedByYear(int year);
@@ -47,4 +47,12 @@ public interface IReportService {
     List<Map<String, Object>> getTopPartsByQuantity(int year, int limit);
     List<Map<String, Object>> getTopPartsByValue(int year, int limit);
     List<Map<String, Object>> getTopMaintenanceTickets(int year, int limit);
+
+    /// Risk module
+    int countRedZoneDevices(int months);
+    double getServicePenetrationRateByYear(int year);
+    double getFirstTimeFixRateByYear(int year);
+
+    List<Map<String, Object>> getRedZoneDevicesByCategory(int months);
+    List<Map<String, Object>> getRedZoneDeviceList(int months, int year);
 }

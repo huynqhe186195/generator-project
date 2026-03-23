@@ -727,6 +727,209 @@ public class ReportDAO extends GenericDAO<Object>{
         return result;
     }
 
+    /**
+     * ==============================================================================
+     * Risk Module
+     * Red zone definition:
+     *  * A device is red zone if it has no maintenance in the last {months}.
+     *  * We use maintenances.maintenance_date as "last updated on maintenance ticket".
+     */
+    public int countRedZoneDevices(int months){
+        String sql = "SELECT COUNT(*) FROM products p " +
+                "LEFT JOIN ( " +
+                "  SELECT product_id, MAX(maintenance_date) AS last_date " +
+                "  FROM maintenances " +
+                "  GROUP BY product_id " +
+                ") lm ON lm.product_id = p.id " +
+                "WHERE (lm.last_date IS NULL OR lm.last_date < DATE_SUB(CURDATE(), INTERVAL ? MONTH)) ";
+
+        return count(sql, months);
+    }
+
+    public double getServicePenetrationRateByYear(int year){
+        String sql = "SELECT ( " +
+                "    SELECT COUNT(DISTINCT p.customer_id) " +
+                "    FROM products p " +
+                "    JOIN maintenances m ON m.product_id = p.id " +
+                "    WHERE YEAR(m.maintenance_date) = ? " +
+                "  ) AS numerator, " +
+                "  ( " +
+                "    SELECT COUNT(DISTINCT customer_id) FROM products " +
+                "  ) AS denominator ";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            rs = ps.executeQuery();
+
+            if (rs.next()){
+                int num = rs.getInt("numerator");
+                int den = rs.getInt("denominator");
+                if (den <= 0){
+                    return 0.0;
+                }
+                return Math.round(((double) num / den) * 1000.0) / 10.0; // 1 decimal %
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return 0.0;
+    }
+
+    /**
+     * First-Time Fix Rate (approx):
+     * % REPAIR maintenances in a year that do NOT have a subsequent REPAIR on the same product
+     * within 30 days.
+     *
+     * Assumptions:
+     * - maintenances.type contains 'REPAIR' for repair tickets.
+     * - Uses maintenance_date for sequencing.
+     */
+    public double getFirstTimeFixRateByYear(int year){
+        String sql = "SELECT " +
+                "  SUM(CASE WHEN next_m.next_date IS NULL THEN 1 ELSE 0 END) AS fixed_first_time, " +
+                "  COUNT(*) AS total_repairs " +
+                "FROM maintenances m " +
+                "LEFT JOIN ( " +
+                "  SELECT m1.id AS mid, MIN(m2.maintenance_date) AS next_date " +
+                "  FROM maintenances m1 " +
+                "  JOIN maintenances m2 " +
+                "    ON m2.product_id = m1.product_id " +
+                "   AND m2.type = 'REPAIR' " +
+                "   AND m2.maintenance_date > m1.maintenance_date " +
+                "   AND m2.maintenance_date <= DATE_ADD(m1.maintenance_date, INTERVAL 30 DAY) " +
+                "  WHERE m1.type = 'REPAIR' " +
+                "  GROUP BY m1.id " +
+                ") next_m ON next_m.mid = m.id " +
+                "WHERE m.type = 'REPAIR' " +
+                "AND YEAR(m.maintenance_date) = ?";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            rs = ps.executeQuery();
+
+            if (rs.next()){
+                int fixed =  rs.getInt("fixed_first_time");
+                int total = rs.getInt("total_repairs");
+                if (total <= 0){
+                    return 0.0;
+                }
+                return Math.round(((double) fixed/total) * 1000.0) / 10.0;// 1 decimal %
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return 0.0;
+    }
+
+    /**
+     * Chart: red zone by category (segment).
+     */
+
+    public List<Map<String, Object>> getRedZoneDevicesByCategory(int months){
+        String sql = "SELECT c.name AS label, COUNT(*) AS value " +
+                "FROM products p " +
+                "JOIN product_models pm ON p.model_id = pm.id " +
+                "JOIN categories c ON pm.category_id = c.id " +
+                "LEFT JOIN ( " +
+                "  SELECT product_id, MAX(maintenance_date) AS last_date " +
+                "  FROM maintenances " +
+                "  GROUP BY product_id " +
+                ") lm ON lm.product_id = p.id " +
+                "WHERE (lm.last_date IS NULL OR lm.last_date < DATE_SUB(CURDATE(), INTERVAL ? MONTH)) " +
+                "GROUP BY c.id, c.name " +
+                "ORDER BY value DESC ";
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, months);
+            rs = ps.executeQuery();
+
+            while (rs.next()){
+                Map<String, Object> row = new HashMap<>();
+                row.put("label", rs.getString("label"));
+                row.put("value", rs.getInt("value"));
+                result.add(row);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return result;
+    }
+
+    /**
+     * Table: list red zone devices (top N oldest last maintenance).
+     */
+    public List<Map<String, Object>> getRedZoneDeviceList(int months, int limit){
+        String sql = "SELECT p.id AS productId, p.serial_number AS serialNumber, " +
+                "u.full_name AS customerName, " +
+                "lm.last_date AS lastMaintenanceDate, " +
+                "p.current_location AS location " +
+                "FROM products p " +
+                "LEFT JOIN users u ON p.customer_id = u.id " +
+                "LEFT JOIN ( " +
+                "  SELECT product_id, MAX(maintenance_date) AS last_date " +
+                "  FROM maintenances " +
+                "  GROUP BY product_id " +
+                ") lm ON lm.product_id = p.id " +
+                "WHERE (lm.last_date IS NULL OR lm.last_date < DATE_SUB(CURDATE(), INTERVAL ? MONTH)) " +
+                "ORDER BY lm.last_date ASC " +
+                "LIMIT ? ";
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, months);
+            ps.setInt(2, limit);
+            rs = ps.executeQuery();
+            while (rs.next()){
+                Map<String, Object> row = new HashMap<>();
+                row.put("productId", rs.getInt("productId"));
+                row.put("serialNumber", rs.getString("serialNumber"));
+                row.put("customerName", rs.getString("customerName"));
+                row.put("lastMaintenanceDate", rs.getDate("lastMaintenanceDate"));
+                row.put("location", rs.getString("location"));
+                result.add(row);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return result;
+    }
 
     /**
      * ============================================================================

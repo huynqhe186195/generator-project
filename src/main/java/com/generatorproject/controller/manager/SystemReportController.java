@@ -43,7 +43,7 @@ public class SystemReportController extends HttpServlet{
         }else if("financial".equals(section)){
             loadFinancial(req, year);
         }else if("risk".equals(section)){
-            // Placeholder: sẽ làm ở bước sau
+            loadRisk(req, year);
         }else {
             req.setAttribute("section", "inventory");
             loadInventory(req);
@@ -135,5 +135,19 @@ public class SystemReportController extends HttpServlet{
 
         //Table JSON
         req.setAttribute("finTopTicketsJson", gson.toJson(reportService.getTopMaintenanceTickets(year, 10)));
+    }
+
+    /// Risk module
+    private void loadRisk(HttpServletRequest req, int year){
+        //KPI
+        req.setAttribute("riskRedZoneDevices", reportService.countRedZoneDevices(12));
+        req.setAttribute("riskServicePenetrationRate", reportService.getServicePenetrationRateByYear(year));
+        req.setAttribute("riskFirstTimeFixRate", reportService.getFirstTimeFixRateByYear(year));
+
+        //Charts JSON
+        req.setAttribute("riskRedZoneByCategoryJson", gson.toJson(reportService.getRedZoneDevicesByCategory(12)));
+
+        //Table JSON
+        req.setAttribute("riskRedZoneListJson", gson.toJson(reportService.getRedZoneDeviceList(12, 20)));
     }
 }

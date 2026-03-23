@@ -162,4 +162,31 @@ public class ReportService implements  IReportService{
     public List<Map<String, Object>> getTopMaintenanceTickets(int year, int limit){
         return reportDAO.getTopMaintenanceTickets(year,limit);
     }
+
+    /// Risk module
+
+    @Override
+    public int countRedZoneDevices(int months){
+        return reportDAO.countRedZoneDevices(months);
+    }
+
+    @Override
+    public double getServicePenetrationRateByYear(int year){
+        return reportDAO.getServicePenetrationRateByYear(year);
+    }
+
+    @Override
+    public double getFirstTimeFixRateByYear(int year){
+        return reportDAO.getFirstTimeFixRateByYear(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getRedZoneDevicesByCategory(int months){
+        return reportDAO.getRedZoneDevicesByCategory(months);
+    }
+
+    @Override
+    public List<Map<String, Object>> getRedZoneDeviceList(int months, int limit){
+        return reportDAO.getRedZoneDeviceList(months,limit);
+    }
 }
