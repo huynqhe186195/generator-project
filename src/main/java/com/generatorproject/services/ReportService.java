@@ -125,4 +125,41 @@ public class ReportService implements  IReportService{
     public List<Map<String, Object>> getMaintenancesWarrantyByMonth(int year) {
         return reportDAO.getMaintenancesWarrantyByMonth(year);
     }
+
+    /// Financial module
+
+    @Override
+    public double getAverageTicketValueByYear(int year){
+        return reportDAO.getAverageTicketValueByYear(year);
+    }
+
+    @Override
+    public double getTotalServiceRevenueByYear(int year){
+        return reportDAO.getTotalServiceRevenueByYear(year);
+    }
+
+    @Override
+    public int getTotalPartsQuantityUsedByYear(int year){
+        return reportDAO.getTotalPartsQuantityUsedByYear(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getServiceRevenueByMonth(int year){
+        return reportDAO.getServiceRevenueByMonth(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopPartsByQuantity(int year, int limit){
+        return reportDAO.getTopPartsByQuantity(year,limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopPartsByValue(int year, int limit){
+        return reportDAO.getTopPartsByValue(year,limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopMaintenanceTickets(int year, int limit){
+        return reportDAO.getTopMaintenanceTickets(year,limit);
+    }
 }

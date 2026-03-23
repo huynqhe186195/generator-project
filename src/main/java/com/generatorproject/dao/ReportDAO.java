@@ -4,10 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ReportDAO extends GenericDAO<Object>{
 
@@ -491,7 +488,250 @@ public class ReportDAO extends GenericDAO<Object>{
         return result;
     }
 
-    //Helper
+    /**
+     * ===========================================================================
+     * Financial module
+     */
+
+    public double getTotalServiceRevenueByYear(int year) {
+        String sql = "SELECT COALESCE(SUM(COALESCE(m.labor_cost,0) + " +
+                "COALESCE(parts.parts_cost,0)), 0) AS revenue " +
+                "FROM maintenances m " +
+                "LEFT JOIN ( " +
+                "  SELECT maintenance_id, SUM(cost_at_time) AS parts_cost " +
+                "  FROM maintenance_spare_parts " +
+                "  GROUP BY maintenance_id " +
+                ") parts ON parts.maintenance_id = m.id " +
+                "WHERE YEAR(m.maintenance_date) = ?";
+
+        return querySingleDouble(sql, year);
+    }
+
+    public double getAverageTicketValueByYear(int year){
+        String sql = "SELECT COALESCE(AVG(COALESCE(m.labor_cost,0) + " +
+                "COALESCE(parts.parts_cost,0)), 0) AS avg_ticket " +
+                "FROM maintenances m " +
+                "LEFT JOIN ( " +
+                "  SELECT maintenance_id, SUM(cost_at_time) AS parts_cost " +
+                "  FROM maintenance_spare_parts " +
+                "  GROUP BY maintenance_id " +
+                ") parts ON parts.maintenance_id = m.id " +
+                "WHERE YEAR(m.maintenance_date) = ?";
+
+        return querySingleDouble(sql, year);
+    }
+
+    public int getTotalPartsQuantityUsedByYear(int year){
+        String sql = "SELECT COALESCE (SUM(msp.quantity_used),0) AS qty " +
+                "FROM maintenance_spare_parts msp " +
+                "JOIN maintenances m ON msp.maintenance_id = m.id " +
+                "WHERE YEAR(m.maintenance_date) = ?";
+
+        return querySingleInt(sql, year);
+    }
+
+    public List<Map<String, Object>> getServiceRevenueByMonth(int year){
+        String sql = "SELECT MONTH(m.maintenance_date) AS month, " +
+                "COALESCE(SUM(COALESCE(m.labor_cost,0) + COALESCE(parts.parts_cost,0)),0) " +
+                "AS revenue " +
+                "FROM maintenances m " +
+                "LEFT JOIN ( " +
+                "  SELECT maintenance_id, SUM(cost_at_time) AS parts_cost " +
+                "  FROM maintenance_spare_parts " +
+                "  GROUP BY maintenance_id " +
+                ") parts ON parts.maintenance_id = m.id " +
+                "WHERE YEAR(m.maintenance_date) = ? " +
+                "GROUP BY MONTH(m.maintenance_date) " +
+                "ORDER BY month";
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for(int m = 1; m <= 12; m++){
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("month", m);
+            row.put("revenue", 0.0);
+            result.add(row);
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            rs = ps.executeQuery();
+
+            while (rs.next()){
+                int month = rs.getInt("month");
+                double rev = rs.getDouble("revenue");
+                if(month >= 1 && month <= 12){
+                    result.get(month - 1).put("revenue", rev);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return result;
+    }
+
+    public List<Map<String, Object>> getTopPartsByQuantity(int year, int limit){
+        String sql = "SELECT sp.name AS partName, sp.part_code AS partCode, " +
+                "COALESCE(SUM(msp.quantity_used),0) AS qty " +
+                "FROM maintenance_spare_parts msp " +
+                "JOIN maintenances m ON msp.maintenance_id = m.id " +
+                "JOIN spare_parts sp ON msp.spare_part_id = sp.id " +
+                "WHERE YEAR(m.maintenance_date) = ? " +
+                "GROUP BY sp.id, sp.name, sp.part_code " +
+                "ORDER BY qty DESC " +
+                "LIMIT ?";
+
+        return queryPartRanking(sql, year, limit, "qty");
+    }
+
+    public List<Map<String, Object>> getTopPartsByValue(int year, int limit){
+        String sql = "SELECT sp.name AS partName, sp.part_code AS partCode, " +
+                "COALESCE(SUM(msp.cost_at_time),0) AS value " +
+                "FROM maintenance_spare_parts msp " +
+                "JOIN maintenances m ON msp.maintenance_id = m.id " +
+                "JOIN spare_parts sp ON msp.spare_part_id = sp.id " +
+                "WHERE YEAR(m.maintenance_date) = ? " +
+                "GROUP BY sp.id, sp.name, sp.part_code " +
+                "ORDER BY value DESC " +
+                "LIMIT ?";
+
+        return queryPartRanking(sql, year, limit, "value");
+    }
+
+    public List<Map<String, Object>> getTopMaintenanceTickets(int year, int limit){
+        String sql = "SELECT m.id AS maintenanceId, p.serial_number AS serialNumber, " +
+                "COALESCE(m.labor_cost,0) AS laborCost, " +
+                "COALESCE(parts.parts_cost,0) AS partsCost, " +
+                "COALESCE(m.labor_cost,0) + COALESCE(parts.parts_cost,0) AS total " +
+                "FROM maintenances m " +
+                "JOIN products p ON m.product_id = p.id " +
+                "LEFT JOIN ( " +
+                "  SELECT maintenance_id, SUM(cost_at_time) AS parts_cost " +
+                "  FROM maintenance_spare_parts " +
+                "  GROUP BY maintenance_id " +
+                ") parts ON parts.maintenance_id = m.id " +
+                "WHERE YEAR(m.maintenance_date) = ? " +
+                "ORDER BY total DESC " +
+                "LIMIT ? ";
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            ps.setInt(2, limit);
+            rs = ps.executeQuery();
+
+            while (rs.next()){
+                Map<String, Object> row = new HashMap<>();
+                row.put("maintenanceId", rs.getInt("maintenanceId"));
+                row.put("serialNumber", rs.getString("serialNumber"));
+                row.put("laborCost", rs.getDouble("laborCost"));
+                row.put("partsCost", rs.getDouble("partsCost"));
+                row.put("total", rs.getDouble("total"));
+                result.add(row);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return result;
+    }
+
+    private double querySingleDouble(String sql, int year){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            rs = ps.executeQuery();
+            if (rs.next()){
+                return rs.getDouble(1);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return 0.0;
+    }
+
+    private int querySingleInt(String sql, int year){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            rs = ps.executeQuery();
+            if (rs.next()){
+                return rs.getInt(1);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return 0;
+    }
+
+    private List<Map<String, Object>> queryPartRanking(String sql, int year,
+                                                      int limit, String metrickey){
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            ps.setInt(2, limit);
+            rs = ps.executeQuery();
+
+            while (rs.next()){
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("name", rs.getString("partName"));
+                row.put("code", rs.getString("partCode"));
+                row.put(metrickey, rs.getDouble(metrickey));
+                result.add(row);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return result;
+    }
+
+
+    /**
+     * ============================================================================
+     * Helper
+    **/
     private void close(Connection conn, PreparedStatement ps, ResultSet rs){
         try {
             if(rs != null){ rs.close(); }

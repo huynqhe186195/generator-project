@@ -37,4 +37,14 @@ public interface IReportService {
 
     List<Map<String, Object>> getIncidentsWarrantyByMonth(int year);
     List<Map<String, Object>> getMaintenancesWarrantyByMonth(int year);
+
+    //Financial module
+    double getAverageTicketValueByYear(int year);
+    double getTotalServiceRevenueByYear(int year);
+    int getTotalPartsQuantityUsedByYear(int year);
+
+    List<Map<String, Object>> getServiceRevenueByMonth(int year);
+    List<Map<String, Object>> getTopPartsByQuantity(int year, int limit);
+    List<Map<String, Object>> getTopPartsByValue(int year, int limit);
+    List<Map<String, Object>> getTopMaintenanceTickets(int year, int limit);
 }

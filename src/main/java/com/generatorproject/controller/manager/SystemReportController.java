@@ -41,7 +41,7 @@ public class SystemReportController extends HttpServlet{
         }else if("service".equals(section)){
             loadServices(req, year);
         }else if("financial".equals(section)){
-            // Placeholder: sẽ làm ở bước sau
+            loadFinancial(req, year);
         }else if("risk".equals(section)){
             // Placeholder: sẽ làm ở bước sau
         }else {
@@ -119,5 +119,21 @@ public class SystemReportController extends HttpServlet{
                 gson.toJson(reportService.getMaintenancesWarrantyByMonth(year)));
         req.setAttribute("svcIncidentPriorityJson",
                 gson.toJson(reportService.getIncidentsByPriority(year)));
+    }
+
+    /// financial module
+    private void loadFinancial(HttpServletRequest req, int year){
+        //KPI
+        req.setAttribute("finAvgTicket", reportService.getAverageTicketValueByYear(year));
+        req.setAttribute("finTotalRevenue", reportService.getTotalServiceRevenueByYear(year));
+        req.setAttribute("finTotalPartsQty", reportService.getTotalPartsQuantityUsedByYear(year));
+
+        //Charts JSON
+        req.setAttribute("finRevenueByMonthJson", gson.toJson(reportService.getServiceRevenueByMonth(year)));
+        req.setAttribute("finTopPartsByQtyJson", gson.toJson(reportService.getTopPartsByQuantity(year, 5)));
+        req.setAttribute("finTopPartsByValueJson", gson.toJson(reportService.getTopPartsByValue(year, 5)));
+
+        //Table JSON
+        req.setAttribute("finTopTicketsJson", gson.toJson(reportService.getTopMaintenanceTickets(year, 10)));
     }
 }
