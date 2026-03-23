@@ -12,11 +12,9 @@
         --cap-border: #e2e8f0;
         --cap-text: #0f172a;
         --cap-muted: #64748b;
-        --cap-primary: #2563eb;
         --cap-primary-soft: #dbeafe;
         --cap-success-soft: #dcfce7;
         --cap-warning-soft: #fef3c7;
-        --cap-danger-soft: #fee2e2;
         --cap-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
     }
 
@@ -25,7 +23,7 @@
     }
 
     .capability-shell {
-        max-width: 1420px;
+        max-width: 1180px;
         margin: 0 auto;
         color: var(--cap-text);
     }
@@ -48,7 +46,7 @@
         margin: 8px 0 0;
         color: var(--cap-muted);
         line-height: 1.7;
-        max-width: 860px;
+        max-width: 820px;
     }
 
     .btn-round {
@@ -62,20 +60,14 @@
         gap: 18px;
     }
 
-    .section-card {
+    .section-card,
+    .inner-card,
+    .selected-box,
+    .field-card {
         background: var(--cap-card-bg);
         border: 1px solid var(--cap-border);
-        border-radius: 24px;
+        border-radius: 22px;
         box-shadow: var(--cap-shadow);
-        overflow: hidden;
-    }
-
-    .section-head,
-    .card-header-lite {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
     }
 
     .accordion-button {
@@ -83,7 +75,7 @@
         color: var(--cap-text);
         box-shadow: none !important;
         padding: 20px 22px;
-        border-radius: 24px !important;
+        border-radius: 22px !important;
     }
 
     .accordion-button:not(.collapsed) {
@@ -91,23 +83,29 @@
         color: var(--cap-text);
     }
 
-    .accordion-button::after {
-        width: 1rem;
-        height: 1rem;
+    .section-head,
+    .inner-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
     }
 
-    .section-title {
+    .section-title,
+    .inner-title {
         margin: 0;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         font-weight: 800;
         color: #1e293b;
     }
 
-    .section-copy {
+    .section-copy,
+    .inner-copy,
+    .sub-text {
         margin: 6px 0 0;
         color: var(--cap-muted);
         line-height: 1.6;
-        font-size: 0.95rem;
+        font-size: 0.94rem;
     }
 
     .badge-soft {
@@ -123,64 +121,48 @@
     .badge-soft-primary { background: var(--cap-primary-soft); color: #1d4ed8; }
     .badge-soft-success { background: var(--cap-success-soft); color: #15803d; }
     .badge-soft-warning { background: var(--cap-warning-soft); color: #b45309; }
-    .badge-soft-danger { background: var(--cap-danger-soft); color: #b91c1c; }
     .badge-soft-muted { background: #e2e8f0; color: #475569; }
 
-    .group-grid {
-        display: grid;
-        grid-template-columns: 340px minmax(0, 1fr);
-        gap: 20px;
-        align-items: start;
+    .section-body {
         padding: 0 22px 22px;
+        display: grid;
+        gap: 18px;
     }
 
-    .inner-card {
-        border: 1px solid var(--cap-border);
-        border-radius: 22px;
-        background: #fff;
-        overflow: hidden;
-    }
-
-    .inner-card-header {
-        padding: 16px 18px;
-        border-bottom: 1px solid var(--cap-border);
-        background: #fff;
-    }
-
+    .inner-card-header,
     .inner-card-body {
         padding: 18px;
     }
 
-    .inner-title {
-        margin: 0;
-        font-size: 1.05rem;
-        font-weight: 800;
-        color: #1e293b;
+    .inner-card-header {
+        border-bottom: 1px solid var(--cap-border);
     }
 
-    .inner-copy {
-        margin: 6px 0 0;
-        color: var(--cap-muted);
-        font-size: 0.92rem;
-        line-height: 1.55;
-    }
-
-    .summary-grid {
+    .selected-grid,
+    .dual-grid,
+    .field-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 16px;
+        gap: 16px;
     }
 
-    .summary-box,
-    .selected-box {
-        border: 1px solid var(--cap-border);
-        border-radius: 18px;
-        padding: 14px 16px;
+    .selected-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .dual-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .selected-box,
+    .field-card {
+        padding: 16px;
         background: #f8fafc;
     }
 
-    .summary-label,
     .selected-label {
         display: block;
         color: var(--cap-muted);
@@ -190,7 +172,6 @@
         letter-spacing: 0.04em;
     }
 
-    .summary-value,
     .selected-value {
         display: block;
         margin-top: 8px;
@@ -198,165 +179,7 @@
         font-weight: 800;
     }
 
-    .tech-tree {
-        border: 1px solid var(--cap-border);
-        border-radius: 18px;
-        overflow: hidden;
-        background: #1f2937;
-        color: #fff;
-    }
-
-    .tech-tree-toggle {
-        width: 100%;
-        border: 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 16px 18px;
-        background: #273548;
-        color: #fff;
-        font-size: 1rem;
-        font-weight: 700;
-    }
-
-    .tech-tree-toggle:hover,
-    .tech-tree-toggle:focus {
-        background: #314256;
-        color: #fff;
-    }
-
-    .tech-tree-toggle .caret-icon {
-        transition: transform 0.18s ease;
-    }
-
-    .tech-tree-toggle[aria-expanded="true"] .caret-icon {
-        transform: rotate(180deg);
-    }
-
-    .tech-tree-body {
-        padding: 14px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        background: #1f2937;
-    }
-
-    .tech-search {
-        margin-bottom: 12px;
-    }
-
-    .tech-search .form-control {
-        background: #111827;
-        color: #fff;
-        border-color: #374151;
-    }
-
-    .tech-search .form-control::placeholder {
-        color: #94a3b8;
-    }
-
-    .technician-list {
-        display: grid;
-        gap: 10px;
-        max-height: 720px;
-        overflow: auto;
-        padding-right: 4px;
-    }
-
-    .tech-item {
-        display: block;
-        padding: 14px 16px;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 14px;
-        text-decoration: none;
-        color: #e5e7eb;
-        background: #111827;
-        transition: all 0.18s ease;
-    }
-
-    .tech-item:hover {
-        color: #fff;
-        background: #172131;
-        border-color: rgba(147, 197, 253, 0.35);
-    }
-
-    .tech-item.active {
-        background: #1d4ed8;
-        border-color: #60a5fa;
-        color: #fff;
-    }
-
-    .tech-item-top {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: flex-start;
-    }
-
-    .tech-name {
-        margin: 0;
-        font-size: 0.98rem;
-        font-weight: 700;
-    }
-
-    .tech-meta {
-        margin-top: 6px;
-        color: #cbd5e1;
-        font-size: 0.88rem;
-        line-height: 1.55;
-    }
-
-    .sub-text {
-        margin-top: 6px;
-        color: var(--cap-muted);
-        font-size: 0.92rem;
-        line-height: 1.55;
-    }
-
-    .content-stack,
-    .dual-grid,
-    .selected-grid {
-        display: grid;
-        gap: 18px;
-    }
-
-    .selected-grid {
-        grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 0.45fr));
-    }
-
-    .dual-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .field-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
-    }
-
-    .field-card {
-        border: 1px solid var(--cap-border);
-        border-radius: 18px;
-        padding: 16px;
-        background: #f8fafc;
-    }
-
-    .field-title {
-        margin-bottom: 8px;
-        font-weight: 700;
-        color: #1e293b;
-    }
-
-    .switch-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        border: 1px solid var(--cap-border);
-        border-radius: 18px;
-        padding: 16px 18px;
-        background: #f8fafc;
-    }
-
+    .field-title,
     .form-label {
         font-weight: 700;
         color: #1e293b;
@@ -375,6 +198,17 @@
     .form-select:focus {
         border-color: #60a5fa;
         box-shadow: 0 0 0 0.18rem rgba(59, 130, 246, 0.12);
+    }
+
+    .switch-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        border: 1px solid var(--cap-border);
+        border-radius: 18px;
+        padding: 16px 18px;
+        background: #f8fafc;
     }
 
     .form-check-input {
@@ -425,7 +259,6 @@
     }
 
     @media (max-width: 1199.98px) {
-        .group-grid,
         .selected-grid,
         .dual-grid,
         .field-grid {
@@ -436,25 +269,18 @@
     @media (max-width: 767.98px) {
         .page-head,
         .section-head,
-        .card-header-lite,
+        .inner-card-header,
         .switch-row {
             flex-direction: column;
             align-items: flex-start;
         }
 
-        .group-grid {
-            padding: 0 16px 16px;
-        }
-
+        .section-body,
         .accordion-button,
         .inner-card-header,
         .inner-card-body {
             padding-left: 16px;
             padding-right: 16px;
-        }
-
-        .summary-grid {
-            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -463,7 +289,7 @@
     <div class="page-head">
         <div>
             <h1 class="page-title">Quản lý năng lực kỹ thuật viên</h1>
-            <p class="page-copy">Màn này được gom lại thành 2 nhóm chính để đỡ rối: <strong>Quản lý kỹ thuật viên</strong> và <strong>Quản lý danh mục kỹ năng</strong>. Toàn bộ nhãn đã được đổi sang tiếng Việt để dễ theo dõi hơn.</p>
+            <p class="page-copy">Danh sách kỹ thuật viên đã được chuyển ra sidebar. Bạn chỉ cần bấm vào mục <strong>Quản lý kỹ thuật viên</strong> ở bên trái để mở danh sách, chọn người cần chỉnh và bấm lại để thu gọn danh sách.</p>
         </div>
         <a href="${pageContext.request.contextPath}/manager/home" class="btn btn-light border btn-round text-primary">
             <i class="fa fa-arrow-left me-2"></i>Quay lại dashboard
@@ -484,72 +310,22 @@
                     <div class="section-head w-100 me-3">
                         <div>
                             <h2 class="section-title">Quản lý kỹ thuật viên</h2>
-                            <p class="section-copy">Chọn kỹ thuật viên, cập nhật hồ sơ điều phối, kỹ năng và thời gian không thể nhận việc.</p>
+                            <p class="section-copy">Hồ sơ điều phối, kỹ năng và khoảng thời gian không nhận việc của kỹ thuật viên đang được chọn từ sidebar.</p>
                         </div>
                         <span class="badge-soft badge-soft-primary">${fn:length(technicians)} kỹ thuật viên</span>
                     </div>
                 </button>
             </h2>
             <div id="collapseTechnician" class="accordion-collapse collapse show" aria-labelledby="headingTechnician" data-bs-parent="#capabilityAccordion">
-                <div class="group-grid pt-2">
-                    <div class="inner-card">
-                        <div class="inner-card-header card-header-lite">
-                            <div>
-                                <h3 class="inner-title">Danh sách kỹ thuật viên</h3>
-                                <p class="inner-copy">Nhấn vào tiêu đề bên dưới để mở hoặc đóng danh sách kỹ thuật viên.</p>
-                            </div>
-                        </div>
-                        <div class="inner-card-body">
-                            <div class="summary-grid">
-                                <div class="summary-box">
-                                    <span class="summary-label">Kỹ năng đã gán</span>
-                                    <span class="summary-value">${fn:length(assignedSkills)}</span>
-                                </div>
-                                <div class="summary-box">
-                                    <span class="summary-label">Khoảng bận</span>
-                                    <span class="summary-value">${fn:length(unavailabilityList)}</span>
-                                </div>
-                            </div>
-
-                            <div class="tech-tree">
-                                <button class="tech-tree-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#technicianListCollapse" aria-expanded="true" aria-controls="technicianListCollapse">
-                                    <span><i class="fa fa-users me-2"></i>Quản lý kỹ thuật viên</span>
-                                    <i class="fa fa-chevron-down caret-icon"></i>
-                                </button>
-
-                                <div id="technicianListCollapse" class="collapse show">
-                                    <div class="tech-tree-body">
-                                        <div class="tech-search">
-                                            <input type="text" class="form-control" id="technicianSearchInput" placeholder="Tìm theo tên, mã hoặc email...">
-                                        </div>
-
-                                        <div class="technician-list" id="technicianListTree">
-                                            <c:forEach items="${technicians}" var="tech">
-                                                <a class="tech-item ${selectedTechnicianId == tech.id ? 'active' : ''}"
-                                                   data-tech-search="${fn:toLowerCase(tech.fullName)} ${tech.id} ${fn:toLowerCase(tech.email)}"
-                                                   href="${pageContext.request.contextPath}/manager/technician-capability?technicianId=${tech.id}">
-                                                    <div class="tech-item-top">
-                                                        <div>
-                                                            <h4 class="tech-name">${tech.fullName}</h4>
-                                                            <div class="tech-meta">Mã #${tech.id} • ${tech.email}</div>
-                                                        </div>
-                                                        <span class="badge-soft ${tech.status == 1 ? 'badge-soft-success' : 'badge-soft-muted'}">${tech.status == 1 ? 'Hoạt động' : 'Ngừng hoạt động'}</span>
-                                                    </div>
-                                                </a>
-                                            </c:forEach>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-stack">
-                        <c:if test="${not empty selectedTechnician}">
+                <div class="section-body pt-2">
+                    <c:choose>
+                        <c:when test="${not empty selectedTechnician}">
                             <div class="inner-card">
                                 <div class="inner-card-header">
-                                    <h3 class="inner-title">Kỹ thuật viên đang chọn</h3>
-                                    <p class="inner-copy">Thông tin nhanh để bạn biết mình đang chỉnh đúng người.</p>
+                                    <div>
+                                        <h3 class="inner-title">Kỹ thuật viên đang chọn</h3>
+                                        <p class="inner-copy">Thông tin nhanh của kỹ thuật viên bạn vừa chọn từ sidebar.</p>
+                                    </div>
                                 </div>
                                 <div class="inner-card-body">
                                     <div class="selected-grid">
@@ -559,7 +335,7 @@
                                             <div class="sub-text">Mã #${selectedTechnician.id} • ${selectedTechnician.email}</div>
                                         </div>
                                         <div class="selected-box">
-                                            <span class="selected-label">Kỹ năng</span>
+                                            <span class="selected-label">Kỹ năng đã gán</span>
                                             <span class="selected-value">${fn:length(assignedSkills)}</span>
                                         </div>
                                         <div class="selected-box">
@@ -569,201 +345,210 @@
                                     </div>
                                 </div>
                             </div>
-                        </c:if>
 
-                        <div class="inner-card">
-                            <div class="inner-card-header">
-                                <h3 class="inner-title">Hồ sơ điều phối</h3>
-                                <p class="inner-copy">Cấu hình thời gian làm việc, tải công việc tối đa và trạng thái hoạt động.</p>
-                            </div>
-                            <div class="inner-card-body">
-                                <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3">
-                                    <input type="hidden" name="action" value="save_profile">
-                                    <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
-
-                                    <div class="col-12">
-                                        <div class="field-grid">
-                                            <div class="field-card">
-                                                <label class="form-label">Bắt đầu làm việc</label>
-                                                <input type="time" class="form-control" name="workingHoursStart" value="${workingHoursStartValue}" required>
-                                            </div>
-                                            <div class="field-card">
-                                                <label class="form-label">Kết thúc làm việc</label>
-                                                <input type="time" class="form-control" name="workingHoursEnd" value="${workingHoursEndValue}" required>
-                                            </div>
-                                            <div class="field-card">
-                                                <label class="form-label">Tối đa việc/ngày</label>
-                                                <input type="number" class="form-control" min="1" name="maxTasksPerDay" value="${profile.maxTasksPerDay}">
-                                            </div>
-                                            <div class="field-card">
-                                                <label class="form-label">Múi giờ</label>
-                                                <input type="text" class="form-control" name="timezoneName" value="${profile.timezoneName}" placeholder="Asia/Ho_Chi_Minh">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12">
-                                        <div class="switch-row">
-                                            <div>
-                                                <div class="field-title">Trạng thái hồ sơ</div>
-                                                <div class="sub-text">Bật nếu kỹ thuật viên sẵn sàng tham gia đề xuất phân công.</div>
-                                            </div>
-                                            <div class="form-check form-switch m-0">
-                                                <input class="form-check-input" type="checkbox" role="switch" name="activeStatus" id="activeStatus" value="1" ${profile.activeStatus ? 'checked' : ''}>
-                                                <label class="form-check-label ms-2 fw-semibold" for="activeStatus">Đang hoạt động</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 text-end">
-                                        <button type="submit" class="btn btn-primary btn-round px-4">
-                                            <i class="fa fa-save me-2"></i>Lưu hồ sơ
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div class="dual-grid">
                             <div class="inner-card">
-                                <div class="inner-card-header card-header-lite">
+                                <div class="inner-card-header">
                                     <div>
-                                        <h3 class="inner-title">Kỹ năng của kỹ thuật viên</h3>
-                                        <p class="inner-copy">Thêm hoặc xoá kỹ năng đã gán.</p>
+                                        <h3 class="inner-title">Hồ sơ điều phối</h3>
+                                        <p class="inner-copy">Cấu hình thời gian làm việc, tải công việc tối đa và trạng thái hoạt động.</p>
                                     </div>
-                                    <span class="badge-soft badge-soft-primary">${fn:length(assignedSkills)} mục</span>
                                 </div>
                                 <div class="inner-card-body">
-                                    <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4">
-                                        <input type="hidden" name="action" value="assign_skill">
+                                    <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3">
+                                        <input type="hidden" name="action" value="save_profile">
                                         <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
-                                        <div class="col-md-7">
-                                            <label class="form-label">Chọn kỹ năng</label>
-                                            <select class="form-select" name="skillCode" required>
-                                                <option value="">-- Chọn kỹ năng --</option>
-                                                <c:forEach items="${skillCatalog}" var="skill">
-                                                    <c:if test="${skill.activeStatus}">
-                                                        <option value="${skill.code}">${skill.code} - ${skill.name}</option>
-                                                    </c:if>
-                                                </c:forEach>
-                                            </select>
+
+                                        <div class="col-12">
+                                            <div class="field-grid">
+                                                <div class="field-card">
+                                                    <label class="form-label">Bắt đầu làm việc</label>
+                                                    <input type="time" class="form-control" name="workingHoursStart" value="${workingHoursStartValue}" required>
+                                                </div>
+                                                <div class="field-card">
+                                                    <label class="form-label">Kết thúc làm việc</label>
+                                                    <input type="time" class="form-control" name="workingHoursEnd" value="${workingHoursEndValue}" required>
+                                                </div>
+                                                <div class="field-card">
+                                                    <label class="form-label">Tối đa việc/ngày</label>
+                                                    <input type="number" class="form-control" min="1" name="maxTasksPerDay" value="${profile.maxTasksPerDay}">
+                                                </div>
+                                                <div class="field-card">
+                                                    <label class="form-label">Múi giờ</label>
+                                                    <input type="text" class="form-control" name="timezoneName" value="${profile.timezoneName}" placeholder="Asia/Ho_Chi_Minh">
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="col-md-5">
-                                            <label class="form-label">Ngày hết hạn</label>
-                                            <input type="datetime-local" class="form-control" name="expiresAt">
+
+                                        <div class="col-12">
+                                            <div class="switch-row">
+                                                <div>
+                                                    <div class="field-title">Trạng thái hồ sơ</div>
+                                                    <div class="sub-text">Bật nếu kỹ thuật viên sẵn sàng tham gia đề xuất phân công.</div>
+                                                </div>
+                                                <div class="form-check form-switch m-0">
+                                                    <input class="form-check-input" type="checkbox" role="switch" name="activeStatus" id="activeStatus" value="1" ${profile.activeStatus ? 'checked' : ''}>
+                                                    <label class="form-check-label ms-2 fw-semibold" for="activeStatus">Đang hoạt động</label>
+                                                </div>
+                                            </div>
                                         </div>
+
                                         <div class="col-12 text-end">
-                                            <button type="submit" class="btn btn-outline-primary btn-round">
-                                                <i class="fa fa-plus me-2"></i>Gán kỹ năng
+                                            <button type="submit" class="btn btn-primary btn-round px-4">
+                                                <i class="fa fa-save me-2"></i>Lưu hồ sơ
                                             </button>
                                         </div>
                                     </form>
+                                </div>
+                            </div>
 
-                                    <div class="table-shell">
-                                        <div class="table-responsive">
-                                            <table class="table table-modern align-middle">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Kỹ năng</th>
-                                                        <th>Hết hạn</th>
-                                                        <th>Trạng thái</th>
-                                                        <th class="text-end">Thao tác</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <c:forEach items="${assignedSkills}" var="skill">
-                                                        <tr>
-                                                            <td>
-                                                                <span class="code-text">${skill.skillCode}</span>
-                                                                <span class="sub-text">${skill.skillName}</span>
-                                                            </td>
-                                                            <td>
-                                                                <c:choose>
-                                                                    <c:when test="${not empty skill.expiresAt}">
-                                                                        <fmt:formatDate value="${skill.expiresAt}" pattern="dd/MM/yyyy HH:mm"/>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        <span class="badge-soft badge-soft-muted">Không hết hạn</span>
-                                                                    </c:otherwise>
-                                                                </c:choose>
-                                                            </td>
-                                                            <td>
-                                                                <span class="badge-soft ${skill.catalogActive ? 'badge-soft-success' : 'badge-soft-muted'}">${skill.catalogActive ? 'Đang dùng' : 'Ngừng dùng'}</span>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="d-inline">
-                                                                    <input type="hidden" name="action" value="remove_skill">
-                                                                    <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
-                                                                    <input type="hidden" name="skillCode" value="${skill.skillCode}">
-                                                                    <button type="submit" class="btn btn-sm btn-outline-danger btn-round"><i class="fa fa-trash me-1"></i>Xoá</button>
-                                                                </form>
-                                                            </td>
-                                                        </tr>
+                            <div class="dual-grid">
+                                <div class="inner-card">
+                                    <div class="inner-card-header">
+                                        <div>
+                                            <h3 class="inner-title">Kỹ năng của kỹ thuật viên</h3>
+                                            <p class="inner-copy">Thêm hoặc xoá kỹ năng đã gán.</p>
+                                        </div>
+                                        <span class="badge-soft badge-soft-primary">${fn:length(assignedSkills)} mục</span>
+                                    </div>
+                                    <div class="inner-card-body">
+                                        <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4">
+                                            <input type="hidden" name="action" value="assign_skill">
+                                            <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
+                                            <div class="col-md-7">
+                                                <label class="form-label">Chọn kỹ năng</label>
+                                                <select class="form-select" name="skillCode" required>
+                                                    <option value="">-- Chọn kỹ năng --</option>
+                                                    <c:forEach items="${skillCatalog}" var="skill">
+                                                        <c:if test="${skill.activeStatus}">
+                                                            <option value="${skill.code}">${skill.code} - ${skill.name}</option>
+                                                        </c:if>
                                                     </c:forEach>
-                                                    <c:if test="${empty assignedSkills}">
-                                                        <tr><td colspan="4" class="empty-state">Kỹ thuật viên này chưa có kỹ năng nào được gán.</td></tr>
-                                                    </c:if>
-                                                </tbody>
-                                            </table>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label class="form-label">Ngày hết hạn</label>
+                                                <input type="datetime-local" class="form-control" name="expiresAt">
+                                            </div>
+                                            <div class="col-12 text-end">
+                                                <button type="submit" class="btn btn-outline-primary btn-round">
+                                                    <i class="fa fa-plus me-2"></i>Gán kỹ năng
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        <div class="table-shell">
+                                            <div class="table-responsive">
+                                                <table class="table table-modern align-middle">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Kỹ năng</th>
+                                                            <th>Hết hạn</th>
+                                                            <th>Trạng thái</th>
+                                                            <th class="text-end">Thao tác</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <c:forEach items="${assignedSkills}" var="skill">
+                                                            <tr>
+                                                                <td>
+                                                                    <span class="code-text">${skill.skillCode}</span>
+                                                                    <div class="sub-text">${skill.skillName}</div>
+                                                                </td>
+                                                                <td>
+                                                                    <c:choose>
+                                                                        <c:when test="${not empty skill.expiresAt}">
+                                                                            <fmt:formatDate value="${skill.expiresAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                                        </c:when>
+                                                                        <c:otherwise>
+                                                                            <span class="badge-soft badge-soft-muted">Không hết hạn</span>
+                                                                        </c:otherwise>
+                                                                    </c:choose>
+                                                                </td>
+                                                                <td>
+                                                                    <span class="badge-soft ${skill.catalogActive ? 'badge-soft-success' : 'badge-soft-muted'}">${skill.catalogActive ? 'Đang dùng' : 'Ngừng dùng'}</span>
+                                                                </td>
+                                                                <td class="text-end">
+                                                                    <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="d-inline">
+                                                                        <input type="hidden" name="action" value="remove_skill">
+                                                                        <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
+                                                                        <input type="hidden" name="skillCode" value="${skill.skillCode}">
+                                                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-round"><i class="fa fa-trash me-1"></i>Xoá</button>
+                                                                    </form>
+                                                                </td>
+                                                            </tr>
+                                                        </c:forEach>
+                                                        <c:if test="${empty assignedSkills}">
+                                                            <tr><td colspan="4" class="empty-state">Kỹ thuật viên này chưa có kỹ năng nào được gán.</td></tr>
+                                                        </c:if>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="inner-card">
+                                    <div class="inner-card-header">
+                                        <div>
+                                            <h3 class="inner-title">Khoảng thời gian không nhận việc</h3>
+                                            <p class="inner-copy">Quản lý các mốc thời gian bận của kỹ thuật viên.</p>
+                                        </div>
+                                        <span class="badge-soft badge-soft-warning">${fn:length(unavailabilityList)} mục</span>
+                                    </div>
+                                    <div class="inner-card-body">
+                                        <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4">
+                                            <input type="hidden" name="action" value="add_unavailability">
+                                            <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Bắt đầu bận</label>
+                                                <input type="datetime-local" class="form-control" name="unavailableStart" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Kết thúc bận</label>
+                                                <input type="datetime-local" class="form-control" name="unavailableEnd" required>
+                                            </div>
+                                            <div class="col-12 text-end">
+                                                <button type="submit" class="btn btn-outline-warning btn-round">
+                                                    <i class="fa fa-calendar-plus me-2"></i>Thêm khoảng bận
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        <div class="table-shell">
+                                            <div class="table-responsive">
+                                                <table class="table table-modern align-middle">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Từ</th>
+                                                            <th>Đến</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <c:forEach items="${unavailabilityList}" var="item">
+                                                            <tr>
+                                                                <td><fmt:formatDate value="${item.unavailableStart}" pattern="dd/MM/yyyy HH:mm"/></td>
+                                                                <td><fmt:formatDate value="${item.unavailableEnd}" pattern="dd/MM/yyyy HH:mm"/></td>
+                                                            </tr>
+                                                        </c:forEach>
+                                                        <c:if test="${empty unavailabilityList}">
+                                                            <tr><td colspan="2" class="empty-state">Chưa có khoảng bận nào.</td></tr>
+                                                        </c:if>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
+                        </c:when>
+                        <c:otherwise>
                             <div class="inner-card">
-                                <div class="inner-card-header card-header-lite">
-                                    <div>
-                                        <h3 class="inner-title">Khoảng thời gian không nhận việc</h3>
-                                        <p class="inner-copy">Quản lý các mốc thời gian bận của kỹ thuật viên.</p>
-                                    </div>
-                                    <span class="badge-soft badge-soft-warning">${fn:length(unavailabilityList)} mục</span>
-                                </div>
                                 <div class="inner-card-body">
-                                    <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4">
-                                        <input type="hidden" name="action" value="add_unavailability">
-                                        <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Bắt đầu bận</label>
-                                            <input type="datetime-local" class="form-control" name="unavailableStart" required>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label">Kết thúc bận</label>
-                                            <input type="datetime-local" class="form-control" name="unavailableEnd" required>
-                                        </div>
-                                        <div class="col-12 text-end">
-                                            <button type="submit" class="btn btn-outline-warning btn-round">
-                                                <i class="fa fa-calendar-plus me-2"></i>Thêm khoảng bận
-                                            </button>
-                                        </div>
-                                    </form>
-
-                                    <div class="table-shell">
-                                        <div class="table-responsive">
-                                            <table class="table table-modern align-middle">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Từ</th>
-                                                        <th>Đến</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <c:forEach items="${unavailabilityList}" var="item">
-                                                        <tr>
-                                                            <td><fmt:formatDate value="${item.unavailableStart}" pattern="dd/MM/yyyy HH:mm"/></td>
-                                                            <td><fmt:formatDate value="${item.unavailableEnd}" pattern="dd/MM/yyyy HH:mm"/></td>
-                                                        </tr>
-                                                    </c:forEach>
-                                                    <c:if test="${empty unavailabilityList}">
-                                                        <tr><td colspan="2" class="empty-state">Chưa có khoảng bận nào.</td></tr>
-                                                    </c:if>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+                                    <div class="empty-state">Hãy chọn một kỹ thuật viên từ sidebar bên trái để bắt đầu quản lý hồ sơ, kỹ năng và khoảng bận.</div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </div>
@@ -781,11 +566,13 @@
                 </button>
             </h2>
             <div id="collapseCatalog" class="accordion-collapse collapse" aria-labelledby="headingCatalog" data-bs-parent="#capabilityAccordion">
-                <div class="px-4 px-md-4 pb-4">
-                    <div class="inner-card mt-2">
+                <div class="section-body pt-2">
+                    <div class="inner-card">
                         <div class="inner-card-header">
-                            <h3 class="inner-title">Danh mục kỹ năng</h3>
-                            <p class="inner-copy">Thêm kỹ năng mới và xem danh sách kỹ năng đang có trong hệ thống.</p>
+                            <div>
+                                <h3 class="inner-title">Danh mục kỹ năng</h3>
+                                <p class="inner-copy">Thêm kỹ năng mới và xem danh sách kỹ năng đang có trong hệ thống.</p>
+                            </div>
                         </div>
                         <div class="inner-card-body">
                             <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4 align-items-end">
@@ -845,19 +632,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    (function () {
-        var input = document.getElementById('technicianSearchInput');
-        var list = document.getElementById('technicianListTree');
-        if (!input || !list) return;
-
-        input.addEventListener('input', function () {
-            var keyword = input.value.trim().toLowerCase();
-            list.querySelectorAll('.tech-item').forEach(function (item) {
-                var haystack = (item.getAttribute('data-tech-search') || '').toLowerCase();
-                item.style.display = !keyword || haystack.indexOf(keyword) !== -1 ? '' : 'none';
-            });
-        });
-    })();
-</script>
