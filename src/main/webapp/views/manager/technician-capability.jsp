@@ -198,34 +198,91 @@
         font-weight: 800;
     }
 
+    .tech-tree {
+        border: 1px solid var(--cap-border);
+        border-radius: 18px;
+        overflow: hidden;
+        background: #1f2937;
+        color: #fff;
+    }
+
+    .tech-tree-toggle {
+        width: 100%;
+        border: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 18px;
+        background: #273548;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .tech-tree-toggle:hover,
+    .tech-tree-toggle:focus {
+        background: #314256;
+        color: #fff;
+    }
+
+    .tech-tree-toggle .caret-icon {
+        transition: transform 0.18s ease;
+    }
+
+    .tech-tree-toggle[aria-expanded="true"] .caret-icon {
+        transform: rotate(180deg);
+    }
+
+    .tech-tree-body {
+        padding: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background: #1f2937;
+    }
+
+    .tech-search {
+        margin-bottom: 12px;
+    }
+
+    .tech-search .form-control {
+        background: #111827;
+        color: #fff;
+        border-color: #374151;
+    }
+
+    .tech-search .form-control::placeholder {
+        color: #94a3b8;
+    }
+
     .technician-list {
         display: grid;
-        gap: 12px;
-        max-height: 860px;
+        gap: 10px;
+        max-height: 720px;
         overflow: auto;
         padding-right: 4px;
     }
 
     .tech-item {
         display: block;
-        padding: 16px;
-        border: 1px solid var(--cap-border);
-        border-radius: 18px;
+        padding: 14px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
         text-decoration: none;
-        color: inherit;
-        background: #fff;
+        color: #e5e7eb;
+        background: #111827;
         transition: all 0.18s ease;
     }
 
     .tech-item:hover {
-        color: inherit;
-        border-color: #93c5fd;
-        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+        color: #fff;
+        background: #172131;
+        border-color: rgba(147, 197, 253, 0.35);
     }
 
     .tech-item.active {
-        background: #eff6ff;
+        background: #1d4ed8;
         border-color: #60a5fa;
+        color: #fff;
     }
 
     .tech-item-top {
@@ -237,11 +294,17 @@
 
     .tech-name {
         margin: 0;
-        font-size: 1rem;
-        font-weight: 800;
+        font-size: 0.98rem;
+        font-weight: 700;
     }
 
-    .tech-meta,
+    .tech-meta {
+        margin-top: 6px;
+        color: #cbd5e1;
+        font-size: 0.88rem;
+        line-height: 1.55;
+    }
+
     .sub-text {
         margin-top: 6px;
         color: var(--cap-muted);
@@ -433,7 +496,7 @@
                         <div class="inner-card-header card-header-lite">
                             <div>
                                 <h3 class="inner-title">Danh sách kỹ thuật viên</h3>
-                                <p class="inner-copy">Chọn một kỹ thuật viên để nạp dữ liệu quản lý tương ứng.</p>
+                                <p class="inner-copy">Nhấn vào tiêu đề bên dưới để mở hoặc đóng danh sách kỹ thuật viên.</p>
                             </div>
                         </div>
                         <div class="inner-card-body">
@@ -448,19 +511,35 @@
                                 </div>
                             </div>
 
-                            <div class="technician-list">
-                                <c:forEach items="${technicians}" var="tech">
-                                    <a class="tech-item ${selectedTechnicianId == tech.id ? 'active' : ''}"
-                                       href="${pageContext.request.contextPath}/manager/technician-capability?technicianId=${tech.id}">
-                                        <div class="tech-item-top">
-                                            <div>
-                                                <h4 class="tech-name">${tech.fullName}</h4>
-                                                <div class="tech-meta">Mã #${tech.id} • ${tech.email}</div>
-                                            </div>
-                                            <span class="badge-soft ${tech.status == 1 ? 'badge-soft-success' : 'badge-soft-muted'}">${tech.status == 1 ? 'Hoạt động' : 'Ngừng hoạt động'}</span>
+                            <div class="tech-tree">
+                                <button class="tech-tree-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#technicianListCollapse" aria-expanded="true" aria-controls="technicianListCollapse">
+                                    <span><i class="fa fa-users me-2"></i>Quản lý kỹ thuật viên</span>
+                                    <i class="fa fa-chevron-down caret-icon"></i>
+                                </button>
+
+                                <div id="technicianListCollapse" class="collapse show">
+                                    <div class="tech-tree-body">
+                                        <div class="tech-search">
+                                            <input type="text" class="form-control" id="technicianSearchInput" placeholder="Tìm theo tên, mã hoặc email...">
                                         </div>
-                                    </a>
-                                </c:forEach>
+
+                                        <div class="technician-list" id="technicianListTree">
+                                            <c:forEach items="${technicians}" var="tech">
+                                                <a class="tech-item ${selectedTechnicianId == tech.id ? 'active' : ''}"
+                                                   data-tech-search="${fn:toLowerCase(tech.fullName)} ${tech.id} ${fn:toLowerCase(tech.email)}"
+                                                   href="${pageContext.request.contextPath}/manager/technician-capability?technicianId=${tech.id}">
+                                                    <div class="tech-item-top">
+                                                        <div>
+                                                            <h4 class="tech-name">${tech.fullName}</h4>
+                                                            <div class="tech-meta">Mã #${tech.id} • ${tech.email}</div>
+                                                        </div>
+                                                        <span class="badge-soft ${tech.status == 1 ? 'badge-soft-success' : 'badge-soft-muted'}">${tech.status == 1 ? 'Hoạt động' : 'Ngừng hoạt động'}</span>
+                                                    </div>
+                                                </a>
+                                            </c:forEach>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -766,3 +845,19 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        var input = document.getElementById('technicianSearchInput');
+        var list = document.getElementById('technicianListTree');
+        if (!input || !list) return;
+
+        input.addEventListener('input', function () {
+            var keyword = input.value.trim().toLowerCase();
+            list.querySelectorAll('.tech-item').forEach(function (item) {
+                var haystack = (item.getAttribute('data-tech-search') || '').toLowerCase();
+                item.style.display = !keyword || haystack.indexOf(keyword) !== -1 ? '' : 'none';
+            });
+        });
+    })();
+</script>
