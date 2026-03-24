@@ -37,7 +37,7 @@ public class SystemReportController extends HttpServlet{
         req.setAttribute("yearTo", currentYear + 3);
 
         if("inventory".equals(section)){
-            loadInventory(req);
+            loadInventory(req, year);
         }else if("service".equals(section)){
             loadServices(req, year);
         }else if("financial".equals(section)){
@@ -48,7 +48,7 @@ public class SystemReportController extends HttpServlet{
             loadContracts(req, year);
         }else {
             req.setAttribute("section", "inventory");
-            loadInventory(req);
+            loadInventory(req, year);
         }
 
         req.getRequestDispatcher("/views/manager/system-report.jsp").forward(req, resp);
@@ -81,7 +81,7 @@ public class SystemReportController extends HttpServlet{
         return null;
     }
 
-    private void loadInventory(HttpServletRequest req){
+    private void loadInventory(HttpServletRequest req, int year){
         //KPI
         req.setAttribute("invTotalCustomers", reportService.countCustomers());
         req.setAttribute("invTotalDevices", reportService.countDevices());
@@ -94,6 +94,7 @@ public class SystemReportController extends HttpServlet{
         req.setAttribute("devicesByBrandJson", gson.toJson(reportService.getDevicesByBrand()));
         req.setAttribute("devicesByCategoryJson", gson.toJson(reportService.getDevicesByCategory()));
         req.setAttribute("devicesByKvaBucketJson", gson.toJson(reportService.getDevicesByKvaBucket()));
+        req.setAttribute("devicesByLocationJson", gson.toJson(reportService.getDevicesByCurrentLocationAsOfYear(year)));
 
         //Table (JSON)
         req.setAttribute("topModelsJson", gson.toJson(reportService.getTopModels(10)));

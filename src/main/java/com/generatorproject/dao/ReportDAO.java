@@ -49,9 +49,11 @@ public class ReportDAO extends GenericDAO<Object>{
                 "WHERE status IN ('BROKEN', 'REPAIRING') ");
     }
 
-    //================================================================
+    /**
+     * =========================================================================
+     * charts
+     */
 
-    //charts
     public Map<Integer, Integer> getNewCustomersByMonth(int year){
         String sql = "SELECT MONTH(created_at) AS month, COUNT(*) AS cnt " +
                 "FROM users WHERE role_id = 5 AND YEAR(created_at) = ? " +
@@ -234,7 +236,10 @@ public class ReportDAO extends GenericDAO<Object>{
         return result;
     }
 
-    //Dashboard v2 - Inventory
+    /**
+     * =========================================
+     * Dashboard v2 - Inventory
+     */
 
     public List<Map<String, Object>> getDevicesByBrand(){
         String sql = "SELECT b.name AS label, COUNT(*) AS value " +
@@ -315,7 +320,7 @@ public class ReportDAO extends GenericDAO<Object>{
         return result;
     }
 
-    public List<Map<String, Object>> queryLabelValue(String sql){
+    public List<Map<String, Object>> queryLabelValue(String sql, Object... params){
         List<Map<String, Object>> result = new ArrayList<>();
         Connection conn = null;
         PreparedStatement ps = null;
@@ -324,6 +329,11 @@ public class ReportDAO extends GenericDAO<Object>{
         try {
             conn = getConnection();
             ps = conn.prepareStatement(sql);
+
+            for (int i = 0; i < params.length; i++){
+                ps.setObject(i + 1, params[i]);
+            }
+
             rs = ps.executeQuery();
 
             while (rs.next()){
@@ -341,9 +351,20 @@ public class ReportDAO extends GenericDAO<Object>{
         return result;
     }
 
-    //=============================================================
+    public List<Map<String, Object>> getDevicesByCurrentLocationAsOfYear(int year){
+        String sql = "SELECT " +
+                "  COALESCE(NULLIF(TRIM(p.current_location), ''), 'Chưa có vị trí') AS label, " +
+                "  COUNT(*) AS value " +
+                "FROM products p " +
+                "WHERE COALESCE(p.purchase_date, DATE(p.created_at)) <= STR_TO_DATE(CONCAT(?, '-12-31'), '%Y-%m-%d') " +
+                "GROUP BY label " +
+                "ORDER BY value DESC";
+
+        return queryLabelValue(sql, year);
+    }
 
     /**
+     * ================================================================================
     *Service module (Warranty)
     *Incident warranty: ticket_created_at = incidents.created_at
     *Contract lookup: ưu tiên incidents.contract_id, fallback products.contract_id

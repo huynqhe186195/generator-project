@@ -95,7 +95,12 @@ public class ReportService implements  IReportService{
         return reportDAO.getTopModels(limit);
     }
 
-    // Service module (Warranty)
+    @Override
+    public List<Map<String, Object>> getDevicesByCurrentLocationAsOfYear(int year){
+        return reportDAO.getDevicesByCurrentLocationAsOfYear(year);
+    }
+
+    /// Service module (Warranty)
     @Override
     public int countIncidentsInWarrantyByYear(int year) {
         return reportDAO.countIncidentsInWarrantyByYear(year);
