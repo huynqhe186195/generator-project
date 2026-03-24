@@ -190,12 +190,10 @@
                                                             </a>
                                                         </c:when>
                                                         <c:when test="${req.status == 'APPROVED'}">
-                                                            <form action="<c:url value='/staff/assign-task'/>" method="post" style="display: inline;">
-                                                                <input type="hidden" name="id" value="${req.id}">
-                                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận tạo task bảo trì cho yêu cầu này?')">
-                                                                    <i class="fas fa-tools me-1"></i> Gửi task
-                                                                </button>
-                                                            </form>
+                                                            <a href="<c:url value='/staff/incident/work-order?id=${req.id}'/>"
+                                                               class="btn btn-sm btn-success">
+                                                                <i class="fas fa-tools me-1"></i> Tạo work order
+                                                            </a>
                                                         </c:when>
                                                     </c:choose>
 

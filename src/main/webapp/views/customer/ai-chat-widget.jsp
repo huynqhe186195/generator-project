@@ -26,6 +26,11 @@
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.28);
     backdrop-filter: blur(14px);
     animation: customerAiFloat 3s ease-in-out infinite;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity .2s ease, visibility .2s ease, transform .2s ease;
   }
   .customer-ai-hint-icon {
     width: 36px;
@@ -39,6 +44,17 @@
   }
   .customer-ai-hint-title { font-size: .92rem; font-weight: 700; margin: 0; }
   .customer-ai-hint-text { font-size: .8rem; opacity: .8; margin: 2px 0 0; }
+  .customer-ai-widget:hover .customer-ai-hint,
+  .customer-ai-widget:focus-within .customer-ai-hint {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .customer-ai-widget.is-open .customer-ai-hint {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+  }
   .customer-ai-panel {
     display: none;
     width: min(420px, calc(100vw - 24px));
@@ -250,6 +266,8 @@
   @media (max-width: 767px) {
     .customer-ai-widget { right: 12px; bottom: 12px; left: 12px; align-items: stretch; }
     .customer-ai-hint { max-width: none; }
+    .customer-ai-widget:hover .customer-ai-hint,
+    .customer-ai-widget:focus-within .customer-ai-hint { transform: translateY(0); }
     .customer-ai-panel { width: 100%; height: min(74vh, 640px); }
     .customer-ai-suggestions { padding-top: 6px; }
     .customer-ai-toggle { align-self: flex-end; }
@@ -313,7 +331,6 @@
   const panel = document.getElementById('customerAiPanel');
   const toggle = document.getElementById('customerAiToggle');
   const closeBtn = document.getElementById('customerAiClose');
-  const hint = document.getElementById('customerAiHint');
   const form = document.getElementById('customerAiForm');
   const input = document.getElementById('customerAiInput');
   const messages = document.getElementById('customerAiMessages');
@@ -323,7 +340,7 @@
 
   function setOpenState(isOpen) {
     panel.classList.toggle('is-open', isOpen);
-    if (hint) hint.style.display = isOpen ? 'none' : 'flex';
+    widget.classList.toggle('is-open', isOpen);
     if (isOpen) input.focus();
   }
 

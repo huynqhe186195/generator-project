@@ -423,9 +423,14 @@ public class ProductDAO extends GenericDAO<Product> {
     }
 
     public List<Product> findByContractId(Long contractId) {
-        String sql = "SELECT p.*, pm.name AS model_name " +
+        String sql = "SELECT p.*, " +
+                "pm.name AS model_name, " +
+                "b.name AS brand_name, " +
+                "c.name AS category_name " +
                 "FROM products p " +
                 "LEFT JOIN product_models pm ON p.model_id = pm.id " +
+                "LEFT JOIN brands b ON pm.brand_id = b.id " +
+                "LEFT JOIN categories c ON pm.category_id = c.id " +
                 "WHERE p.contract_id = ? " +
                 "ORDER BY p.created_at DESC";
         return query(sql, new ProductMapper(), contractId);

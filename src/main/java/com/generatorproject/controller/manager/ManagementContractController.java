@@ -495,6 +495,7 @@ public class ManagementContractController extends HttpServlet {
             Contract c = Contract.builder()
                     .contractNumber(contractNumber)
                     .customerId(Math.toIntExact(customerId))
+                    .signedDate(signedDate)
                     .startDate(startDate)
                     .endDate(endDate)
                     .status("PENDING_SERIAL")
