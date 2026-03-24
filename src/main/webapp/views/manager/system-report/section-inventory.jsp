@@ -92,6 +92,17 @@
     <div class="col-md-6">
         <div class="card chart-card h-100">
             <div class="card-header py-3 px-4">
+                Phân bố máy theo vị trí (vị trí hiện tại) — tính đến cuối năm ${selectedYear}
+            </div>
+            <div class="card-body px-4 pb-4">
+                <canvas id="chartInvLocation" height="140"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card chart-card h-100">
+            <div class="card-header py-3 px-4">
                 Top model phổ biến
             </div>
             <div class="card-body px-4 pb-4">
@@ -212,5 +223,54 @@
                 '<td class="text-end">' + (r.totalDevices || 0) + '</td>' +
                 '</tr>';
         }).join('');
+    })();
+</script>
+<script>
+    (function () {
+        // JSON from backend
+        const locationData = ${devicesByLocationJson};
+
+        const labels = (locationData || []).map(x => x.label);
+        const values = (locationData || []).map(x => Number(x.value || 0));
+
+        const ctx = document.getElementById('chartInvLocation');
+        if (!ctx) return;
+
+        // Nếu không có dữ liệu
+        if (!locationData || locationData.length === 0) {
+            // Optional: bạn có thể show message thay vì chart
+            return;
+        }
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Số lượng máy',
+                    data: values,
+                    backgroundColor: 'rgba(25,135,84,0.75)', // xanh
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { autoSkip: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#f0f0f0' }
+                    }
+                }
+            }
+        });
     })();
 </script>
