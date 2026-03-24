@@ -5,93 +5,251 @@ import com.generatorproject.dao.ReportDAO;
 import java.util.List;
 import java.util.Map;
 
-public class ReportService implements IReportService {
+public class ReportService implements  IReportService{
 
     private final ReportDAO reportDAO = new ReportDAO();
 
     @Override
-    public int countActiveContracts() {
+    public int countActiveContracts(){
         return reportDAO.countActiveContracts();
     }
 
     @Override
-    public int countNewCustomersThisMonth() {
+    public int countNewCustomersThisMonth(){
         return reportDAO.countNewCustomersThisMonth();
     }
 
     @Override
-    public int countPendingIncidents() {
+    public int countPendingIncidents(){
         return reportDAO.countPendingIncidents();
     }
 
     @Override
-    public int countMaintenanceThisMonth() {
+    public int countMaintenanceThisMonth(){
         return reportDAO.countMaintenanceThisMonth();
     }
 
     @Override
-    public Map<Integer, Integer> getNewCustomersByMonth(int year) {
+    public Map<Integer, Integer> getNewCustomersByMonth(int year){
         return reportDAO.getNewCustomersByMonth(year);
     }
 
     @Override
-    public Map<String, Integer> getMaintenanceStatusCount(int year) {
+    public Map<String, Integer> getMaintenanceStatusCount(int year){
         return reportDAO.getMaintenanceStatusCount(year);
     }
 
     @Override
-    public List<Map<String, Object>> getContractRenewRateByMonth(int year) {
+    public List<Map<String, Object>> getContractRenewRateByMonth(int year){
         return reportDAO.getContractRenewRateByMonth(year);
     }
 
     @Override
-    public Map<String, Integer> getIncidentsByPriority(int year) {
+    public Map<String, Integer> getIncidentsByPriority(int year){
         return reportDAO.getIncidentsByPriority(year);
     }
 
     @Override
-    public List<Map<String, Object>> getTopSpareParts(int limit) {
+    public List<Map<String, Object>> getTopSpareParts(int limit){
         return reportDAO.getTopSpareParts(limit);
     }
 
-    //Inventory
+    // Dashboard v2 - Inventory
     @Override
-    public int countCustomers() {
+    public int countCustomers(){
         return reportDAO.countCustomers();
     }
 
     @Override
-    public int countDevices() {
+    public int countDevices(){
         return reportDAO.countDevices();
     }
 
     @Override
-    public int countDevicesByStatus(String status) {
+    public int countDevicesByStatus(String status){
         return reportDAO.countDevicesByStatus(status);
     }
 
     @Override
-    public int countDevicesBrokenLike() {
+    public int countDevicesBrokenLike(){
         return reportDAO.countDevicesBrokenLike();
     }
 
     @Override
-    public List<Map<String, Object>> getDevicesByBrand() {
+    public List<Map<String, Object>> getDevicesByBrand(){
         return reportDAO.getDevicesByBrand();
     }
 
     @Override
-    public List<Map<String, Object>> getDevicesByCategory() {
+    public List<Map<String, Object>> getDevicesByCategory(){
         return reportDAO.getDevicesByCategory();
     }
 
     @Override
-    public List<Map<String, Object>> getDevicesByKvaBucket() {
+    public List<Map<String, Object>> getDevicesByKvaBucket(){
         return reportDAO.getDevicesByKvaBucket();
     }
 
     @Override
-    public List<Map<String, Object>> getTopModels(int limit) {
+    public List<Map<String, Object>> getTopModels(int limit){
         return reportDAO.getTopModels(limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> getDevicesByCurrentLocationAsOfYear(int year){
+        return reportDAO.getDevicesByCurrentLocationAsOfYear(year);
+    }
+
+    /// Service module (Warranty)
+    @Override
+    public int countIncidentsInWarrantyByYear(int year) {
+        return reportDAO.countIncidentsInWarrantyByYear(year);
+    }
+
+    @Override
+    public int countIncidentsOutWarrantyByYear(int year) {
+        return reportDAO.countIncidentsOutWarrantyByYear(year);
+    }
+
+    @Override
+    public int countMaintenancesInWarrantyByYear(int year) {
+        return reportDAO.countMaintenancesInWarrantyByYear(year);
+    }
+
+    @Override
+    public int countMaintenancesOutWarrantyByYear(int year) {
+        return reportDAO.countMaintenancesOutWarrantyByYear(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getIncidentsWarrantyByMonth(int year) {
+        return reportDAO.getIncidentsWarrantyByMonth(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMaintenancesWarrantyByMonth(int year) {
+        return reportDAO.getMaintenancesWarrantyByMonth(year);
+    }
+
+    /// Financial module
+
+    @Override
+    public double getAverageTicketValueByYear(int year){
+        return reportDAO.getAverageTicketValueByYear(year);
+    }
+
+    @Override
+    public double getTotalServiceRevenueByYear(int year){
+        return reportDAO.getTotalServiceRevenueByYear(year);
+    }
+
+    @Override
+    public int getTotalPartsQuantityUsedByYear(int year){
+        return reportDAO.getTotalPartsQuantityUsedByYear(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getServiceRevenueByMonth(int year){
+        return reportDAO.getServiceRevenueByMonth(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopPartsByQuantity(int year, int limit){
+        return reportDAO.getTopPartsByQuantity(year,limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopPartsByValue(int year, int limit){
+        return reportDAO.getTopPartsByValue(year,limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopMaintenanceTickets(int year, int limit){
+        return reportDAO.getTopMaintenanceTickets(year,limit);
+    }
+
+    /// Risk module
+
+    @Override
+    public int countRedZoneDevices(int months){
+        return reportDAO.countRedZoneDevices(months);
+    }
+
+    @Override
+    public double getServicePenetrationRateByYear(int year){
+        return reportDAO.getServicePenetrationRateByYear(year);
+    }
+
+    @Override
+    public double getFirstTimeFixRateByYear(int year){
+        return reportDAO.getFirstTimeFixRateByYear(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getRedZoneDevicesByCategory(int months){
+        return reportDAO.getRedZoneDevicesByCategory(months);
+    }
+
+    @Override
+    public List<Map<String, Object>> getRedZoneDeviceList(int months, int limit){
+        return reportDAO.getRedZoneDeviceList(months,limit);
+    }
+
+    /// Contract module
+    @Override
+    public int countContractsByStatus(String status){
+        return reportDAO.countContractsByStatus(status);
+    }
+
+    @Override
+    public int countContractsExpiringInDays(int days){
+        return reportDAO.countContractsExpiringInDays(days);
+    }
+
+    @Override
+    public int countContractsDateMismatch(){
+        return reportDAO.countContractsDateMismatch();
+    }
+
+    @Override
+    public List<Map<String, Object>> getContractsStatusDistribution(){
+        return reportDAO.getContractsStatusDistribution();
+    }
+
+    @Override
+    public List<Map<String, Object>> getContractsEndingByMonth(int year){
+        return reportDAO.getContractsMonth(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getContractsExpiringList(int days, int limit){
+        return reportDAO.getContractsExpiringList(days,limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> getPendingContractsList(int limit){
+        return reportDAO.getPendingContractsList(limit);
+    }
+
+
+    /// Users Module
+    @Override
+    public int countAllUsers(){
+        return reportDAO.countAllUsers();
+    }
+
+    @Override
+    public int countNewUsersInRange(String fromDate, String toDate){
+        return reportDAO.countNewUsersInRange(fromDate, toDate);
+    }
+
+    @Override
+    public List<Map<String, Object>> getNewUsersByRoleInRange(String fromDate, String toDate){
+        return reportDAO.getNewUsersByRoleInRange(fromDate, toDate);
+    }
+
+    @Override
+    public List<Map<String, Object>> getNewUsersByMonthInRange(String fromDate, String toDate){
+        return reportDAO.getNewUsersByMonthInRange(fromDate, toDate);
     }
 }
