@@ -1148,7 +1148,7 @@ public class ReportDAO extends GenericDAO<Object>{
 
     //new users by role
     public List<Map<String, Object>> getNewUsersByRoleInRange(String fromDate, String toDate){
-        String sql = "SELECT r.name AS label, COUNT(*) AS value " +
+        String sql = "SELECT r.name AS label, COUNT(u.id) AS value " +
                 "FROM roles r " +
                 "LEFT JOIN users u " +
                 "  ON u.role_id = r.id " +
