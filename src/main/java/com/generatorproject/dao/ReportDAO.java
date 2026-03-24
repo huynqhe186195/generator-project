@@ -932,6 +932,181 @@ public class ReportDAO extends GenericDAO<Object>{
     }
 
     /**
+     * ====================================================================================
+     *Contract module
+     */
+
+    public int countContractsByStatus(String status){
+        String sql = "SELECT COUNT(*) FROM contracts WHERE status = ?";
+        return count(sql, status);
+    }
+
+    public int countContractsExpiringInDays(int days){
+        String sql = "SELECT COUNT(*) FROM contracts " +
+                "WHERE end_date IS NOT NULL " +
+                "AND end_date >= CURDATE() " +
+                "AND end_date <= DATE_ADD(CURDATE(), INTERVAL ? DAY)";
+
+        return count(sql, days);
+    }
+
+    /**
+     * Data mismatch(dữ liệu không khớp) (audit-kế toán):
+     * - end_date < today but status still ACTIVE or PENDING_SERIAl
+     * - end_date < hôm nay nhưng trạng thái vẫn ACTIVE(hoạt động) hoặc PENDING_SERIAL(chưa giải quyết nối tiếp)
+     */
+    public int countContractsDateMismatch(){
+        String sql = "SELECT COUNT(*) FROM contracts " +
+                "WHERE end_date IS NOT NULL " +
+                "AND end_date < CURDATE() " +
+                "AND status IN ('ACTIVE', 'PENDING_SERIAL')";
+        return count(sql);
+    }
+
+    /**
+     * For pie chart: status distribution. -- Đối với biểu đồ hình tròn: phân phối trạng thái.
+     * Return format: [{label: 'ACTIVE', value: 10}, ...]
+     */
+    public List<Map<String, Object>> getContractsStatusDistribution(){
+        String sql = "SELECT status AS label, COUNT(*) AS value " +
+                "FROM contracts " +
+                "GROUP BY status " +
+                "ORDER BY value DESC";
+
+        return queryLabelValue(sql);
+    }
+
+
+    /**
+     * For chart: contracts ending by month in selected year (end_date).
+     * Đối với biểu đồ: hợp đồng kết thúc theo tháng trong năm đã chọn (end_date).
+     * Return: 12 rows (month, value).
+     */
+    public List<Map<String, Object>> getContractsMonth(int year){
+        String sql = "SELECT MONTH(end_date) AS month, COUNT(*) AS cnt " +
+                "FROM contracts " +
+                "WHERE end_date IS NOT NULL AND YEAR(end_date) = ? " +
+                "GROUP BY MONTH(end_date) " +
+                "ORDER BY month";
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for(int m = 1; m <= 12; m++){
+            Map<String, Object> row = new HashMap<>();
+            row.put("month", m);
+            row.put("value", 0);
+            result.add(row);
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, year);
+            rs = ps.executeQuery();
+
+            while (rs.next()){
+                int month = rs.getInt("month");
+                int cnt = rs.getInt("cnt");
+                if(month >= 1 && month <= 12){
+                    result.get(month - 1).put("value", cnt);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+        return result;
+    }
+
+    /**
+     * Table: contracts expiring soon.(hợp đồng sắp hết hạn.)
+     */
+    public List<Map<String, Object>> getContractsExpiringList(int days, int limit){
+        String sql = "SELECT c.id AS contractId, c.contract_number AS contractNumber, " +
+                "u.full_name AS customerName, c.end_date AS endDate, c.status AS status, " +
+                "DATEDIFF(c.end_date, CURDATE()) AS daysLeft " +
+                "FROM contracts c " +
+                "LEFT JOIN users u ON c.customer_id = u.id " +
+                "WHERE c.end_date IS NOT NULL " +
+                "AND c.status = 'ACTIVE' " +
+                "AND DATEDIFF(c.end_date, CURDATE()) BETWEEN 0 AND ? " +
+                "ORDER BY c.end_date ASC " +
+                "LIMIT ?";
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, days);
+            ps.setInt(2, limit);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("contractId", rs.getInt("contractId"));
+                row.put("contractNumber", rs.getString("contractNumber"));
+                row.put("customerName", rs.getString("customerName"));
+                row.put("endDate", rs.getDate("endDate"));
+                row.put("status", rs.getString("status"));
+                row.put("daysLeft", rs.getInt("daysLeft"));
+                result.add(row);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+        return result;
+    }
+
+    /**
+     * Table: pending(chưa giải quyết) contracts list.
+     */
+    public List<Map<String, Object>> getPendingContractsList(int Limit){
+        String sql = "SELECT c.id AS contractId, c.contract_number AS contractNumber, " +
+                "u.full_name AS customerName, c.created_at AS createdAt, c.status AS status " +
+                "FROM contracts c " +
+                "LEFT JOIN users u ON c.customer_id = u.id " +
+                "WHERE c.status = 'PENDING_SERIAL' " +
+                "ORDER BY c.created_at DESC " +
+                "LIMIT ?";
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, Limit);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("contractId", rs.getInt("contractId"));
+                row.put("contractNumber", rs.getString("contractNumber"));
+                row.put("customerName", rs.getString("customerName"));
+                row.put("createdAt", rs.getTimestamp("createdAt"));
+                row.put("status", rs.getString("status"));
+                result.add(row);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+        return result;
+    }
+
+    /**
      * ============================================================================
      * Helper
     **/

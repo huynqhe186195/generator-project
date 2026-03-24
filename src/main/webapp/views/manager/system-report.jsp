@@ -122,6 +122,14 @@
         </div>
 
         <div class="col-md-3">
+            <a class="card kpi-card bg-info shadow p-3 h-100 ${section == 'contracts' ? 'active' : ''}"
+               href="${pageContext.request.contextPath}/manager/system-report?section=contracts&year=${selectedYear}">
+                <div class="kpi-title">Hợp đồng & Bảo hành</div>
+                <div class="kpi-subtitle">Contracts & Warranty Lifecycle</div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
             <a class="card kpi-card bg-warning shadow p-3 h-100 text-dark
                ${section == 'risk' ? 'active' : ''}"
                href="${pageContext.request.contextPath}/manager/system-report?section=risk&year=${selectedYear}">
@@ -141,6 +149,9 @@
         </c:when>
         <c:when test="${section == 'financial'}">
             <jsp:include page="/views/manager/system-report/section-financial.jsp" />
+        </c:when>
+        <c:when test="${section == 'contracts'}">
+            <jsp:include page="/views/manager/system-report/section-contracts.jsp" />
         </c:when>
         <c:when test="${section == 'risk'}">
             <jsp:include page="/views/manager/system-report/section-risk.jsp" />

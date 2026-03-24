@@ -189,4 +189,40 @@ public class ReportService implements  IReportService{
     public List<Map<String, Object>> getRedZoneDeviceList(int months, int limit){
         return reportDAO.getRedZoneDeviceList(months,limit);
     }
+
+    /// Contract module
+    @Override
+    public int countContractsByStatus(String status){
+        return reportDAO.countContractsByStatus(status);
+    }
+
+    @Override
+    public int countContractsExpiringInDays(int days){
+        return reportDAO.countContractsExpiringInDays(days);
+    }
+
+    @Override
+    public int countContractsDateMismatch(){
+        return reportDAO.countContractsDateMismatch();
+    }
+
+    @Override
+    public List<Map<String, Object>> getContractsStatusDistribution(){
+        return reportDAO.getContractsStatusDistribution();
+    }
+
+    @Override
+    public List<Map<String, Object>> getContractsEndingByMonth(int year){
+        return reportDAO.getContractsMonth(year);
+    }
+
+    @Override
+    public List<Map<String, Object>> getContractsExpiringList(int days, int limit){
+        return reportDAO.getContractsExpiringList(days,limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> getPendingContractsList(int limit){
+        return reportDAO.getPendingContractsList(limit);
+    }
 }

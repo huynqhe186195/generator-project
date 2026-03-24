@@ -54,5 +54,16 @@ public interface IReportService {
     double getFirstTimeFixRateByYear(int year);
 
     List<Map<String, Object>> getRedZoneDevicesByCategory(int months);
-    List<Map<String, Object>> getRedZoneDeviceList(int months, int year);
+    List<Map<String, Object>> getRedZoneDeviceList(int months, int limit);
+
+    /// Contract module
+    int countContractsByStatus(String status);
+    int countContractsExpiringInDays(int days);
+    int countContractsDateMismatch();
+
+    List<Map<String, Object>> getContractsStatusDistribution();
+    List<Map<String, Object>> getContractsEndingByMonth(int year);
+
+    List<Map<String, Object>> getContractsExpiringList(int days, int limit);
+    List<Map<String, Object>> getPendingContractsList(int limit);
 }

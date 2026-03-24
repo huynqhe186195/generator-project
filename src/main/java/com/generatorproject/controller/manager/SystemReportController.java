@@ -44,6 +44,8 @@ public class SystemReportController extends HttpServlet{
             loadFinancial(req, year);
         }else if("risk".equals(section)){
             loadRisk(req, year);
+        }else if("contracts".equals(section)){
+            loadContracts(req, year);
         }else {
             req.setAttribute("section", "inventory");
             loadInventory(req);
@@ -72,7 +74,8 @@ public class SystemReportController extends HttpServlet{
             return null;
         }
         if("inventory".equals(s) || "service".equals(s)
-                || "financial".equals(s) || "risk".equals(s)){
+                || "financial".equals(s) || "risk".equals(s)
+                || "contracts".equals(s)){
             return s;
         }
         return null;
@@ -149,5 +152,26 @@ public class SystemReportController extends HttpServlet{
 
         //Table JSON
         req.setAttribute("riskRedZoneListJson", gson.toJson(reportService.getRedZoneDeviceList(12, 20)));
+    }
+
+    /// Contract module
+    private void loadContracts(HttpServletRequest req, int year){
+        //KPI
+        req.setAttribute("ctrActive", reportService.countContractsByStatus("ACTIVE"));
+        req.setAttribute("ctrPending", reportService.countContractsByStatus("PENDING_SERIAL"));
+        req.setAttribute("ctrExpired", reportService.countContractsByStatus("EXPIRED"));
+        req.setAttribute("ctrTerminated", reportService.countContractsByStatus("TERMINATED"));
+        req.setAttribute("ctrExpiring30Days", reportService.countContractsExpiringInDays(30));
+
+        //end_date < today nhưng status vẫn ACTIVE/PENDING...
+        req.setAttribute("ctrDataMismatch", reportService.countContractsDateMismatch());
+
+        //Chart JSON
+        req.setAttribute("ctrStatusJson", gson.toJson(reportService.getContractsStatusDistribution()));
+        req.setAttribute("ctrExpiringByMonthJson", gson.toJson(reportService.getContractsEndingByMonth(year)));
+
+        //Table JSON
+        req.setAttribute("ctrExpiringListJson", gson.toJson(reportService.getContractsExpiringList(30, 20)));
+        req.setAttribute("ctrPendingListJson", gson.toJson(reportService.getPendingContractsList(20)));
     }
 }
