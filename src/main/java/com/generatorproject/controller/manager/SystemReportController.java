@@ -142,8 +142,8 @@ public class SystemReportController extends HttpServlet{
     /// financial module
     private void loadFinancial(HttpServletRequest req, int year){
         //KPI
-        req.setAttribute("finAvgTicket", reportService.getAverageTicketValueByYear(year));
-        req.setAttribute("finTotalRevenue", reportService.getTotalServiceRevenueByYear(year));
+        req.setAttribute("finAvgTicketJson", gson.toJson(reportService.getAverageTicketValueByYear(year)));
+        req.setAttribute("finTotalRevenueJson", gson.toJson(reportService.getTotalServiceRevenueByYear(year)));
         req.setAttribute("finTotalPartsQty", reportService.getTotalPartsQuantityUsedByYear(year));
 
         //Charts JSON
