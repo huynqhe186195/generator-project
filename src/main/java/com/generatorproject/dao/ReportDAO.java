@@ -910,7 +910,7 @@ public class ReportDAO extends GenericDAO<Object>{
     public List<Map<String, Object>> getRedZoneDeviceList(int months, int limit){
         String sql = "SELECT p.id AS productId, p.serial_number AS serialNumber, " +
                 "u.full_name AS customerName, " +
-                "lm.last_date AS lastMaintenanceDate, " +
+                "COALESCE(lm.last_date, COALESCE(p.purchase_date, DATE(p.created_at))) AS lastMaintenanceDate, " +
                 "p.current_location AS location " +
                 "FROM products p " +
                 "LEFT JOIN users u ON p.customer_id = u.id " +
@@ -920,7 +920,7 @@ public class ReportDAO extends GenericDAO<Object>{
                 "  GROUP BY product_id " +
                 ") lm ON lm.product_id = p.id " +
                 "WHERE (lm.last_date IS NULL OR lm.last_date < DATE_SUB(CURDATE(), INTERVAL ? MONTH)) " +
-                "ORDER BY lm.last_date ASC " +
+                "ORDER BY COALESCE(lm.last_date, COALESCE(p.purchase_date, DATE(p.created_at))) ASC " +
                 "LIMIT ? ";
 
         List<Map<String, Object>> result = new ArrayList<>();
