@@ -1171,7 +1171,7 @@ public class ReportDAO extends GenericDAO<Object>{
 
         List<Map<String, Object>> result = new ArrayList<>();
         //init 12 months
-        for(int i = 2; i <= 12; i++){
+        for(int i = 1; i <= 12; i++){
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("month", i);
             row.put("value", 0);
