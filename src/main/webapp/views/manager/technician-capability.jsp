@@ -263,7 +263,6 @@
                 <div class="section-head mb-3">
                     <div>
                         <h2 class="section-title">Quản lý danh sách kỹ thuật viên</h2>
-                        <p class="section-copy">Tab độc lập dành riêng cho kỹ thuật viên.</p>
                     </div>
                     <span class="badge-soft badge-soft-primary">${fn:length(technicians)} kỹ thuật viên</span>
                 </div>
@@ -273,7 +272,6 @@
                         <div class="inner-card-header">
                             <div>
                                 <h3 class="inner-title">Danh sách kỹ thuật viên</h3>
-                                <p class="inner-copy">Chọn một kỹ thuật viên để nạp dữ liệu quản lý tương ứng.</p>
                             </div>
                         </div>
                         <div class="inner-card-body">
@@ -300,7 +298,6 @@
                                     <div class="inner-card-header">
                                         <div>
                                             <h3 class="inner-title">Kỹ thuật viên đang chọn</h3>
-                                            <p class="inner-copy">Thông tin nhanh của kỹ thuật viên đang được chỉnh.</p>
                                         </div>
                                     </div>
                                     <div class="inner-card-body">
@@ -323,7 +320,7 @@
                                 </div>
 
                                 <div class="inner-card">
-                                    <div class="inner-card-header"><div><h3 class="inner-title">Hồ sơ điều phối</h3><p class="inner-copy">Cấu hình thời gian làm việc, tải công việc tối đa và trạng thái hoạt động.</p></div></div>
+                                    <div class="inner-card-header"><div><h3 class="inner-title">Hồ sơ điều phối</h3></div></div>
                                     <div class="inner-card-body">
                                         <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3">
                                             <input type="hidden" name="action" value="save_profile">
@@ -343,7 +340,7 @@
 
                                 <div class="dual-grid">
                                     <div class="inner-card">
-                                        <div class="inner-card-header"><div><h3 class="inner-title">Kỹ năng của kỹ thuật viên</h3><p class="inner-copy">Thêm hoặc xoá kỹ năng đã gán.</p></div><span class="badge-soft badge-soft-primary">${fn:length(assignedSkills)} mục</span></div>
+                                        <div class="inner-card-header"><div><h3 class="inner-title">Kỹ năng của kỹ thuật viên</h3></div><span class="badge-soft badge-soft-primary">${fn:length(assignedSkills)} mục</span></div>
                                         <div class="inner-card-body">
                                             <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4">
                                                 <input type="hidden" name="action" value="assign_skill">
@@ -358,7 +355,7 @@
                                     </div>
 
                                     <div class="inner-card">
-                                        <div class="inner-card-header"><div><h3 class="inner-title">Khoảng thời gian không nhận việc</h3><p class="inner-copy">Quản lý các mốc thời gian bận của kỹ thuật viên.</p></div><span class="badge-soft badge-soft-warning">${fn:length(unavailabilityList)} mục</span></div>
+                                        <div class="inner-card-header"><div><h3 class="inner-title">Khoảng thời gian không nhận việc</h3></div><span class="badge-soft badge-soft-warning">${fn:length(unavailabilityList)} mục</span></div>
                                         <div class="inner-card-body">
                                             <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4">
                                                 <input type="hidden" name="action" value="add_unavailability">
