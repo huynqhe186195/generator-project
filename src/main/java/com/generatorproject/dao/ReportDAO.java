@@ -1128,6 +1128,83 @@ public class ReportDAO extends GenericDAO<Object>{
     }
 
     /**
+     * ==========================================================================
+     * Users Module
+     */
+
+    //all users
+    public int countAllUsers(){
+        return count("SELECT COUNT(*) FROM users");
+    }
+
+    //new users within the range
+    public int countNewUsersInRange(String fromDate, String toDate){
+        String sql = "SELECT COUNT(*) FROM users " +
+                "WHERE created_at >= STR_TO_DATE(?, '%Y-%m-%d') " +
+                "AND created_at < DATE_ADD(STR_TO_DATE(?, '%Y-%m-%d'), INTERVAL 1 DAY)";
+
+        return count(sql, fromDate, toDate);
+    }
+
+    //new users by role
+    public List<Map<String, Object>> getNewUsersByRoleInRange(String fromDate, String toDate){
+        String sql = "SELECT r.name AS label, COUNT(*) AS value " +
+                "FROM roles r " +
+                "LEFT JOIN users u " +
+                "  ON u.role_id = r.id " +
+                " AND u.created_at >= STR_TO_DATE(?, '%Y-%m-%d') " +
+                " AND u.created_at < DATE_ADD(STR_TO_DATE(?, '%Y-%m-%d'), INTERVAL 1 DAY) " +
+                "GROUP BY r.id, r.name " +
+                "ORDER BY value DESC";
+
+        return queryLabelValue(sql, fromDate, toDate);
+    }
+
+    // New users by month in range(trong khoang)
+    public List<Map<String, Object>> getNewUsersByMonthInRange(String fromDate, String toDate){
+        String sql = "SELECT YEAR(created_at) AS y, MONTH(created_at) AS m, COUNT(*) AS cnt " +
+                "FROM users " +
+                "WHERE created_at >= STR_TO_DATE(?, '%Y-%m-%d') " +
+                "AND created_at < DATE_ADD(STR_TO_DATE(?, '%Y-%m-%d'), INTERVAL 1 DAY) " +
+                "GROUP BY YEAR(created_at), MONTH(created_at) " +
+                "ORDER BY y, m";
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        //init 12 months
+        for(int i = 2; i <= 12; i++){
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("month", i);
+            row.put("value", 0);
+            result.add(row);
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, fromDate);
+            ps.setString(2, toDate);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                int month = rs.getInt("m");
+                int cnt = rs.getInt("cnt");
+                if(month >= 1 && month <= 12){
+                    result.get(month - 1).put("value", cnt);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            close(conn, ps, rs);
+        }
+
+        return result;
+    }
+
+    /**
      * ============================================================================
      * Helper
     **/

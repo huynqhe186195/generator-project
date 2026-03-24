@@ -137,6 +137,14 @@
                 <div class="kpi-subtitle">Risk & Retention</div>
             </a>
         </div>
+
+        <div class="col-md-3">
+            <a class="card kpi-card bg-secondary shadow p-3 h-100 ${section == 'users' ? 'active' : ''}"
+               href="${pageContext.request.contextPath}/manager/system-report?section=users&year=${selectedYear}">
+                <div class="kpi-title">Người dùng hệ thống</div>
+                <div class="kpi-subtitle">Users & Roles</div>
+            </a>
+        </div>
     </div>
 
     <!-- Section content -->
@@ -155,6 +163,9 @@
         </c:when>
         <c:when test="${section == 'risk'}">
             <jsp:include page="/views/manager/system-report/section-risk.jsp" />
+        </c:when>
+        <c:when test="${section == 'users'}">
+            <jsp:include page="/views/manager/system-report/section-users.jsp" />
         </c:when>
         <c:otherwise>
             <jsp:include page="/views/manager/system-report/section-inventory.jsp" />

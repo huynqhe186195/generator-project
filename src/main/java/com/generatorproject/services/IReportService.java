@@ -67,4 +67,11 @@ public interface IReportService {
 
     List<Map<String, Object>> getContractsExpiringList(int days, int limit);
     List<Map<String, Object>> getPendingContractsList(int limit);
+
+    /// Users Module
+    int countAllUsers();
+    int countNewUsersInRange(String fromDate, String toDate);
+
+    List<Map<String, Object>> getNewUsersByRoleInRange(String fromDate, String toDate);
+    List<Map<String, Object>> getNewUsersByMonthInRange(String fromDate, String toDate);
 }

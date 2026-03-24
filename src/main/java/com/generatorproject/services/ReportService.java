@@ -230,4 +230,26 @@ public class ReportService implements  IReportService{
     public List<Map<String, Object>> getPendingContractsList(int limit){
         return reportDAO.getPendingContractsList(limit);
     }
+
+
+    /// Users Module
+    @Override
+    public int countAllUsers(){
+        return reportDAO.countAllUsers();
+    }
+
+    @Override
+    public int countNewUsersInRange(String fromDate, String toDate){
+        return reportDAO.countNewUsersInRange(fromDate, toDate);
+    }
+
+    @Override
+    public List<Map<String, Object>> getNewUsersByRoleInRange(String fromDate, String toDate){
+        return reportDAO.getNewUsersByRoleInRange(fromDate, toDate);
+    }
+
+    @Override
+    public List<Map<String, Object>> getNewUsersByMonthInRange(String fromDate, String toDate){
+        return reportDAO.getNewUsersByMonthInRange(fromDate, toDate);
+    }
 }

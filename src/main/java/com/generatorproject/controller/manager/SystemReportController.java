@@ -25,9 +25,21 @@ public class SystemReportController extends HttpServlet{
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         int year = parseYear(req.getParameter("year"), currentYear);
 
+        String from = normalizeDateParam(req.getParameter("from"));
+        String to = normalizeDateParam(req.getParameter("to"));
+
         String section = normalizeSection(req.getParameter("section"));
         if(section == null){
             section = "inventory";
+        }
+
+        if("users".equals(section)){
+            if(from == null || to == null){
+                from = year + "-01-01";
+                to = year + "-12-31";
+            }
+            req.setAttribute("userFrom", from);
+            req.setAttribute("userTo", to);
         }
 
         req.setAttribute("section", section);
@@ -46,7 +58,9 @@ public class SystemReportController extends HttpServlet{
             loadRisk(req, year);
         }else if("contracts".equals(section)){
             loadContracts(req, year);
-        }else {
+        } else if ("users".equals(section)){
+            loadUsers(req, from, to);
+        } else {
             req.setAttribute("section", "inventory");
             loadInventory(req, year);
         }
@@ -75,7 +89,7 @@ public class SystemReportController extends HttpServlet{
         }
         if("inventory".equals(s) || "service".equals(s)
                 || "financial".equals(s) || "risk".equals(s)
-                || "contracts".equals(s)){
+                || "contracts".equals(s) || "users".equals(s)){
             return s;
         }
         return null;
@@ -174,5 +188,22 @@ public class SystemReportController extends HttpServlet{
         //Table JSON
         req.setAttribute("ctrExpiringListJson", gson.toJson(reportService.getContractsExpiringList(30, 20)));
         req.setAttribute("ctrPendingListJson", gson.toJson(reportService.getPendingContractsList(20)));
+    }
+
+    private void loadUsers(HttpServletRequest req, String from, String to){
+        // KPI
+        req.setAttribute("usrTotalUsers", reportService.countAllUsers());
+        req.setAttribute("usrNewUsers", reportService.countNewUsersInRange(from, to));
+
+        // Charts JSON
+        req.setAttribute("usrByRoleJson", gson.toJson(reportService.getNewUsersByRoleInRange(from, to)));
+        req.setAttribute("usrNewByMonthJson", gson.toJson(reportService.getNewUsersByMonthInRange(from, to)));
+    }
+
+    /// helper
+    private String normalizeDateParam(String s){
+        if(s == null){ return null; }
+        String t = s.trim();
+        return t.isEmpty() ? null : t; // expecting yyyy-MM-dd
     }
 }
