@@ -19,6 +19,35 @@
                 <div class="alert alert-danger">
                     Kỹ thuật viên đã có lịch trùng trong khung giờ này. Vui lòng chọn kỹ thuật viên khác hoặc đổi thời gian.
                 </div>
+                <c:if test="${not empty alternativeTechnicians}">
+                    <div class="alert alert-info">
+                        <div class="fw-bold mb-2"><i class="fas fa-user-check me-2"></i>Gợi ý kỹ thuật viên rảnh đúng khung giờ</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <c:forEach items="${alternativeTechnicians}" var="altTech">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary js-select-tech"
+                                        data-tech-id="${altTech.id}">
+                                        ${altTech.fullName}
+                                </button>
+                            </c:forEach>
+                        </div>
+                    </div>
+                </c:if>
+                <c:if test="${not empty alternativeTimeSuggestions}">
+                    <div class="alert alert-warning">
+                        <div class="fw-bold mb-2"><i class="fas fa-clock me-2"></i>Gợi ý giờ thay thế với technician hiện tại</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <c:forEach items="${alternativeTimeSuggestions}" var="slot">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-dark js-apply-slot"
+                                        data-start="${slot.start}"
+                                        data-end="${slot.end}">
+                                    ${slot.start} → ${slot.end}
+                                </button>
+                            </c:forEach>
+                        </div>
+                    </div>
+                </c:if>
             </c:if>
             <c:if test="${param.error == 'invalid_time'}">
                 <div class="alert alert-warning">
@@ -88,7 +117,7 @@
                     <select name="technicianId" id="technicianIdSelect" class="form-select" required>
                         <option value="">-- Chọn kỹ thuật viên --</option>
                         <c:forEach items="${listTechnicians}" var="tech">
-                            <option value="${tech.id}" ${recommendedTechnicianId == tech.id ? 'selected' : ''}>${tech.fullName} - ${tech.email}</option>
+                            <option value="${tech.id}" ${selectedTechnicianId == tech.id ? 'selected' : ''}>${tech.fullName} - ${tech.email}</option>
                         </c:forEach>
                     </select>
                 </div>
@@ -257,5 +286,26 @@
         if (technicianSelect && technicianSelect.value && scheduledStartInput && scheduledStartInput.value && scheduledEndInput && scheduledEndInput.value) {
             loadAvailability();
         }
+
+        document.querySelectorAll('.js-select-tech').forEach(function (button) {
+            button.addEventListener('click', function () {
+                if (!technicianSelect) {
+                    return;
+                }
+                technicianSelect.value = button.dataset.techId || '';
+                loadAvailability();
+            });
+        });
+
+        document.querySelectorAll('.js-apply-slot').forEach(function (button) {
+            button.addEventListener('click', function () {
+                if (!scheduledStartInput || !scheduledEndInput) {
+                    return;
+                }
+                scheduledStartInput.value = button.dataset.start || '';
+                scheduledEndInput.value = button.dataset.end || '';
+                loadAvailability();
+            });
+        });
     })();
 </script>
