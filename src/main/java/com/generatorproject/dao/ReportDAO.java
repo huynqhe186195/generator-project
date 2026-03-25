@@ -1,9 +1,6 @@
 package com.generatorproject.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 public class ReportDAO extends GenericDAO<Object>{
@@ -365,10 +362,11 @@ public class ReportDAO extends GenericDAO<Object>{
 
     /**
      * ================================================================================
-    *Service module (Warranty)
-    *Incident warranty: ticket_created_at = incidents.created_at
-    *Contract lookup: ưu tiên incidents.contract_id, fallback products.contract_id
-    **/
+     *Service module (Warranty)
+     *Incident warranty: ticket_created_at = incidents.created_at
+     *Contract lookup: ưu tiên incidents.contract_id, fallback products.contract_id
+     **/
+
     public int countIncidentsInWarrantyByYear(int year) {
         String sql = "SELECT COUNT(*) FROM incidents i " +
                 "JOIN products p ON i.product_id = p.id " +
@@ -718,7 +716,7 @@ public class ReportDAO extends GenericDAO<Object>{
     }
 
     private List<Map<String, Object>> queryPartRanking(String sql, int year,
-                                                      int limit, String metrickey){
+                                                       int limit, String metrickey){
 
         List<Map<String, Object>> result = new ArrayList<>();
         Connection conn = null;
@@ -1207,7 +1205,8 @@ public class ReportDAO extends GenericDAO<Object>{
     /**
      * ============================================================================
      * Helper
-    **/
+     **/
+
     private void close(Connection conn, PreparedStatement ps, ResultSet rs){
         try {
             if(rs != null){ rs.close(); }
