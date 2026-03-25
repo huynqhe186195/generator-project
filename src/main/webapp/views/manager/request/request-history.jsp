@@ -223,8 +223,6 @@
                         </td>
 
                         <td class="summary-cell">
-                            <div class="summary-text" id="summary-${r.id}"></div>
-
                             <code class="mini-json d-none" id="json-${r.id}">
                                 ${fn:escapeXml(r.requestData)}
                             </code>
@@ -712,49 +710,6 @@
             + '  <div class="small text-muted mt-1">Đã chọn: ' + escapeHtml(resolveTechnicianDisplay(selectedTechnician)) + '</div>'
             + '</div>';
     }
-
-    function buildSummary(reqType, obj, raw) {
-        if (!obj) return raw;
-
-        if (reqType === "CREATE_USER") {
-            const fullName = obj.fullName || "-";
-            const email = obj.email || "-";
-            const phone = obj.phone || obj.phoneNumber || "-";
-            return "Tạo user: " + fullName + " | " + email + " | " + phone;
-        }
-
-        if (reqType === "INCIDENT_REPORT") {
-            const title = obj.title || "(không có tiêu đề)";
-            const priority = obj.priority || "-";
-            const issueType = obj.issueType || "-";
-            const productId = obj.productId || "-";
-            return "Sự cố: " + title + " | Priority: " + priority + " | Type: " + issueType + " | ProductID: " + productId;
-        }
-
-        if (reqType === "NEW_PRODUCT") {
-            const excelFileName = obj.excelFileName || "(không có tên file)";
-            return "Tạo product từ file Excel: " + excelFileName;
-        }
-
-        if (reqType === "NEW_USER") {
-            const excelFileName = obj.excelFileName || "(không có tên file)";
-            return "Import users từ file Excel: " + excelFileName;
-        }
-
-        const keys = Object.keys(obj);
-        return "Dữ liệu: " + keys.slice(0, 6).join(", ") + (keys.length > 6 ? "..." : "");
-    }
-
-    document.querySelectorAll("code[id^='json-']").forEach(codeEl => {
-        const id = codeEl.id.replace("json-", "");
-        const raw = (codeEl.textContent || "").trim();
-        const summaryEl = document.getElementById("summary-" + id);
-        const btn = document.querySelector("button[data-reqid='" + id + "']");
-        const reqType = btn ? (btn.getAttribute("data-reqtype") || "") : "";
-        const obj = safeParseJson(raw);
-        const summary = buildSummary(reqType, obj, raw);
-        if (summaryEl) summaryEl.textContent = summary;
-    });
 
     const detailModal = document.getElementById("jsonDetailModal");
     if (detailModal) {
