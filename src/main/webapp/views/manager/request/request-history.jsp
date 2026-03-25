@@ -539,7 +539,7 @@
 <script id="technicianDisplayMapData" type="application/json"><c:out value="${technicianDisplayJson}" escapeXml="false"/></script>
 <script id="productDisplayMapData" type="application/json"><c:out value="${productDisplayJson}" escapeXml="false"/></script>
 <div id="technicianOptionsTemplate" class="d-none">
-    <option value="">-- Chọn kỹ thuật viên phân công --</option>
+    <option value="">-- Chọn kỹ thuật viên đã gợi ý --</option>
     <c:forEach items="${listTechnicians}" var="tech">
         <option value="${tech.id}">${fn:escapeXml(tech.fullName)} - ${fn:escapeXml(tech.email)}</option>
     </c:forEach>
