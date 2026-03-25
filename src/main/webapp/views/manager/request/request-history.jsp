@@ -134,6 +134,9 @@
 <c:if test="${param.msg == 'success'}">
     <div class="alert alert-success">Thao tác thành công!</div>
 </c:if>
+<c:if test="${param.msg == 'technician_updated'}">
+    <div class="alert alert-success">Cập nhật kỹ thuật viên thành công!</div>
+</c:if>
 <c:if test="${param.msg == 'duplicate'}">
     <div class="alert alert-warning">Yêu cầu này đang chờ xử lý rồi!</div>
 </c:if>
