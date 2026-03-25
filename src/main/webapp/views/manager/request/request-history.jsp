@@ -277,16 +277,6 @@
                                               method="post">
                                             <input type="hidden" name="action" value="approve"/>
                                             <input type="hidden" name="id" value="${r.id}"/>
-                                            <c:if test="${r.requestType == 'INCIDENT_REPORT'}">
-                                                <select name="technicianId" class="form-select form-select-sm" style="min-width: 240px;">
-                                                    <option value="">-- Giữ kỹ thuật viên staff đề xuất --</option>
-                                                    <c:forEach items="${listTechnicians}" var="tech">
-                                                        <option value="${tech.id}" ${r.info.technicianId == tech.id ? 'selected' : ''}>
-                                                            ${tech.fullName} - ${tech.email}
-                                                        </option>
-                                                    </c:forEach>
-                                                </select>
-                                            </c:if>
                                             <button type="submit" class="btn btn-sm btn-success"
                                                     onclick="return confirm('Duyệt request #${r.id}?');">
                                                 <i class="fa fa-check"></i> Duyệt
@@ -341,7 +331,6 @@
                     <span class="text-muted ms-2">#<span id="detailId"></span></span>
                 </div>
                 <div id="detailContent"></div>
-                <div id="detailActionArea" class="mt-3"></div>
                 <pre class="json-pretty border rounded p-3 bg-light d-none" id="detailJson"></pre>
             </div>
         </div>
@@ -697,29 +686,31 @@
             + '</div>';
     }
 
-    function renderIncidentAssignAction(requestId, selectedTechnicianId, reqStatus, box) {
+    function buildTechnicianField(obj, requestId, reqStatus, box) {
         const normalizedStatus = (reqStatus || "").toUpperCase();
-        const isPending = normalizedStatus === "PENDING" || normalizedStatus === "WAITING_MANAGER";
-        if ((box || "").toLowerCase() !== "inbox" || !isPending) {
-            return "";
+        const isEditable = (box || "").toLowerCase() === "inbox"
+            && (normalizedStatus === "PENDING" || normalizedStatus === "WAITING_MANAGER");
+        if (!isEditable) {
+            return renderField("Kỹ thuật viên", resolveTechnicianDisplay(obj.technicianId));
         }
 
         const optionsTemplate = document.getElementById("technicianOptionsTemplate");
         const optionsHtml = optionsTemplate ? optionsTemplate.innerHTML : '<option value="">-- Không có kỹ thuật viên --</option>';
+        const selectedTechnician = obj.technicianId !== undefined && obj.technicianId !== null ? String(obj.technicianId) : "";
 
         return ''
-            + '<form method="post" action="${pageContext.request.contextPath}/manager/requests" class="border rounded p-3 bg-light">'
-            + '  <input type="hidden" name="action" value="assign_technician" />'
-            + '  <input type="hidden" name="id" value="' + escapeHtml(requestId) + '" />'
-            + '  <label class="form-label fw-semibold mb-2">Phân công kỹ thuật viên (Manager)</label>'
-            + '  <div class="d-flex flex-wrap gap-2 align-items-center">'
-            + '    <select class="form-select form-select-sm" style="min-width: 280px;" name="technicianId" id="detailTechnicianAssignSelect">'
-            +          optionsHtml
+            + '<div class="detail-item">'
+            + '  <div class="detail-label">Kỹ thuật viên</div>'
+            + '  <form method="post" action="${pageContext.request.contextPath}/manager/requests" class="d-flex gap-2 align-items-center flex-wrap">'
+            + '    <input type="hidden" name="action" value="assign_technician" />'
+            + '    <input type="hidden" name="id" value="' + escapeHtml(requestId) + '" />'
+            + '    <select class="form-select form-select-sm" style="min-width: 220px;" name="technicianId">'
+            +        optionsHtml
             + '    </select>'
-            + '    <button type="submit" class="btn btn-sm btn-primary">Lưu phân công</button>'
-            + '  </div>'
-            + '  <div class="form-text">Manager có thể đổi kỹ thuật viên ngay tại màn chi tiết trước khi bấm Duyệt.</div>'
-            + '</form>';
+            + '    <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>'
+            + '  </form>'
+            + '  <div class="small text-muted mt-1">Đã chọn: ' + escapeHtml(resolveTechnicianDisplay(selectedTechnician)) + '</div>'
+            + '</div>';
     }
 
     function buildSummary(reqType, obj, raw) {
@@ -775,7 +766,6 @@
             const obj = safeParseJson(raw);
             const detailContentEl = document.getElementById("detailContent");
             const detailJsonEl = document.getElementById("detailJson");
-            const detailActionArea = document.getElementById("detailActionArea");
             const status = button.getAttribute("data-reqstatus") || "";
             const box = button.getAttribute("data-box") || "";
 
@@ -783,20 +773,53 @@
             document.getElementById("detailTypeBadge").textContent = type || "REQUEST";
 
             if (obj) {
-                detailContentEl.innerHTML = renderStructuredDetail(type, obj, id);
                 if (type === "INCIDENT_REPORT") {
-                    detailActionArea.innerHTML = renderIncidentAssignAction(id, obj.technicianId, status, box);
-                    const selectEl = document.getElementById("detailTechnicianAssignSelect");
+                    const common = renderSection("Thông tin chung", [
+                        { label: "Mã request", value: "#" + id },
+                        { label: "Loại yêu cầu", value: type || "REQUEST" }
+                    ]);
+                    const incidentSection = '<div class="mb-3">'
+                        + '<div class="detail-section-title">Nội dung sự cố</div>'
+                        + '<div class="detail-grid">'
+                        + renderField("Tiêu đề", obj.title)
+                        + renderField("Loại sự cố", obj.issueType || obj.maintenanceType)
+                        + renderField("Mức ưu tiên", obj.priority)
+                        + renderField("Ngày mong muốn", obj.preferredDate)
+                        + renderField("Sản phẩm", resolveProductDisplay(obj.productId))
+                        + buildTechnicianField(obj, id, status, box)
+                        + '</div>'
+                        + '</div>';
+
+                    detailContentEl.innerHTML = '<div class="request-detail-wrap">'
+                        + '<div class="request-detail-head">'
+                        + '<span class="badge bg-warning text-dark">Sự cố / Incident</span>'
+                        + '<span class="text-muted small">Chi tiết sự cố đã gửi từ manager</span>'
+                        + '</div>'
+                        + '<div class="request-detail-body">'
+                        + common
+                        + incidentSection
+                        + renderSection("Người báo cáo", [
+                            { label: "Họ tên", value: obj.reporterName },
+                            { label: "Số điện thoại", value: obj.reporterPhone },
+                            { label: "Email", value: obj.reporterEmail }
+                        ])
+                        + '<div class="detail-section-title">Mô tả chi tiết</div>'
+                        + '<div class="detail-note">' + escapeHtml(valueOrDash(obj.description)) + '</div>'
+                        + '<div class="detail-section-title mt-3">Ghi chú nội bộ</div>'
+                        + '<div class="detail-note">' + escapeHtml(valueOrDash(obj.staffNote)) + '</div>'
+                        + '</div>'
+                        + '</div>';
+
+                    const selectEl = detailContentEl.querySelector('select[name="technicianId"]');
                     if (selectEl && obj.technicianId !== undefined && obj.technicianId !== null && obj.technicianId !== "") {
                         selectEl.value = String(obj.technicianId);
                     }
                 } else {
-                    detailActionArea.innerHTML = "";
+                    detailContentEl.innerHTML = renderStructuredDetail(type, obj, id);
                 }
                 detailJsonEl.classList.add("d-none");
             } else {
                 detailContentEl.innerHTML = "";
-                detailActionArea.innerHTML = "";
                 detailJsonEl.classList.remove("d-none");
                 detailJsonEl.textContent = raw;
             }
