@@ -270,11 +270,21 @@
                             <td class="text-end">
                                 <c:choose>
                                     <c:when test="${r.status == 'PENDING' || r.status == 'WAITING_MANAGER'}">
-                                        <form class="d-inline"
+                                        <form class="d-inline-flex align-items-center gap-2"
                                               action="${pageContext.request.contextPath}/manager/requests"
                                               method="post">
                                             <input type="hidden" name="action" value="approve"/>
                                             <input type="hidden" name="id" value="${r.id}"/>
+                                            <c:if test="${r.requestType == 'INCIDENT_REPORT'}">
+                                                <select name="technicianId" class="form-select form-select-sm" style="min-width: 240px;">
+                                                    <option value="">-- Giữ kỹ thuật viên staff đề xuất --</option>
+                                                    <c:forEach items="${listTechnicians}" var="tech">
+                                                        <option value="${tech.id}" ${r.info.technicianId == tech.id ? 'selected' : ''}>
+                                                            ${tech.fullName} - ${tech.email}
+                                                        </option>
+                                                    </c:forEach>
+                                                </select>
+                                            </c:if>
                                             <button type="submit" class="btn btn-sm btn-success"
                                                     onclick="return confirm('Duyệt request #${r.id}?');">
                                                 <i class="fa fa-check"></i> Duyệt
