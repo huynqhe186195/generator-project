@@ -653,10 +653,12 @@
                                                                         <i class="fas fa-history me-1"></i>Lịch sử báo giá
                                                                     </a>
                                                                     <button type="button"
-                                                                            class="btn btn-sm btn-outline-danger"
+                                                                            class="btn btn-sm btn-outline-danger ${p.status != 'READY' ? 'disabled opacity-50' : ''}"
                                                                             data-product-id="${p.id}"
                                                                             data-product-name="${fn:escapeXml(not empty p.modelName ? p.modelName : 'Thiết bị')}"
                                                                             data-product-serial="${fn:escapeXml(p.serialNumber)}"
+                                                                            title="${p.status != 'READY' ? 'Chỉ báo cáo sự cố khi máy ở trạng thái READY' : 'Báo cáo sự cố'}"
+                                                                            ${p.status != 'READY' ? 'disabled' : ''}
                                                                             onclick="openReportModalFromButton(this)">
                                                                         <i class="fas fa-triangle-exclamation me-1"></i>Báo cáo sự cố
                                                                     </button>
@@ -750,12 +752,12 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Ngày đề xuất kiểm tra</label>
-                            <input type="date" name="preferredDate" id="preferredDateInput" class="form-control">
+                            <input type="date" name="preferredDate" id="preferredDateInput" class="form-control" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Khung giờ khách có thể tiếp nhận kiểm tra</label>
-                            <select name="preferredTimeSlot" class="form-select py-2">
+                            <select name="preferredTimeSlot" class="form-select py-2" required>
                                 <option value="">-- Chọn khung giờ 120 phút --</option>
                                 <option value="08:00|10:00|MORNING">08:00 - 10:00</option>
                                 <option value="10:00|12:00|MORNING">10:00 - 12:00</option>
@@ -772,7 +774,7 @@
 
                         <div class="col-12">
                             <label class="form-label fw-bold">Mô tả chi tiết</label>
-                            <textarea name="description" class="form-control" rows="4" placeholder="Mô tả kỹ hơn về hiện tượng..."></textarea>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Mô tả kỹ hơn về hiện tượng..." required></textarea>
                         </div>
                     </div>
                 </div>
