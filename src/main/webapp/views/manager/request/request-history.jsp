@@ -539,7 +539,6 @@
 <script id="technicianDisplayMapData" type="application/json"><c:out value="${technicianDisplayJson}" escapeXml="false"/></script>
 <script id="productDisplayMapData" type="application/json"><c:out value="${productDisplayJson}" escapeXml="false"/></script>
 <div id="technicianOptionsTemplate" class="d-none">
-    <option value="">-- Chọn kỹ thuật viên đã gợi ý --</option>
     <c:forEach items="${listTechnicians}" var="tech">
         <option value="${tech.id}">${fn:escapeXml(tech.fullName)} - ${fn:escapeXml(tech.email)}</option>
     </c:forEach>
@@ -704,8 +703,12 @@
         }
 
         const optionsTemplate = document.getElementById("technicianOptionsTemplate");
-        const optionsHtml = optionsTemplate ? optionsTemplate.innerHTML : '<option value="">-- Không có kỹ thuật viên --</option>';
+        const optionsHtml = optionsTemplate ? optionsTemplate.innerHTML : '';
         const selectedTechnician = normalizeTechnicianIdValue(obj.technicianId);
+        const suggestedLabel = selectedTechnician
+            ? '-- Chọn kỹ thuật viên đã gợi ý (' + resolveTechnicianDisplay(selectedTechnician) + ') --'
+            : '-- Chọn kỹ thuật viên đã gợi ý --';
+        const suggestedOption = '<option value="' + escapeHtml(selectedTechnician) + '">' + escapeHtml(suggestedLabel) + '</option>';
 
         return ''
             + '<div class="detail-item">'
@@ -714,6 +717,7 @@
             + '    <input type="hidden" name="action" value="assign_technician" />'
             + '    <input type="hidden" name="id" value="' + escapeHtml(requestId) + '" />'
             + '    <select class="form-select form-select-sm" style="min-width: 220px;" name="technicianId">'
+            +        suggestedOption
             +        optionsHtml
             + '    </select>'
             + '    <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>'
