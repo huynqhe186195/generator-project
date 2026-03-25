@@ -92,6 +92,39 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+        .request-detail-wrap.is-animated {
+            animation: detailFadeIn .28s ease-out both;
+        }
+        @keyframes detailFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tech-assign-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .tech-assign-select {
+            min-width: 240px;
+            border: 1px solid #bcd1ff;
+            box-shadow: 0 2px 8px rgba(39, 92, 203, 0.08);
+            transition: all .2s ease;
+        }
+        .tech-assign-select:hover,
+        .tech-assign-select:focus {
+            border-color: #7aa8ff;
+            box-shadow: 0 0 0 .2rem rgba(43, 122, 255, 0.15);
+        }
+        .tech-assign-btn {
+            border-radius: 999px;
+            padding: 4px 14px;
+            transition: transform .15s ease, box-shadow .2s ease;
+        }
+        .tech-assign-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+        }
         pre.json-pretty{
             white-space: pre-wrap;
             word-break: break-word;
@@ -622,7 +655,7 @@
         ]);
 
         if (reqType === "INCIDENT_REPORT") {
-            return '<div class="request-detail-wrap">'
+            return '<div class="request-detail-wrap is-animated">'
                 + '<div class="request-detail-head">'
                 + '<span class="badge bg-warning text-dark">Sự cố / Incident</span>'
                 + '<span class="text-muted small">Chi tiết sự cố đã gửi từ manager</span>'
@@ -651,7 +684,7 @@
         }
 
         if (reqType === "CREATE_USER") {
-            return '<div class="request-detail-wrap">'
+            return '<div class="request-detail-wrap is-animated">'
                 + '<div class="request-detail-head">'
                 + '<span class="badge bg-info text-dark">Tạo tài khoản</span>'
                 + '</div>'
@@ -668,7 +701,7 @@
         }
 
         if (reqType === "NEW_PRODUCT" || reqType === "NEW_USER") {
-            return '<div class="request-detail-wrap">'
+            return '<div class="request-detail-wrap is-animated">'
                 + '<div class="request-detail-head">'
                 + '<span class="badge bg-primary">Import từ Excel</span>'
                 + '</div>'
@@ -686,7 +719,7 @@
             return { label: k, value: typeof obj[k] === "object" ? JSON.stringify(obj[k]) : obj[k] };
         });
 
-        return '<div class="request-detail-wrap">'
+        return '<div class="request-detail-wrap is-animated">'
             + '<div class="request-detail-head">'
             + '<span class="badge bg-secondary">REQUEST</span>'
             + '</div>'
@@ -716,14 +749,14 @@
         return ''
             + '<div class="detail-item">'
             + '  <div class="detail-label">Kỹ thuật viên</div>'
-            + '  <form method="post" action="${pageContext.request.contextPath}/manager/requests" class="d-flex gap-2 align-items-center flex-wrap">'
+            + '  <form method="post" action="${pageContext.request.contextPath}/manager/requests" class="tech-assign-form">'
             + '    <input type="hidden" name="action" value="assign_technician" />'
             + '    <input type="hidden" name="id" value="' + escapeHtml(requestId) + '" />'
-            + '    <select class="form-select form-select-sm" style="min-width: 220px;" name="technicianId">'
+            + '    <select class="form-select form-select-sm tech-assign-select" name="technicianId">'
             +        suggestedOption
             +        optionsHtml
             + '    </select>'
-            + '    <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>'
+            + '    <button type="submit" class="btn btn-sm btn-outline-primary tech-assign-btn">Lưu</button>'
             + '  </form>'
             + '  <div class="small text-muted mt-1">Đã chọn: ' + escapeHtml(resolveTechnicianDisplay(selectedTechnician)) + '</div>'
             + '</div>';
@@ -763,7 +796,7 @@
                         + '</div>'
                         + '</div>';
 
-                    detailContentEl.innerHTML = '<div class="request-detail-wrap">'
+                    detailContentEl.innerHTML = '<div class="request-detail-wrap is-animated">'
                         + '<div class="request-detail-head">'
                         + '<span class="badge bg-warning text-dark">Sự cố / Incident</span>'
                         + '<span class="text-muted small">Chi tiết sự cố đã gửi từ manager</span>'
