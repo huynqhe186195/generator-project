@@ -568,6 +568,17 @@
         return value;
     }
 
+    function normalizeTechnicianIdValue(rawValue) {
+        if (rawValue === null || rawValue === undefined || rawValue === "") {
+            return "";
+        }
+        const numeric = Number(rawValue);
+        if (Number.isFinite(numeric)) {
+            return String(Math.trunc(numeric));
+        }
+        return String(rawValue).trim();
+    }
+
     function resolveTechnicianDisplay(technicianId) {
         const key = String(valueOrDash(technicianId));
         if (key === "-") return "-";
@@ -694,7 +705,7 @@
 
         const optionsTemplate = document.getElementById("technicianOptionsTemplate");
         const optionsHtml = optionsTemplate ? optionsTemplate.innerHTML : '<option value="">-- Không có kỹ thuật viên --</option>';
-        const selectedTechnician = obj.technicianId !== undefined && obj.technicianId !== null ? String(obj.technicianId) : "";
+        const selectedTechnician = normalizeTechnicianIdValue(obj.technicianId);
 
         return ''
             + '<div class="detail-item">'
@@ -766,8 +777,9 @@
                         + '</div>';
 
                     const selectEl = detailContentEl.querySelector('select[name="technicianId"]');
-                    if (selectEl && obj.technicianId !== undefined && obj.technicianId !== null && obj.technicianId !== "") {
-                        selectEl.value = String(obj.technicianId);
+                    const normalizedTechnicianId = normalizeTechnicianIdValue(obj.technicianId);
+                    if (selectEl && normalizedTechnicianId) {
+                        selectEl.value = normalizedTechnicianId;
                     }
                 } else {
                     detailContentEl.innerHTML = renderStructuredDetail(type, obj, id);

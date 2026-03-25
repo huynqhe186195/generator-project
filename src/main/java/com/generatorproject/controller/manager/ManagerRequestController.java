@@ -297,8 +297,13 @@ public class ManagerRequestController extends HttpServlet {
         try {
             String idStr = req.getParameter("id");
             String technicianIdRaw = req.getParameter("technicianId");
-            if (idStr == null || idStr.isBlank() || technicianIdRaw == null || technicianIdRaw.isBlank()) {
+            if (idStr == null || idStr.isBlank()) {
                 resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+                return;
+            }
+
+            if (technicianIdRaw == null || technicianIdRaw.isBlank()) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=technician_updated");
                 return;
             }
 
