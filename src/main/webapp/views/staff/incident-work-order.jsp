@@ -91,7 +91,7 @@
                     <div id="technicianAvailabilityEmpty" class="alert alert-secondary mb-0">
                         Chọn kỹ thuật viên và thời gian dự kiến để xem lịch thực tế của người đó.
                         <c:if test="${not empty recommendedTechnicianId}">
-                            <div class="mt-2 small">Hệ thống đã pre-select kỹ thuật viên được gợi ý từ bước trình manager.</div>
+                            <div class="mt-2 small">Hệ thống pre-select kỹ thuật viên theo đề xuất staff đã gửi kèm plan trước đó (không phải Manager phân công).</div>
                         </c:if>
                     </div>
 
@@ -120,6 +120,7 @@
                             <option value="${tech.id}" ${selectedTechnicianId == tech.id ? 'selected' : ''}>${tech.fullName} - ${tech.email}</option>
                         </c:forEach>
                     </select>
+                    <div class="form-text">Manager chỉ duyệt plan. Ở bước này staff mới chốt kỹ thuật viên chính thức để tạo work order.</div>
                 </div>
 
                 <div class="col-md-3">
