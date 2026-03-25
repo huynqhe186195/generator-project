@@ -193,6 +193,11 @@ public class ManagerRequestController extends HttpServlet {
             return;
         }
 
+        if ("assign_technician".equals(action)) {
+            handleAssignTechnician(req, resp);
+            return;
+        }
+
         if ("reject".equals(action)) {
             handleReject(req, resp);
             return;
@@ -282,6 +287,48 @@ public class ManagerRequestController extends HttpServlet {
             requestService.reject(id, reason);
 
             resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+        }
+    }
+
+    private void handleAssignTechnician(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            String idStr = req.getParameter("id");
+            String technicianIdRaw = req.getParameter("technicianId");
+            if (idStr == null || idStr.isBlank() || technicianIdRaw == null || technicianIdRaw.isBlank()) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+                return;
+            }
+
+            long requestId = Long.parseLong(idStr);
+            Long technicianId = asLong(technicianIdRaw);
+            if (technicianId == null) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+                return;
+            }
+
+            SystemRequest request = requestService.findById(requestId);
+            if (request == null || request.getInfo() == null
+                    || !"INCIDENT_REPORT".equalsIgnoreCase(request.getRequestType())) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+                return;
+            }
+
+            Map<String, Object> info = request.getInfo();
+            info.put("technicianId", technicianId);
+            Users technician = userService.findUserById(technicianId.intValue());
+            String technicianName = (technician != null && technician.getFullName() != null
+                    && !technician.getFullName().trim().isEmpty())
+                    ? technician.getFullName().trim()
+                    : "Kỹ thuật viên #" + technicianId;
+            info.put("technicianName", technicianName);
+
+            request.setRequestData(gson.toJson(info));
+            requestService.update(request);
+
+            resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=technician_updated");
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");

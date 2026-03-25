@@ -235,7 +235,9 @@
                                         data-bs-toggle="modal"
                                         data-bs-target="#jsonDetailModal"
                                         data-reqid="${r.id}"
-                                        data-reqtype="${r.requestType}">
+                                        data-reqtype="${r.requestType}"
+                                        data-reqstatus="${r.status}"
+                                        data-box="${box}">
                                     <i class="fa fa-eye"></i> Xem chi tiết
                                 </button>
                             </div>
@@ -339,6 +341,7 @@
                     <span class="text-muted ms-2">#<span id="detailId"></span></span>
                 </div>
                 <div id="detailContent"></div>
+                <div id="detailActionArea" class="mt-3"></div>
                 <pre class="json-pretty border rounded p-3 bg-light d-none" id="detailJson"></pre>
             </div>
         </div>
@@ -548,6 +551,12 @@
 
 <script id="technicianDisplayMapData" type="application/json"><c:out value="${technicianDisplayJson}" escapeXml="false"/></script>
 <script id="productDisplayMapData" type="application/json"><c:out value="${productDisplayJson}" escapeXml="false"/></script>
+<div id="technicianOptionsTemplate" class="d-none">
+    <option value="">-- Chọn kỹ thuật viên phân công --</option>
+    <c:forEach items="${listTechnicians}" var="tech">
+        <option value="${tech.id}">${fn:escapeXml(tech.fullName)} - ${fn:escapeXml(tech.email)}</option>
+    </c:forEach>
+</div>
 
 <script>
 (function () {
@@ -688,6 +697,31 @@
             + '</div>';
     }
 
+    function renderIncidentAssignAction(requestId, selectedTechnicianId, reqStatus, box) {
+        const normalizedStatus = (reqStatus || "").toUpperCase();
+        const isPending = normalizedStatus === "PENDING" || normalizedStatus === "WAITING_MANAGER";
+        if ((box || "").toLowerCase() !== "inbox" || !isPending) {
+            return "";
+        }
+
+        const optionsTemplate = document.getElementById("technicianOptionsTemplate");
+        const optionsHtml = optionsTemplate ? optionsTemplate.innerHTML : '<option value="">-- Không có kỹ thuật viên --</option>';
+
+        return ''
+            + '<form method="post" action="${pageContext.request.contextPath}/manager/requests" class="border rounded p-3 bg-light">'
+            + '  <input type="hidden" name="action" value="assign_technician" />'
+            + '  <input type="hidden" name="id" value="' + escapeHtml(requestId) + '" />'
+            + '  <label class="form-label fw-semibold mb-2">Phân công kỹ thuật viên (Manager)</label>'
+            + '  <div class="d-flex flex-wrap gap-2 align-items-center">'
+            + '    <select class="form-select form-select-sm" style="min-width: 280px;" name="technicianId" id="detailTechnicianAssignSelect">'
+            +          optionsHtml
+            + '    </select>'
+            + '    <button type="submit" class="btn btn-sm btn-primary">Lưu phân công</button>'
+            + '  </div>'
+            + '  <div class="form-text">Manager có thể đổi kỹ thuật viên ngay tại màn chi tiết trước khi bấm Duyệt.</div>'
+            + '</form>';
+    }
+
     function buildSummary(reqType, obj, raw) {
         if (!obj) return raw;
 
@@ -741,15 +775,28 @@
             const obj = safeParseJson(raw);
             const detailContentEl = document.getElementById("detailContent");
             const detailJsonEl = document.getElementById("detailJson");
+            const detailActionArea = document.getElementById("detailActionArea");
+            const status = button.getAttribute("data-reqstatus") || "";
+            const box = button.getAttribute("data-box") || "";
 
             document.getElementById("detailId").textContent = id;
             document.getElementById("detailTypeBadge").textContent = type || "REQUEST";
 
             if (obj) {
                 detailContentEl.innerHTML = renderStructuredDetail(type, obj, id);
+                if (type === "INCIDENT_REPORT") {
+                    detailActionArea.innerHTML = renderIncidentAssignAction(id, obj.technicianId, status, box);
+                    const selectEl = document.getElementById("detailTechnicianAssignSelect");
+                    if (selectEl && obj.technicianId !== undefined && obj.technicianId !== null && obj.technicianId !== "") {
+                        selectEl.value = String(obj.technicianId);
+                    }
+                } else {
+                    detailActionArea.innerHTML = "";
+                }
                 detailJsonEl.classList.add("d-none");
             } else {
                 detailContentEl.innerHTML = "";
+                detailActionArea.innerHTML = "";
                 detailJsonEl.classList.remove("d-none");
                 detailJsonEl.textContent = raw;
             }
