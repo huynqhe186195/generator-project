@@ -286,4 +286,30 @@ public class NewsDAO extends GenericDAO<News> {
             return query(sql, new NewsMapper(), currentId, limit);
         }
     }
+
+    public List<News> searchPublishedForChatbot(String keyword, int limit) {
+        StringBuilder sql = new StringBuilder();
+        List<Object> params = new ArrayList<Object>();
+
+        sql.append("SELECT * FROM news WHERE status = 'published' ");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (")
+                    .append("LOWER(title) LIKE ? ")
+                    .append("OR LOWER(summary) LIKE ? ")
+                    .append("OR LOWER(content) LIKE ? ")
+                    .append("OR LOWER(author) LIKE ? ")
+                    .append("OR LOWER(category) LIKE ?")
+                    .append(") ");
+            String likeKeyword = "%" + keyword.trim().toLowerCase() + "%";
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+            params.add(likeKeyword);
+        }
+        sql.append(" ORDER BY CASE WHEN published_at IS NULL THEN created_at ELSE published_at END DESC, id DESC LIMIT ? ");
+        params.add(limit);
+
+        return query(sql.toString(), new NewsMapper(), params.toArray());
+    }
 }

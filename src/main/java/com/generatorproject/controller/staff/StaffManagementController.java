@@ -17,6 +17,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -689,6 +690,43 @@ public class StaffManagementController extends HttpServlet {
             Long recommendedTechnicianId = parseLongValue(sysReq.getInfo().get("technicianId"));
             Timestamp preferredStart = resolvePreferredStart(incident);
             Timestamp preferredEnd = resolvePreferredEnd(incident, incidentPlan, preferredStart);
+            String scheduleError = req.getParameter("error");
+
+            Integer selectedTechnicianId = parseInteger(req.getParameter("technicianId"));
+            Timestamp selectedStart = parseDateTimeLocal(req.getParameter("scheduledStart"));
+            Timestamp selectedEnd = parseDateTimeLocal(req.getParameter("scheduledEnd"));
+            if (selectedStart == null) {
+                selectedStart = preferredStart;
+            }
+            if (selectedEnd == null) {
+                selectedEnd = preferredEnd;
+            }
+
+            if (selectedTechnicianId == null && recommendedTechnicianId != null) {
+                selectedTechnicianId = recommendedTechnicianId.intValue();
+            }
+
+            List<Users> alternativeTechnicians = new ArrayList<>();
+            List<TimeSuggestionView> alternativeTimeSuggestions = new ArrayList<>();
+            if ("conflict_schedule".equalsIgnoreCase(scheduleError) && selectedStart != null && selectedEnd != null) {
+                for (Users technician : listTechnicians) {
+                    if (technician == null) {
+                        continue;
+                    }
+                    if (!maintenanceAssignmentDAO.hasScheduleConflict(technician.getId(), selectedStart, selectedEnd)) {
+                        alternativeTechnicians.add(technician);
+                    }
+                }
+
+                if (selectedTechnicianId != null) {
+                    alternativeTimeSuggestions = buildAlternativeTimeSuggestions(
+                            selectedTechnicianId,
+                            selectedStart,
+                            selectedEnd,
+                            incidentPlan != null ? incidentPlan.getEstimatedDurationMinutes() : 120
+                    );
+                }
+            }
 
             req.setAttribute("req", sysReq);
             req.setAttribute("incidentEntity", incident);
@@ -696,8 +734,11 @@ public class StaffManagementController extends HttpServlet {
             req.setAttribute("prod", product);
             req.setAttribute("listTechnicians", listTechnicians);
             req.setAttribute("recommendedTechnicianId", recommendedTechnicianId);
-            req.setAttribute("preferredScheduledStart", formatDateTimeLocal(preferredStart));
-            req.setAttribute("preferredScheduledEnd", formatDateTimeLocal(preferredEnd));
+            req.setAttribute("selectedTechnicianId", selectedTechnicianId);
+            req.setAttribute("preferredScheduledStart", formatDateTimeLocal(selectedStart));
+            req.setAttribute("preferredScheduledEnd", formatDateTimeLocal(selectedEnd));
+            req.setAttribute("alternativeTechnicians", alternativeTechnicians);
+            req.setAttribute("alternativeTimeSuggestions", alternativeTimeSuggestions);
             req.getRequestDispatcher("/views/staff/incident-work-order.jsp").forward(req, resp);
         } catch (Exception e) {
             e.printStackTrace();
@@ -789,6 +830,86 @@ public class StaffManagementController extends HttpServlet {
             return Timestamp.valueOf(rawValue.trim().replace("T", " ") + ":00");
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    private Integer parseInteger(String rawValue) {
+        try {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
+                return null;
+            }
+            return Integer.parseInt(rawValue.trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private List<TimeSuggestionView> buildAlternativeTimeSuggestions(int technicianId,
+                                                                     Timestamp selectedStart,
+                                                                     Timestamp selectedEnd,
+                                                                     int estimatedDurationMinutes) {
+        int durationMinutes = estimatedDurationMinutes > 0 ? estimatedDurationMinutes : 120;
+        List<TimeSuggestionView> suggestions = new ArrayList<>();
+        Timestamp windowStart = selectedStart;
+        Timestamp windowEnd = new Timestamp(selectedStart.getTime() + 3L * 24 * 60 * 60 * 1000);
+        List<MaintenanceAssignmentDAO.TechnicianScheduleItem> schedules =
+                maintenanceAssignmentDAO.findSchedulesForTechnician(technicianId, windowStart, windowEnd);
+
+        Timestamp candidateStart = selectedEnd;
+        if (candidateStart.before(selectedStart)) {
+            candidateStart = selectedStart;
+        }
+
+        for (MaintenanceAssignmentDAO.TechnicianScheduleItem schedule : schedules) {
+            if (suggestions.size() >= 3) {
+                break;
+            }
+            Timestamp scheduleStart = schedule.getScheduledStart();
+            if (scheduleStart != null && isSlotAvailable(technicianId, candidateStart, durationMinutes)) {
+                suggestions.add(createSuggestion(candidateStart, durationMinutes));
+            }
+            if (schedule.getScheduledEnd() != null && candidateStart.before(schedule.getScheduledEnd())) {
+                candidateStart = schedule.getScheduledEnd();
+            }
+        }
+
+        while (suggestions.size() < 3) {
+            if (isSlotAvailable(technicianId, candidateStart, durationMinutes)) {
+                suggestions.add(createSuggestion(candidateStart, durationMinutes));
+            }
+            candidateStart = new Timestamp(candidateStart.getTime() + 60L * 60 * 1000);
+            if (candidateStart.after(windowEnd)) {
+                break;
+            }
+        }
+        return suggestions;
+    }
+
+    private boolean isSlotAvailable(int technicianId, Timestamp candidateStart, int durationMinutes) {
+        Timestamp candidateEnd = new Timestamp(candidateStart.getTime() + durationMinutes * 60L * 1000L);
+        return !maintenanceAssignmentDAO.hasScheduleConflict(technicianId, candidateStart, candidateEnd);
+    }
+
+    private TimeSuggestionView createSuggestion(Timestamp candidateStart, int durationMinutes) {
+        Timestamp candidateEnd = new Timestamp(candidateStart.getTime() + durationMinutes * 60L * 1000L);
+        return new TimeSuggestionView(formatDateTimeLocal(candidateStart), formatDateTimeLocal(candidateEnd));
+    }
+
+    public static class TimeSuggestionView {
+        private final String start;
+        private final String end;
+
+        public TimeSuggestionView(String start, String end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        public String getStart() {
+            return start;
+        }
+
+        public String getEnd() {
+            return end;
         }
     }
 

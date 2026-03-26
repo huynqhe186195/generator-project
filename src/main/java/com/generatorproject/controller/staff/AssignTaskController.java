@@ -90,7 +90,11 @@ public class AssignTaskController extends HttpServlet {
             }
 
             if (maintenanceAssignmentDAO.hasScheduleConflict(technicianId, scheduledStart, scheduledEnd)) {
-                resp.sendRedirect(req.getContextPath() + "/staff/incident/work-order?id=" + requestId + "&error=conflict_schedule");
+                resp.sendRedirect(req.getContextPath() + "/staff/incident/work-order?id=" + requestId
+                        + "&error=conflict_schedule"
+                        + "&technicianId=" + technicianId
+                        + "&scheduledStart=" + scheduledStartRaw
+                        + "&scheduledEnd=" + scheduledEndRaw);
                 return;
             }
 
