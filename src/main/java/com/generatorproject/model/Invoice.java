@@ -31,7 +31,7 @@ public class Invoice {
     private String customerName;
     private String customerEmail;
     private String createdByName; // Tên nhân viên tạo
-
+    private Double laborCost;
     // 1. Constructor rỗng (Cần thiết cho RowMapper/Libraries)
     public Invoice() {}
 
@@ -53,7 +53,7 @@ public class Invoice {
         this.issuedDate = builder.issuedDate;
         this.dueDate = builder.dueDate;
         this.paidAt = builder.paidAt;
-
+        this.laborCost = builder.laborCost;
         // Các trường phụ
         this.customerName = builder.customerName;
         this.customerEmail = builder.customerEmail;
@@ -102,6 +102,14 @@ public class Invoice {
     public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }
     public void setCreatedByName(String createdByName) { this.createdByName = createdByName; }
 
+    public Double getLaborCost() {
+        return laborCost;
+    }
+
+    public void setLaborCost(Double laborCost) {
+        this.laborCost = laborCost;
+    }
+
     // --- STATIC BUILDER CLASS ---
     public static class Builder {
         private Long id;
@@ -120,7 +128,7 @@ public class Invoice {
         private Timestamp issuedDate;
         private Timestamp dueDate;
         private Timestamp paidAt;
-
+        private Double laborCost;
         // Fields phụ
         private String customerName;
         private String customerEmail;
@@ -149,6 +157,9 @@ public class Invoice {
         public Builder setCustomerName(String customerName) { this.customerName = customerName; return this; }
         public Builder setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; return this; }
         public Builder setCreatedByName(String createdByName) { this.createdByName = createdByName; return this; }
+
+        public Builder setLaborCost(Double laborCost ) { this.laborCost = laborCost; return this; }
+
 
         public Invoice build() {
             return new Invoice(this);

@@ -83,4 +83,13 @@ public class InvoiceService implements IInvoiceService {
     public boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo) {
         return invoiceDAO.updatePaymentStatusByCode(invoiceCode,paymentStatus,paymentMethod,transactionNo);
     }
+    @Override
+    public Invoice getInvoiceByCode(String invoiceCode){
+        return invoiceDAO.getInvoiceByCode(invoiceCode);
+    }
+    @Override
+    public List<Invoice> getInvoicesByCustomer(Long customerId, String keyword, String status, int page, int pageSize){
+        return invoiceDAO.findByCustomer(customerId,keyword,status,page,pageSize);
+    }
+
 }

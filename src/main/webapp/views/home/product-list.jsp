@@ -461,6 +461,9 @@
                         <a class="nav-link px-3" href="<c:url value='/product-list'/>">Hợp đồng</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link px-3" href="<c:url value='/invoice-list'/>">Hóa đơn</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link px-3" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách hàng</a>
                     </li>
                 </c:if>

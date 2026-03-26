@@ -298,25 +298,43 @@ public class StaffManagementController extends HttpServlet {
         try {
             Long requestId = Long.parseLong(reqIdParam);
 
-            // Gọi Service để lấy dữ liệu DTO đã được map tên vật tư
+            // Gọi Service để lấy dữ liệu
             SystemRequest sysReq = requestServices.findById(requestId);
             req.setAttribute("currentStatus", sysReq != null ? sysReq.getStatus() : "");
             RepairRequestDTO dto = repairWorkflowService.getRepairRequestDetails(requestId);
 
             // ==========================================
-            // BỔ SUNG: LẤY TÊN KỸ THUẬT VIÊN TỪ DB
+            // 1. BỔ SUNG: LẤY CHI PHÍ NHÂN CÔNG (LABOR COST) TỪ JSON
+            // ==========================================
+            double laborCost = 0.0;
+            if (sysReq != null && sysReq.getRequestData() != null) {
+                try {
+                    // Parse chuỗi JSON từ cột request_data
+                    com.google.gson.JsonObject jsonObject = com.google.gson.JsonParser.parseString(sysReq.getRequestData()).getAsJsonObject();
+
+                    // Kiểm tra xem key "laborCost" có tồn tại không để tránh lỗi Null
+                    if (jsonObject.has("laborCost") && !jsonObject.get("laborCost").isJsonNull()) {
+                        laborCost = jsonObject.get("laborCost").getAsDouble();
+                    }
+                } catch (Exception e) {
+                    System.out.println("Lỗi parse laborCost từ JSON: " + e.getMessage());
+                }
+            }
+            // Đẩy biến laborCost sang JSP
+            req.setAttribute("laborCost", laborCost);
+            // ==========================================
+
+
+            // ==========================================
+            // 2. BỔ SUNG: LẤY TÊN KỸ THUẬT VIÊN TỪ DB
             // ==========================================
             String technicianName = "Không xác định";
             if (dto != null && dto.getTechnicianId() != null) {
-                // Khởi tạo DAO (Đổi tên UserDAO cho khớp với class thực tế của bạn nếu cần)
-
                 Users technician = userServices.findUserById(dto.getTechnicianId());
-
                 if (technician != null && technician.getFullName() != null) {
                     technicianName = technician.getFullName();
                 }
             }
-            // Đẩy biến tên KTV sang JSP độc lập với DTO
             req.setAttribute("technicianName", technicianName);
             // ==========================================
 
@@ -326,6 +344,7 @@ public class StaffManagementController extends HttpServlet {
             // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit
             // (Approve)
             req.setAttribute("rawJsonData", new Gson().toJson(dto));
+
 
             // Chuyển hướng sang trang chi tiết
             req.getRequestDispatcher("/views/staff/view-repair-request.jsp").forward(req, resp);
