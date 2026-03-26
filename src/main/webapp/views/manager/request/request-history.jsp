@@ -92,6 +92,39 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+        .request-detail-wrap.is-animated {
+            animation: detailFadeIn .28s ease-out both;
+        }
+        @keyframes detailFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tech-assign-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .tech-assign-select {
+            min-width: 240px;
+            border: 1px solid #bcd1ff;
+            box-shadow: 0 2px 8px rgba(39, 92, 203, 0.08);
+            transition: all .2s ease;
+        }
+        .tech-assign-select:hover,
+        .tech-assign-select:focus {
+            border-color: #7aa8ff;
+            box-shadow: 0 0 0 .2rem rgba(43, 122, 255, 0.15);
+        }
+        .tech-assign-btn {
+            border-radius: 999px;
+            padding: 4px 14px;
+            transition: transform .15s ease, box-shadow .2s ease;
+        }
+        .tech-assign-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+        }
         pre.json-pretty{
             white-space: pre-wrap;
             word-break: break-word;
@@ -133,6 +166,9 @@
 
 <c:if test="${param.msg == 'success'}">
     <div class="alert alert-success">Thao tác thành công!</div>
+</c:if>
+<c:if test="${param.msg == 'technician_updated'}">
+    <div class="alert alert-success">Cập nhật kỹ thuật viên thành công!</div>
 </c:if>
 <c:if test="${param.msg == 'duplicate'}">
     <div class="alert alert-warning">Yêu cầu này đang chờ xử lý rồi!</div>
@@ -223,8 +259,6 @@
                         </td>
 
                         <td class="summary-cell">
-                            <div class="summary-text" id="summary-${r.id}"></div>
-
                             <code class="mini-json d-none" id="json-${r.id}">
                                 ${fn:escapeXml(r.requestData)}
                             </code>
@@ -235,7 +269,9 @@
                                         data-bs-toggle="modal"
                                         data-bs-target="#jsonDetailModal"
                                         data-reqid="${r.id}"
-                                        data-reqtype="${r.requestType}">
+                                        data-reqtype="${r.requestType}"
+                                        data-reqstatus="${r.status}"
+                                        data-box="${box}">
                                     <i class="fa fa-eye"></i> Xem chi tiết
                                 </button>
                             </div>
@@ -270,7 +306,7 @@
                             <td class="text-end">
                                 <c:choose>
                                     <c:when test="${r.status == 'PENDING' || r.status == 'WAITING_MANAGER'}">
-                                        <form class="d-inline"
+                                        <form class="d-inline-flex align-items-center gap-2"
                                               action="${pageContext.request.contextPath}/manager/requests"
                                               method="post">
                                             <input type="hidden" name="action" value="approve"/>
@@ -538,6 +574,11 @@
 
 <script id="technicianDisplayMapData" type="application/json"><c:out value="${technicianDisplayJson}" escapeXml="false"/></script>
 <script id="productDisplayMapData" type="application/json"><c:out value="${productDisplayJson}" escapeXml="false"/></script>
+<div id="technicianOptionsTemplate" class="d-none">
+    <c:forEach items="${listTechnicians}" var="tech">
+        <option value="${tech.id}">${fn:escapeXml(tech.fullName)} - ${fn:escapeXml(tech.email)}</option>
+    </c:forEach>
+</div>
 
 <script>
 (function () {
@@ -560,6 +601,17 @@
     function valueOrDash(value) {
         if (value === null || value === undefined || value === "") return "-";
         return value;
+    }
+
+    function normalizeTechnicianIdValue(rawValue) {
+        if (rawValue === null || rawValue === undefined || rawValue === "") {
+            return "";
+        }
+        const numeric = Number(rawValue);
+        if (Number.isFinite(numeric)) {
+            return String(Math.trunc(numeric));
+        }
+        return String(rawValue).trim();
     }
 
     function resolveTechnicianDisplay(technicianId) {
@@ -603,7 +655,7 @@
         ]);
 
         if (reqType === "INCIDENT_REPORT") {
-            return '<div class="request-detail-wrap">'
+            return '<div class="request-detail-wrap is-animated">'
                 + '<div class="request-detail-head">'
                 + '<span class="badge bg-warning text-dark">Sự cố / Incident</span>'
                 + '<span class="text-muted small">Chi tiết sự cố đã gửi từ manager</span>'
@@ -632,7 +684,7 @@
         }
 
         if (reqType === "CREATE_USER") {
-            return '<div class="request-detail-wrap">'
+            return '<div class="request-detail-wrap is-animated">'
                 + '<div class="request-detail-head">'
                 + '<span class="badge bg-info text-dark">Tạo tài khoản</span>'
                 + '</div>'
@@ -649,7 +701,7 @@
         }
 
         if (reqType === "NEW_PRODUCT" || reqType === "NEW_USER") {
-            return '<div class="request-detail-wrap">'
+            return '<div class="request-detail-wrap is-animated">'
                 + '<div class="request-detail-head">'
                 + '<span class="badge bg-primary">Import từ Excel</span>'
                 + '</div>'
@@ -667,7 +719,7 @@
             return { label: k, value: typeof obj[k] === "object" ? JSON.stringify(obj[k]) : obj[k] };
         });
 
-        return '<div class="request-detail-wrap">'
+        return '<div class="request-detail-wrap is-animated">'
             + '<div class="request-detail-head">'
             + '<span class="badge bg-secondary">REQUEST</span>'
             + '</div>'
@@ -678,48 +730,37 @@
             + '</div>';
     }
 
-    function buildSummary(reqType, obj, raw) {
-        if (!obj) return raw;
-
-        if (reqType === "CREATE_USER") {
-            const fullName = obj.fullName || "-";
-            const email = obj.email || "-";
-            const phone = obj.phone || obj.phoneNumber || "-";
-            return "Tạo user: " + fullName + " | " + email + " | " + phone;
+    function buildTechnicianField(obj, requestId, reqStatus, box) {
+        const normalizedStatus = (reqStatus || "").toUpperCase();
+        const isEditable = (box || "").toLowerCase() === "inbox"
+            && (normalizedStatus === "PENDING" || normalizedStatus === "WAITING_MANAGER");
+        if (!isEditable) {
+            return renderField("Kỹ thuật viên", resolveTechnicianDisplay(obj.technicianId));
         }
 
-        if (reqType === "INCIDENT_REPORT") {
-            const title = obj.title || "(không có tiêu đề)";
-            const priority = obj.priority || "-";
-            const issueType = obj.issueType || "-";
-            const productId = obj.productId || "-";
-            return "Sự cố: " + title + " | Priority: " + priority + " | Type: " + issueType + " | ProductID: " + productId;
-        }
+        const optionsTemplate = document.getElementById("technicianOptionsTemplate");
+        const optionsHtml = optionsTemplate ? optionsTemplate.innerHTML : '';
+        const selectedTechnician = normalizeTechnicianIdValue(obj.technicianId);
+        const suggestedLabel = selectedTechnician
+            ? '-- Chọn kỹ thuật viên đã gợi ý (' + resolveTechnicianDisplay(selectedTechnician) + ') --'
+            : '-- Chọn kỹ thuật viên đã gợi ý --';
+        const suggestedOption = '<option value="' + escapeHtml(selectedTechnician) + '">' + escapeHtml(suggestedLabel) + '</option>';
 
-        if (reqType === "NEW_PRODUCT") {
-            const excelFileName = obj.excelFileName || "(không có tên file)";
-            return "Tạo product từ file Excel: " + excelFileName;
-        }
-
-        if (reqType === "NEW_USER") {
-            const excelFileName = obj.excelFileName || "(không có tên file)";
-            return "Import users từ file Excel: " + excelFileName;
-        }
-
-        const keys = Object.keys(obj);
-        return "Dữ liệu: " + keys.slice(0, 6).join(", ") + (keys.length > 6 ? "..." : "");
+        return ''
+            + '<div class="detail-item">'
+            + '  <div class="detail-label">Kỹ thuật viên</div>'
+            + '  <form method="post" action="${pageContext.request.contextPath}/manager/requests" class="tech-assign-form">'
+            + '    <input type="hidden" name="action" value="assign_technician" />'
+            + '    <input type="hidden" name="id" value="' + escapeHtml(requestId) + '" />'
+            + '    <select class="form-select form-select-sm tech-assign-select" name="technicianId">'
+            +        suggestedOption
+            +        optionsHtml
+            + '    </select>'
+            + '    <button type="submit" class="btn btn-sm btn-outline-primary tech-assign-btn">Lưu</button>'
+            + '  </form>'
+            + '  <div class="small text-muted mt-1">Đã chọn: ' + escapeHtml(resolveTechnicianDisplay(selectedTechnician)) + '</div>'
+            + '</div>';
     }
-
-    document.querySelectorAll("code[id^='json-']").forEach(codeEl => {
-        const id = codeEl.id.replace("json-", "");
-        const raw = (codeEl.textContent || "").trim();
-        const summaryEl = document.getElementById("summary-" + id);
-        const btn = document.querySelector("button[data-reqid='" + id + "']");
-        const reqType = btn ? (btn.getAttribute("data-reqtype") || "") : "";
-        const obj = safeParseJson(raw);
-        const summary = buildSummary(reqType, obj, raw);
-        if (summaryEl) summaryEl.textContent = summary;
-    });
 
     const detailModal = document.getElementById("jsonDetailModal");
     if (detailModal) {
@@ -731,12 +772,58 @@
             const obj = safeParseJson(raw);
             const detailContentEl = document.getElementById("detailContent");
             const detailJsonEl = document.getElementById("detailJson");
+            const status = button.getAttribute("data-reqstatus") || "";
+            const box = button.getAttribute("data-box") || "";
 
             document.getElementById("detailId").textContent = id;
             document.getElementById("detailTypeBadge").textContent = type || "REQUEST";
 
             if (obj) {
-                detailContentEl.innerHTML = renderStructuredDetail(type, obj, id);
+                if (type === "INCIDENT_REPORT") {
+                    const common = renderSection("Thông tin chung", [
+                        { label: "Mã request", value: "#" + id },
+                        { label: "Loại yêu cầu", value: type || "REQUEST" }
+                    ]);
+                    const incidentSection = '<div class="mb-3">'
+                        + '<div class="detail-section-title">Nội dung sự cố</div>'
+                        + '<div class="detail-grid">'
+                        + renderField("Tiêu đề", obj.title)
+                        + renderField("Loại sự cố", obj.issueType || obj.maintenanceType)
+                        + renderField("Mức ưu tiên", obj.priority)
+                        + renderField("Ngày mong muốn", obj.preferredDate)
+                        + renderField("Sản phẩm", resolveProductDisplay(obj.productId))
+                        + buildTechnicianField(obj, id, status, box)
+                        + '</div>'
+                        + '</div>';
+
+                    detailContentEl.innerHTML = '<div class="request-detail-wrap is-animated">'
+                        + '<div class="request-detail-head">'
+                        + '<span class="badge bg-warning text-dark">Sự cố / Incident</span>'
+                        + '<span class="text-muted small">Chi tiết sự cố đã gửi từ manager</span>'
+                        + '</div>'
+                        + '<div class="request-detail-body">'
+                        + common
+                        + incidentSection
+                        + renderSection("Người báo cáo", [
+                            { label: "Họ tên", value: obj.reporterName },
+                            { label: "Số điện thoại", value: obj.reporterPhone },
+                            { label: "Email", value: obj.reporterEmail }
+                        ])
+                        + '<div class="detail-section-title">Mô tả chi tiết</div>'
+                        + '<div class="detail-note">' + escapeHtml(valueOrDash(obj.description)) + '</div>'
+                        + '<div class="detail-section-title mt-3">Ghi chú nội bộ</div>'
+                        + '<div class="detail-note">' + escapeHtml(valueOrDash(obj.staffNote)) + '</div>'
+                        + '</div>'
+                        + '</div>';
+
+                    const selectEl = detailContentEl.querySelector('select[name="technicianId"]');
+                    const normalizedTechnicianId = normalizeTechnicianIdValue(obj.technicianId);
+                    if (selectEl && normalizedTechnicianId) {
+                        selectEl.value = normalizedTechnicianId;
+                    }
+                } else {
+                    detailContentEl.innerHTML = renderStructuredDetail(type, obj, id);
+                }
                 detailJsonEl.classList.add("d-none");
             } else {
                 detailContentEl.innerHTML = "";
