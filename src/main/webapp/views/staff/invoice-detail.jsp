@@ -169,16 +169,10 @@
                                     </tr>
                                 </c:forEach>
 
-                                <%-- Phí nhân công (Nếu có) --%>
-                                <c:if test="${laborCost > 0}">
-                                    <tr style="background-color: #f8fafc;">
-                                        <td class="text-center fw-bold text-muted">*</td>
-                                        <td><div class="fw-bold text-dark">Phí nhân công sửa chữa / bảo trì</div></td>
-                                        <td class="text-center"><span class="badge border border-secondary text-dark px-2">1</span></td>
-                                        <td class="text-end"><fmt:formatNumber value="${laborCost}" pattern="#,###"/></td>
-                                        <td class="text-end fw-bold text-primary"><fmt:formatNumber value="${laborCost}" pattern="#,###"/></td>
-                                    </tr>
-                                </c:if>
+
+
+
+
                             </c:when>
                             <c:otherwise>
                                 <tr>
@@ -212,11 +206,13 @@
                             <c:if test="${not empty quoteDetails}">
                                 <tr>
                                     <td class="text-muted">Tổng tiền vật tư:</td>
-                                    <td class="fw-bold"><fmt:formatNumber value="${partsTotal}" pattern="#,###"/> đ</td>
+                                        <%-- Thêm invoice. nếu biến partsTotal nằm trong object invoice --%>
+                                    <td class="fw-bold"><fmt:formatNumber value="${invoice.subtotal-invoice.laborCost}" pattern="#,##0"/> đ</td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted border-bottom pb-3">Phí nhân công:</td>
-                                    <td class="fw-bold border-bottom pb-3"><fmt:formatNumber value="${laborCost}" pattern="#,###"/> đ</td>
+                                        <%-- Thêm invoice.laborCost cho đồng bộ với bảng ở trên --%>
+                                    <td class="fw-bold border-bottom pb-3"><fmt:formatNumber value="${empty invoice.laborCost ? 0 : invoice.laborCost}" pattern="#,##0"/> đ</td>
                                 </tr>
                             </c:if>
                             <tr>

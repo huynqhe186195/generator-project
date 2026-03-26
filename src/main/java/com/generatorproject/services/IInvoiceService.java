@@ -24,4 +24,6 @@ public interface IInvoiceService {
     int countInvoices(String keyword, String status);
     boolean updateTaxRate(Long invoiceId, double newTaxRate);
     boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo);
+    Invoice getInvoiceByCode(String invoiceCode);
+    List<Invoice> getInvoicesByCustomer(Long customerId, String keyword, String status, int page, int pageSize);
 }

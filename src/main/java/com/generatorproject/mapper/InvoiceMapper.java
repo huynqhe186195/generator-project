@@ -21,7 +21,8 @@ public class InvoiceMapper implements RowMapper<Invoice> {
                     .setTaxAmount(rs.getDouble("tax_amount"))
                     .setTotalAmount(rs.getDouble("total_amount"))
                     .setPaymentStatus(rs.getString("payment_status"))
-                    .setIssuedDate(rs.getTimestamp("issued_date"));
+                    .setIssuedDate(rs.getTimestamp("issued_date"))
+                    .setLaborCost(rs.getDouble("labor_cost"));
 
             // 2. Map các trường có thể NULL (Dùng rs.getObject để an toàn)
             if (rs.getObject("quote_id") != null) {

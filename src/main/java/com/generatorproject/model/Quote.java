@@ -11,13 +11,14 @@ public class Quote {
     private Timestamp createdAt;
     private Timestamp approvedAt;
     private Integer maintenanceId;
+    private double laborCost;
 
     // 1. Constructor rỗng (Bắt buộc phải có để Mapper hoạt động)
     public Quote() {
     }
 
     // 2. Constructor đầy đủ tham số (Tùy chọn, dùng khi cần khởi tạo nhanh)
-    public Quote(Long id, Long customerId, Integer createdBy, Double totalAmount, String status, Timestamp createdAt, Timestamp approvedAt, Integer maintenanceId) {
+    public Quote(Long id, Long customerId, Integer createdBy, Double totalAmount, String status, Timestamp createdAt, Timestamp approvedAt, Integer maintenanceId,double laborCost) {
         this.id = id;
         this.customerId = customerId;
         this.createdBy = createdBy;
@@ -26,6 +27,7 @@ public class Quote {
         this.createdAt = createdAt;
         this.approvedAt = approvedAt;
         this.maintenanceId = maintenanceId;
+        this.laborCost = laborCost;
     }
 
     // 3. Các hàm Getter và Setter
@@ -91,6 +93,14 @@ public class Quote {
 
     public void setMaintenanceId(Integer maintenanceId) {
         this.maintenanceId = maintenanceId;
+    }
+
+    public double getLaborCost() {
+        return laborCost;
+    }
+
+    public void setLaborCost(double laborCost) {
+        this.laborCost = laborCost;
     }
 
     // Hàm toString() để in ra console dễ debug (tùy chọn)

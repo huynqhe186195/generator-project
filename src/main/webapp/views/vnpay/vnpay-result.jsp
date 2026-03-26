@@ -10,16 +10,28 @@
 
 <div class="card shadow-lg border-0 rounded-4 p-5 text-center" style="max-width: 500px;">
     <c:choose>
+        <%-- 1. TRƯỜNG HỢP ĐÃ THANH TOÁN TRƯỚC ĐÓ (Check nội dung message) --%>
+        <c:when test="${status == 'paid'}">
+            <i class="fas fa-info-circle text-info mb-4" style="font-size: 80px;"></i>
+            <h3 class="fw-bold text-dark mb-3">Giao dịch cũ</h3>
+            <p class="text-muted mb-4">Hóa đơn này đã được xác nhận thanh toán thành công từ trước.</p>
+            <div class="bg-info bg-opacity-10 text-info rounded-3 p-3 mb-4 small fw-bold">
+                Hệ thống không ghi nhận lại giao dịch trùng lặp.
+            </div>
+        </c:when>
+
+        <%-- 2. TRƯỜNG HỢP MỚI THANH TOÁN THÀNH CÔNG --%>
         <c:when test="${status == 'success'}">
             <i class="fas fa-check-circle text-success mb-4" style="font-size: 80px;"></i>
             <h3 class="fw-bold text-dark mb-3">Thanh toán thành công!</h3>
             <p class="text-muted mb-4">${message}</p>
             <div class="bg-light rounded-3 p-3 mb-4 text-start small">
                 <div class="mb-2"><strong>Mã giao dịch VNPay:</strong> ${transactionNo}</div>
-                <div><strong>Thời gian:</strong> <%= new java.util.Date() %></div>
+                <div><strong>Thời gian xác nhận:</strong> <%= new java.util.Date() %></div>
             </div>
         </c:when>
 
+        <%-- 3. CÁC TRƯỜNG HỢP THẤT BẠI/LỖI --%>
         <c:otherwise>
             <i class="fas fa-times-circle text-danger mb-4" style="font-size: 80px;"></i>
             <h3 class="fw-bold text-dark mb-3">Giao dịch thất bại</h3>
@@ -27,9 +39,12 @@
         </c:otherwise>
     </c:choose>
 
-    <a href="<c:url value='/'/>" class="btn btn-primary rounded-pill px-4 py-2 fw-bold w-100">
-        Trở về trang chủ
-    </a>
+    <div class="d-grid gap-2">
+
+        <a href="<c:url value='/'/>" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold">
+            Trở về trang chủ
+        </a>
+    </div>
 </div>
 
 </body>
