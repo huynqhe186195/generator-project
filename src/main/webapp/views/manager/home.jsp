@@ -105,7 +105,7 @@
                 </a>
             </div>
             <div class="col-md-2">
-                <a class="card p-3 shadow-sm h-100" href="${pageContext.request.contextPath}/manager/reports/preventive-maintenance">
+                <a class="card p-3 shadow-sm h-100" href="${pageContext.request.contextPath}/manager/reports/maintenance-periodic">
                     <div class="fw-bold">C. PM</div>
                     <div class="text-muted small">Bảo trì định kỳ</div>
                 </a>
