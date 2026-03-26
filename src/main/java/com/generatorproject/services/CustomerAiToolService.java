@@ -1,15 +1,18 @@
 package com.generatorproject.services;
 
 import com.generatorproject.dao.BrandDAO;
+import com.generatorproject.dao.NewsDAO;
 import com.generatorproject.dao.ProductDAO;
 import com.generatorproject.dao.ProductModelDAO;
 import com.generatorproject.model.Brand;
+import com.generatorproject.model.News;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.ProductModel;
 import com.generatorproject.model.ai.DeviceSearchResultDto;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -17,23 +20,27 @@ import java.util.regex.Pattern;
 public class CustomerAiToolService {
     public static final String DEVICE_TYPE_OWNED = "OWNED";
     public static final String DEVICE_TYPE_PUBLIC = "PUBLIC";
+    public static final String DEVICE_TYPE_NEWS = "NEWS";
     private static final int DEFAULT_SEARCH_LIMIT = 12;
     private static final int LIST_ALL_LIMIT = 50;
     private static final int PUBLIC_LIST_ALL_LIMIT = 24;
+    private static final int NEWS_LIST_ALL_LIMIT = 12;
     private static final Pattern MULTIPLE_SPACES = Pattern.compile("\\s+");
 
     private final ProductDAO productDAO;
     private final ProductModelDAO productModelDAO;
     private final BrandDAO brandDAO;
+    private final NewsDAO newsDAO;
 
     public CustomerAiToolService() {
-        this(new ProductDAO(), new ProductModelDAO(), new BrandDAO());
+        this(new ProductDAO(), new ProductModelDAO(), new BrandDAO(), new NewsDAO());
     }
 
-    public CustomerAiToolService(ProductDAO productDAO, ProductModelDAO productModelDAO, BrandDAO brandDAO) {
+    public CustomerAiToolService(ProductDAO productDAO, ProductModelDAO productModelDAO, BrandDAO brandDAO, NewsDAO newsDAO) {
         this.productDAO = productDAO;
         this.productModelDAO = productModelDAO;
         this.brandDAO = brandDAO;
+        this.newsDAO = newsDAO;
     }
 
     public List<DeviceSearchResultDto> searchOwnedDevices(long customerId, String keyword, String contextPath) {
@@ -117,6 +124,28 @@ public class CustomerAiToolService {
         return results;
     }
 
+    public List<DeviceSearchResultDto> searchNews(String keyword, String contextPath) {
+        String normalizedKeyword = normalizeKeyword(keyword);
+        String searchableKeyword = stripNoise(normalizedKeyword);
+        int limit = (isListAllIntent(normalizedKeyword) && searchableKeyword == null) ? NEWS_LIST_ALL_LIMIT : DEFAULT_SEARCH_LIMIT;
+        List<News> newsList = newsDAO.searchPublishedForChatbot(searchableKeyword, limit);
+        List<DeviceSearchResultDto> results = new ArrayList<DeviceSearchResultDto>();
+        for (News news : newsList) {
+            DeviceSearchResultDto dto = new DeviceSearchResultDto();
+            dto.setModelId(news.getId());
+            dto.setModelName(news.getTitle());
+            dto.setBrandName(news.getCategory());
+            dto.setCurrentLocation(news.getAuthor());
+            dto.setStatus(formatNewsDate(news.getPublishedAt(), news.getCreatedAt()));
+            dto.setDetailUrl(buildNewsDetailUrl(contextPath, news.getId()));
+            dto.setDeviceType(DEVICE_TYPE_NEWS);
+            dto.setDeviceTypeLabel("Tin tức");
+            dto.setDescription(news.getSummary());
+            results.add(dto);
+        }
+        return results;
+    }
+
     private String normalizeKeyword(String keyword) {
         String normalizedKeyword = keyword == null ? "" : keyword.trim();
         return normalizedKeyword.isEmpty() ? null : normalizedKeyword;
@@ -146,6 +175,7 @@ public class CustomerAiToolService {
                 "tất cả", "toàn bộ", "danh sách", "liệt kê", "bao nhiêu",
                 "thiết bị", "device", "máy", "model", "public", "tài liệu",
                 "manual", "catalog", "catalogue", "thông số", "spec",
+                "tin tức", "bài viết", "news",
                 "của tôi", "máy của tôi", "thiết bị của tôi", "đang sở hữu",
                 "sở hữu", "đang dùng", "cho tôi", "giúp tôi", "hãy", "vui lòng",
                 "ở", "tại", "trong", "khu vực", "vị trí", "location", "nơi"
@@ -181,5 +211,18 @@ public class CustomerAiToolService {
             return safeContextPath + "/products";
         }
         return safeContextPath + "/products/detail?id=" + modelId;
+    }
+
+    private String buildNewsDetailUrl(String contextPath, Long newsId) {
+        String safeContextPath = contextPath == null ? "" : contextPath;
+        if (newsId == null) {
+            return safeContextPath + "/news";
+        }
+        return safeContextPath + "/news/detail?id=" + newsId;
+    }
+
+    private String formatNewsDate(Date publishedAt, Date createdAt) {
+        Date value = publishedAt == null ? createdAt : publishedAt;
+        return value == null ? null : value.toString();
     }
 }

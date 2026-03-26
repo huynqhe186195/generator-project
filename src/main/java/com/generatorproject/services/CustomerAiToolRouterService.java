@@ -94,7 +94,7 @@ public class CustomerAiToolRouterService {
         }
 
         String tool = toolCall.getTool().trim();
-        if ("searchOwnedDevices".equals(tool) || "searchPublicDevices".equals(tool)) {
+        if ("searchOwnedDevices".equals(tool) || "searchPublicDevices".equals(tool) || "searchNews".equals(tool)) {
             String keyword = safe(toolCall.getArg("keyword"));
             if (keyword == null) {
                 return fallbackRoute(originalMessage);
@@ -118,6 +118,9 @@ public class CustomerAiToolRouterService {
         if (looksLikeOwnedDeviceSearch(normalized)) {
             return createSearchToolCall("searchOwnedDevices", message.trim());
         }
+        if (looksLikeNewsSearch(normalized)) {
+            return createSearchToolCall("searchNews", message.trim());
+        }
         if (looksLikePublicDeviceSearch(normalized)) {
             return createSearchToolCall("searchPublicDevices", message.trim());
         }
@@ -126,8 +129,11 @@ public class CustomerAiToolRouterService {
             if (normalized.contains("của tôi") || normalized.contains("đang sở hữu") || normalized.contains("đang dùng")) {
                 return createSearchToolCall("searchOwnedDevices", message.trim());
             }
+            if (normalized.contains("tin tức") || normalized.contains("bài viết") || normalized.contains("news")) {
+                return createSearchToolCall("searchNews", message.trim());
+            }
             return createSearchToolCall("searchPublicDevices", message.trim());
-        }return CustomerAiToolCall.none("Xin chào, tôi có thể giúp bạn tìm 2 loại device: máy sở hữu có serial hoặc tài liệu public theo model.");
+        }return CustomerAiToolCall.none("Xin chào, tôi có thể giúp bạn tìm máy sở hữu, tài liệu public theo model và cả tin tức mới trong hệ thống.");
     }
 
     private boolean looksLikeOwnedDeviceSearch(String normalized) {
@@ -171,6 +177,15 @@ public class CustomerAiToolRouterService {
                 || normalized.contains("xuất xứ");
     }
 
+    private boolean looksLikeNewsSearch(String normalized) {
+        return normalized.contains("tin tức")
+                || normalized.contains("bài viết")
+                || normalized.contains("bản tin")
+                || normalized.contains("tin mới")
+                || normalized.contains("news")
+                || normalized.contains("cập nhật");
+    }
+
     private CustomerAiToolCall createSearchToolCall(String tool, String keyword) {
         Map<String, String> args = new LinkedHashMap<String, String>();
         args.put("keyword", keyword);
@@ -191,20 +206,24 @@ public class CustomerAiToolRouterService {
     }
 
     private String buildSystemPrompt() {return "Bạn là AI assistant cho web app hỗ trợ khách hàng. "
-            + "Hệ thống có 2 loại device: "
+            + "Hệ thống có 2 loại device và module tin tức: "
             + "(1) device sở hữu của customer: có serial_number, thuộc danh sách máy của customer; "
             + "(2) device tài liệu public: là model public để xem thông số/tài liệu, không có serial_number. "
+            + "(3) tin tức: bài viết có tiêu đề/tóm tắt/tác giả/danh mục trên trang news. "
             + "Nhiệm vụ của bạn là chọn internal tool phù hợp. "
             + "Bạn phải chỉ trả về JSON. Không markdown. Không giải thích. "
             + "Allowed tools: "
             + "1. searchOwnedDevices args: keyword(string). "
             + "2. searchPublicDevices args: keyword(string). "
-            + "3. none args: reply(string). "
+            + "3. searchNews args: keyword(string). "
+            + "4. none args: reply(string). "
             + "Rules: nếu người dùng nhắc serial, máy của tôi, thiết bị của tôi, vị trí máy, trạng thái, bảo trì, sửa chữa, hợp đồng, danh sách máy hoặc tất cả máy thì chọn searchOwnedDevices; "
             + "nếu người dùng nhắc tài liệu, model public, manual, catalogue, thông số, sản phẩm mẫu, xuất xứ, nhiên liệu hoặc đặc tả kỹ thuật thì chọn searchPublicDevices; "
+            + "nếu người dùng nhắc tin tức, bài viết, cập nhật mới, bản tin hoặc news thì chọn searchNews; "
             + "nếu chỉ chào hỏi hoặc chưa rõ thì chọn none; không tự tạo URL; không tự tạo ID; không nói về kỹ thuật nội bộ. "
             + "Output ví dụ 1: {\"tool\":\"searchOwnedDevices\",\"args\":{\"keyword\":\"serial abc123\"}} "
-            + "Output ví dụ 2: {\"tool\":\"searchPublicDevices\",\"args\":{\"keyword\":\"manual cummins c220\"}}";
+            + "Output ví dụ 2: {\"tool\":\"searchPublicDevices\",\"args\":{\"keyword\":\"manual cummins c220\"}} "
+            + "Output ví dụ 3: {\"tool\":\"searchNews\",\"args\":{\"keyword\":\"tin tức bảo trì máy phát\"}}";
     }
 
     private String resolveApiKey() {
