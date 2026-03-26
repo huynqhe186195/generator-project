@@ -1,10 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <title>Chi tiết Yêu cầu #${incident.id}</title>
 
 <div class="container-fluid py-4">
+    <c:set var="preferredTimeFrom" value="${incident.info.preferredTimeFrom}" />
+    <c:set var="preferredTimeTo" value="${incident.info.preferredTimeTo}" />
+    <c:set var="preferredTimeSlot" value="${not empty incident.info.preferredTimeSlot ? incident.info.preferredTimeSlot : incidentEntity.preferredTimeSlot}" />
+    <c:set var="urgencyLevel" value="${not empty incidentEntity ? incidentEntity.urgencyLevel : incident.info.urgencyLevel}" />
+
     <%-- Nút Quay lại --%>
     <div class="mb-3">
         <a href="<c:url value='/staff/incident-list'/>" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
@@ -64,23 +70,63 @@
                         </div>
                     </div>
 
-                    <%-- THÊM MỚI - Dòng 2: Ngày mong muốn sửa chữa --%>
-                    <div class="row mb-4 border-start border-3 border-success ps-3 ms-1 bg-light py-2 rounded-end">
-                        <div class="col-12">
-                            <label class="text-muted small fw-bold text-uppercase mb-1">Ngày mong muốn sửa chữa</label>
-                            <div class="fs-6 text-dark fw-bold">
-                                <i class="fas fa-calendar-check me-2 text-success"></i>
+                    <%-- THÊM MỚI - Dòng 2: Ngày/giờ mong muốn + mức độ nghiêm trọng --%>
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-7">
+                            <div class="border-start border-3 border-success ps-3 ms-1 bg-light py-3 rounded-end h-100">
+                                <label class="text-muted small fw-bold text-uppercase mb-2 d-block">Ngày mong muốn sửa chữa</label>
+                                <div class="fs-6 text-dark fw-bold mb-2">
+                                    <i class="fas fa-calendar-check me-2 text-success"></i>
+                                    <c:choose>
+                                        <c:when test="${not empty incident.info.preferredDate}">
+                                            <fmt:parseDate value="${incident.info.preferredDate}" pattern="yyyy-MM-dd" var="parsedDate" />
+                                            <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="fst-italic text-muted fw-normal">Sắp xếp càng sớm càng tốt</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div class="small text-dark mb-1">
+                                    <i class="far fa-clock me-2 text-primary"></i>
+                                    <strong>Khung giờ:</strong>
+                                    <c:choose>
+                                        <c:when test="${not empty preferredTimeFrom and not empty preferredTimeTo}">
+                                            ${fn:substring(preferredTimeFrom, 0, 5)} - ${fn:substring(preferredTimeTo, 0, 5)}
+                                        </c:when>
+                                        <c:otherwise>Linh động</c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <div class="small text-dark">
+                                    <i class="fas fa-sun me-2 text-warning"></i>
+                                    <strong>Buổi ưu tiên:</strong>
+                                    <c:choose>
+                                        <c:when test="${preferredTimeSlot == 'MORNING'}">Buổi sáng</c:when>
+                                        <c:when test="${preferredTimeSlot == 'AFTERNOON'}">Buổi chiều</c:when>
+                                        <c:when test="${preferredTimeSlot == 'ANYTIME' || empty preferredTimeSlot}">Linh động cả ngày</c:when>
+                                        <c:otherwise>${preferredTimeSlot}</c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="bg-light border rounded p-3 h-100">
+                                <label class="text-muted small fw-bold text-uppercase mb-2 d-block">Mức độ nghiêm trọng</label>
                                 <c:choose>
-
-                                    <c:when test="${not empty incident.info.preferredDate}">
-                                        <%-- Bước 1: Chuyển chuỗi yyyy-MM-dd thành kiểu Date và lưu vào biến 'parsedDate' --%>
-                                        <fmt:parseDate value="${incident.info.preferredDate}" pattern="yyyy-MM-dd" var="parsedDate" />
-
-                                        <%-- Bước 2: Dùng format để hiển thị parsedDate ra dạng dd/MM/yyyy --%>
-                                        <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy" />
+                                    <c:when test="${urgencyLevel == 'CRITICAL'}">
+                                        <span class="badge bg-danger fs-6 px-3 py-2">Khẩn cấp</span>
+                                    </c:when>
+                                    <c:when test="${urgencyLevel == 'HIGH'}">
+                                        <span class="badge bg-warning text-dark fs-6 px-3 py-2">Cao</span>
+                                    </c:when>
+                                    <c:when test="${urgencyLevel == 'MEDIUM'}">
+                                        <span class="badge bg-info text-dark fs-6 px-3 py-2">Trung bình</span>
+                                    </c:when>
+                                    <c:when test="${urgencyLevel == 'LOW'}">
+                                        <span class="badge bg-secondary fs-6 px-3 py-2">Thấp</span>
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="fst-italic text-muted fw-normal">Sắp xếp càng sớm càng tốt</span>
+                                        <span class="badge bg-secondary fs-6 px-3 py-2">${not empty urgencyLevel ? urgencyLevel : 'Chưa cập nhật'}</span>
                                     </c:otherwise>
                                 </c:choose>
                             </div>

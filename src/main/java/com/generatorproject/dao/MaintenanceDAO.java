@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -360,7 +361,7 @@ public class MaintenanceDAO extends DbContext {
         m.setProductId(rs.getInt("product_id"));
         m.setTechnicianId(rs.getInt("technician_id"));
 
-        m.setIncidentId((Integer) rs.getObject("incident_id"));
+        m.setIncidentId(getNullableInteger(rs, "incident_id"));
         m.setMaintenanceDate(rs.getDate("maintenance_date"));
         m.setType(rs.getString("type"));
         m.setDescription(rs.getString("description"));
@@ -368,10 +369,15 @@ public class MaintenanceDAO extends DbContext {
         m.setStatus(rs.getString("status"));
         m.setLaborCost(rs.getDouble("labor_cost"));
         m.setCreatedAt(rs.getTimestamp("created_at"));
-        m.setCreatedBy((Integer) rs.getObject("created_by"));
+        m.setCreatedBy(getNullableInteger(rs, "created_by"));
+        m.setIncidentPlanId(getNullableInteger(rs, "incident_plan_id"));
+        m.setScheduledStart(rs.getTimestamp("scheduled_start"));
+        m.setScheduledEnd(rs.getTimestamp("scheduled_end"));
+        m.setScheduleStatus(rs.getString("schedule_status"));
+        m.setExecutionStatus(rs.getString("execution_status"));
         m.setActualDescription(rs.getString("actual_description"));
         m.setAssignmentStatus(rs.getString("assignment_status"));
-        m.setApprovedBy((Integer) rs.getObject("approved_by"));
+        m.setApprovedBy(getNullableInteger(rs, "approved_by"));
         m.setCompletedAt(rs.getTimestamp("completed_at"));
 
         try {
@@ -386,6 +392,17 @@ public class MaintenanceDAO extends DbContext {
 
 
         return m;
+    }
+
+    private Integer getNullableInteger(ResultSet rs, String columnName) throws SQLException {
+        Object rawValue = rs.getObject(columnName);
+        if (rawValue == null) {
+            return null;
+        }
+        if (rawValue instanceof Number) {
+            return ((Number) rawValue).intValue();
+        }
+        return Integer.valueOf(String.valueOf(rawValue));
     }
 
     public boolean insertMaintenance(Maintenance req) {
@@ -412,6 +429,51 @@ public class MaintenanceDAO extends DbContext {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public Integer insertScheduledMaintenance(Maintenance req) {
+        String sql = """
+                INSERT INTO maintenances
+                (product_id, technician_id, incident_id, incident_plan_id, maintenance_date,
+                 scheduled_start, scheduled_end, estimated_duration_minutes, type, description,
+                 status, schedule_status, execution_status, required_technician_count,
+                 requires_parts_preparation, location, created_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, req.getProductId());
+            ps.setInt(2, req.getTechnicianId());
+            if (req.getIncidentId() != null) ps.setInt(3, req.getIncidentId()); else ps.setNull(3, Types.INTEGER);
+            if (req.getIncidentPlanId() != null) ps.setInt(4, req.getIncidentPlanId()); else ps.setNull(4, Types.INTEGER);
+            ps.setDate(5, req.getMaintenanceDate());
+            ps.setTimestamp(6, req.getScheduledStart());
+            ps.setTimestamp(7, req.getScheduledEnd());
+            int durationMinutes = 120;
+            if (req.getScheduledStart() != null && req.getScheduledEnd() != null) {
+                long diffMs = req.getScheduledEnd().getTime() - req.getScheduledStart().getTime();
+                durationMinutes = (int) Math.max(30, diffMs / 60000);
+            }
+            ps.setInt(8, durationMinutes);
+            ps.setString(9, req.getType());
+            ps.setString(10, req.getDescription());
+            ps.setString(11, req.getScheduleStatus() == null ? "MANAGER_APPROVED" : req.getScheduleStatus());
+            ps.setString(12, req.getExecutionStatus() == null ? "PENDING" : req.getExecutionStatus());
+            ps.setInt(13, 1);
+            ps.setBoolean(14, false);
+            ps.setString(15, req.getProductSerialNumber());
+            if (req.getCreatedBy() != null) ps.setInt(16, req.getCreatedBy()); else ps.setNull(16, Types.INTEGER);
+
+            if (ps.executeUpdate() > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public List<Maintenance> getHistoryCompletedPaging(

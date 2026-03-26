@@ -9,6 +9,56 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IncidentDAO extends GenericDAO<Incident> {
+    public Long insertIncident(Incident incident) {
+        String sql = """
+                INSERT INTO incidents
+                (product_id, reported_by, title, description, priority, status, preferred_date,
+                 preferred_time_from, preferred_time_to, preferred_time_slot, is_flexible_time,
+                 urgency_level, customer_note, location_snapshot, preferred_duration_minutes,
+                 contract_id, input_serial_number)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+        return insert(sql,
+                incident.getProductId(),
+                incident.getReportedBy(),
+                incident.getTitle(),
+                incident.getDescription(),
+                incident.getPriority(),
+                incident.getStatus(),
+                incident.getPreferredDate(),
+                incident.getPreferredTimeFrom(),
+                incident.getPreferredTimeTo(),
+                incident.getPreferredTimeSlot(),
+                incident.isFlexibleTime(),
+                incident.getUrgencyLevel(),
+                incident.getCustomerNote(),
+                incident.getLocationSnapshot(),
+                incident.getPreferredDurationMinutes(),
+                incident.getContractId() == 0 ? null : incident.getContractId(),
+                incident.getInputSerialNumber());
+    }
+
+    public Incident findById(long id) {
+        String sql = """
+                SELECT i.*,
+                       p.serial_number AS product_name,
+                       u1.full_name AS reporter_name,
+                       u2.full_name AS technician_name
+                FROM incidents i
+                LEFT JOIN products p ON i.product_id = p.id
+                LEFT JOIN users u1 ON i.reported_by = u1.id
+                LEFT JOIN users u2 ON i.technician_id = u2.id
+                WHERE i.id = ?
+                """;
+        List<Incident> results = query(sql, new IncidentMapper(), id);
+        return results == null || results.isEmpty() ? null : results.get(0);
+    }
+
+    public void updateStatus(long id, String status) {
+        String sql = "UPDATE incidents SET status = ? WHERE id = ?";
+        update(sql, status, id);
+    }
+
     public List<Incident> getAllIncident(){
         String sql = "select * from incidents";
         return query(sql, new IncidentMapper());

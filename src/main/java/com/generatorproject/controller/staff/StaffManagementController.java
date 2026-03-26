@@ -1,5 +1,6 @@
 package com.generatorproject.controller.staff;
 
+import com.generatorproject.dao.MaintenanceAssignmentDAO;
 import com.generatorproject.dao.MaintenanceDAO;
 import com.generatorproject.model.*;
 import com.generatorproject.services.*;
@@ -13,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +30,11 @@ public class StaffManagementController extends HttpServlet {
     private final IRepairWorkflowService repairWorkflowService;
     private final IInvoiceService invoiceService;
     private final MaintenanceDAO maintenanceDAO;
+    private final MaintenanceAssignmentDAO maintenanceAssignmentDAO;
     private final IProductModelServices productModelServices;
+    private final IIncidentServices incidentServices;
+    private final IIncidentPlanService incidentPlanService;
+    private final IncidentPlanRecommendationService incidentPlanRecommendationService;
 
     public StaffManagementController() {
         userServices = new UserServices();
@@ -36,7 +44,11 @@ public class StaffManagementController extends HttpServlet {
         repairWorkflowService = new RepairWorkflowService();
         invoiceService = new InvoiceService();
         maintenanceDAO = new MaintenanceDAO();
+        maintenanceAssignmentDAO = new MaintenanceAssignmentDAO();
         productModelServices = new ProductModelServices();
+        incidentServices = new IncidentServices();
+        incidentPlanService = new IncidentPlanService();
+        incidentPlanRecommendationService = new IncidentPlanRecommendationService();
     }
 
     @Override
@@ -83,6 +95,12 @@ public class StaffManagementController extends HttpServlet {
             case "/incident-view":
                 showIncidentDetail(req, resp);
                 break;
+            case "/incident/work-order":
+                handleIncidentWorkOrder(req, resp);
+                break;
+            case "/technician-availability":
+                handleTechnicianAvailability(req, resp);
+                break;
             case "/invoice-list":
                 listInvoices(req, resp);
                 break;
@@ -91,7 +109,9 @@ public class StaffManagementController extends HttpServlet {
                 break;
         }
     }
-    private void handleProductDetail(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    private void handleProductDetail(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
         String idParam = req.getParameter("id");
 
         if (idParam == null || idParam.trim().isEmpty()) {
@@ -132,6 +152,7 @@ public class StaffManagementController extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
         }
     }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
@@ -162,12 +183,20 @@ public class StaffManagementController extends HttpServlet {
             }
 
             Product product = null;
-            if (incident.getInfo() != null && getProductFromRequest(incident).getId() > 0) {
-                product = productServices.getProductById(getProductFromRequest(incident).getId());
+            Product requestProduct = getProductFromRequest(incident);
+            if (requestProduct != null && requestProduct.getId() > 0) {
+                product = productServices.getProductById(requestProduct.getId());
+            }
+
+            Incident incidentEntity = null;
+            Long incidentEntityId = extractIdFromRequestInfo(incident, "incidentId");
+            if (incidentEntityId != null) {
+                incidentEntity = incidentServices.findById(incidentEntityId);
             }
 
             // 4. Truyền ra JSP
             req.setAttribute("incident", incident);
+            req.setAttribute("incidentEntity", incidentEntity);
             req.setAttribute("product", product);
 
             req.getRequestDispatcher("/views/staff/incident-detail.jsp").forward(req, resp);
@@ -294,7 +323,8 @@ public class StaffManagementController extends HttpServlet {
             // Đẩy DTO sang JSP để in ra màn hình
             req.setAttribute("repairRequest", dto);
 
-            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit (Approve)
+            // Ép DTO thành chuỗi JSON thô đẩy sang JSP để dùng cho Javascript khi submit
+            // (Approve)
             req.setAttribute("rawJsonData", new Gson().toJson(dto));
 
             // Chuyển hướng sang trang chi tiết
@@ -349,7 +379,8 @@ public class StaffManagementController extends HttpServlet {
                 page = 1;
 
             // Lấy danh sách Request từ DB
-            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page, pageSize);
+            List<SystemRequest> listRequests = requestServices.getByFilter(fromDate, toDate, status, requestType, page,
+                    pageSize);
 
             Map<Long, Product> relatedProducts = new HashMap<>();
             Map<Long, String> technicianNames = new HashMap<>();
@@ -366,7 +397,8 @@ public class StaffManagementController extends HttpServlet {
                         String currentStatus = sysReq.getStatus();
                         // ĐIỂM SỬA QUAN TRỌNG:
                         // Chỉ tự động chuyển sang COMPLETED nếu nó chưa bị đổi thành INVOICED
-                        if (!"COMPLETED".equalsIgnoreCase(currentStatus) && !"INVOICED".equalsIgnoreCase(currentStatus)) {
+                        if (!"COMPLETED".equalsIgnoreCase(currentStatus)
+                                && !"INVOICED".equalsIgnoreCase(currentStatus)) {
                             requestServices.updateStatus(sysReq.getId().intValue(), "COMPLETED");
                             sysReq.setStatus("COMPLETED"); // Cập nhật trên UI
                         }
@@ -590,19 +622,154 @@ public class StaffManagementController extends HttpServlet {
             // 3. Lấy thông tin máy (Product)
             Product product = getProductFromRequest(sysReq);
 
-            // 4. Lấy danh sách Kỹ thuật viên
-            List<Users> listTechnicians = userServices.findUserByRoleId(4);
+            Incident incident = null;
+            if (sysReq.getInfo() != null && sysReq.getInfo().get("incidentId") != null) {
+                Long incidentId = parseLongValue(sysReq.getInfo().get("incidentId"));
+                if (incidentId != null) {
+                    incident = incidentServices.findById(incidentId);
+                }
+            }
 
-            // 5. Gửi dữ liệu sang JSP
+            // 4. Gửi dữ liệu sang JSP
             req.setAttribute("req", sysReq);
             req.setAttribute("prod", product);
-            req.setAttribute("listTechnicians", listTechnicians);
+            req.setAttribute("incidentEntity", incident);
+            req.setAttribute("planRecommendations",
+                    incidentPlanRecommendationService.buildRecommendations(incident, product));
 
             req.getRequestDispatcher("/views/staff/incident-escalate.jsp").forward(req, resp);
 
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
+
+    private void handleIncidentWorkOrder(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            long requestId = Long.parseLong(req.getParameter("id"));
+            SystemRequest sysReq = requestServices.findById(requestId);
+            if (sysReq == null || sysReq.getInfo() == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
+
+            Long incidentId = parseLongValue(sysReq.getInfo().get("incidentId"));
+            Long incidentPlanId = parseLongValue(sysReq.getInfo().get("incidentPlanId"));
+            if (incidentId == null || incidentPlanId == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
+
+            Incident incident = incidentServices.findById(incidentId);
+            IncidentPlan incidentPlan = incidentPlanService.findById(incidentPlanId);
+            Product product = incident != null ? productServices.getProductById(incident.getProductId()) : null;
+            List<Users> listTechnicians = userServices.findUserByRoleId(4);
+
+            Long recommendedTechnicianId = parseLongValue(sysReq.getInfo().get("technicianId"));
+            Timestamp preferredStart = resolvePreferredStart(incident);
+            Timestamp preferredEnd = resolvePreferredEnd(incident, incidentPlan, preferredStart);
+
+            req.setAttribute("req", sysReq);
+            req.setAttribute("incidentEntity", incident);
+            req.setAttribute("incidentPlan", incidentPlan);
+            req.setAttribute("prod", product);
+            req.setAttribute("listTechnicians", listTechnicians);
+            req.setAttribute("recommendedTechnicianId", recommendedTechnicianId);
+            req.setAttribute("preferredScheduledStart", formatDateTimeLocal(preferredStart));
+            req.setAttribute("preferredScheduledEnd", formatDateTimeLocal(preferredEnd));
+            req.getRequestDispatcher("/views/staff/incident-work-order.jsp").forward(req, resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
+
+    private void handleTechnicianAvailability(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        resp.setContentType("application/json;charset=UTF-8");
+
+        Map<String, Object> payload = new HashMap<>();
+        try {
+            String technicianIdRaw = req.getParameter("technicianId");
+            if (technicianIdRaw == null || technicianIdRaw.trim().isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                payload.put("message", "Thiếu technicianId");
+                resp.getWriter().write(new Gson().toJson(payload));
+                return;
+            }
+
+            int technicianId = Integer.parseInt(technicianIdRaw.trim());
+            Timestamp selectedStart = parseDateTimeLocal(req.getParameter("scheduledStart"));
+            Timestamp selectedEnd = parseDateTimeLocal(req.getParameter("scheduledEnd"));
+
+            Timestamp windowStart = selectedStart != null
+                    ? Timestamp.valueOf(selectedStart.toLocalDateTime().toLocalDate().atStartOfDay())
+                    : new Timestamp(System.currentTimeMillis());
+            Timestamp windowEnd = selectedEnd != null
+                    ? Timestamp.valueOf(selectedEnd.toLocalDateTime().toLocalDate().plusDays(1).atStartOfDay())
+                    : new Timestamp(windowStart.getTime() + 7L * 24 * 60 * 60 * 1000);
+
+            Users technician = userServices.findUserById(technicianId);
+            boolean hasConflict = selectedStart != null && selectedEnd != null
+                    && maintenanceAssignmentDAO.hasScheduleConflict(technicianId, selectedStart, selectedEnd);
+
+            payload.put("technicianId", technicianId);
+            payload.put("technicianName",
+                    technician == null ? "Kỹ thuật viên #" + technicianId : technician.getFullName());
+            payload.put("hasConflict", hasConflict);
+            payload.put("windowStart", windowStart);
+            payload.put("windowEnd", windowEnd);
+            payload.put("schedules",
+                    maintenanceAssignmentDAO.findSchedulesForTechnician(technicianId, windowStart, windowEnd));
+            resp.getWriter().write(new Gson().toJson(payload));
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            payload.put("message", "Không thể tải lịch kỹ thuật viên");
+            resp.getWriter().write(new Gson().toJson(payload));
+        }
+    }
+
+
+    private Timestamp resolvePreferredStart(Incident incident) {
+        if (incident == null || incident.getPreferredDate() == null) {
+            return null;
+        }
+        Time preferredFrom = incident.getPreferredTimeFrom();
+        if (preferredFrom != null) {
+            return Timestamp.valueOf(incident.getPreferredDate().toLocalDate().atTime(preferredFrom.toLocalTime()));
+        }
+        return Timestamp.valueOf(incident.getPreferredDate().toLocalDate().atTime(8, 0));
+    }
+
+    private Timestamp resolvePreferredEnd(Incident incident, IncidentPlan incidentPlan, Timestamp preferredStart) {
+        if (preferredStart == null) {
+            return null;
+        }
+        if (incident != null && incident.getPreferredTimeTo() != null) {
+            return Timestamp.valueOf(incident.getPreferredDate().toLocalDate().atTime(incident.getPreferredTimeTo().toLocalTime()));
+        }
+        int durationMinutes = incidentPlan != null && incidentPlan.getEstimatedDurationMinutes() > 0
+                ? incidentPlan.getEstimatedDurationMinutes()
+                : 120;
+        return new Timestamp(preferredStart.getTime() + durationMinutes * 60L * 1000L);
+    }
+
+    private String formatDateTimeLocal(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm").format(timestamp);
+    }
+
+    private Timestamp parseDateTimeLocal(String rawValue) {
+        try {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
+                return null;
+            }
+            return Timestamp.valueOf(rawValue.trim().replace("T", " ") + ":00");
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -747,5 +914,26 @@ public class StaffManagementController extends HttpServlet {
             }
         }
         return null;
+    }
+
+    private Long parseLongValue(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw instanceof Number) {
+            return ((Number) raw).longValue();
+        }
+        try {
+            String value = String.valueOf(raw).trim();
+            if (value.isEmpty()) {
+                return null;
+            }
+            if (value.contains(".")) {
+                return (long) Double.parseDouble(value);
+            }
+            return Long.parseLong(value);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
