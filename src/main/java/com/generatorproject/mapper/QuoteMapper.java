@@ -19,7 +19,7 @@ public class QuoteMapper implements RowMapper<Quote> { // Lưu ý: Đảm bảo 
             quote.setStatus(rs.getString("status"));
             quote.setCreatedAt(rs.getTimestamp("created_at"));
             quote.setApprovedAt(rs.getTimestamp("approved_at"));
-
+            quote.setLaborCost(rs.getDouble("labor_cost"));
             // ==========================================
             // Map các cột Khóa ngoại (Có thể bị NULL trong DB)
             // ==========================================

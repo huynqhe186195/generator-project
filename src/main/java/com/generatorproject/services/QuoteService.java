@@ -15,7 +15,7 @@ public class QuoteService implements IQuoteService {
     }
 
     @Override
-    public Long createQuote(int maintenanceId, Long customerId, double totalAmount, int createdBy) {
+    public Long createQuote(int maintenanceId, Long customerId, double totalAmount, int createdBy,double laborCost) {
         // Validate cơ bản
         if (maintenanceId <= 0 || customerId == null || customerId <= 0) {
             System.err.println("[QuoteService] Lỗi: maintenanceId hoặc customerId không hợp lệ!");
@@ -25,7 +25,7 @@ public class QuoteService implements IQuoteService {
             totalAmount = 0;
         }
 
-        return quoteDAO.insertQuote(maintenanceId, customerId, totalAmount, createdBy);
+        return quoteDAO.insertQuote(maintenanceId, customerId, totalAmount, createdBy,laborCost);
     }
 
     @Override

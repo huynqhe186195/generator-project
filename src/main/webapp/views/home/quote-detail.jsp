@@ -271,53 +271,63 @@
             </div>
 
             <%-- CỘT PHẢI: THÔNG TIN TỔNG QUAN --%>
-            <div class="col-lg-4">
-                <div class="card-custom position-sticky" style="top: 90px;">
-                    <div class="card-header-soft text-center">
-                        <i class="fas fa-info-circle me-2"></i>Tổng quan báo giá
-                    </div>
-                    <div class="card-body p-4">
-
-                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                            <span class="text-muted small fw-bold">Trạng thái:</span>
-                            <c:choose>
-                                <c:when test="${quote.status == 'APPROVED'}">
-                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">Khách đã đồng ý</span>
-                                </c:when>
-                                <c:when test="${quote.status == 'REJECTED'}">
-                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">Khách đã từ chối</span>
-                                </c:when>
-                                <c:otherwise>
-                                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2">${quote.status}</span>
-                                </c:otherwise>
-                            </c:choose>
+                <%-- CỘT PHẢI: THÔNG TIN TỔNG QUAN --%>
+                <div class="col-lg-4">
+                    <div class="card-custom position-sticky" style="top: 90px;">
+                        <div class="card-header-soft text-center">
+                            <i class="fas fa-info-circle me-2"></i>Tổng quan báo giá
                         </div>
-                        <hr class="text-muted opacity-25">
+                        <div class="card-body p-4">
 
-                        <div class="mb-3">
-                            <p class="text-muted small mb-1"><i class="fas fa-check-double me-1"></i>Ngày duyệt/xác nhận:</p>
-                            <p class="fw-bold text-dark mb-0">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small fw-bold">Trạng thái:</span>
                                 <c:choose>
-                                    <c:when test="${not empty quote.approvedAt}">
-                                        <fmt:formatDate value="${quote.approvedAt}" pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                                    <c:when test="${quote.status == 'APPROVED'}">
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">Khách đã đồng ý</span>
                                     </c:when>
-                                    <c:otherwise><span class="fst-italic text-muted">Chưa duyệt</span></c:otherwise>
+                                    <c:when test="${quote.status == 'REJECTED'}">
+                                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2">Khách đã từ chối</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-2">${quote.status}</span>
+                                    </c:otherwise>
                                 </c:choose>
-                            </p>
+                            </div>
+                            <hr class="text-muted opacity-25">
+
+                            <div class="mb-3">
+                                <p class="text-muted small mb-1"><i class="fas fa-check-double me-1"></i>Ngày duyệt/xác nhận:</p>
+                                <p class="fw-bold text-dark mb-0">
+                                    <c:choose>
+                                        <c:when test="${not empty quote.approvedAt}">
+                                            <fmt:formatDate value="${quote.approvedAt}" pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh" />
+                                        </c:when>
+                                        <c:otherwise><span class="fst-italic text-muted">Chưa duyệt</span></c:otherwise>
+                                    </c:choose>
+                                </p>
+                            </div>
+
+                            <hr class="my-4 border-secondary opacity-25">
+
+                            <%-- BỔ SUNG: HIỂN THỊ PHÍ NHÂN CÔNG --%>
+                            <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+                                <span class="text-muted fw-bold small">Phí nhân công:</span>
+                                <span class="fw-bold text-dark fs-6">
+                                <fmt:formatNumber value="${quote.laborCost}" pattern="#,###" /> VNĐ
+                            </span>
+                            </div>
+                            <%-- KẾT THÚC BỔ SUNG --%>
+
+                            <div class="total-box mb-2">
+                                <div class="text-center text-uppercase fw-bold text-muted small mb-2">Tổng thanh toán</div>
+                                <h2 class="fw-bold text-danger text-center mb-0">
+                                    <fmt:formatNumber value="${quote.totalAmount}" pattern="#,###" /> VNĐ
+                                </h2>
+                            </div>
+
                         </div>
-
-                        <hr class="my-4 border-secondary opacity-25">
-
-                        <div class="total-box mb-2">
-                            <div class="text-center text-uppercase fw-bold text-muted small mb-2">Tổng chi phí sửa chữa</div>
-                            <h2 class="fw-bold text-danger text-center mb-0">
-                                <fmt:formatNumber value="${quote.totalAmount}" pattern="#,###" /> VNĐ
-                            </h2>
-                        </div>
-
                     </div>
                 </div>
-            </div>
         </div>
 
     </div>
