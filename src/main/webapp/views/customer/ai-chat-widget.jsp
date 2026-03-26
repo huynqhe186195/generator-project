@@ -279,7 +279,7 @@
     <span class="customer-ai-hint-icon"><i class="fas fa-sparkles"></i></span>
     <div>
       <p class="customer-ai-hint-title">AI đang sẵn sàng hỗ trợ</p>
-      <p class="customer-ai-hint-text">Phân biệt máy sở hữu có serial và tài liệu public theo model chỉ trong một ô chat.</p>
+      <p class="customer-ai-hint-text">Tìm máy sở hữu, tài liệu public và cả tin tức mới chỉ trong một ô chat.</p>
     </div>
   </div>
 
@@ -288,7 +288,7 @@
       <div class="customer-ai-badge"><i class="fas fa-robot"></i> Trợ lý AI cho khách hàng</div>
       <div class="customer-ai-title">
         <div>
-          <h5>Phân biệt đúng 2 loại device</h5>
+          <h5>Tìm thiết bị + tin tức thông minh</h5>
         </div>
         <button type="button" class="customer-ai-close" id="customerAiClose" aria-label="Đóng AI chat">
           <i class="fas fa-times"></i>
@@ -300,17 +300,18 @@
       <button type="button" class="customer-ai-suggestion" data-message="Tìm thiết bị sở hữu của tôi theo serial ABC123">Thiết bị sở hữu</button>
       <button type="button" class="customer-ai-suggestion" data-message="Tìm tài liệu public model Denyo">Tài liệu public</button>
       <button type="button" class="customer-ai-suggestion" data-message="Tìm máy của tôi ở nhà máy Bình Dương">Theo vị trí máy</button>
+      <button type="button" class="customer-ai-suggestion" data-message="Tìm tin tức bảo trì máy phát mới nhất">Tin tức mới</button>
     </div>
 
     <div class="customer-ai-body" id="customerAiMessages">
       <div class="customer-ai-message bot">
-        <div class="customer-ai-bubble">Xin chào! Tôi có thể giúp bạn tìm <strong>thiết bị sở hữu</strong> (có serial, thuộc danh sách máy của bạn) hoặc <strong>device tài liệu public</strong> (chỉ có model / thông số, không có serial).</div>
+        <div class="customer-ai-bubble">Xin chào! Tôi có thể giúp bạn tìm <strong>thiết bị sở hữu</strong> (có serial), <strong>tài liệu public</strong> theo model, và <strong>tin tức</strong> mới trong hệ thống.</div>
       </div>
     </div>
 
     <div class="customer-ai-footer">
       <form class="customer-ai-form" id="customerAiForm">
-        <textarea class="form-control" id="customerAiInput" placeholder="Ví dụ: liệt kê tất cả máy tôi đang sở hữu hoặc tìm tài liệu public Cummins C220"></textarea>
+        <textarea class="form-control" id="customerAiInput" placeholder="Ví dụ: tìm máy serial ABC123, tra tài liệu public Cummins C220, hoặc tìm tin tức bảo trì"></textarea>
         <button type="submit" class="customer-ai-send" aria-label="Gửi câu hỏi cho AI">
           <i class="fas fa-paper-plane"></i>
         </button>
@@ -377,7 +378,7 @@
 
     appendMessage('user', message);
     input.value = '';
-    status.textContent = 'AI đang xác định đây là thiết bị sở hữu hay tài liệu public...';
+    status.textContent = 'AI đang xác định yêu cầu (thiết bị sở hữu / tài liệu public / tin tức)...';
 
     try {
       const response = await fetch('<c:url value="/customer/ai-chat"/>', {
@@ -388,7 +389,7 @@
       const data = await response.json();
       appendBotReply(data.reply || 'Tôi chưa có phản hồi phù hợp.', data.results || []);
       if (data.actionType === 'REDIRECT' && data.redirectUrl) {
-        status.textContent = 'Đang mở trang chi tiết thiết bị...';
+        status.textContent = 'Đang mở trang chi tiết...';
         window.location.href = data.redirectUrl;
         return;
       }
@@ -424,6 +425,31 @@
         const link = document.createElement('a');
         link.className = 'customer-ai-result';
         link.href = item.detailUrl || '#';
+        const isNews = item.deviceType === 'NEWS';
+        if (isNews) {
+          const categoryPill = item.brandName
+            ? '<span class="customer-ai-pill"><i class="fas fa-folder-open"></i>' + escapeHtml(item.brandName) + '</span>'
+            : '';
+          const authorPill = item.currentLocation
+            ? '<span class="customer-ai-pill"><i class="fas fa-user-pen"></i>' + escapeHtml(item.currentLocation) + '</span>'
+            : '';
+          const datePill = item.status
+            ? '<span class="customer-ai-pill"><i class="fas fa-calendar-days"></i>' + escapeHtml(item.status) + '</span>'
+            : '';
+          const summary = item.description
+            ? '<div class="small text-muted mt-2">' + escapeHtml(item.description) + '</div>'
+            : '';
+          link.innerHTML = '<div class="fw-bold text-primary"><i class="fas fa-newspaper me-1"></i>' + escapeHtml(item.modelName || 'Tin tức') + '</div>'
+            + summary
+            + '<div class="customer-ai-result-meta">'
+            + '<span class="customer-ai-pill"><i class="fas fa-bullhorn"></i>' + escapeHtml(item.deviceTypeLabel || 'Tin tức') + '</span>'
+            + categoryPill
+            + authorPill
+            + datePill
+            + '</div>';
+          list.appendChild(link);
+          return;
+        }
         const serialOrDoc = item.serialNumber
           ? '<div class="small text-muted mt-1">Serial: ' + escapeHtml(item.serialNumber) + '</div>'
           : '<div class="small text-muted mt-1">Loại dữ liệu: tài liệu public, không có serial number</div>';
