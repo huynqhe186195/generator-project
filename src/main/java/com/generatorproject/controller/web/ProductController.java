@@ -12,7 +12,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet("/product-list")
 public class ProductController extends HttpServlet {
@@ -27,38 +29,25 @@ public class ProductController extends HttpServlet {
             return;
         }
 
-        String contractNumber = trimToNull(request.getParameter("contractNumber"));
-        boolean lookupPerformed = contractNumber != null;
+        ContractDAO contractDAO = new ContractDAO();
+        ProductDAO productDAO = new ProductDAO();
 
-        request.setAttribute("contractNumber", contractNumber);
-        request.setAttribute("lookupPerformed", lookupPerformed);
+        List<Contract> customerContracts = contractDAO.getContractByCustomerId(user.getId());
+        Map<Long, List<Product>> contractDeviceMap = new LinkedHashMap<>();
 
-        if (lookupPerformed) {
-            ContractDAO contractDAO = new ContractDAO();
-            ProductDAO productDAO = new ProductDAO();
-
-            Contract contract = contractDAO.findByContractNumber(contractNumber);
-            if (contract == null) {
-                request.setAttribute("lookupError", "Không tìm thấy hợp đồng với mã bạn đã nhập.");
-            } else if (contract.getCustomerId() != user.getId()) {
-                request.setAttribute("lookupError", "Bạn không có quyền xem hợp đồng này.");
-            } else {
-                Contract contractDetail = contractDAO.findByIdWithDetails(contract.getId());
+        if (customerContracts != null) {
+            for (Contract contract : customerContracts) {
+                if (contract == null || contract.getId() == null) {
+                    continue;
+                }
                 List<Product> contractDevices = productDAO.findByContractId(contract.getId());
-
-                request.setAttribute("contract", contractDetail != null ? contractDetail : contract);
-                request.setAttribute("contractDevices", contractDevices);
+                contractDeviceMap.put(contract.getId(), contractDevices);
             }
         }
 
-        request.getRequestDispatcher("/views/home/product-list.jsp").forward(request, response);
-    }
+        request.setAttribute("customerContracts", customerContracts);
+        request.setAttribute("contractDeviceMap", contractDeviceMap);
 
-    private String trimToNull(String s) {
-        if (s == null) {
-            return null;
-        }
-        s = s.trim();
-        return s.isEmpty() ? null : s;
+        request.getRequestDispatcher("/views/home/product-list.jsp").forward(request, response);
     }
 }

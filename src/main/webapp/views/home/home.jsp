@@ -410,90 +410,101 @@
             display: none;
           }
         }
+        /* Tối ưu lại padding để nhét vừa thêm menu "Hóa đơn" */
+        .nav-link {
+          color: rgba(255, 255, 255, .92) !important;
+          font-weight: 600;
+          transition: .25s;
+          position: relative;
+          font-size: 0.95rem; /* Giảm nhẹ font size nếu cần */
+          white-space: nowrap; /* Giữ menu không bị xuống dòng */
+        }
+
+        /* Điều chỉnh padding linh hoạt: Trên Desktop nhỏ thì hẹp lại, Desktop lớn thì rộng ra */
+        @media (min-width: 992px) {
+          .nav-pill {
+            padding: .5rem .7rem !important; /* Hẹp hơn px-3 mặc định */
+          }
+        }
+
+        @media (min-width: 1200px) {
+          .nav-pill {
+            padding: .55rem 1rem !important;
+          }
+        }
+
+        /* Đảm bảo Dropdown User không bị đẩy lệch */
+        .navbar-nav {
+          align-items: center;
+        }
       </style>
     </head>
 
     <body>
 
-      <nav class="navbar navbar-expand-lg navbar-landing fixed-top" id="mainNav">
-        <div class="container">
-          <a class="navbar-brand" href="<c:url value='/'/>">
-            <i class="fas fa-bolt me-2 text-warning"></i>Gen-CMS
-          </a>
+    <nav class="navbar navbar-expand-lg navbar-landing fixed-top" id="mainNav">
+      <div class="container">
+        <a class="navbar-brand" href="<c:url value='/'/>">
+          <i class="fas fa-bolt me-2 text-warning"></i>Gen-CMS
+        </a>
 
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center gap-lg-1">
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item">
+              <a class="nav-link nav-pill" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công ty</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-pill" href="<c:url value='/news'/>">Tin tức</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link nav-pill" href="<c:url value='/products'/>">Sản phẩm mẫu</a>
+            </li>
+
+            <%-- Menu cho User đã đăng nhập --%>
+            <c:if test="${not empty user}">
               <li class="nav-item">
-                <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/DetailCompany.jsp'/>">Sơ lược công
-                  ty</a>
+                <a class="nav-link nav-pill" href="<c:url value='/product-list'/>">Hợp đồng</a>
               </li>
-
               <li class="nav-item">
-                <a class="nav-link nav-pill px-3" href="<c:url value='/news'/>">Tin tức</a>
+                <a class="nav-link nav-pill" href="<c:url value='/invoice-list'/>">Hóa đơn</a>
               </li>
-
               <li class="nav-item">
-                <a class="nav-link nav-pill px-3" href="<c:url value='/products'/>">Sản phẩm mẫu</a>
+                <a class="nav-link nav-pill" href="<c:url value='/views/home/Support.jsp'/>">Hỗ trợ</a>
               </li>
+            </c:if>
 
-              <c:choose>
-                <c:when test="${empty user}">
-                </c:when>
-                <c:otherwise>
-                  <li class="nav-item">
-                    <a class="nav-link nav-pill px-3" href="<c:url value='/product-list'/>">Hợp đồng</a>
-                  </li>
-                </c:otherwise>
-              </c:choose>
+            <li class="nav-item">
+              <a class="nav-link nav-pill" href="#brands">Thương hiệu</a>
+            </li>
 
-              <li class="nav-item">
-                <a class="nav-link nav-pill px-3" href="#brands">Thương hiệu</a>
-              </li>
-
-              <c:if test="${not empty user}">
-                <li class="nav-item">
-                  <a class="nav-link nav-pill px-3" href="<c:url value='/views/home/Support.jsp'/>">Chăm sóc khách
-                    hàng</a>
+            <%-- Phần Login / User Profile --%>
+            <c:choose>
+              <c:when test="${empty user}">
+                <li class="nav-item ms-lg-3">
+                  <a href="<c:url value='/account/login'/>" class="btn btn-white">Đăng nhập</a>
                 </li>
-              </c:if>
-
-              <c:choose>
-                <c:when test="${empty user}">
-                  <li class="nav-item ms-lg-3">
-                    <a href="<c:url value='/account/login'/>" class="btn btn-white px-4">
-                      <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
-                    </a>
-                  </li>
-                </c:when>
-
-                <c:otherwise>
-                  <li class="nav-item dropdown ms-lg-3">
-                    <a class="nav-link dropdown-toggle user-dropdown-toggle" href="#" role="button"
-                      data-bs-toggle="dropdown">
-                      <i class="fas fa-user-circle me-1"></i> ${user.fullName}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
-                      <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i
-                            class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
-                      <li><a class="dropdown-item py-2" href="<c:url value='/account/change-password'/>"><i
-                            class="fas fa-key me-2"></i>Đổi mật khẩu</a></li>
-                      <li>
-                        <hr class="dropdown-divider">
-                      </li>
-                      <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i
-                            class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
-                    </ul>
-                  </li>
-                </c:otherwise>
-              </c:choose>
-            </ul>
-          </div>
+              </c:when>
+              <c:otherwise>
+                <li class="nav-item dropdown ms-lg-3">
+                  <a class="nav-link dropdown-toggle user-dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-circle me-1"></i> ${user.fullName}
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 animate slideIn">
+                    <li><a class="dropdown-item py-2" href="<c:url value='/account/user-profile'/>"><i class="fas fa-id-card me-2"></i>Hồ sơ</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item py-2 text-danger fw-bold" href="<c:url value='/account/logout'/>"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                  </ul>
+                </li>
+              </c:otherwise>
+            </c:choose>
+          </ul>
         </div>
-      </nav>
+      </div>
+    </nav>
 
       <section class="hero-section p-0">
         <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000"

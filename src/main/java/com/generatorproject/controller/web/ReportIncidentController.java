@@ -67,11 +67,17 @@ public class ReportIncidentController extends HttpServlet {
                 return;
             }
 
-            String issueType = normalizeIssueType(req.getParameter("issueType"));
+            String rawIssueType = req.getParameter("issueType");
+            String issueType = normalizeIssueType(rawIssueType);
             String preferredDate = req.getParameter("preferredDate");
             String preferredTimeSlot = req.getParameter("preferredTimeSlot");
             String title = req.getParameter("title");
             String description = req.getParameter("description");
+
+            if (!isValidIncidentSubmission(rawIssueType, preferredDate, preferredTimeSlot, title, description)) {
+                resp.sendRedirect(req.getContextPath() + "/product-list?message=missing_required_fields");
+                return;
+            }
 
             PreferredSchedule preferredSchedule = PreferredSchedule.from(preferredTimeSlot);
             Incident incident = buildIncident(product, user, preferredDate, title, description, preferredSchedule);
@@ -240,6 +246,18 @@ public class ReportIncidentController extends HttpServlet {
             default:
                 return "OTHER";
         }
+    }
+
+    private boolean isValidIncidentSubmission(String issueType,
+                                              String preferredDate,
+                                              String preferredTimeSlot,
+                                              String title,
+                                              String description) {
+        return hasText(issueType)
+                && hasText(preferredDate)
+                && hasText(preferredTimeSlot)
+                && hasText(title)
+                && hasText(description);
     }
 
     private static final class PreferredSchedule {

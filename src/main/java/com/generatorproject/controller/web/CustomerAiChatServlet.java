@@ -101,8 +101,28 @@ public class CustomerAiChatServlet extends HttpServlet {
             return;
         }
 
-        response.setReply("Hiện tôi hỗ trợ 2 loại device: thiết bị sở hữu có serial và tài liệu public theo model.");
-        response.setActionType(CustomerAiResponse.ACTION_NONE);
+            if ("searchNews".equals(toolCall.getTool())) {
+                List<DeviceSearchResultDto> results = toolService.searchNews(toolCall.getArg("keyword"), req.getContextPath());
+                response.setResults(results);
+                if (results.isEmpty()) {
+                    response.setReply("Tôi chưa tìm thấy tin tức phù hợp. Bạn có thể thử lại bằng từ khóa về chủ đề, tác giả hoặc danh mục bài viết.");
+                    response.setActionType(CustomerAiResponse.ACTION_NONE);
+                    return;
+                }
+                if (results.size() == 1 && !toolService.shouldPreferShowingResults(toolCall.getArg("keyword"))) {
+                    DeviceSearchResultDto item = results.get(0);
+                    response.setReply("Tôi đã tìm thấy đúng 1 bài tin và sẽ mở chi tiết cho bạn.");
+                    response.setActionType(CustomerAiResponse.ACTION_REDIRECT);
+                    response.setRedirectUrl(item.getDetailUrl());
+                    return;
+                }
+                response.setReply("Tôi tìm thấy " + results.size() + " bài tin phù hợp. Bạn chọn bài muốn xem nhé.");
+                response.setActionType(CustomerAiResponse.ACTION_SHOW_RESULTS);
+                return;
+            }
+
+            response.setReply("Hiện tôi hỗ trợ tìm thiết bị sở hữu, tài liệu public theo model và tra cứu tin tức.");
+            response.setActionType(CustomerAiResponse.ACTION_NONE);
     }
 
     private String readMessage(HttpServletRequest req) throws IOException {

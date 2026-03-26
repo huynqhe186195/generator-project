@@ -127,9 +127,9 @@ public class RepairWorkflowService implements IRepairWorkflowService {
                 Long newQuoteId = quoteDAO.insertQuote(
                         dto.getMaintenanceId(),
                         userId,
-                        dto.getPartsTotal().doubleValue(),
-                        dto.getTechnicianId()
-
+                        dto.getGrandTotal().doubleValue(),
+                        dto.getTechnicianId(),
+                        dto.getGrandTotal().doubleValue()-dto.getPartsTotal().doubleValue()
                 );
 
                 // 4.2 Lấy danh sách vật tư lưu vào bảng 'quote_details'
