@@ -4,6 +4,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="user" value="${sessionScope.USERMODEL}" />
+<c:set var="flashMessageCode" value="${param.message}" />
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -168,6 +169,94 @@
             border-radius:16px;
             padding:14px 16px;
             margin-top:16px;
+        }
+        .floating-feedback{
+            position: fixed;
+            top: 88px;
+            right: 20px;
+            width: min(420px, calc(100vw - 24px));
+            z-index: 2000;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(46, 204, 113, .35);
+            background: linear-gradient(140deg, #f0fff6 0%, #ffffff 100%);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, .15);
+            animation: slideInFeedback .45s ease;
+        }
+        .floating-feedback.error{
+            border-color: rgba(220, 53, 69, .35);
+            background: linear-gradient(140deg, #fff5f6 0%, #ffffff 100%);
+        }
+        .floating-feedback .feedback-body{
+            display:flex;
+            gap:14px;
+            padding:16px 18px;
+            align-items:flex-start;
+        }
+        .floating-feedback .feedback-icon{
+            width:44px;
+            height:44px;
+            border-radius: 14px;
+            display:grid;
+            place-items:center;
+            font-size: 1.25rem;
+            flex-shrink:0;
+            color:#1f9d55;
+            background: rgba(46, 204, 113, .14);
+        }
+        .floating-feedback.error .feedback-icon{
+            color:#dc3545;
+            background: rgba(220, 53, 69, .12);
+        }
+        .floating-feedback .feedback-title{
+            margin:0 0 4px;
+            font-weight:800;
+            color:#14532d;
+            font-size:1rem;
+        }
+        .floating-feedback.error .feedback-title{ color:#7f1d1d; }
+        .floating-feedback .feedback-text{
+            margin:0;
+            color:#334155;
+            font-size:.94rem;
+            line-height:1.45;
+        }
+        .floating-feedback .feedback-close{
+            border:0;
+            background: transparent;
+            color:#64748b;
+            padding:0;
+            font-size:1.1rem;
+            line-height:1;
+            margin-left:auto;
+        }
+        .feedback-progress{
+            height:4px;
+            width:100%;
+            background:rgba(46, 204, 113, .22);
+            overflow:hidden;
+        }
+        .floating-feedback.error .feedback-progress{
+            background: rgba(220, 53, 69, .2);
+        }
+        .feedback-progress span{
+            display:block;
+            height:100%;
+            width:100%;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            transform-origin:left;
+            animation: feedbackTimer 6s linear forwards;
+        }
+        .floating-feedback.error .feedback-progress span{
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+        @keyframes slideInFeedback{
+            from{ opacity:0; transform: translateX(26px) translateY(-8px); }
+            to{ opacity:1; transform: translateX(0) translateY(0); }
+        }
+        @keyframes feedbackTimer{
+            from{ transform:scaleX(1); }
+            to{ transform:scaleX(0); }
         }
         .detail-grid{
             display:grid;
@@ -509,6 +598,44 @@
 </section>
 
 <main>
+    <c:if test="${flashMessageCode == 'success' || flashMessageCode == 'error' || flashMessageCode == 'missing_required_fields' || flashMessageCode == 'unauthorized_product' || flashMessageCode == 'contract_terminated'}">
+        <div class="floating-feedback ${flashMessageCode == 'success' ? '' : 'error'}" id="floatingFeedback">
+            <div class="feedback-body">
+                <div class="feedback-icon">
+                    <i class="fas ${flashMessageCode == 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i>
+                </div>
+                <div>
+                    <c:choose>
+                        <c:when test="${flashMessageCode == 'success'}">
+                            <h6 class="feedback-title">Đã gửi báo cáo sự cố thành công 🎉</h6>
+                            <p class="feedback-text">Yêu cầu của bạn đã được ghi nhận và chuyển đến bộ phận kỹ thuật. Chúng tôi sẽ liên hệ bạn sớm nhất có thể.</p>
+                        </c:when>
+                        <c:when test="${flashMessageCode == 'missing_required_fields'}">
+                            <h6 class="feedback-title">Thiếu thông tin bắt buộc</h6>
+                            <p class="feedback-text">Vui lòng điền đầy đủ loại sự cố, ngày giờ mong muốn và nội dung mô tả trước khi gửi báo cáo.</p>
+                        </c:when>
+                        <c:when test="${flashMessageCode == 'unauthorized_product'}">
+                            <h6 class="feedback-title">Không thể gửi báo cáo</h6>
+                            <p class="feedback-text">Thiết bị bạn chọn không thuộc phạm vi hợp đồng của tài khoản hiện tại.</p>
+                        </c:when>
+                        <c:when test="${flashMessageCode == 'contract_terminated'}">
+                            <h6 class="feedback-title">Hợp đồng không còn hiệu lực hỗ trợ</h6>
+                            <p class="feedback-text">Bạn chỉ có thể báo cáo sự cố khi hợp đồng còn hiệu lực hoặc vừa hết hạn bảo hành.</p>
+                        </c:when>
+                        <c:otherwise>
+                            <h6 class="feedback-title">Gửi báo cáo chưa thành công</h6>
+                            <p class="feedback-text">Hệ thống đang gặp trục trặc tạm thời. Vui lòng thử lại sau ít phút.</p>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+                <button type="button" class="feedback-close" aria-label="Đóng thông báo" onclick="dismissFloatingFeedback()">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+            <div class="feedback-progress"><span></span></div>
+        </div>
+    </c:if>
+
     <div class="container" data-aos="fade-up">
         <c:choose>
             <c:when test="${not empty customerContracts}">
@@ -823,7 +950,29 @@
             const day = String(today.getDate()).padStart(2, '0');
             dateInput.min = year + '-' + month + '-' + day;
         }
+
+        const floatingFeedback = document.getElementById('floatingFeedback');
+        if (floatingFeedback) {
+            setTimeout(function () {
+                dismissFloatingFeedback();
+            }, 6000);
+        }
     });
+
+    function dismissFloatingFeedback() {
+        const floatingFeedback = document.getElementById('floatingFeedback');
+        if (!floatingFeedback) {
+            return;
+        }
+        floatingFeedback.style.transition = 'opacity .25s ease, transform .25s ease';
+        floatingFeedback.style.opacity = '0';
+        floatingFeedback.style.transform = 'translateY(-8px)';
+        setTimeout(function () {
+            if (floatingFeedback && floatingFeedback.parentNode) {
+                floatingFeedback.parentNode.removeChild(floatingFeedback);
+            }
+        }, 250);
+    }
 </script>
 
 <jsp:include page="/views/customer/ai-chat-widget.jsp" />
