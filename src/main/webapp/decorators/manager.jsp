@@ -128,7 +128,7 @@
                     <a href="${pageContext.request.contextPath}/manager/contracts"><i class="fa fa-file-contract me-2"></i> Hợp đồng</a>
                 </li>
                 <li class="${pageContext.request.requestURI.contains('/manager/requests') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/requests"><i class="fa fa-paper-plane me-2"></i> Gửi Yêu cầu</a>
+                    <a href="${pageContext.request.contextPath}/manager/requests"><i class="fa fa-paper-plane me-2"></i> Hệ thống</a>
                 </li>
                 <li>
                     <a href="${pageContext.request.contextPath}/manager/assets"><i class="fa fa-server me-2"></i> Tài sản Khách hàng</a>
