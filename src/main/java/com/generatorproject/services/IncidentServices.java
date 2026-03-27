@@ -11,6 +11,22 @@ public class IncidentServices implements IIncidentServices{
     public IncidentServices(){
         this.incidentDAO = new IncidentDAO();
     }
+
+    @Override
+    public Long createIncident(Incident incident) {
+        return incidentDAO.insertIncident(incident);
+    }
+
+    @Override
+    public Incident findById(long id) {
+        return incidentDAO.findById(id);
+    }
+
+    @Override
+    public void updateStatus(long id, String status) {
+        incidentDAO.updateStatus(id, status);
+    }
+
     @Override
     public List<Incident> getAllIncidents() {
         return incidentDAO.getAllIncident();

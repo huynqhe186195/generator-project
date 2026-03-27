@@ -10,7 +10,7 @@ import java.sql.Date;
 import java.util.List;
 
 public class ContractServices implements IContractServices {
-    private ContractDAO contractDAO;
+    private final ContractDAO contractDAO;
 
     public ContractServices() {
         contractDAO = new ContractDAO();
@@ -107,4 +107,9 @@ public class ContractServices implements IContractServices {
         return contractDAO.assignSerialToContract(contractId, serialNumber, modelId, purchaseDate, manufactureYear,
                 currentLocation);
     }
+    @Override
+    public void updateContractFilePath(Long contractId, String filePath) {
+        contractDAO.updateFilePath(contractId, filePath);
+    }
+
 }

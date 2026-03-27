@@ -1,6 +1,5 @@
 package com.generatorproject.services;
 
-import com.generatorproject.model.RepairRequestDTO;
 import com.generatorproject.model.SystemRequest;
 
 import java.sql.Date;
@@ -33,5 +32,5 @@ public interface IRequestServices {
     void approve(long requestId, long approverId, String approverRole, String responseMessage);
 
     void reject(long id, String responseMessage);
-    public List<SystemRequest> findByRoleAndType(String role, String type);
+    List<SystemRequest> findByRoleAndType(String role, String type);
 }

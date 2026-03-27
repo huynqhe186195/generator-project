@@ -5,17 +5,17 @@ import java.sql.Timestamp;
 public class ProductModel {
     private int id;
     private String name;
-    private String slug;
-    private int brandId;
-    private int categoryId;
-    private String origin;
-    private String fuelType;
-    private Double power;
+    private final String slug;
+    private final int brandId;
+    private final int categoryId;
+    private final String origin;
+    private final String fuelType;
+    private final Double power;
     private String description;
-    private String specifications;
-    private String manualUrl;
+    private final String specifications;
+    private final String manualUrl;
     private String imageUrl;
-    private Timestamp createdAt;
+    private final Timestamp createdAt;
     private String status;
 
     private ProductModel(Builder builder) {

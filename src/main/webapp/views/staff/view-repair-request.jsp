@@ -130,42 +130,50 @@
                         <i class="fas fa-calculator me-1"></i> Tổng cộng Chi phí
                     </h6>
                 </div>
+
                 <div class="card-body bg-light">
-<%--                    <div class="d-flex justify-content-between mb-3">--%>
-<%--                        <span class="text-muted">Tổng tiền vật tư:</span>--%>
-<%--                        <span class="fw-bold text-dark">--%>
-<%--                            <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ--%>
-<%--                        </span>--%>
-<%--                    </div>--%>
-<%--                    <div class="d-flex justify-content-between mb-3">--%>
-<%--                        <span class="text-muted">Phí nhân công:</span>--%>
-<%--                        <span class="fw-bold text-dark">--%>
-<%--                            <fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> VNĐ--%>
-<%--                        </span>--%>
-<%--                    </div>--%>
-<%--                    <hr>--%>
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <span class="text-uppercase fw-bold text-secondary">Thành tiền:</span>
-                        <h4 class="fw-bold text-danger mb-0">
+                    <%-- 1. HIỂN THỊ TỔNG TIỀN VẬT TƯ --%>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Tổng tiền vật tư:</span>
+                        <span class="fw-bold text-dark">
                             <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ
+                        </span>
+                    </div>
+
+                    <%-- 2. HIỂN THỊ PHÍ NHÂN CÔNG TỪ BIẾN ${laborCost} TRONG CONTROLLER --%>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Phí nhân công:</span>
+                        <span class="fw-bold text-dark">
+                            <fmt:formatNumber value="${repairRequest.grandTotal-repairRequest.partsTotal}" pattern="#,###"/> VNĐ
+                        </span>
+                    </div>
+                    <hr>
+
+                    <%-- 3. CỘNG GỘP THÀNH TIỀN TỔNG CỘNG --%>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <span class="text-uppercase fw-bold text-secondary">Tổng thanh toán:</span>
+                        <h4 class="fw-bold text-danger mb-0">
+                            <fmt:formatNumber value="${repairRequest.grandTotal}" pattern="#,###"/> VNĐ
                         </h4>
                     </div>
 
-    <div class="d-grid gap-2 mt-4">
-        <c:choose>
-            <%-- Sửa lại thành currentStatus --%>
-            <c:when test="${currentStatus == 'WAITING_STAFF'}">
-                <button type="button" class="btn btn-success btn-lg" onclick="submitToManager()">
-                    <i class="fas fa-check-circle me-1"></i> Tạo Báo Giá & Trình Manager
-                </button>
-                <button type="button" class="btn btn-outline-danger" onclick="rejectRequest()">
-                    <i class="fas fa-times-circle me-1"></i> Từ chối / Báo lại KTV
-                </button>
-            </c:when>
+                    <%-- BUTTON ACTION --%>
+                    <div class="d-grid gap-2 mt-4">
+                        <c:choose>
+                            <c:when test="${currentStatus == 'WAITING_STAFF'}">
+                                <button type="button" class="btn btn-success btn-lg" onclick="submitToManager()">
+                                    <i class="fas fa-check-circle me-1"></i> Tạo Báo Giá & Trình Manager
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" onclick="rejectRequest()">
+                                    <i class="fas fa-times-circle me-1"></i> Từ chối / Báo lại KTV
+                                </button>
+                            </c:when>
+                        </c:choose>
+                    </div>
 
-
-        </c:choose>
-    </div>
+                </div>
+            </div>
+        </div>
                 </div>
             </div>
         </div>

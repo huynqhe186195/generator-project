@@ -15,7 +15,7 @@ import java.util.Map;
 @WebServlet(urlPatterns = { "/admin/user/handleApproveReset" })
 public class AdminResetPasswordController extends HttpServlet {
 
-    private UserServices userServices;
+    private final UserServices userServices;
 
     public AdminResetPasswordController() {
         userServices = new UserServices();

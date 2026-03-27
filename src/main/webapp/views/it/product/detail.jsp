@@ -30,7 +30,7 @@
     <div>
       <h3 class="fw-bold mb-1">${pm.name}</h3>
       <div class="text-muted small">
-        ID: #${pm.id} | Slug: ${pm.slug}
+        Mã: #${pm.id} | Đường dẫn tĩnh: ${pm.slug}
       </div>
     </div>
 
@@ -43,15 +43,13 @@
         <i class="fas fa-edit me-1"></i> Sửa
       </a>
 
-      <!-- ✅ Xuất PDF động -->
       <a href="${ctx}/it/products/pdf?id=${pm.id}" class="btn btn-outline-primary btn-sm" target="_blank">
         <i class="fas fa-file-pdf me-1"></i> Xuất PDF
       </a>
 
-      <!-- ✅ DELETE -->
       <a href="${ctx}/it/products/delete?id=${pm.id}"
          class="btn btn-danger btn-sm"
-         onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không? Hành động không thể hoàn tác!');">
+         onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không? Hành động này không thể hoàn tác!');">
         <i class="fas fa-trash me-1"></i> Xóa
       </a>
     </div>
@@ -60,13 +58,12 @@
   <div class="card shadow-sm">
     <div class="card-body">
 
-      <!-- BASIC INFO -->
+      <!-- THÔNG TIN CƠ BẢN -->
       <div class="row g-4">
 
-        <!-- ✅ IMAGE GALLERY -->
+        <!-- ẢNH SẢN PHẨM -->
         <div class="col-md-3 text-center">
 
-          <!-- main image: ưu tiên ảnh đầu tiên trong imageUrls -->
           <c:set var="mainImg" value="" />
           <c:if test="${not empty imageUrls}">
             <c:set var="mainImg" value="${imageUrls[0]}" />
@@ -76,62 +73,68 @@
             <c:when test="${not empty mainImg}">
               <img id="mainPreview"
                    src="${fn:startsWith(mainImg,'http') ? mainImg : ctx.concat('/').concat(mainImg)}"
-                   class="thumb-lg shadow-sm border" alt="image">
+                   class="thumb-lg shadow-sm border" alt="Ảnh sản phẩm">
             </c:when>
 
             <c:when test="${not empty pm.imageUrl}">
               <img id="mainPreview"
                    src="${fn:startsWith(pm.imageUrl,'http') ? pm.imageUrl : ctx.concat('/').concat(pm.imageUrl)}"
-                   class="thumb-lg shadow-sm border" alt="image">
+                   class="thumb-lg shadow-sm border" alt="Ảnh sản phẩm">
             </c:when>
 
             <c:otherwise>
               <img id="mainPreview"
                    src="https://via.placeholder.com/140x140?text=IMG"
-                   class="thumb-lg shadow-sm border" alt="image">
+                   class="thumb-lg shadow-sm border" alt="Ảnh sản phẩm">
             </c:otherwise>
           </c:choose>
 
-          <!-- thumbnails -->
           <c:if test="${not empty imageUrls}">
             <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
               <c:forEach items="${imageUrls}" var="img" varStatus="st">
                 <img class="thumb-sm border shadow-sm"
                      src="${fn:startsWith(img,'http') ? img : ctx.concat('/').concat(img)}"
                      onclick="document.getElementById('mainPreview').src=this.src"
-                     alt="thumb-${st.index}">
+                     alt="Ảnh nhỏ ${st.index}">
               </c:forEach>
             </div>
           </c:if>
 
         </div>
 
-        <!-- MAIN FIELDS -->
+        <!-- THÔNG TIN CHÍNH -->
         <div class="col-md-9">
           <div class="row g-3">
 
             <div class="col-md-4">
-              <div class="label">Brand</div>
+              <div class="label">Hãng</div>
               <div class="value">${brandName}</div>
             </div>
 
             <div class="col-md-4">
-              <div class="label">Category</div>
+              <div class="label">Danh mục</div>
               <div class="value">${categoryName}</div>
             </div>
 
             <div class="col-md-4">
-              <div class="label">Origin</div>
+              <div class="label">Xuất xứ</div>
               <div class="value"><c:out value="${pm.origin}" default="-" /></div>
             </div>
 
             <div class="col-md-4">
-              <div class="label">Fuel type</div>
-              <div class="value">${pm.fuelType}</div>
+              <div class="label">Loại nhiên liệu</div>
+              <div class="value">
+                <c:choose>
+                  <c:when test="${pm.fuelType == 'DIESEL'}">Dầu diesel</c:when>
+                  <c:when test="${pm.fuelType == 'GASOLINE'}">Xăng</c:when>
+                  <c:when test="${pm.fuelType == 'OTHER'}">Khác</c:when>
+                  <c:otherwise><c:out value="${pm.fuelType}" default="-" /></c:otherwise>
+                </c:choose>
+              </div>
             </div>
 
             <div class="col-md-4">
-              <div class="label">Power</div>
+              <div class="label">Công suất</div>
               <div class="value">
                 <c:choose>
                   <c:when test="${not empty pm.power}">${pm.power}</c:when>
@@ -141,24 +144,24 @@
             </div>
 
             <div class="col-md-4">
-              <div class="label">Status</div>
+              <div class="label">Trạng thái</div>
               <div class="value">
                 <c:choose>
                   <c:when test="${pm.status == 'ACTIVE'}">
-                    <span class="status-active"><i class="fas fa-check-circle me-1"></i>ACTIVE</span>
+                    <span class="status-active"><i class="fas fa-check-circle me-1"></i>Đang hoạt động</span>
                   </c:when>
                   <c:when test="${pm.status == 'COMING_SOON'}">
-                    <span class="status-coming"><i class="fas fa-clock me-1"></i>COMING_SOON</span>
+                    <span class="status-coming"><i class="fas fa-clock me-1"></i>Sắp ra mắt</span>
                   </c:when>
                   <c:otherwise>
-                    <span class="status-locked"><i class="fas fa-ban me-1"></i>INACTIVE</span>
+                    <span class="status-locked"><i class="fas fa-ban me-1"></i>Ngừng hoạt động</span>
                   </c:otherwise>
                 </c:choose>
               </div>
             </div>
 
             <div class="col-md-4">
-              <div class="label">Created at</div>
+              <div class="label">Ngày tạo</div>
               <div class="value">
                 <c:choose>
                   <c:when test="${not empty pm.createdAt}">
@@ -170,9 +173,9 @@
             </div>
 
             <div class="col-md-8">
-              <div class="label">PDF</div>
+              <div class="label">Tệp PDF</div>
               <div class="value text-muted">
-                PDF được tạo tự động từ dữ liệu hiện tại (bấm nút “Xuất PDF”).
+                Tệp PDF được tạo tự động từ dữ liệu hiện tại (bấm nút “Xuất PDF”).
               </div>
             </div>
 
@@ -183,17 +186,17 @@
 
       <hr class="my-4"/>
 
-      <!-- TEXT BLOCKS -->
+      <!-- NỘI DUNG MÔ TẢ -->
       <div class="row g-4">
         <div class="col-md-6">
-          <h6 class="fw-bold">Description</h6>
+          <h6 class="fw-bold">Mô tả</h6>
           <div class="border rounded p-3 bg-light" style="min-height: 140px;">
             <c:out value="${pm.description}" default="-" />
           </div>
         </div>
 
         <div class="col-md-6">
-          <h6 class="fw-bold">Specifications</h6>
+          <h6 class="fw-bold">Thông số kỹ thuật</h6>
           <div class="border rounded p-3 bg-light" style="min-height: 140px;">
             <c:out value="${pm.specifications}" default="-" />
           </div>

@@ -151,6 +151,37 @@ public class ProductDAO extends GenericDAO<Product> {
         return query(sql.toString(), mapper, params.toArray());
     }
 
+    public List<Product> searchCustomerDevices(long customerId, String keyword, int limit) {
+        String normalizedKeyword = keyword == null ? "" : keyword.trim().toLowerCase();
+        if (normalizedKeyword.isEmpty()) {
+            return new ArrayList<Product>();
+        }
+
+        String sql = """
+            SELECT p.*,
+                   pm.name AS model_name,
+                   b.name AS brand_name
+            FROM products p
+            LEFT JOIN product_models pm ON p.model_id = pm.id
+            LEFT JOIN brands b ON pm.brand_id = b.id
+            WHERE p.customer_id = ?
+              AND (LOWER(COALESCE(p.serial_number, '')) LIKE ?
+                   OR LOWER(COALESCE(pm.name, '')) LIKE ?
+                   OR LOWER(COALESCE(b.name, '')) LIKE ?
+                   OR LOWER(COALESCE(p.current_location, '')) LIKE ?
+                   OR LOWER(COALESCE(p.status, '')) LIKE ?)
+            ORDER BY
+                CASE WHEN LOWER(COALESCE(p.serial_number, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(pm.name, '')) = ? THEN 0 ELSE 1 END,
+                CASE WHEN LOWER(COALESCE(p.current_location, '')) = ? THEN 0 ELSE 1 END,
+                p.id DESC
+            LIMIT ?
+        """;
+
+        String likeKeyword = "%" + normalizedKeyword + "%";
+        return query(sql, mapper, customerId, likeKeyword, likeKeyword, likeKeyword, likeKeyword, likeKeyword, normalizedKeyword, normalizedKeyword, normalizedKeyword, limit);
+    }
+
 
     /**
      * Lấy 1 product theo id (có join để lấy model_name/customer_name)
@@ -392,9 +423,14 @@ public class ProductDAO extends GenericDAO<Product> {
     }
 
     public List<Product> findByContractId(Long contractId) {
-        String sql = "SELECT p.*, pm.name AS model_name " +
+        String sql = "SELECT p.*, " +
+                "pm.name AS model_name, " +
+                "b.name AS brand_name, " +
+                "c.name AS category_name " +
                 "FROM products p " +
                 "LEFT JOIN product_models pm ON p.model_id = pm.id " +
+                "LEFT JOIN brands b ON pm.brand_id = b.id " +
+                "LEFT JOIN categories c ON pm.category_id = c.id " +
                 "WHERE p.contract_id = ? " +
                 "ORDER BY p.created_at DESC";
         return query(sql, new ProductMapper(), contractId);
@@ -402,16 +438,15 @@ public class ProductDAO extends GenericDAO<Product> {
 
 
     public Long save(Product product) {
-        StringBuilder sql = new StringBuilder("INSERT INTO products (");
-        sql.append("serial_number, customer_id, contract_id, status, total_running_hours, ");
-        sql.append("manufacture_year, purchase_date, current_location, model_id, created_at");
-        sql.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        String sql = "INSERT INTO products (" + "serial_number, customer_id, contract_id, status, total_running_hours, " +
+                "manufacture_year, purchase_date, current_location, model_id, created_at" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
         if (product.getContractId() == null) {
             throw new IllegalArgumentException("contractId không được null vì product phải thuộc hợp đồng");
         }
 
-        return insert(sql.toString(),
+        return insert(sql,
                 product.getSerialNumber(),
                 product.getCustomerId(),
                 product.getContractId(),
@@ -488,6 +523,18 @@ public class ProductDAO extends GenericDAO<Product> {
 
         return count(sql, searchPattern, searchPattern);
     }
+    public Product findByIdAndCustomerId(Long productId, Long customerId) {
+        String sql = """
+        SELECT p.*, pm.name AS model_name, b.name AS brand_name
+        FROM products p
+        LEFT JOIN product_models pm ON p.model_id = pm.id
+        LEFT JOIN brands b ON pm.brand_id = b.id
+        WHERE p.id = ? AND p.customer_id = ?
+        LIMIT 1
+    """;
 
+        List<Product> list = query(sql, new ProductMapper(), productId, customerId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
+    }
 
 }

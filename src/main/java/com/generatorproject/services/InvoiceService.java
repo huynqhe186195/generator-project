@@ -3,15 +3,14 @@ package com.generatorproject.services;
 import com.generatorproject.dao.InvoiceDAO;
 import com.generatorproject.dao.QuoteDAO;
 import com.generatorproject.model.Invoice;
-import com.generatorproject.model.Quote;
 import com.generatorproject.model.Users;
 
 import java.util.List;
 
 public class InvoiceService implements IInvoiceService {
 
-    private InvoiceDAO invoiceDAO = new InvoiceDAO();
-    private QuoteDAO quoteDAO = new QuoteDAO();
+    private final InvoiceDAO invoiceDAO = new InvoiceDAO();
+    private final QuoteDAO quoteDAO = new QuoteDAO();
 
 
     @Override
@@ -79,4 +78,18 @@ public class InvoiceService implements IInvoiceService {
     public boolean updateTaxRate(Long invoiceId, double newTaxRate) {
         return invoiceDAO.updateTaxRate(invoiceId,newTaxRate);
     }
+
+    @Override
+    public boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo) {
+        return invoiceDAO.updatePaymentStatusByCode(invoiceCode,paymentStatus,paymentMethod,transactionNo);
+    }
+    @Override
+    public Invoice getInvoiceByCode(String invoiceCode){
+        return invoiceDAO.getInvoiceByCode(invoiceCode);
+    }
+    @Override
+    public List<Invoice> getInvoicesByCustomer(Long customerId, String keyword, String status, int page, int pageSize){
+        return invoiceDAO.findByCustomer(customerId,keyword,status,page,pageSize);
+    }
+
 }

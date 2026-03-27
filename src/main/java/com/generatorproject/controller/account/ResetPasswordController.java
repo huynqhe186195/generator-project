@@ -15,7 +15,7 @@ import java.io.IOException;
 @WebServlet(urlPatterns = { "/handleResetPassword" })
 public class ResetPasswordController extends HttpServlet {
 
-    private IUserServices userServices;
+    private final IUserServices userServices;
     private final AccountServices accountServices;
 
     public ResetPasswordController() {

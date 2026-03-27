@@ -7,8 +7,8 @@ import java.util.List;
 public interface IInvoiceService {
 
     // Tạo hóa đơn mới từ Báo giá
-    public boolean createInvoiceFromRequest(Long requestId, Integer staffId, double taxRate);
-    public boolean hasInvoiceByRequest(Long requestId);
+    boolean createInvoiceFromRequest(Long requestId, Integer staffId, double taxRate);
+    boolean hasInvoiceByRequest(Long requestId);
 
     // Lấy chi tiết hóa đơn
     Invoice getInvoiceById(Long id);
@@ -22,5 +22,8 @@ public interface IInvoiceService {
     // Hủy hóa đơn (nếu có sai sót)
     boolean cancelInvoice(Long invoiceId, String reason, Users staff) throws Exception;
     int countInvoices(String keyword, String status);
-    public boolean updateTaxRate(Long invoiceId, double newTaxRate);
+    boolean updateTaxRate(Long invoiceId, double newTaxRate);
+    boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo);
+    Invoice getInvoiceByCode(String invoiceCode);
+    List<Invoice> getInvoicesByCustomer(Long customerId, String keyword, String status, int page, int pageSize);
 }

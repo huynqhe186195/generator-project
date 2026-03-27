@@ -3,12 +3,17 @@ package com.generatorproject.controller.manager;
 import com.generatorproject.services.IRequestServices;
 import com.generatorproject.services.IUserServices;
 import com.generatorproject.services.IProductServices;
+import com.generatorproject.services.IIncidentPlanService;
+import com.generatorproject.services.IIncidentServices;
 import com.generatorproject.services.RequestServices;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Product;
 import com.generatorproject.model.Users;
+import com.generatorproject.model.Incident;
 import com.generatorproject.services.UserServices;
 import com.generatorproject.services.ProductServices;
+import com.generatorproject.services.IncidentPlanService;
+import com.generatorproject.services.IncidentServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -38,12 +43,16 @@ public class ManagerRequestController extends HttpServlet {
     private final IRequestServices requestService;
     private final IUserServices userService;
     private final IProductServices productService;
+    private final IIncidentPlanService incidentPlanService;
+    private final IIncidentServices incidentService;
     private final Gson gson;
 
     public ManagerRequestController() {
         requestService = new RequestServices();
         userService = new UserServices();
         productService = new ProductServices();
+        incidentPlanService = new IncidentPlanService();
+        incidentService = new IncidentServices();
         gson = new Gson();
     }
 
@@ -77,12 +86,14 @@ public class ManagerRequestController extends HttpServlet {
                 }
             }
             req.setAttribute("senderNames", senderNames);
+            req.setAttribute("listTechnicians", userService.findUserByRoleId(4));
 
         } else {
             List<SystemRequest> myRequests = requestService.findBySenderId((long) manager.getId());
             currentRequests = myRequests;
             req.setAttribute("requests", myRequests);
             req.setAttribute("box", "sent");
+            req.setAttribute("listTechnicians", userService.findUserByRoleId(4));
         }
 
         attachReferenceDisplayData(req, currentRequests);
@@ -93,6 +104,7 @@ public class ManagerRequestController extends HttpServlet {
     private void attachReferenceDisplayData(HttpServletRequest req, List<SystemRequest> requests) {
         Map<Long, String> technicianDisplayById = new HashMap<>();
         Map<Long, String> productDisplayById = new HashMap<>();
+        Map<Long, String> incidentStatusById = new HashMap<>();
 
         if (requests != null) {
             for (SystemRequest item : requests) {
@@ -132,11 +144,20 @@ public class ManagerRequestController extends HttpServlet {
 
                     productDisplayById.put(productId, modelName + " - " + serial);
                 }
+
+                Long incidentId = asLong(data.get("incidentId"));
+                if (incidentId != null && !incidentStatusById.containsKey(incidentId)) {
+                    Incident incident = incidentService.findById(incidentId);
+                    if (incident != null) {
+                        incidentStatusById.put(incidentId, incident.getStatus());
+                    }
+                }
             }
         }
 
         req.setAttribute("technicianDisplayMap", technicianDisplayById);
         req.setAttribute("productDisplayMap", productDisplayById);
+        req.setAttribute("incidentStatusMap", incidentStatusById);
         req.setAttribute("technicianDisplayJson", gson.toJson(technicianDisplayById));
         req.setAttribute("productDisplayJson", gson.toJson(productDisplayById));
     }
@@ -147,6 +168,9 @@ public class ManagerRequestController extends HttpServlet {
         try {
             String s = String.valueOf(raw).trim();
             if (s.isEmpty()) return null;
+            if (s.contains(".")) {
+                return (long) Double.parseDouble(s);
+            }
             return Long.parseLong(s);
         } catch (Exception e) {
             return null;
@@ -166,6 +190,11 @@ public class ManagerRequestController extends HttpServlet {
 
         if ("approve".equals(action)) {
             handleApprove(req, resp);
+            return;
+        }
+
+        if ("assign_technician".equals(action)) {
+            handleAssignTechnician(req, resp);
             return;
         }
 
@@ -194,6 +223,31 @@ public class ManagerRequestController extends HttpServlet {
             }
 
             long approverId = currentUser.getId();
+            SystemRequest request = requestService.findById(requestId);
+            if (request != null && request.getInfo() != null) {
+                Map<String, Object> info = request.getInfo();
+                Long overrideTechnicianId = asLong(req.getParameter("technicianId"));
+                if ("INCIDENT_REPORT".equalsIgnoreCase(request.getRequestType()) && overrideTechnicianId != null) {
+                    info.put("technicianId", overrideTechnicianId);
+                    Users overrideTechnician = userService.findUserById(overrideTechnicianId.intValue());
+                    String technicianName = (overrideTechnician != null && overrideTechnician.getFullName() != null
+                            && !overrideTechnician.getFullName().trim().isEmpty())
+                            ? overrideTechnician.getFullName().trim()
+                            : "Kỹ thuật viên #" + overrideTechnicianId;
+                    info.put("technicianName", technicianName);
+                    request.setRequestData(gson.toJson(info));
+                    requestService.update(request);
+                }
+
+                Long incidentPlanId = asLong(info.get("incidentPlanId"));
+                Long incidentId = asLong(info.get("incidentId"));
+                if (incidentPlanId != null) {
+                    incidentPlanService.approve(incidentPlanId, (int) approverId);
+                }
+                if (incidentId != null) {
+                    incidentService.updateStatus(incidentId, "APPROVED");
+                }
+            }
 
             // Approve request
             requestService.approve(requestId, approverId, "STAFF", "Đã duyệt");
@@ -218,10 +272,68 @@ public class ManagerRequestController extends HttpServlet {
             }
 
             long id = Long.parseLong(idStr);
+            SystemRequest request = requestService.findById(id);
+            if (request != null && request.getInfo() != null) {
+                Long incidentPlanId = asLong(request.getInfo().get("incidentPlanId"));
+                Long incidentId = asLong(request.getInfo().get("incidentId"));
+                if (incidentPlanId != null) {
+                    incidentPlanService.reject(incidentPlanId, reason);
+                }
+                if (incidentId != null) {
+                    incidentService.updateStatus(incidentId, "VERIFIED");
+                }
+            }
 
             requestService.reject(id, reason);
 
             resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+        }
+    }
+
+    private void handleAssignTechnician(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            String idStr = req.getParameter("id");
+            String technicianIdRaw = req.getParameter("technicianId");
+            if (idStr == null || idStr.isBlank()) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+                return;
+            }
+
+            if (technicianIdRaw == null || technicianIdRaw.isBlank()) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=technician_updated");
+                return;
+            }
+
+            long requestId = Long.parseLong(idStr);
+            Long technicianId = asLong(technicianIdRaw);
+            if (technicianId == null) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+                return;
+            }
+
+            SystemRequest request = requestService.findById(requestId);
+            if (request == null || request.getInfo() == null
+                    || !"INCIDENT_REPORT".equalsIgnoreCase(request.getRequestType())) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");
+                return;
+            }
+
+            Map<String, Object> info = request.getInfo();
+            info.put("technicianId", technicianId);
+            Users technician = userService.findUserById(technicianId.intValue());
+            String technicianName = (technician != null && technician.getFullName() != null
+                    && !technician.getFullName().trim().isEmpty())
+                    ? technician.getFullName().trim()
+                    : "Kỹ thuật viên #" + technicianId;
+            info.put("technicianName", technicianName);
+
+            request.setRequestData(gson.toJson(info));
+            requestService.update(request);
+
+            resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=technician_updated");
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/manager/requests?box=inbox&msg=error");

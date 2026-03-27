@@ -273,7 +273,7 @@ public class AdminRequestController extends HttpServlet {
         }
 
         String downloadName = (excelFileName == null || excelFileName.trim().isEmpty()) ? file.getName() : excelFileName.trim();
-        String encodedName = URLEncoder.encode(downloadName, StandardCharsets.UTF_8.name()).replace("+", "%20");
+        String encodedName = URLEncoder.encode(downloadName, StandardCharsets.UTF_8).replace("+", "%20");
 
         resp.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         resp.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedName);

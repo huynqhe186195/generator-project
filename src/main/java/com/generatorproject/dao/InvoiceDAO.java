@@ -13,7 +13,7 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
 
         // CÂU LỆNH SQL MỚI: Đã bổ sung quote_id và trích xuất q.total_amount từ bảng quotes
         String sqlSmartInsert =
-                "INSERT INTO invoices (invoice_code, customer_id, quote_id, maintenance_id, created_by, subtotal, tax_rate, tax_amount, total_amount, payment_status, issued_date, due_date) " +
+                "INSERT INTO invoices (invoice_code, customer_id, quote_id, maintenance_id, created_by, subtotal, tax_rate, tax_amount, total_amount, payment_status, issued_date, due_date, labor_cost) " +
                         "SELECT " +
                         "   CONCAT('INV-', DATE_FORMAT(NOW(), '%Y%m%d'), '-', FLOOR(RAND()*(9999-1000)+1000)), " +
                         "   q.customer_id, " +
@@ -24,7 +24,8 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
                         "   ?, " +            // Tham số 2: Tax Rate
                         "   (q.total_amount * ? / 100), " + // Tham số 3: Tax Amount
                         "   (q.total_amount + (q.total_amount * ? / 100)), " + // Tham số 4: Total Amount
-                        "   'UNPAID', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY) " +
+                        "   'UNPAID', NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), " + // <--- ĐÃ THÊM DẤU PHẨY
+                        "   q.labor_cost " + // <--- ĐÃ THÊM KHOẢNG TRẮNG
                         "FROM system_requests sr " +
                         "JOIN quotes q ON q.maintenance_id = CAST(JSON_UNQUOTE(JSON_EXTRACT(sr.request_data, '$.maintenanceId')) AS UNSIGNED) " +
                         "WHERE sr.id = ? AND q.status = 'APPROVED' " + // Tham số 5: Request ID
@@ -142,5 +143,67 @@ public class InvoiceDAO extends GenericDAO<Invoice> {
             e.printStackTrace();
             return false;
         }
+    }
+    /**
+     * Cập nhật trạng thái thanh toán từ VNPay Return/IPN dựa vào Mã Hóa Đơn (invoice_code)
+     */
+    public boolean updatePaymentStatusByCode(String invoiceCode, String paymentStatus, String paymentMethod, String transactionNo) {
+        String noteContent = (transactionNo != null && !transactionNo.isEmpty())
+                ? "Thanh toán qua VNPay. Mã GD: " + transactionNo
+                : "Cập nhật thanh toán hệ thống";
+
+        String sql;
+        try {
+            if ("PAID".equalsIgnoreCase(paymentStatus)) {
+                // Nếu thành công thì chốt luôn giờ thanh toán (paid_at = NOW())
+                sql = "UPDATE invoices SET payment_status = ?, payment_method = ?, note = ?, paid_at = NOW() WHERE invoice_code = ?";
+                update(sql, paymentStatus, paymentMethod, noteContent, invoiceCode);
+            } else {
+                // Nếu thất bại/hủy thì không cập nhật paid_at
+                sql = "UPDATE invoices SET payment_status = ?, payment_method = ?, note = ? WHERE invoice_code = ?";
+                update(sql, paymentStatus, paymentMethod, noteContent, invoiceCode);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public Invoice getInvoiceByCode(String invoiceCode) {
+        String sql = "SELECT i.*, u.full_name as customer_name, u.email as customer_email, s.full_name as created_by_name " +
+                "FROM invoices i " +
+                "JOIN users u ON i.customer_id = u.id " +
+                "LEFT JOIN users s ON i.created_by = s.id " +
+                "WHERE i.invoice_code = ?";
+
+        List<Invoice> list = query(sql, new InvoiceMapper(), invoiceCode);
+        return list.isEmpty() ? null : list.get(0);
+    }
+    public List<Invoice> findByCustomer(Long customerId, String keyword, String status, int page, int pageSize) {
+        StringBuilder sql = new StringBuilder();
+        List<Object> params = new java.util.ArrayList<>();
+
+        sql.append("SELECT i.*, u.full_name AS customer_name, u.email AS customer_email, s.full_name AS created_by_name ");
+        sql.append("FROM invoices i ");
+        sql.append("JOIN users u ON i.customer_id = u.id ");
+        sql.append("LEFT JOIN users s ON i.created_by = s.id ");
+        sql.append("WHERE i.customer_id = ? "); // Lọc chính xác theo khách hàng này
+        params.add(customerId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND i.invoice_code LIKE ? ");
+            params.add("%" + keyword.trim() + "%");
+        }
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append("AND i.payment_status = ? ");
+            params.add(status);
+        }
+
+        sql.append("ORDER BY i.issued_date DESC LIMIT ? OFFSET ?");
+        params.add(pageSize);
+        params.add((page - 1) * pageSize);
+
+        return query(sql.toString(), new InvoiceMapper(), params.toArray());
     }
 }

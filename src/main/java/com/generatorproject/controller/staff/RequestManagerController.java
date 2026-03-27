@@ -1,8 +1,14 @@
 package com.generatorproject.controller.staff;
 
+import com.generatorproject.model.Incident;
+import com.generatorproject.model.IncidentPlan;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.IIncidentPlanService;
+import com.generatorproject.services.IIncidentServices;
 import com.generatorproject.services.IRequestServices;
+import com.generatorproject.services.IncidentPlanService;
+import com.generatorproject.services.IncidentServices;
 import com.generatorproject.services.RequestServices;
 import com.google.gson.Gson;
 
@@ -16,13 +22,17 @@ import java.io.IOException;
 import java.util.Map;
 
 // Khớp với action: <form action="/staff/request-manager" ...>
-@WebServlet(urlPatterns = {"/staff/request-manager"})
+@WebServlet(urlPatterns = { "/staff/request-manager" })
 public class RequestManagerController extends HttpServlet {
 
     private final IRequestServices requestServices;
+    private final IIncidentServices incidentServices;
+    private final IIncidentPlanService incidentPlanService;
 
-    public RequestManagerController(){
+    public RequestManagerController() {
         requestServices = new RequestServices();
+        incidentServices = new IncidentServices();
+        incidentPlanService = new IncidentPlanService();
     }
 
     @Override
@@ -37,24 +47,81 @@ public class RequestManagerController extends HttpServlet {
         try {
             // 1. Lấy dữ liệu từ Form
             String idStr = req.getParameter("incident_id");
-            String technicianId = req.getParameter("technician_id");
             String priority = req.getParameter("priority");
             String type = req.getParameter("type");
             String staffNote = req.getParameter("staff_note");
+            String estimatedDuration = req.getParameter("estimated_duration_minutes");
+            String technicianCount = req.getParameter("required_technician_count");
+            String serviceLocation = req.getParameter("service_location");
+            String partsNote = req.getParameter("parts_note");
+            String requiresPartsPreparation = req.getParameter("requires_parts_preparation");
+            String selectedRecommendationCode = req.getParameter("selected_recommendation_code");
+            String selectedRecommendationTitle = req.getParameter("selected_recommendation_title");
+            String selectedSuggestedTechnicianIds = req.getParameter("selected_suggested_technician_ids");
+            String selectedSuggestedTechnicianId = req.getParameter("selected_suggested_technician_id");
+            String selectedSuggestedTechnicianName = req.getParameter("selected_suggested_technician_name");
+            String selectedRequiredSkillCodes = req.getParameter("selected_required_skill_codes");
 
             long requestId = Long.parseLong(idStr);
 
             // 2. Lấy Request cũ từ DB để cập nhật thêm thông tin vào JSON
             SystemRequest sysReq = requestServices.findById(requestId);
-
-            // Lấy Map dữ liệu cũ ra (Thông tin khách báo)
             Map<String, Object> info = sysReq.getInfo();
+            Long incidentId = parseLongValue(info.get("incidentId"));
+            if (incidentId == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+                return;
+            }
+            Incident incident = incidentServices.findById(incidentId);
+            if (incident == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=not_found");
+                return;
+            }
 
-            // Chèn thêm thông tin xử lý của Staff vào Map đó
-            info.put("technicianId", technicianId);
+            IncidentPlan plan = new IncidentPlan();
+            plan.setIncidentId(incidentId.intValue());
+            plan.setPlannedBy(user.getId());
+            plan.setWorkType(type);
+            plan.setEstimatedDurationMinutes(parseIntOrDefault(estimatedDuration, 120));
+            plan.setRequiredTechnicianCount(1);
+            plan.setRequiresPartsPreparation("1".equals(requiresPartsPreparation) || "on".equalsIgnoreCase(requiresPartsPreparation));
+            plan.setPartsNote(partsNote);
+            plan.setServiceLocation(serviceLocation == null || serviceLocation.isBlank() ? incident.getLocationSnapshot() : serviceLocation);
+            plan.setPriorityOverride(priority);
+            plan.setStaffNote(staffNote);
+            plan.setManagerReviewStatus("PENDING_APPROVAL");
+
+            Long incidentPlanId = incidentPlanService.createDraft(plan);
+            if (incidentPlanId == null) {
+                resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+                return;
+            }
+
+            // Chèn thêm thông tin xử lý của Staff vào Map workflow
+            info.put("incidentPlanId", incidentPlanId);
             info.put("priority", priority);
             info.put("maintenanceType", type);
             info.put("staffNote", staffNote);
+            info.put("estimatedDurationMinutes", plan.getEstimatedDurationMinutes());
+            info.put("requiredTechnicianCount", 1);
+            info.put("serviceLocation", plan.getServiceLocation());
+            info.put("workflowKind", "INCIDENT_PLAN_APPROVAL");
+            if (selectedRecommendationCode != null && !selectedRecommendationCode.trim().isEmpty()) {
+                info.put("selectedRecommendationCode", selectedRecommendationCode);
+                info.put("selectedRecommendationTitle", selectedRecommendationTitle);
+                info.put("selectedSuggestedTechnicianIds", selectedSuggestedTechnicianIds);
+                info.put("selectedRequiredSkillCodes", selectedRequiredSkillCodes);
+            }
+            Long recommendedTechnicianId = parseLongValue(selectedSuggestedTechnicianId);
+            if (recommendedTechnicianId == null) {
+                recommendedTechnicianId = parseFirstTechnicianId(selectedSuggestedTechnicianIds);
+            }
+            if (recommendedTechnicianId != null) {
+                info.put("technicianId", recommendedTechnicianId);
+            }
+            if (selectedSuggestedTechnicianName != null && !selectedSuggestedTechnicianName.trim().isEmpty()) {
+                info.put("technicianName", selectedSuggestedTechnicianName.trim());
+            }
 
 
             // Đóng gói lại thành JSON
@@ -78,6 +145,37 @@ public class RequestManagerController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/staff/incident-list?message=error");
+        }
+    }
+
+    private int parseIntOrDefault(String value, int defaultValue) {
+        try {
+            return value == null || value.isBlank() ? defaultValue : Integer.parseInt(value);
+        } catch (Exception ignored) {
+            return defaultValue;
+        }
+    }
+
+    private Long parseFirstTechnicianId(String rawIds) {
+        if (rawIds == null || rawIds.trim().isEmpty()) {
+            return null;
+        }
+        String first = rawIds.split(",")[0].trim();
+        return parseLongValue(first);
+    }
+
+    private Long parseLongValue(Object raw) {
+        if (raw == null) return null;
+        if (raw instanceof Number) return ((Number) raw).longValue();
+        try {
+            String s = String.valueOf(raw).trim();
+            if (s.isEmpty()) return null;
+            if (s.contains(".")) {
+                return (long) Double.parseDouble(s);
+            }
+            return Long.parseLong(s);
+        } catch (Exception ignored) {
+            return null;
         }
     }
 }

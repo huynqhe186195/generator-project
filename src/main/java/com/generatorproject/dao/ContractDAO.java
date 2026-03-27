@@ -15,11 +15,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,12 +38,13 @@ public class ContractDAO extends GenericDAO<Contract> {
     }
 
     public Long save(Contract contract) {
-        String sql = "INSERT INTO contracts (contract_number, customer_id, start_date, end_date, status, manager_id, created_at) "
+        String sql = "INSERT INTO contracts (contract_number, customer_id, signed_date, start_date, end_date, status, manager_id, created_at) "
                 +
-                "VALUES (?, ?, ?, ?, ?, ?, NOW())";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
         return insert(sql,
                 contract.getContractNumber(),
                 contract.getCustomerId(),
+                contract.getSignedDate(),
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
@@ -58,11 +55,12 @@ public class ContractDAO extends GenericDAO<Contract> {
         Contract oldContract = findById(contract.getId());
 
         String sql = "UPDATE contracts SET contract_number = ?, customer_id = ?, " +
-                "start_date = ?, end_date = ?, status = ?, manager_id = ? WHERE id = ?";
+                "signed_date = ?, start_date = ?, end_date = ?, status = ?, manager_id = ? WHERE id = ?";
 
         update(sql,
                 contract.getContractNumber(),
                 contract.getCustomerId(),
+                contract.getSignedDate(),
                 contract.getStartDate(),
                 contract.getEndDate(),
                 contract.getStatus(),
@@ -79,6 +77,7 @@ public class ContractDAO extends GenericDAO<Contract> {
             meta.put("action", "EDIT_CONTRACT");
             meta.put("contract_number", contract.getContractNumber());
             meta.put("customer_id", contract.getCustomerId());
+            meta.put("signed_date", contract.getSignedDate() == null ? null : contract.getSignedDate().toString());
             meta.put("start_date", contract.getStartDate() == null ? null : contract.getStartDate().toString());
             meta.put("end_date", contract.getEndDate() == null ? null : contract.getEndDate().toString());
 
@@ -100,6 +99,11 @@ public class ContractDAO extends GenericDAO<Contract> {
         String sql = "SELECT * FROM contracts WHERE id = ?";
         List<Contract> results = query(sql, new ContractMapper(), id);
         return results.isEmpty() ? null : results.get(0);
+    }
+
+    public void updateFilePath(Long contractId, String filePath) {
+        String sql = "UPDATE contracts SET file_path = ? WHERE id = ?";
+        update(sql, filePath, contractId);
     }
 
     public Contract findByIdWithDetails(Long id) {
@@ -464,7 +468,7 @@ public class ContractDAO extends GenericDAO<Contract> {
     }
 
     private boolean safeEquals(Object a, Object b) {
-        return a == null ? b == null : a.equals(b);
+        return Objects.equals(a, b);
     }
 
     public List<Contract> findByProductId(Long productId) {
@@ -500,5 +504,17 @@ public class ContractDAO extends GenericDAO<Contract> {
                 "JOIN users u ON c.customer_id = u.id " +
                 "ORDER BY c.created_at DESC LIMIT ?";
         return query(sql, new ContractMapper(), limit);
+    }
+    public Contract findContractDetailForCustomer(Long contractId, Long customerId) {
+        String sql = """
+        SELECT c.*
+        FROM contracts c
+        WHERE c.id = ?
+          AND c.customer_id = ?
+        LIMIT 1
+    """;
+
+        List<Contract> list = query(sql, new ContractMapper(), contractId, customerId);
+        return (list == null || list.isEmpty()) ? null : list.get(0);
     }
 }

@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
@@ -411,7 +412,7 @@ public class TechnicalController extends HttpServlet {
                     + "/technical/repair-report?id=" + maintenanceId;
 
             if (laborCostRaw != null && !laborCostRaw.trim().isEmpty()) {
-                redirectUrl += "&laborCost=" + java.net.URLEncoder.encode(laborCostRaw, "UTF-8");
+                redirectUrl += "&laborCost=" + java.net.URLEncoder.encode(laborCostRaw, StandardCharsets.UTF_8);
             }
 
             resp.sendRedirect(redirectUrl);
@@ -756,7 +757,6 @@ public class TechnicalController extends HttpServlet {
 
             resp.sendRedirect(req.getContextPath()
                     + "/technical/repair-report?id=" + maintenanceId);
-            return;
         }
     }
 

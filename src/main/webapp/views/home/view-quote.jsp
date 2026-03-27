@@ -177,17 +177,17 @@
                             <span class="text-muted">Phí vật tư:</span>
                             <span class="fw-bold"><fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ</span>
                         </div>
-<%--                        <div class="d-flex justify-content-between mb-3">--%>
-<%--                            <span class="text-muted">Phí nhân công:</span>--%>
-<%--                            <span class="fw-bold"><fmt:formatNumber value="${repairRequest.laborCost}" pattern="#,###"/> VNĐ</span>--%>
-<%--                        </div>--%>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Phí nhân công:</span>
+                            <span class="fw-bold"><fmt:formatNumber value="${repairRequest.grandTotal-repairRequest.partsTotal}" pattern="#,###"/> VNĐ</span>
+                        </div>
 
                         <hr class="my-4 border-secondary opacity-25">
 
                         <div class="total-box mb-4">
                             <div class="text-center text-uppercase fw-bold text-muted small mb-2">Tổng Thanh Toán</div>
                             <h2 class="fw-bold text-danger text-center mb-0">
-                                <fmt:formatNumber value="${repairRequest.partsTotal}" pattern="#,###"/> VNĐ
+                                <fmt:formatNumber value="${repairRequest.grandTotal}" pattern="#,###"/> VNĐ
                             </h2>
                         </div>
 
@@ -240,11 +240,12 @@
                 })
                 .then(data => {
                     alert(action === 'ACCEPT' ? "Cảm ơn bạn đã xác nhận. Chúng tôi sẽ tiến hành sửa chữa!" : "Đã hủy yêu cầu sửa chữa.");
-                    window.location.href = "<c:url value='/product-list'/>"; // Trở về trang danh sách máy
+                    window.location.href = "<c:url value='/product-list'/>"; // Trở về trang tra cứu hợp đồng
                 })
                 .catch(err => alert(err.message));
         }
     }
 </script>
+<jsp:include page="/views/customer/ai-chat-widget.jsp" />
 </body>
 </html>

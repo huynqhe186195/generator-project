@@ -107,16 +107,22 @@
                                                 <div class="small">
                                                     <c:choose>
                                                         <c:when test="${not empty prod}">
-                                                            <div class="fw-bold text-primary"><i
-                                                                    class="fas fa-server me-1"></i> ${prod.modelName}
+                                                            <%-- Bọc tên máy bằng thẻ a và dùng class name-link --%>
+                                                            <div class="fw-bold text-primary">
+                                                                <a href="<c:url value='/staff/product/detail?id=${prod.id}'/>"
+                                                                   class="name-link"
+                                                                   title="Xem chi tiết thiết bị">
+                                                                    <i class="fas fa-server me-1"></i> ${prod.modelName}
+                                                                </a>
                                                             </div>
-                                                            <div class="text-muted"><i class="fas fa-barcode me-1"></i>
-                                                                ${prod.serialNumber}</div>
+                                                            <div class="text-muted mt-1">
+                                                                <i class="fas fa-barcode me-1"></i> ${prod.serialNumber}
+                                                            </div>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <div class="text-danger"><i
-                                                                    class="fas fa-exclamation-circle me-1"></i> Không
-                                                                tìm thấy (ID: ${req.info.productId})</div>
+                                                            <div class="text-danger">
+                                                                <i class="fas fa-exclamation-circle me-1"></i> Không tìm thấy (ID: ${req.info.productId})
+                                                            </div>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </div>
@@ -184,12 +190,10 @@
                                                             </a>
                                                         </c:when>
                                                         <c:when test="${req.status == 'APPROVED'}">
-                                                            <form action="<c:url value='/staff/assign-task'/>" method="post" style="display: inline;">
-                                                                <input type="hidden" name="id" value="${req.id}">
-                                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận tạo task bảo trì cho yêu cầu này?')">
-                                                                    <i class="fas fa-tools me-1"></i> Gửi task
-                                                                </button>
-                                                            </form>
+                                                            <a href="<c:url value='/staff/incident/work-order?id=${req.id}'/>"
+                                                               class="btn btn-sm btn-success">
+                                                                <i class="fas fa-tools me-1"></i> Tạo work order
+                                                            </a>
                                                         </c:when>
                                                     </c:choose>
 

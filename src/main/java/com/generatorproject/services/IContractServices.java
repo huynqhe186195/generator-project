@@ -51,4 +51,6 @@ public interface IContractServices {
             Date purchaseDate,
             Integer manufactureYear,
             String currentLocation) throws Exception;
+
+    void updateContractFilePath(Long contractId, String filePath);
 }

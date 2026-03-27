@@ -7,7 +7,7 @@ import java.sql.Date;
 import java.util.List;
 
 public class RequestServices implements IRequestServices {
-    private RequestDAO requestDAO;
+    private final RequestDAO requestDAO;
 
     public RequestServices() {
         requestDAO = new RequestDAO();
@@ -56,7 +56,9 @@ public class RequestServices implements IRequestServices {
 
     @Override
     public void updateStatus(int id, String status) {
+        System.out.println("update in service");
         requestDAO.updateStatus(id, status);
+
     }
 
     @Override

@@ -11,7 +11,7 @@ public interface IQuoteService {
      * Tạo mới một báo giá gốc
      * @return ID của báo giá vừa tạo
      */
-    Long createQuote(int maintenanceId, Long customerId, double totalAmount, int createdBy);
+    Long createQuote(int maintenanceId, Long customerId, double totalAmount, int createdBy,double laborCost);
 
     /**
      * Thêm danh sách vật tư vào chi tiết báo giá

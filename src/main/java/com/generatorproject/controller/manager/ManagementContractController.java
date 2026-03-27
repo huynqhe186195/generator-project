@@ -292,6 +292,12 @@ public class ManagementContractController extends HttpServlet {
                         contractId, serialNumber, modelId, purchaseDate, manufactureYear, currentLocation);
             }
 
+
+            String aiSavedSourceFile = req.getParameter("aiSavedSourceFile");
+            if (aiSavedSourceFile != null && !aiSavedSourceFile.trim().isEmpty()) {
+                contractService.updateContractFilePath(contractId, aiSavedSourceFile.trim());
+            }
+
             resp.sendRedirect(req.getContextPath()
                     + "/manager/contracts?action=detail&id=" + contractId
                     + "&assignedProductId=" + firstCreatedProductId);
@@ -489,6 +495,7 @@ public class ManagementContractController extends HttpServlet {
             Contract c = Contract.builder()
                     .contractNumber(contractNumber)
                     .customerId(Math.toIntExact(customerId))
+                    .signedDate(signedDate)
                     .startDate(startDate)
                     .endDate(endDate)
                     .status("PENDING_SERIAL")

@@ -105,15 +105,15 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <input type="hidden" name="contractId" value="${targetContract.id}">
+                                    <input type="hidden" name="productId" value="${targetContract.productId}">
                                 </c:when>
 
                                 <%-- TRƯỜNG HỢP 2: Chọn từ danh sách --%>
                                 <c:otherwise>
-                                    <select name="contractId" class="form-select py-3" required>
+                                    <select name="productId" class="form-select py-3" required>
                                         <option value="">-- Vui lòng chọn máy --</option>
                                         <c:forEach items="${myContracts}" var="c">
-                                            <option value="${c.id}">
+                                            <option value="${c.productId}">
                                                     ${c.productName} - (SN: ${c.serialNumber})
                                             </option>
                                         </c:forEach>
@@ -137,9 +137,22 @@
 
                             <div class="col-md-6 mb-4">
                                 <label class="form-label">Ngày đề xuất kiểm tra</label>
-                                <input type="date" name="preferredDate" class="form-control py-2">
+                                <input type="date" name="preferredDate" class="form-control py-2" required>
                                 <div class="form-text small">Để trống nếu cần gấp ngay lập tức.</div>
                             </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Khung giờ khách có thể tiếp nhận kiểm tra</label>
+                            <select name="preferredTimeSlot" class="form-select py-2" required>
+                                <option value="">-- Chọn khung giờ 120 phút --</option>
+                                <option value="08:00|10:00|MORNING">08:00 - 10:00</option>
+                                <option value="10:00|12:00|MORNING">10:00 - 12:00</option>
+                                <option value="12:00|14:00|AFTERNOON">12:00 - 14:00</option>
+                                <option value="14:00|16:00|AFTERNOON">14:00 - 16:00</option>
+                                <option value="16:00|18:00|AFTERNOON">16:00 - 18:00</option>
+                            </select>
+                            <div class="form-text small">Mỗi khung giờ tối đa 120 phút, trong giờ làm việc 08:00 - 18:00.</div>
                         </div>
 
                         <div class="mb-4">
@@ -149,7 +162,7 @@
 
                         <div class="mb-4">
                             <label class="form-label">Mô tả chi tiết hiện tượng</label>
-                            <textarea name="description" class="form-control" rows="5" placeholder="Mô tả kỹ hơn: Đèn báo lỗi gì sáng? Xảy ra khi nào?"></textarea>
+                            <textarea name="description" class="form-control" rows="5" placeholder="Mô tả kỹ hơn: Đèn báo lỗi gì sáng? Xảy ra khi nào?" required></textarea>
                         </div>
 
                         <div class="d-flex justify-content-end gap-3 mt-5">
@@ -168,5 +181,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<jsp:include page="/views/customer/ai-chat-widget.jsp" />
 </body>
 </html>

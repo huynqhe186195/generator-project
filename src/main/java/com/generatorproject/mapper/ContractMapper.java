@@ -16,12 +16,18 @@ public class ContractMapper implements RowMapper<Contract> {
                     .customerId(rs.getInt("customer_id"))
                     .startDate(rs.getDate("start_date"))
                     .endDate(rs.getDate("end_date"))
+                    .signedDate(rs.getDate("signed_date"))
                     .status(rs.getString("status"))
                     .managerId(rs.getInt("manager_id"))
-                    .createdAt(rs.getTimestamp("created_at"));
-
+                    .createdAt(rs.getTimestamp("created_at"))
+                    .signedDate(rs.getDate("signed_date"));
             try {
                 builder.terminatedAt(rs.getTimestamp("terminated_at"));
+            } catch (SQLException ignored) {
+            }
+
+            try {
+                builder.filePath(rs.getString("file_path"));
             } catch (SQLException ignored) {
             }
 
@@ -59,4 +65,5 @@ public class ContractMapper implements RowMapper<Contract> {
             return null;
         }
     }
+
 }
