@@ -121,9 +121,6 @@
     <div class="wrapper">
         <nav id="sidebar">
             <ul class="list-unstyled components">
-                <li class="${pageContext.request.requestURI.endsWith('/manager/home.jsp') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/home"><i class="fa fa-tachometer-alt me-2"></i> Tổng quan</a>
-                </li>
                 <li class="${pageContext.request.requestURI.contains('contract') ? 'active' : ''}">
                     <a href="${pageContext.request.contextPath}/manager/contracts"><i class="fa fa-file-contract me-2"></i> Hợp đồng</a>
                 </li>
@@ -197,18 +194,6 @@
                             <a class="${pageContext.request.requestURI.contains('/manager/reports/assets') ? 'active' : ''}"
                                href="${pageContext.request.contextPath}/manager/reports/assets">
                                 <i class="fa fa-server me-2"></i> Máy & tài sản
-                            </a>
-
-                            <!-- 5. Technicians -->
-                            <a class="${pageContext.request.requestURI.contains('/manager/reports/technicians') ? 'active' : ''}"
-                               href="${pageContext.request.contextPath}/manager/reports/technicians">
-                                <i class="fa fa-user-gear me-2"></i> Hiệu suất đội
-                            </a>
-
-                            <!-- 6. Finance -->
-                            <a class="${pageContext.request.requestURI.contains('/manager/reports/finance') ? 'active' : ''}"
-                               href="${pageContext.request.contextPath}/manager/reports/finance">
-                                <i class="fa fa-coins me-2"></i> Doanh thu / vật tư
                             </a>
 
                             <!-- 7. Tổng hợp báo cáo -->
