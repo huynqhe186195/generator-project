@@ -792,6 +792,12 @@
                                                                             onclick="openReportModalFromButton(this)">
                                                                         <i class="fas fa-triangle-exclamation me-1"></i>Báo cáo sự cố
                                                                     </button>
+                                                                    <c:if test="${p.status == 'RECEIVED_QUOTE'}">
+                                                                        <a href="<c:url value='/user/view-quote'/>?productId=${p.id}"
+                                                                           class="btn btn-sm btn-primary">
+                                                                            <i class="fas fa-file-invoice-dollar me-1"></i>Báo giá linh kiện sửa chữa
+                                                                        </a>
+                                                                    </c:if>
                                                                 </div>
                                                             </td>
                                                         </tr>
