@@ -2,6 +2,7 @@ package com.generatorproject.controller.staff;
 
 import com.generatorproject.dao.MaintenanceAssignmentDAO;
 import com.generatorproject.dao.MaintenanceDAO;
+import com.generatorproject.dao.TechnicianCapabilityDAO;
 import com.generatorproject.model.*;
 import com.generatorproject.services.*;
 import com.google.gson.Gson;
@@ -18,6 +19,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,7 @@ public class StaffManagementController extends HttpServlet {
     private final IIncidentServices incidentServices;
     private final IIncidentPlanService incidentPlanService;
     private final IncidentPlanRecommendationService incidentPlanRecommendationService;
+    private final TechnicianCapabilityDAO technicianCapabilityDAO;
 
     public StaffManagementController() {
         userServices = new UserServices();
@@ -50,6 +53,7 @@ public class StaffManagementController extends HttpServlet {
         incidentServices = new IncidentServices();
         incidentPlanService = new IncidentPlanService();
         incidentPlanRecommendationService = new IncidentPlanRecommendationService();
+        technicianCapabilityDAO = new TechnicianCapabilityDAO();
     }
 
     @Override
@@ -707,16 +711,43 @@ public class StaffManagementController extends HttpServlet {
             }
 
             List<Users> alternativeTechnicians = new ArrayList<>();
+            List<AlternativeTechnicianView> alternativeTechnicianViews = new ArrayList<>();
             List<TimeSuggestionView> alternativeTimeSuggestions = new ArrayList<>();
             if ("conflict_schedule".equalsIgnoreCase(scheduleError) && selectedStart != null && selectedEnd != null) {
+                List<Integer> technicianIds = new ArrayList<>();
+                for (Users technician : listTechnicians) {
+                    if (technician != null) {
+                        technicianIds.add(technician.getId());
+                    }
+                }
+                Map<Integer, Integer> taskCounts = technicianCapabilityDAO.countTasksPerDay(
+                        technicianIds,
+                        new Date(selectedStart.getTime())
+                );
+                Map<Integer, TechnicianCapabilityDAO.TechnicianProfileSnapshot> profiles =
+                        technicianCapabilityDAO.findProfiles(technicianIds);
+
                 for (Users technician : listTechnicians) {
                     if (technician == null) {
                         continue;
                     }
                     if (!maintenanceAssignmentDAO.hasScheduleConflict(technician.getId(), selectedStart, selectedEnd)) {
                         alternativeTechnicians.add(technician);
+                        TechnicianCapabilityDAO.TechnicianProfileSnapshot profile = profiles.get(technician.getId());
+                        alternativeTechnicianViews.add(new AlternativeTechnicianView(
+                                technician,
+                                taskCounts.getOrDefault(technician.getId(), 0),
+                                profile == null ? null : profile.getMaxTasksPerDay(),
+                                profile != null && profile.isActive(),
+                                recommendedTechnicianId != null
+                                        && recommendedTechnicianId.intValue() == technician.getId()
+                        ));
                     }
                 }
+                alternativeTechnicianViews.sort(Comparator
+                        .comparing(AlternativeTechnicianView::isRecommended).reversed()
+                        .thenComparingInt(AlternativeTechnicianView::getCurrentTaskCount)
+                        .thenComparing(AlternativeTechnicianView::getTechnicianName, String.CASE_INSENSITIVE_ORDER));
 
                 if (selectedTechnicianId != null) {
                     alternativeTimeSuggestions = buildAlternativeTimeSuggestions(
@@ -738,6 +769,7 @@ public class StaffManagementController extends HttpServlet {
             req.setAttribute("preferredScheduledStart", formatDateTimeLocal(selectedStart));
             req.setAttribute("preferredScheduledEnd", formatDateTimeLocal(selectedEnd));
             req.setAttribute("alternativeTechnicians", alternativeTechnicians);
+            req.setAttribute("alternativeTechnicianViews", alternativeTechnicianViews);
             req.setAttribute("alternativeTimeSuggestions", alternativeTimeSuggestions);
             req.getRequestDispatcher("/views/staff/incident-work-order.jsp").forward(req, resp);
         } catch (Exception e) {
@@ -910,6 +942,60 @@ public class StaffManagementController extends HttpServlet {
 
         public String getEnd() {
             return end;
+        }
+    }
+
+    public static class AlternativeTechnicianView {
+        private final int technicianId;
+        private final String technicianName;
+        private final String technicianEmail;
+        private final int currentTaskCount;
+        private final Integer maxTasksPerDay;
+        private final boolean activeProfile;
+        private final boolean recommended;
+
+        public AlternativeTechnicianView(Users technician,
+                                         int currentTaskCount,
+                                         Integer maxTasksPerDay,
+                                         boolean activeProfile,
+                                         boolean recommended) {
+            this.technicianId = technician.getId();
+            this.technicianName = technician.getFullName() == null
+                    ? "Kỹ thuật viên #" + technician.getId()
+                    : technician.getFullName();
+            this.technicianEmail = technician.getEmail();
+            this.currentTaskCount = currentTaskCount;
+            this.maxTasksPerDay = maxTasksPerDay;
+            this.activeProfile = activeProfile;
+            this.recommended = recommended;
+        }
+
+        public int getTechnicianId() {
+            return technicianId;
+        }
+
+        public String getTechnicianName() {
+            return technicianName;
+        }
+
+        public String getTechnicianEmail() {
+            return technicianEmail;
+        }
+
+        public int getCurrentTaskCount() {
+            return currentTaskCount;
+        }
+
+        public Integer getMaxTasksPerDay() {
+            return maxTasksPerDay;
+        }
+
+        public boolean isActiveProfile() {
+            return activeProfile;
+        }
+
+        public boolean isRecommended() {
+            return recommended;
         }
     }
 
