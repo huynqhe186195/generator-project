@@ -151,8 +151,74 @@
                     </div>
                 </li>
 
-                <li class="${pageContext.request.requestURI.contains('system-report') ? 'active' : ''}">
-                    <a href="${pageContext.request.contextPath}/manager/system-report"><i class="fa fa-chart-line me-2"></i> Báo cáo</a>
+                <li class="${pageContext.request.requestURI.contains('/manager/system-report')
+                               || pageContext.request.requestURI.contains('/manager/dashboard')
+                               || pageContext.request.requestURI.contains('/manager/reports/') ? 'active' : ''}">
+                    <button class="sidebar-parent-toggle"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#sidebarReportList"
+                            aria-expanded="${
+                                   pageContext.request.requestURI.contains('/manager/system-report')
+                                   || pageContext.request.requestURI.contains('/manager/dashboard')
+                                   || pageContext.request.requestURI.contains('/manager/reports/')
+                                   ? 'true' : 'false'
+                                    }" aria-controls="sidebarReportList">
+                        <span><i class="fa fa-chart-line me-2"></i> Báo cáo</span>
+                        <i class="fa fa-chevron-down caret-icon"></i>
+                        </button>
+                        <div id="sidebarReportList" class="collapse ${
+                        pageContext.request.requestURI.contains('/manager/system-report')
+                        || pageContext.request.requestURI.contains('/manager/dashboard')
+                        || pageContext.request.requestURI.contains('/manager/reports/')
+                        ? 'show' : ''
+                        }">
+                        <div class="sidebar-submenu">
+
+                            <!-- 1. Dashboard -->
+                            <a class="${pageContext.request.requestURI.contains('/manager/dashboard') ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/manager/dashboard">
+                                <i class="fa fa-gauge-high me-2"></i> Tổng quan vận hành
+                            </a>
+
+                            <!-- 2. Tickets -->
+                            <a class="${pageContext.request.requestURI.contains('/manager/reports/tickets') ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/manager/reports/tickets">
+                                <i class="fa fa-ticket-alt me-2"></i> Tickets sửa chữa / sự cố
+                            </a>
+
+                            <!-- 3. Maintenance -->
+                            <a class="${pageContext.request.requestURI.contains('/manager/reports/maintenance-periodic') ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/manager/reports/maintenance-periodic">
+                                <i class="fa fa-screwdriver-wrench me-2"></i> Bảo trì định kỳ
+                            </a>
+
+                            <!-- 4. Assets -->
+                            <a class="${pageContext.request.requestURI.contains('/manager/reports/assets') ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/manager/reports/assets">
+                                <i class="fa fa-server me-2"></i> Máy & tài sản
+                            </a>
+
+                            <!-- 5. Technicians -->
+                            <a class="${pageContext.request.requestURI.contains('/manager/reports/technicians') ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/manager/reports/technicians">
+                                <i class="fa fa-user-gear me-2"></i> Hiệu suất đội
+                            </a>
+
+                            <!-- 6. Finance -->
+                            <a class="${pageContext.request.requestURI.contains('/manager/reports/finance') ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/manager/reports/finance">
+                                <i class="fa fa-coins me-2"></i> Doanh thu / vật tư
+                            </a>
+
+                            <!-- 7. Tổng hợp báo cáo -->
+                            <a class="${pageContext.request.requestURI.contains('/manager/system-report') ? 'active' : ''}"
+                               href="${pageContext.request.contextPath}/manager/system-report">
+                                <i class="fa fa-layer-group me-2"></i> Tổng hợp báo cáo
+                            </a>
+
+                        </div>
+                    </div>
                 </li>
             </ul>
         </nav>

@@ -2,7 +2,6 @@ package com.generatorproject.controller.manager;
 
 import com.generatorproject.model.Contract;
 import com.generatorproject.model.Users;
-import com.generatorproject.model.dashboard.ManagerDashboardKpi;
 import com.generatorproject.services.*;
 
 import javax.servlet.ServletException;
@@ -18,13 +17,11 @@ public class ManagerHomeController extends HttpServlet {
 
     private final IContractServices contractService;
     private final IProductServices productService;
-    private final ManagerDashboardService dashboardService;
     // private final IIncidentServices incidentService; // Nếu bạn đã làm module sự cố
 
     public ManagerHomeController() {
         contractService = new ContractServices();
         productService = new ProductServices();
-        dashboardService = new ManagerDashboardService();
         // incidentService = new IncidentServices();
     }
 
@@ -47,10 +44,6 @@ public class ManagerHomeController extends HttpServlet {
         req.setAttribute("pendingCount", pendingRequests);
 
         req.setAttribute("recentContracts", recentContracts);
-
-        // ===== A - vận hành dashboard KPI =====
-        ManagerDashboardKpi kpi = dashboardService.loadKpis();
-        req.setAttribute("opKpi", kpi);
 
         req.getRequestDispatcher("/views/manager/home.jsp").forward(req, resp);
     }
