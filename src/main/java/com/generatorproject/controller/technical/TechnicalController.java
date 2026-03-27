@@ -520,9 +520,15 @@ public class TechnicalController extends HttpServlet {
             p.setPrice(Double.parseDouble(req.getParameter("price")));
             p.setDescription(req.getParameter("description"));
 
-            spareDAO.insert(p);
+            boolean ok = spareDAO.insert(p);
 
-            resp.sendRedirect(req.getContextPath() + "/technical/materials");
+            if (!ok) {
+                resp.sendRedirect(req.getContextPath()
+                        + "/technical/materials?error=duplicate_code");
+                return;
+            }
+
+            resp.sendRedirect(req.getContextPath() + "/technical/materials?msg=created");
             return;
         }
 
