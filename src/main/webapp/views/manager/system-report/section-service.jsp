@@ -150,8 +150,11 @@
                 responsive: true,
                 plugins: { legend: { position: 'bottom' } },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
-                    x: { grid: { display: false } }
+                    x: {
+                        grid: { display: false },
+                        ticks: { autoSkip: false, maxRotation: 0, minRotation: 0 }
+                    },
+                    y: { beginAtZero: true, grid: { color: '#f0f0f0' } }
                 }
             }
         });
