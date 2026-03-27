@@ -185,6 +185,9 @@
 <c:if test="${param.msg == 'invalid_file'}">
     <div class="alert alert-warning">Vui lòng tải đúng file Excel (.xlsx/.xls) cho yêu cầu import.</div>
 </c:if>
+<c:if test="${param.msg == 'invalid_phone'}">
+    <div class="alert alert-warning">Số điện thoại phải gồm đúng 10 chữ số.</div>
+</c:if>
 
 <div class="card shadow-sm">
     <div class="card-body">
@@ -464,7 +467,27 @@
 
             <div class="mb-3">
               <label class="form-label">Số điện thoại</label>
-              <input type="text" name="phone" class="form-control" placeholder="0912...">
+              <input type="text"
+                     name="phone"
+                     class="form-control"
+                     placeholder="0912..."
+                     inputmode="numeric"
+                     maxlength="10"
+                     pattern="[0-9]{10}"
+                     title="Số điện thoại phải gồm đúng 10 chữ số">
+              <div class="form-text">Chỉ nhập 10 chữ số (ví dụ: 0912345678).</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Vai trò tài khoản <span class="text-danger">*</span></label>
+              <select name="role" class="form-select">
+                <option value="CUSTOMER" selected>CUSTOMER</option>
+                <option value="STAFF">STAFF</option>
+                <option value="TECHNICIAN">TECHNICIAN</option>
+                <option value="MANAGER">MANAGER</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+              <div class="form-text">Vai trò này sẽ được gửi kèm request để Admin tạo đúng loại tài khoản.</div>
             </div>
           </div>
 
