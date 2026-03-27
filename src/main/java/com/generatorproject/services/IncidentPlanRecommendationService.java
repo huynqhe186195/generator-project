@@ -138,9 +138,6 @@ public class IncidentPlanRecommendationService {
             if (profile == null || !profile.isActive()) {
                 score -= 40;
             }
-            if (missingRequiredSkill) {
-                score -= 35;
-            }
             if (unavailable) {
                 score -= 30;
             }
@@ -299,10 +296,30 @@ public class IncidentPlanRecommendationService {
                 new RequiredSkillSuggestion("DIESEL_ENGINE_REPAIR", "Sửa chữa động cơ diesel", "REQUIRED", "Phù hợp cho lỗi hư hỏng / thay thế"),
                 new RequiredSkillSuggestion("SAFETY_LOCKOUT", "An toàn lockout", "PREFERRED", "Đảm bảo an toàn khi can thiệp thiết bị")
         );
+        List<RequiredSkillSuggestion> replacementSkills = Arrays.asList(
+                new RequiredSkillSuggestion("CONSUMABLE_REPLACEMENT", "Thay thế linh kiện / vật tư", "REQUIRED", "Ưu tiên cho case thay ắc quy, thay linh kiện hư hỏng"),
+                new RequiredSkillSuggestion("ELECTRICAL_DIAGNOSTICS", "Chẩn đoán điện", "PREFERRED", "Đánh giá mạch nạp/xả trước và sau thay thế"),
+                new RequiredSkillSuggestion("SAFETY_LOCKOUT", "An toàn lockout", "PREFERRED", "Đảm bảo cô lập nguồn trước khi thay linh kiện")
+        );
         List<RequiredSkillSuggestion> periodicSkills = Arrays.asList(
                 new RequiredSkillSuggestion("PREVENTIVE_MAINTENANCE", "Bảo trì định kỳ", "REQUIRED", "Phù hợp cho checklist bảo dưỡng"),
                 new RequiredSkillSuggestion("CONSUMABLE_REPLACEMENT", "Thay thế vật tư tiêu hao", "PREFERRED", "Chuẩn bị lọc, dầu, dây curoa")
         );
+
+        boolean replacementContext = issueType.contains("ẮC QUY")
+                || issueType.contains("BATTERY")
+                || issueType.contains("LINH KIỆN")
+                || issueType.contains("THAY THẾ")
+                || issueType.contains("REPLACEMENT")
+                || issueType.contains("PHỤ TÙNG");
+        String correctiveWorkType = replacementContext ? "REPLACEMENT" : "REPAIR";
+        List<RequiredSkillSuggestion> correctiveSkills = replacementContext ? replacementSkills : repairSkills;
+        String correctivePartsNote = replacementContext
+                ? "Chuẩn bị linh kiện thay thế (ví dụ ắc quy/phụ tùng), vật tư tiêu hao và kiểm tra tương thích trước khi lắp."
+                : "Chuẩn bị vật tư thay thế cơ bản và kỹ thuật viên có kinh nghiệm sửa chữa máy phát.";
+        String correctiveReasonSummary = replacementContext
+                ? "Phù hợp khi thiết bị cần thay thế linh kiện (ắc quy/phụ tùng) sau khi xác minh hư hỏng."
+                : "Phù hợp khi thiết bị có dấu hiệu hỏng rõ ràng hoặc cần thay thế linh kiện.";
 
         seeds.add(new RecommendationSeed(
                 "Khảo sát trước khi xử lý",
@@ -320,16 +337,16 @@ public class IncidentPlanRecommendationService {
 
         seeds.add(new RecommendationSeed(
                 "Phương án sửa chữa / thay thế",
-                "REPAIR",
+                correctiveWorkType,
                 upgradePriority(defaultPriority(incident.getUrgencyLevel())),
                 180,
                 1,
                 true,
                 location,
-                "Chuẩn bị vật tư thay thế cơ bản và kỹ thuật viên có kinh nghiệm sửa chữa máy phát.",
-                "Phù hợp khi thiết bị có dấu hiệu hỏng rõ ràng hoặc cần thay thế linh kiện.",
+                correctivePartsNote,
+                correctiveReasonSummary,
                 88,
-                repairSkills
+                correctiveSkills
         ));
 
         if (issueType.contains("BẢO") || issueType.contains("MAINTENANCE") || issueType.contains("ĐỊNH KỲ")) {
