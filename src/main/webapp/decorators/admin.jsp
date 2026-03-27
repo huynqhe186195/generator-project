@@ -66,9 +66,19 @@
 
                 <div class="d-flex" id="wrapper">
                     <div class="border-end bg-dark text-white" id="sidebar-wrapper" style="width: 250px;">
-                        <div
-                            class="sidebar-heading text-center py-4 fs-4 fw-bold text-warning border-bottom border-secondary">
-                            <i class="fas fa-bolt"></i> GEN-CMS
+                        <div class="sidebar-heading text-center py-4 fs-4 fw-bold text-warning border-bottom border-secondary">
+                            <i class="fas fa-bolt"></i>
+                            <c:choose>
+                                <c:when test="${currentUser.roleId == 1 || currentUser.roleId == 2}">
+                                    ADMIN
+                                </c:when>
+                                <c:when test="${currentUser.roleId == 3}">
+                                    STAFF
+                                </c:when>
+                                <c:otherwise>
+                                    GEN-CMS
+                                </c:otherwise>
+                            </c:choose>
                         </div>
 
                         <div class="list-group list-group-flush">
