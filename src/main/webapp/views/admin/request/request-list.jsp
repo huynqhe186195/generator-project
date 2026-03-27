@@ -122,22 +122,20 @@
                                         <br>
                                     </c:if>
 
-                                    <form action="<c:url value='/admin/requests'/>" method="post" class="d-inline">
-                                        <input type="hidden" name="action" value="approve">
-                                        <input type="hidden" name="requestId" value="${req.id}">
+                                    <button type="button"
+                                            class="btn btn-success btn-sm"
+                                            data-request-id="${req.id}"
+                                            data-request-type="${fn:escapeXml(req.requestType)}"
+                                            onclick="openApproveModal(this)">
                                         <c:choose>
                                             <c:when test="${req.requestType == 'NEW_USER'}">
-                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Xác nhận import user từ file Excel và duyệt request?')">
-                                                    <i class="fas fa-check"></i> Import &amp; Duyệt
-                                                </button>
+                                                <i class="fas fa-check"></i> Import &amp; Duyệt
                                             </c:when>
                                             <c:otherwise>
-                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Bạn có chắc chắn muốn duyệt và tạo tài khoản?')">
-                                                    <i class="fas fa-check"></i> Duyệt
-                                                </button>
+                                                <i class="fas fa-check"></i> Duyệt
                                             </c:otherwise>
                                         </c:choose>
-                                    </form>
+                                    </button>
 
                                     <button type="button" class="btn btn-danger btn-sm" onclick="openRejectModal(${req.id})">
                                         <i class="fas fa-times"></i> Hủy
@@ -186,10 +184,48 @@
         </div>
     </div>
 
+    <div class="modal fade" id="approveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="<c:url value='/admin/requests'/>" method="post">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="approveModalTitle">Duyệt yêu cầu</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="approve">
+                        <input type="hidden" name="requestId" id="approveIdInput">
+
+                        <div class="mb-0">
+                            <label class="form-label">Phản hồi gửi Manager:</label>
+                            <textarea name="responseMessage" class="form-control" rows="3" required placeholder="Nhập phản hồi..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-success">Xác nhận duyệt</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openRejectModal(id) {
             document.getElementById('rejectIdInput').value = id;
             var myModal = new bootstrap.Modal(document.getElementById('rejectModal'));
+            myModal.show();
+        }
+
+        function openApproveModal(button) {
+            const id = button.getAttribute('data-request-id');
+            const requestType = button.getAttribute('data-request-type');
+            document.getElementById('approveIdInput').value = id;
+            const title = document.getElementById('approveModalTitle');
+            if (title) {
+                title.textContent = requestType === 'NEW_USER' ? 'Import user & duyệt yêu cầu' : 'Duyệt yêu cầu tạo tài khoản';
+            }
+            var myModal = new bootstrap.Modal(document.getElementById('approveModal'));
             myModal.show();
         }
     </script>

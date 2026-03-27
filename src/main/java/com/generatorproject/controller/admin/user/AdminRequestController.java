@@ -81,7 +81,7 @@ public class AdminRequestController extends HttpServlet {
         try {
             String action = req.getParameter("action");
             Long requestId = parseLong(req.getParameter("requestId"));
-            String adminNote = req.getParameter("adminNote");
+            String adminNote = firstNonBlank(req.getParameter("responseMessage"), req.getParameter("adminNote"));
 
             if (requestId == null) {
                 resp.sendRedirect(req.getContextPath() + "/admin/requests?msg=not_found");
@@ -95,7 +95,7 @@ public class AdminRequestController extends HttpServlet {
             }
 
             if ("approve".equals(action)) {
-                String responseMessage = handleApprove(request);
+                String responseMessage = appendManagerResponse(handleApprove(request), adminNote);
                 request.setStatus("APPROVED");
                 request.setResponseMessage(responseMessage);
             } else if ("reject".equals(action)) {
@@ -328,6 +328,28 @@ public class AdminRequestController extends HttpServlet {
             return "Có lỗi xảy ra trong quá trình xử lý yêu cầu.";
         }
         return e.getMessage().trim();
+    }
+
+    private String appendManagerResponse(String systemMessage, String adminNote) {
+        if (adminNote == null || adminNote.trim().isEmpty()) {
+            return systemMessage;
+        }
+        if (systemMessage == null || systemMessage.trim().isEmpty()) {
+            return adminNote.trim();
+        }
+        return systemMessage + " | Phản hồi Admin: " + adminNote.trim();
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private int parseIntegerOrDefault(String value, int defaultValue) {
