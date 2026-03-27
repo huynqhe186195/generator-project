@@ -45,6 +45,8 @@ public class TechnicianCapabilityManagementController extends HttpServlet {
         String action = req.getParameter("action");
         int technicianId = parseInt(req.getParameter("technicianId"), 0);
         String message = "saved";
+        String section = req.getParameter("section");
+        int catalogPage = parseInt(req.getParameter("catalogPage"), 1);
 
         if ("save_profile".equals(action)) {
             boolean success = capabilityService.saveProfile(
@@ -74,9 +76,16 @@ public class TechnicianCapabilityManagementController extends HttpServlet {
                     "1".equals(req.getParameter("catalogActive")) || "on".equalsIgnoreCase(req.getParameter("catalogActive"))
             );
             message = success ? "catalog_saved" : "catalog_error";
+        } else if ("delete_catalog".equals(action)) {
+            boolean success = capabilityService.deleteSkillCatalog(req.getParameter("catalogCode"));
+            message = success ? "catalog_deleted" : "catalog_delete_error";
         }
 
-        resp.sendRedirect(req.getContextPath() + "/manager/technician-capability?technicianId=" + technicianId + "&msg=" + message);
+        resp.sendRedirect(req.getContextPath()
+                + "/manager/technician-capability?technicianId=" + technicianId
+                + "&section=" + (section == null ? "technicians" : section)
+                + "&catalogPage=" + Math.max(catalogPage, 1)
+                + "&msg=" + message);
     }
 
     private void populateViewModel(HttpServletRequest req) {
@@ -91,6 +100,21 @@ public class TechnicianCapabilityManagementController extends HttpServlet {
         List<TechnicianSkill> assignedSkills = selectedTechnicianId > 0 ? capabilityService.getTechnicianSkills(selectedTechnicianId) : java.util.Collections.emptyList();
         List<TechnicianUnavailability> unavailability = selectedTechnicianId > 0 ? capabilityService.getUnavailability(selectedTechnicianId) : java.util.Collections.emptyList();
         List<SkillCatalog> skillCatalog = capabilityService.getSkillCatalog();
+        int catalogPageSize = 8;
+        int totalSkills = skillCatalog.size();
+        int catalogTotalPages = totalSkills == 0 ? 1 : (int) Math.ceil((double) totalSkills / catalogPageSize);
+        int catalogPage = parseInt(req.getParameter("catalogPage"), 1);
+        if (catalogPage < 1) {
+            catalogPage = 1;
+        }
+        if (catalogPage > catalogTotalPages) {
+            catalogPage = catalogTotalPages;
+        }
+        int fromIndex = Math.max(0, (catalogPage - 1) * catalogPageSize);
+        int toIndex = Math.min(totalSkills, fromIndex + catalogPageSize);
+        List<SkillCatalog> skillCatalogPageItems = totalSkills == 0
+                ? java.util.Collections.emptyList()
+                : skillCatalog.subList(fromIndex, toIndex);
 
         req.setAttribute("technicians", technicians);
         req.setAttribute("selectedTechnicianId", selectedTechnicianId);
@@ -101,6 +125,10 @@ public class TechnicianCapabilityManagementController extends HttpServlet {
         req.setAttribute("assignedSkills", assignedSkills);
         req.setAttribute("unavailabilityList", unavailability);
         req.setAttribute("skillCatalog", skillCatalog);
+        req.setAttribute("skillCatalogPageItems", skillCatalogPageItems);
+        req.setAttribute("catalogPage", catalogPage);
+        req.setAttribute("catalogTotalPages", catalogTotalPages);
+        req.setAttribute("catalogPageSize", catalogPageSize);
         req.setAttribute("messageKey", req.getParameter("msg"));
     }
 
