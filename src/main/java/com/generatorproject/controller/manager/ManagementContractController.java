@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@WebServlet(urlPatterns = { "/manager/contracts" })
+@WebServlet(urlPatterns = { "/manager/contracts", "/manager", "/manager/home"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
 public class ManagementContractController extends HttpServlet {
 
