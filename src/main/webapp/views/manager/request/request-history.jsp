@@ -466,6 +466,18 @@
               <label class="form-label">Số điện thoại</label>
               <input type="text" name="phone" class="form-control" placeholder="0912...">
             </div>
+
+            <div class="mb-3">
+              <label class="form-label">Vai trò tài khoản <span class="text-danger">*</span></label>
+              <select name="role" class="form-select">
+                <option value="CUSTOMER" selected>CUSTOMER</option>
+                <option value="STAFF">STAFF</option>
+                <option value="TECHNICIAN">TECHNICIAN</option>
+                <option value="MANAGER">MANAGER</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+              <div class="form-text">Vai trò này sẽ được gửi kèm request để Admin tạo đúng loại tài khoản.</div>
+            </div>
           </div>
 
           <!-- GROUP: INCIDENT_REPORT -->

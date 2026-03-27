@@ -362,6 +362,7 @@ public class ManagerRequestController extends HttpServlet {
                     data.put("email", req.getParameter("email"));
                     data.put("fullName", req.getParameter("fullName"));
                     data.put("phone", req.getParameter("phone"));
+                    data.put("role", req.getParameter("role"));
 
                     // nếu bạn vẫn muốn check duplicate theo email
                     if (requestService.isRequestPending((String) data.get("email"))) {
@@ -486,6 +487,7 @@ public class ManagerRequestController extends HttpServlet {
             String email = req.getParameter("email");
             String fullName = req.getParameter("fullName");
             String phone = req.getParameter("phone");
+            String role = req.getParameter("role");
 
             // Check trùng request đang chờ
             if (requestService.isRequestPending(email)) {
@@ -498,6 +500,7 @@ public class ManagerRequestController extends HttpServlet {
             data.put("email", email);
             data.put("fullName", fullName);
             data.put("phone", phone);
+            data.put("role", role);
 
             String jsonData = new Gson().toJson(data);
 

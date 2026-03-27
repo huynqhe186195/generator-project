@@ -1,9 +1,12 @@
 package com.generatorproject.controller.admin.user;
 
 import com.generatorproject.dao.RequestDAO;
+import com.generatorproject.model.Role;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.IRoleServices;
 import com.generatorproject.services.IUserServices;
+import com.generatorproject.services.RoleServices;
 import com.generatorproject.services.UserServices;
 import com.generatorproject.utils.EmailServices;
 import com.google.gson.Gson;
@@ -38,11 +41,13 @@ import java.util.UUID;
 public class AdminRequestController extends HttpServlet {
 
     private final IUserServices userServices;
+    private final IRoleServices roleServices;
     private final RequestDAO requestDAO;
     private final Gson gson;
 
     public AdminRequestController() {
         this.userServices = new UserServices();
+        this.roleServices = new RoleServices();
         this.requestDAO = new RequestDAO();
         this.gson = new Gson();
     }
@@ -138,6 +143,7 @@ public class AdminRequestController extends HttpServlet {
         String email = data.get("email");
         String fullName = data.get("fullName");
         String phone = data.get("phone");
+        int roleId = resolveRoleId(data);
 
         if (email == null || email.trim().isEmpty() || fullName == null || fullName.trim().isEmpty()) {
             return "Duyệt yêu cầu nhưng dữ liệu email/họ tên không hợp lệ.";
@@ -154,7 +160,7 @@ public class AdminRequestController extends HttpServlet {
         newUser.setEmail(email.trim());
         newUser.setFullName(fullName.trim());
         newUser.setPassword(hashedPassword);
-        newUser.setRoleId(5);
+        newUser.setRoleId(roleId);
         newUser.setStatus(1);
         newUser.setPhone(phone);
 
@@ -358,5 +364,36 @@ public class AdminRequestController extends HttpServlet {
         } catch (Exception e) {
             return defaultValue;
         }
+    }
+
+    private int resolveRoleId(Map<String, String> data) {
+        int defaultRoleId = 5;
+        if (data == null) {
+            return defaultRoleId;
+        }
+
+        int roleIdFromRequest = parseIntegerOrDefault(data.get("roleId"), -1);
+        if (roleIdFromRequest > 0) {
+            return roleIdFromRequest;
+        }
+
+        String requestedRoleName = data.get("role");
+        if (requestedRoleName == null || requestedRoleName.trim().isEmpty()) {
+            return defaultRoleId;
+        }
+
+        List<Role> roles = roleServices.getAllRoles();
+        if (roles == null || roles.isEmpty()) {
+            return defaultRoleId;
+        }
+
+        String normalizedRequestedRoleName = requestedRoleName.trim();
+        for (Role role : roles) {
+            if (role != null && role.getName() != null
+                    && role.getName().trim().equalsIgnoreCase(normalizedRequestedRoleName)) {
+                return role.getId();
+            }
+        }
+        return defaultRoleId;
     }
 }
