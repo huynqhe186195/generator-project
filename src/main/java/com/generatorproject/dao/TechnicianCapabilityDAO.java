@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class TechnicianCapabilityDAO extends DbContext {
+    private volatile Boolean hasServiceAreaColumn;
 
     public Map<Integer, TechnicianProfileSnapshot> findProfiles(List<Integer> technicianIds) {
         Map<Integer, TechnicianProfileSnapshot> profiles = new HashMap<>();
@@ -26,7 +27,7 @@ public class TechnicianCapabilityDAO extends DbContext {
         }
 
         String placeholders = String.join(",", java.util.Collections.nCopies(technicianIds.size(), "?"));
-        String sql = "SELECT technician_id, service_area, home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name " +
+        String sql = "SELECT technician_id, " + serviceAreaSelectSql() + ", home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name " +
                 "FROM technician_profiles WHERE technician_id IN (" + placeholders + ")";
 
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -54,7 +55,7 @@ public class TechnicianCapabilityDAO extends DbContext {
     }
 
     public TechnicianProfile findProfileByTechnicianId(int technicianId) {
-        String sql = "SELECT technician_id, service_area, home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name " +
+        String sql = "SELECT technician_id, " + serviceAreaSelectSql() + ", home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name " +
                 "FROM technician_profiles WHERE technician_id = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, technicianId);
@@ -84,21 +85,37 @@ public class TechnicianCapabilityDAO extends DbContext {
         }
 
         if (findProfileByTechnicianId(profile.getTechnicianId()) == null) {
-            String insertSql = "INSERT INTO technician_profiles (technician_id, service_area, home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String insertSql = hasServiceAreaColumn()
+                    ? "INSERT INTO technician_profiles (technician_id, service_area, home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                    : "INSERT INTO technician_profiles (technician_id, home_base, working_hours_start, working_hours_end, max_tasks_per_day, active_status, timezone_name) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(insertSql)) {
                 ps.setInt(1, profile.getTechnicianId());
-                ps.setString(2, profile.getServiceArea());
-                ps.setString(3, profile.getHomeBase());
-                ps.setTime(4, profile.getWorkingHoursStart());
-                ps.setTime(5, profile.getWorkingHoursEnd());
-                if (profile.getMaxTasksPerDay() == null) {
-                    ps.setNull(6, java.sql.Types.INTEGER);
+                if (hasServiceAreaColumn()) {
+                    ps.setString(2, profile.getServiceArea());
+                    ps.setString(3, profile.getHomeBase());
+                    ps.setTime(4, profile.getWorkingHoursStart());
+                    ps.setTime(5, profile.getWorkingHoursEnd());
+                    if (profile.getMaxTasksPerDay() == null) {
+                        ps.setNull(6, java.sql.Types.INTEGER);
+                    } else {
+                        ps.setInt(6, profile.getMaxTasksPerDay());
+                    }
+                    ps.setBoolean(7, profile.isActiveStatus());
+                    ps.setString(8, profile.getTimezoneName());
                 } else {
-                    ps.setInt(6, profile.getMaxTasksPerDay());
+                    ps.setString(2, profile.getHomeBase());
+                    ps.setTime(3, profile.getWorkingHoursStart());
+                    ps.setTime(4, profile.getWorkingHoursEnd());
+                    if (profile.getMaxTasksPerDay() == null) {
+                        ps.setNull(5, java.sql.Types.INTEGER);
+                    } else {
+                        ps.setInt(5, profile.getMaxTasksPerDay());
+                    }
+                    ps.setBoolean(6, profile.isActiveStatus());
+                    ps.setString(7, profile.getTimezoneName());
                 }
-                ps.setBoolean(7, profile.isActiveStatus());
-                ps.setString(8, profile.getTimezoneName());
                 return ps.executeUpdate() > 0;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -106,20 +123,36 @@ public class TechnicianCapabilityDAO extends DbContext {
             }
         }
 
-        String updateSql = "UPDATE technician_profiles SET service_area = ?, home_base = ?, working_hours_start = ?, working_hours_end = ?, max_tasks_per_day = ?, active_status = ?, timezone_name = ? WHERE technician_id = ?";
+        String updateSql = hasServiceAreaColumn()
+                ? "UPDATE technician_profiles SET service_area = ?, home_base = ?, working_hours_start = ?, working_hours_end = ?, max_tasks_per_day = ?, active_status = ?, timezone_name = ? WHERE technician_id = ?"
+                : "UPDATE technician_profiles SET home_base = ?, working_hours_start = ?, working_hours_end = ?, max_tasks_per_day = ?, active_status = ?, timezone_name = ? WHERE technician_id = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(updateSql)) {
-            ps.setString(1, profile.getServiceArea());
-            ps.setString(2, profile.getHomeBase());
-            ps.setTime(3, profile.getWorkingHoursStart());
-            ps.setTime(4, profile.getWorkingHoursEnd());
-            if (profile.getMaxTasksPerDay() == null) {
-                ps.setNull(5, java.sql.Types.INTEGER);
+            if (hasServiceAreaColumn()) {
+                ps.setString(1, profile.getServiceArea());
+                ps.setString(2, profile.getHomeBase());
+                ps.setTime(3, profile.getWorkingHoursStart());
+                ps.setTime(4, profile.getWorkingHoursEnd());
+                if (profile.getMaxTasksPerDay() == null) {
+                    ps.setNull(5, java.sql.Types.INTEGER);
+                } else {
+                    ps.setInt(5, profile.getMaxTasksPerDay());
+                }
+                ps.setBoolean(6, profile.isActiveStatus());
+                ps.setString(7, profile.getTimezoneName());
+                ps.setInt(8, profile.getTechnicianId());
             } else {
-                ps.setInt(5, profile.getMaxTasksPerDay());
+                ps.setString(1, profile.getHomeBase());
+                ps.setTime(2, profile.getWorkingHoursStart());
+                ps.setTime(3, profile.getWorkingHoursEnd());
+                if (profile.getMaxTasksPerDay() == null) {
+                    ps.setNull(4, java.sql.Types.INTEGER);
+                } else {
+                    ps.setInt(4, profile.getMaxTasksPerDay());
+                }
+                ps.setBoolean(5, profile.isActiveStatus());
+                ps.setString(6, profile.getTimezoneName());
+                ps.setInt(7, profile.getTechnicianId());
             }
-            ps.setBoolean(6, profile.isActiveStatus());
-            ps.setString(7, profile.getTimezoneName());
-            ps.setInt(8, profile.getTechnicianId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -457,5 +490,28 @@ public class TechnicianCapabilityDAO extends DbContext {
         public Integer getMaxTasksPerDay() { return maxTasksPerDay; }
         public boolean isActive() { return active; }
         public String getTimezoneName() { return timezoneName; }
+    }
+
+    private String serviceAreaSelectSql() {
+        return hasServiceAreaColumn() ? "service_area" : "NULL AS service_area";
+    }
+
+    private boolean hasServiceAreaColumn() {
+        if (hasServiceAreaColumn != null) {
+            return hasServiceAreaColumn;
+        }
+        synchronized (this) {
+            if (hasServiceAreaColumn != null) {
+                return hasServiceAreaColumn;
+            }
+            String sql = "SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'technician_profiles' AND COLUMN_NAME = 'service_area'";
+            try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+                hasServiceAreaColumn = rs.next();
+            } catch (Exception e) {
+                e.printStackTrace();
+                hasServiceAreaColumn = Boolean.FALSE;
+            }
+            return hasServiceAreaColumn;
+        }
     }
 }
