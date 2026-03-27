@@ -36,120 +36,206 @@
     </div>
 
     <div class="row g-4">
-        <%-- CỘT TRÁI: THÔNG TIN SỰ CỐ --%>
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Nội dung sự cố</h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="mb-4">
-                        <label class="text-muted small fw-bold text-uppercase mb-1">Tiêu đề yêu cầu</label>
-                        <h4 class="text-dark fw-bold mb-0">${incident.info.title}</h4>
+        <%-- CỘT TRÁI: THÔNG TIN SỰ CỐ & PHÂN CÔNG --%>
+            <%-- CỘT TRÁI: THÔNG TIN SỰ CỐ & PHÂN CÔNG --%>
+            <div class="col-lg-8">
+                <%-- THẺ 1: THÔNG TIN SỰ CỐ GỐC (Đã xóa h-100) --%>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-exclamation-triangle me-2"></i>Nội dung sự cố</h5>
                     </div>
-
-                    <%-- Dòng 1: Loại sự cố & Thời gian gửi --%>
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label class="text-muted small fw-bold text-uppercase mb-1">Loại sự cố</label>
-                            <div class="fs-6">
-                                <c:choose>
-                                    <c:when test="${incident.info.issueType == 'MAINTENANCE'}">Bảo dưỡng định kỳ</c:when>
-                                    <c:when test="${incident.info.issueType == 'REPLACEMENT'}">Thay thế phụ tùng</c:when>
-                                    <c:when test="${incident.info.issueType == 'BROKEN'}">Lỗi / Hỏng hóc</c:when>
-                                    <c:otherwise>${not empty incident.info.issueType ? incident.info.issueType : 'Khác'}</c:otherwise>
-                                </c:choose>
-                            </div>
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <label class="text-muted small fw-bold text-uppercase mb-1">Tiêu đề yêu cầu</label>
+                            <h4 class="text-dark fw-bold mb-0">${incident.info.title}</h4>
                         </div>
-                        <div class="col-md-6">
-                            <label class="text-muted small fw-bold text-uppercase mb-1">Thời gian gửi</label>
-                            <div class="fs-6 text-dark">
-                                <i class="far fa-clock me-1 text-secondary"></i>
-                                <fmt:formatDate value="${incident.createdAt}" pattern="dd/MM/yyyy - HH:mm" />
-                            </div>
-                        </div>
-                    </div>
 
-                    <%-- THÊM MỚI - Dòng 2: Ngày/giờ mong muốn + mức độ nghiêm trọng --%>
-                    <div class="row mb-4 g-3">
-                        <div class="col-md-7">
-                            <div class="border-start border-3 border-success ps-3 ms-1 bg-light py-3 rounded-end h-100">
-                                <label class="text-muted small fw-bold text-uppercase mb-2 d-block">Ngày mong muốn sửa chữa</label>
-                                <div class="fs-6 text-dark fw-bold mb-2">
-                                    <i class="fas fa-calendar-check me-2 text-success"></i>
+                        <%-- Dòng 1: Loại sự cố & Thời gian gửi --%>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold text-uppercase mb-1">Loại sự cố</label>
+                                <div class="fs-6">
                                     <c:choose>
-                                        <c:when test="${not empty incident.info.preferredDate}">
-                                            <fmt:parseDate value="${incident.info.preferredDate}" pattern="yyyy-MM-dd" var="parsedDate" />
-                                            <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy" />
+                                        <c:when test="${incident.info.issueType == 'MAINTENANCE'}">Bảo dưỡng định kỳ</c:when>
+                                        <c:when test="${incident.info.issueType == 'REPLACEMENT'}">Thay thế phụ tùng</c:when>
+                                        <c:when test="${incident.info.issueType == 'BROKEN'}">Lỗi / Hỏng hóc</c:when>
+                                        <c:otherwise>${not empty incident.info.issueType ? incident.info.issueType : 'Khác'}</c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold text-uppercase mb-1">Thời gian gửi</label>
+                                <div class="fs-6 text-dark">
+                                    <i class="far fa-clock me-1 text-secondary"></i>
+                                    <fmt:formatDate value="${incident.createdAt}" pattern="dd/MM/yyyy - HH:mm" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <%-- Dòng 2: Ngày/giờ mong muốn + mức độ nghiêm trọng --%>
+                        <div class="row mb-4 g-3">
+                            <div class="col-md-7">
+                                <div class="border-start border-3 border-success ps-3 ms-1 bg-light py-3 rounded-end">
+                                    <label class="text-muted small fw-bold text-uppercase mb-2 d-block">Ngày mong muốn sửa chữa</label>
+                                    <div class="fs-6 text-dark fw-bold mb-2">
+                                        <i class="fas fa-calendar-check me-2 text-success"></i>
+                                        <c:choose>
+                                            <c:when test="${not empty incident.info.preferredDate}">
+                                                <fmt:parseDate value="${incident.info.preferredDate}" pattern="yyyy-MM-dd" var="parsedDate" />
+                                                <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="fst-italic text-muted fw-normal">Sắp xếp càng sớm càng tốt</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <div class="small text-dark mb-1">
+                                        <i class="far fa-clock me-2 text-primary"></i>
+                                        <strong>Khung giờ:</strong>
+                                        <c:choose>
+                                            <c:when test="${not empty preferredTimeFrom and not empty preferredTimeTo}">
+                                                ${fn:substring(preferredTimeFrom, 0, 5)} - ${fn:substring(preferredTimeTo, 0, 5)}
+                                            </c:when>
+                                            <c:otherwise>Linh động</c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <div class="small text-dark">
+                                        <i class="fas fa-sun me-2 text-warning"></i>
+                                        <strong>Buổi ưu tiên:</strong>
+                                        <c:choose>
+                                            <c:when test="${preferredTimeSlot == 'MORNING'}">Buổi sáng</c:when>
+                                            <c:when test="${preferredTimeSlot == 'AFTERNOON'}">Buổi chiều</c:when>
+                                            <c:when test="${preferredTimeSlot == 'ANYTIME' || empty preferredTimeSlot}">Linh động cả ngày</c:when>
+                                            <c:otherwise>${preferredTimeSlot}</c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="bg-light border rounded p-3 h-100">
+                                    <label class="text-muted small fw-bold text-uppercase mb-2 d-block">Mức độ nghiêm trọng</label>
+                                    <c:choose>
+                                        <c:when test="${urgencyLevel == 'CRITICAL'}">
+                                            <span class="badge bg-danger fs-6 px-3 py-2">Khẩn cấp</span>
+                                        </c:when>
+                                        <c:when test="${urgencyLevel == 'HIGH'}">
+                                            <span class="badge bg-warning text-dark fs-6 px-3 py-2">Cao</span>
+                                        </c:when>
+                                        <c:when test="${urgencyLevel == 'MEDIUM'}">
+                                            <span class="badge bg-info text-dark fs-6 px-3 py-2">Trung bình</span>
+                                        </c:when>
+                                        <c:when test="${urgencyLevel == 'LOW'}">
+                                            <span class="badge bg-secondary fs-6 px-3 py-2">Thấp</span>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="fst-italic text-muted fw-normal">Sắp xếp càng sớm càng tốt</span>
+                                            <span class="badge bg-secondary fs-6 px-3 py-2">${not empty urgencyLevel ? urgencyLevel : 'Chưa cập nhật'}</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
-                                <div class="small text-dark mb-1">
-                                    <i class="far fa-clock me-2 text-primary"></i>
-                                    <strong>Khung giờ:</strong>
-                                    <c:choose>
-                                        <c:when test="${not empty preferredTimeFrom and not empty preferredTimeTo}">
-                                            ${fn:substring(preferredTimeFrom, 0, 5)} - ${fn:substring(preferredTimeTo, 0, 5)}
-                                        </c:when>
-                                        <c:otherwise>Linh động</c:otherwise>
-                                    </c:choose>
-                                </div>
-                                <div class="small text-dark">
-                                    <i class="fas fa-sun me-2 text-warning"></i>
-                                    <strong>Buổi ưu tiên:</strong>
-                                    <c:choose>
-                                        <c:when test="${preferredTimeSlot == 'MORNING'}">Buổi sáng</c:when>
-                                        <c:when test="${preferredTimeSlot == 'AFTERNOON'}">Buổi chiều</c:when>
-                                        <c:when test="${preferredTimeSlot == 'ANYTIME' || empty preferredTimeSlot}">Linh động cả ngày</c:when>
-                                        <c:otherwise>${preferredTimeSlot}</c:otherwise>
-                                    </c:choose>
-                                </div>
                             </div>
                         </div>
-                        <div class="col-md-5">
-                            <div class="bg-light border rounded p-3 h-100">
-                                <label class="text-muted small fw-bold text-uppercase mb-2 d-block">Mức độ nghiêm trọng</label>
+
+                        <%-- Mô tả chi tiết --%>
+                        <div class="mb-0">
+                            <label class="text-muted small fw-bold text-uppercase mb-2">Mô tả chi tiết</label>
+                            <div class="p-3 bg-light rounded border">
                                 <c:choose>
-                                    <c:when test="${urgencyLevel == 'CRITICAL'}">
-                                        <span class="badge bg-danger fs-6 px-3 py-2">Khẩn cấp</span>
-                                    </c:when>
-                                    <c:when test="${urgencyLevel == 'HIGH'}">
-                                        <span class="badge bg-warning text-dark fs-6 px-3 py-2">Cao</span>
-                                    </c:when>
-                                    <c:when test="${urgencyLevel == 'MEDIUM'}">
-                                        <span class="badge bg-info text-dark fs-6 px-3 py-2">Trung bình</span>
-                                    </c:when>
-                                    <c:when test="${urgencyLevel == 'LOW'}">
-                                        <span class="badge bg-secondary fs-6 px-3 py-2">Thấp</span>
+                                    <c:when test="${not empty incident.info.description}">
+                                        ${incident.info.description}
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="badge bg-secondary fs-6 px-3 py-2">${not empty urgencyLevel ? urgencyLevel : 'Chưa cập nhật'}</span>
+                                        <span class="fst-italic text-muted">Không có mô tả chi tiết từ người gửi.</span>
                                     </c:otherwise>
                                 </c:choose>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <%-- Mô tả chi tiết --%>
-                    <div class="mb-0">
-                        <label class="text-muted small fw-bold text-uppercase mb-2">Mô tả chi tiết</label>
-                        <div class="p-3 bg-light rounded border">
-                            <c:choose>
-                                <c:when test="${not empty incident.info.description}">
-                                    ${incident.info.description}
-                                </c:when>
-                                <c:otherwise>
-                                    <span class="fst-italic text-muted">Không có mô tả chi tiết từ người gửi.</span>
-                                </c:otherwise>
-                            </c:choose>
+                <%-- THẺ 2: THÔNG TIN PHÂN CÔNG KỸ THUẬT VIÊN (Đã xóa h-100) --%>
+                <c:if test="${not empty incident.info.technicianName}">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 text-success fw-bold"><i class="fas fa-tools me-2"></i>Thông tin Phân công KTV</h5>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success px-3 py-2 rounded-pill">Đã Giao Việc</span>
+                        </div>
+                        <div class="card-body p-4">
+                                <%-- Thông tin chung KTV --%>
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-hard-hat fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <label class="text-muted small fw-bold text-uppercase mb-1">Kỹ thuật viên phụ trách</label>
+                                            <div class="fw-bold fs-5 text-dark">${incident.info.technicianName}</div>
+                                            <div class="small text-muted">Mã KTV: #${incident.info.technicianId}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="text-muted small fw-bold text-uppercase mb-1">Địa điểm sửa chữa</label>
+                                    <div class="fw-bold text-dark fs-6"><i class="fas fa-map-marker-alt text-danger me-2"></i>${incident.info.serviceLocation}</div>
+                                </div>
+                            </div>
+
+                            <hr class="text-muted opacity-25 mb-4">
+
+                                <%-- Các chỉ số nhiệm vụ --%>
+                            <div class="row g-4 mb-4">
+                                <div class="col-6 col-md-3">
+                                    <label class="text-muted small fw-bold text-uppercase mb-1">Loại bảo trì</label>
+                                    <div class="fw-bold text-dark">${incident.info.maintenanceType}</div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="text-muted small fw-bold text-uppercase mb-1">Mức ưu tiên</label>
+                                    <div class="fw-bold text-dark">
+                                        <c:choose>
+                                            <c:when test="${incident.info.priority == 'HIGH'}"><span class="text-danger">CAO</span></c:when>
+                                            <c:when test="${incident.info.priority == 'MEDIUM'}"><span class="text-warning text-dark">TRUNG BÌNH</span></c:when>
+                                            <c:when test="${incident.info.priority == 'LOW'}"><span class="text-info text-dark">THẤP</span></c:when>
+                                            <c:otherwise>${incident.info.priority}</c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="text-muted small fw-bold text-uppercase mb-1">Dự kiến</label>
+                                    <div class="fw-bold text-dark"><fmt:formatNumber value="${incident.info.estimatedDurationMinutes}" maxFractionDigits="0"/> phút</div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="text-muted small fw-bold text-uppercase mb-1">Nhân lực</label>
+                                    <div class="fw-bold text-dark"><fmt:formatNumber value="${incident.info.requiredTechnicianCount}" maxFractionDigits="0"/> người</div>
+                                </div>
+                            </div>
+
+                                <%-- Yêu cầu kỹ năng & Phương án --%>
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label class="text-muted small fw-bold text-uppercase mb-1">Phương án xử lý đề xuất</label>
+                                    <div class="p-3 bg-light rounded border text-dark fw-bold">
+                                        <i class="fas fa-clipboard-check text-success me-2"></i>${incident.info.selectedRecommendationTitle}
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="text-muted small fw-bold text-uppercase mb-1">Yêu cầu kỹ năng chuyên môn</label>
+                                    <div>
+                                        <c:forEach items="${fn:split(incident.info.selectedRequiredSkillCodes, ',')}" var="skill">
+                                            <span class="badge bg-secondary me-1 px-3 py-2 fs-6 rounded-pill"><i class="fas fa-certificate me-1"></i> ${skill}</span>
+                                        </c:forEach>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="text-muted small fw-bold text-uppercase mb-1">Ghi chú giao việc từ Staff</label>
+                                    <div class="p-3 bg-warning bg-opacity-10 text-dark rounded border border-warning">
+                                        <i class="fas fa-comment-dots text-warning me-2"></i>${incident.info.staffNote}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </c:if>
             </div>
-        </div>
 
         <%-- CỘT PHẢI: THÔNG TIN THIẾT BỊ & NGƯỜI BÁO --%>
         <div class="col-lg-4">
@@ -207,33 +293,33 @@
     </div>
 
     <%-- THANH CÔNG CỤ XỬ LÝ (Tùy theo trạng thái) --%>
-    <div class="card shadow-sm border-0 mt-4 bg-light">
-        <div class="card-body d-flex justify-content-end gap-2">
-            <c:choose>
-                <c:when test="${incident.status == 'NEW'}">
-                    <a href="<c:url value='/staff/incident/verify?id=${incident.id}'/>" class="btn btn-danger px-4 rounded-pill">
-                        <i class="fas fa-check-circle me-2"></i>Chuyển sang Xác minh
-                    </a>
-                </c:when>
-                <c:when test="${incident.status == 'VERIFIED'}">
-                    <a href="<c:url value='/staff/incident/escalate?id=${incident.id}'/>" class="btn btn-primary px-4 rounded-pill">
-                        <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu Báo giá
-                    </a>
-                </c:when>
-                <c:when test="${incident.status == 'APPROVED'}">
-                    <form action="<c:url value='/staff/assign-task'/>" method="post" class="m-0">
-                        <input type="hidden" name="id" value="${incident.id}">
-                        <button type="submit" class="btn btn-success px-4 rounded-pill" onclick="return confirm('Xác nhận tạo task bảo trì cho yêu cầu này?')">
-                            <i class="fas fa-tools me-2"></i>Tạo Task Kỹ thuật viên
-                        </button>
-                    </form>
-                </c:when>
-                <c:otherwise>
-                    <button class="btn btn-secondary px-4 rounded-pill disabled" disabled>
-                        <i class="fas fa-lock me-2"></i>Không có thao tác khả dụng
-                    </button>
-                </c:otherwise>
-            </c:choose>
-        </div>
-    </div>
+<%--    <div class="card shadow-sm border-0 mt-4 bg-light">--%>
+<%--        <div class="card-body d-flex justify-content-end gap-2">--%>
+<%--            <c:choose>--%>
+<%--                <c:when test="${incident.status == 'NEW'}">--%>
+<%--                    <a href="<c:url value='/staff/incident/verify?id=${incident.id}'/>" class="btn btn-danger px-4 rounded-pill">--%>
+<%--                        <i class="fas fa-check-circle me-2"></i>Chuyển sang Xác minh--%>
+<%--                    </a>--%>
+<%--                </c:when>--%>
+<%--                <c:when test="${incident.status == 'VERIFIED'}">--%>
+<%--                    <a href="<c:url value='/staff/incident/escalate?id=${incident.id}'/>" class="btn btn-primary px-4 rounded-pill">--%>
+<%--                        <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu Báo giá--%>
+<%--                    </a>--%>
+<%--                </c:when>--%>
+<%--                <c:when test="${incident.status == 'APPROVED'}">--%>
+<%--                    <form action="<c:url value='/staff/assign-task'/>" method="post" class="m-0">--%>
+<%--                        <input type="hidden" name="id" value="${incident.id}">--%>
+<%--                        <button type="submit" class="btn btn-success px-4 rounded-pill" onclick="return confirm('Xác nhận tạo task bảo trì cho yêu cầu này?')">--%>
+<%--                            <i class="fas fa-tools me-2"></i>Tạo Task Kỹ thuật viên--%>
+<%--                        </button>--%>
+<%--                    </form>--%>
+<%--                </c:when>--%>
+<%--                <c:otherwise>--%>
+<%--                    <button class="btn btn-secondary px-4 rounded-pill disabled" disabled>--%>
+<%--                        <i class="fas fa-lock me-2"></i>Không có thao tác khả dụng--%>
+<%--                    </button>--%>
+<%--                </c:otherwise>--%>
+<%--            </c:choose>--%>
+<%--        </div>--%>
+<%--    </div>--%>
 </div>

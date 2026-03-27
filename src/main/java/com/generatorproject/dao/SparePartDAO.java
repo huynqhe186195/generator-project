@@ -253,15 +253,10 @@ public class SparePartDAO extends DbContext {
     // INSERT
     // =========================
     public boolean insert(SparePart p) {
-        String sql = """
-            INSERT INTO spare_parts
-            (name, part_code, unit, quantity_in_stock, min_stock_alert, price, description)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """;
+        String sql = "INSERT INTO spare_parts(name, part_code, unit, quantity_in_stock, min_stock_alert, price, description) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        try {
-            Connection conn = getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, p.getName());
             ps.setString(2, p.getPartCode());
@@ -271,14 +266,16 @@ public class SparePartDAO extends DbContext {
             ps.setDouble(6, p.getPrice());
             ps.setString(7, p.getDescription());
 
-            boolean result = ps.executeUpdate() > 0;
-
-            ps.close();
-            conn.close();
-
-            return result;
+            ps.executeUpdate();
+            return true;
 
         } catch (Exception e) {
+
+            // 🔥 bắt lỗi duplicate key
+            if (e.getMessage().contains("Duplicate entry")) {
+                return false;
+            }
+
             e.printStackTrace();
             return false;
         }

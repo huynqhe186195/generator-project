@@ -35,14 +35,13 @@
                                 <label class="form-label small text-muted mb-1">Trạng thái:</label>
                                 <select class="form-select" name="status">
                                     <option value="">-- Tất cả --</option>
-                                    <option value="NEW" ${param.status=='NEW' ? 'selected' : '' }>Mới (Cần xử lý)
-                                    </option>
-                                    <option value="VERIFIED" ${param.status=='VERIFIED' ? 'selected' : '' }>Đã xác minh
-                                    </option>
-                                    <option value="WAITING_MANAGER" ${param.status=='WAITING_MANAGER' ? 'selected' : ''
-                                        }>Chờ duyệt</option>
-                                    <option value="APPROVED" ${param.status=='APPROVED' ? 'selected' : '' }>Đã duyệt
-                                    </option>
+                                    <option value="NEW" ${param.status == 'NEW' ? 'selected' : '' }>Mới (Cần xử lý)</option>
+                                    <option value="VERIFIED" ${param.status == 'VERIFIED' ? 'selected' : '' }>Đã xác minh</option>
+                                    <option value="WAITING_MANAGER" ${param.status == 'WAITING_MANAGER' ? 'selected' : '' }>Chờ duyệt</option>
+                                    <option value="APPROVED" ${param.status == 'APPROVED' ? 'selected' : '' }>Đã duyệt</option>
+
+
+                                    <option value="TASK_CREATED" ${param.status == 'TASK_CREATED' ? 'selected' : '' }>Đã giao task</option>
                                 </select>
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
