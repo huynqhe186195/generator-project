@@ -437,8 +437,8 @@ public class MaintenanceDAO extends DbContext {
                 (product_id, technician_id, incident_id, incident_plan_id, maintenance_date,
                  scheduled_start, scheduled_end, estimated_duration_minutes, type, description,
                  status, schedule_status, execution_status, required_technician_count,
-                 requires_parts_preparation, location, created_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?, ?, ?)
+                 requires_parts_preparation, location, created_by, approved_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection conn = getConnection();
@@ -464,6 +464,7 @@ public class MaintenanceDAO extends DbContext {
             ps.setBoolean(14, false);
             ps.setString(15, req.getProductSerialNumber());
             if (req.getCreatedBy() != null) ps.setInt(16, req.getCreatedBy()); else ps.setNull(16, Types.INTEGER);
+            if (req.getApprovedBy() != null) ps.setInt(17, req.getApprovedBy()); else ps.setNull(17, Types.INTEGER);
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
