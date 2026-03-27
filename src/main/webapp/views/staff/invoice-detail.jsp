@@ -36,36 +36,64 @@
     }
 
     /* CSS CHUẨN KHI IN RA GIẤY A4 */
+    /* CSS CHUẨN KHI IN RA GIẤY A4 */
+    /* CSS CHUẨN KHI IN RA GIẤY A4 */
     @media print {
-        /* 1. Reset nền và lề của toàn bộ trang */
-        body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+        /* 1. Giao việc căn lề cho trình duyệt (Lề 1.5cm an toàn) */
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+        }
 
-        /* 2. ẨN TRIỆT ĐỂ mọi râu ria của Layout (Sidebar, Topbar, Header, Footer, Menu, Nút bấm) */
+        /* 2. Reset Body: Tuyệt đối KHÔNG dùng padding ở body khi in */
+        body {
+            background: #fff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+
+        /* 3. Ép khung Container của Bootstrap co lại vừa khít 100% tờ giấy */
+        .container, .container-fluid, .container-xl, .container-lg {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* 4. ẨN TRIỆT ĐỂ mọi râu ria của Layout (Nút bấm, Menu...) */
         .no-print, header, footer, aside, nav, .sidebar, #sidebar, .topbar, .navbar, button, .menu-toggle {
             display: none !important;
         }
 
-        /* 3. Khôi phục lại margin nếu Layout chính (main) đang bị đẩy sang phải (do sidebar) */
-        #main-wrapper, .main-content, #content, main, .container-fluid {
-            margin: 0 !important;
+        /* 5. Cột trái (Tờ hóa đơn) chiếm trọn vẹn 100% chiều ngang */
+        .col-lg-8 {
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+            width: 100% !important;
             padding: 0 !important;
         }
 
-        /* 4. Ép tờ hóa đơn bung full 100% bề rộng trang A4 */
-        .col-lg-8 {
-            width: 100% !important;
-            max-width: 100% !important;
-            flex: 0 0 100% !important;
-        }
-
-        /* 5. Ẩn hoàn toàn cột Panel thao tác bên phải */
+        /* 6. Ẩn hoàn toàn cột Panel thao tác bên phải */
         .col-lg-4 {
             display: none !important;
         }
 
-        /* 6. Định dạng lại bảng và viền cho rõ nét khi in trắng đen */
-        .invoice-paper { box-shadow: none !important; padding: 0 !important; margin: 0 !important; border-radius: 0 !important; }
-        .grand-total { background-color: transparent !important; border: 2px solid #000 !important; }
+        /* 7. Reset ranh giới tờ giấy trên web để hòa làm 1 với giấy A4 thật */
+        .invoice-paper {
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+        }
+
+        /* 8. Fix lỗi âm lề (Negative Margin) của Bootstrap làm tràn viền */
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
         .table-invoice th { border-bottom: 2px solid #000 !important; color: #000 !important; }
         .table-invoice td { border-bottom: 1px solid #ccc !important; color: #000 !important; }
     }
@@ -224,8 +252,8 @@
                                 <td class="fw-bold border-bottom pb-3"><fmt:formatNumber value="${invoice.taxAmount}" pattern="#,###"/> đ</td>
                             </tr>
                             <tr class="grand-total">
-                                <td class="pt-3 pb-3 text-uppercase fw-bold text-dark">Tổng thanh toán:</td>
-                                <td class="pt-3 pb-3 fw-bold fs-4 text-primary"><fmt:formatNumber value="${invoice.totalAmount}" pattern="#,###"/> đ</td>
+                                <td class="pt-3 pb-3 text-uppercase fw-bold text-dark text-nowrap">Tổng thanh toán:</td>
+                                <td class="pt-3 pb-3 fw-bold fs-4 text-primary text-nowrap"><fmt:formatNumber value="${invoice.totalAmount}" pattern="#,###"/> đ</td>
                             </tr>
                         </table>
                     </div>
