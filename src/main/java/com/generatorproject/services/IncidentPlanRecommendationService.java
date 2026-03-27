@@ -81,7 +81,7 @@ public class IncidentPlanRecommendationService {
                     referenceStart,
                     referenceEnd,
                     seed.recommendedServiceLocation,
-                    1
+                    5
             );
 
             results.add(new IncidentPlanRecommendationView(
@@ -128,6 +128,9 @@ public class IncidentPlanRecommendationService {
             Set<String> technicianSkills = skillsByTechnician.getOrDefault(technician.getId(), Collections.<String>emptySet());
             boolean unavailable = unavailableByTechnician.containsKey(technician.getId());
             boolean missingRequiredSkill = !technicianSkills.containsAll(requiredSkillCodes);
+            if (missingRequiredSkill) {
+                continue;
+            }
             boolean outOfWorkingHours = isOutOfWorkingHours(profile, referenceStart, referenceEnd);
             boolean overloaded = isOverloaded(profile, taskCounts.get(technician.getId()));
 

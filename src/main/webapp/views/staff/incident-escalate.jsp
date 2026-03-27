@@ -88,22 +88,23 @@
                                                         </div>
 
                                                         <div class="mb-3">
-                                                            <div class="small fw-bold text-secondary mb-1">Kỹ thuật viên phù hợp nhất</div>
+                                                            <div class="small fw-bold text-secondary mb-1">Danh sách kỹ thuật viên phù hợp</div>
                                                             <c:choose>
                                                                 <c:when test="${not empty recommendation.technicianSuggestions}">
-                                                                    <c:set var="tech" value="${recommendation.technicianSuggestions[0]}" />
-                                                                    <div class="border rounded p-2 mb-2 bg-white">
-                                                                        <div class="d-flex justify-content-between align-items-start gap-2">
-                                                                            <div>
-                                                                                <div class="fw-semibold">${tech.technicianName}</div>
-                                                                                <div class="small text-muted">${tech.summary}</div>
+                                                                    <c:forEach items="${recommendation.technicianSuggestions}" var="tech">
+                                                                        <div class="border rounded p-2 mb-2 bg-white">
+                                                                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                                                                <div>
+                                                                                    <div class="fw-semibold">${tech.technicianName}</div>
+                                                                                    <div class="small text-muted">${tech.summary}</div>
+                                                                                </div>
+                                                                                <span class="badge ${tech.matchScore >= 80 ? 'bg-success' : tech.matchScore >= 60 ? 'bg-warning text-dark' : 'bg-secondary'}">${tech.matchScore} điểm</span>
                                                                             </div>
-                                                                            <span class="badge ${tech.matchScore >= 80 ? 'bg-success' : tech.matchScore >= 60 ? 'bg-warning text-dark' : 'bg-secondary'}">${tech.matchScore} điểm</span>
                                                                         </div>
-                                                                    </div>
+                                                                    </c:forEach>
                                                                 </c:when>
                                                                 <c:otherwise>
-                                                                    <div class="small text-muted">Chưa tìm được kỹ thuật viên phù hợp trong thời điểm hiện tại.</div>
+                                                                    <div class="small text-muted">Chưa có kỹ thuật viên đủ kỹ năng bắt buộc trong thời điểm hiện tại.</div>
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </div>
