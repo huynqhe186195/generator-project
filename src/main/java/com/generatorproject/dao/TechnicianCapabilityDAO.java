@@ -293,6 +293,30 @@ public class TechnicianCapabilityDAO extends DbContext {
         }
     }
 
+    public boolean deleteSkillCatalog(String code) {
+        String sql = "DELETE FROM skill_catalog WHERE code = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean hasSkillAssignmentsByCode(String code) {
+        String sql = "SELECT 1 FROM technician_skills WHERE skill_code = ? LIMIT 1";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
+
     public Map<Integer, Boolean> findUnavailability(List<Integer> technicianIds, Timestamp from, Timestamp to) {
         Map<Integer, Boolean> unavailable = new HashMap<>();
         if (technicianIds == null || technicianIds.isEmpty() || from == null || to == null) {
