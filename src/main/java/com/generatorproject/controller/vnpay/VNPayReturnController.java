@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,40 +23,28 @@ public class VNPayReturnController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-        // 1. Lấy tham số đưa vào Map (KHÔNG DÙNG URLEncoder ở đây)
-        // 1. Lấy tham số đưa vào Map (VỪA LẤY GỐC, VỪA ENCODE ĐÚNG CHUẨN VNPAY)
+    try{
+        // 1. Lấy tham số đưa vào Map (Vừa lấy gốc, vừa encode chuẩn VNPay)
         Map<String, String> fields = new HashMap<>();
         for (Enumeration<String> params = req.getParameterNames(); params.hasMoreElements();) {
-
-            String fieldName = params.nextElement(); // Tên biến gốc (VD: vnp_OrderInfo)
-            String fieldValue = req.getParameter(fieldName); // Giá trị đã bị Java decode (VD: Thanh toan hoa don)
+            String fieldName = params.nextElement();
+            String fieldValue = req.getParameter(fieldName);
 
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                // Ép mã hóa lại sang chuẩn US-ASCII trước khi nhét vào Map để băm chữ ký
-                String encodedKey = java.net.URLEncoder.encode(fieldName, java.nio.charset.StandardCharsets.US_ASCII.toString());
-                String encodedValue = java.net.URLEncoder.encode(fieldValue, java.nio.charset.StandardCharsets.US_ASCII.toString());
-
+                String encodedKey = URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString());
+                String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString());
                 fields.put(encodedKey, encodedValue);
             }
         }
 
-
         // 2. Tách chữ ký ra khỏi Map
         String vnp_SecureHash = req.getParameter("vnp_SecureHash");
-        if (fields.containsKey("vnp_SecureHashType")) {
-            fields.remove("vnp_SecureHashType");
-        }
-        if (fields.containsKey("vnp_SecureHash")) {
-            fields.remove("vnp_SecureHash");
-        }
+        fields.remove("vnp_SecureHashType");
+        fields.remove("vnp_SecureHash");
 
-        // 3. Băm lại dữ liệu để kiểm tra chữ ký (Hàm này bên trong đã tự xử lý URLEncoder rồi)
+        // 3. Tính toán chữ ký phía Server
         String signValue = VNPayConfig.hashAllFields(fields);
 
-
-        System.out.println("Chữ ký VNPay gửi về : " + vnp_SecureHash);
-        System.out.println("Chữ ký Server tính ra: " + signValue);
         // Lấy thông tin cơ bản
         String txnRef = req.getParameter("vnp_TxnRef");
         String invoiceCode = (txnRef != null && txnRef.contains("_")) ? txnRef.split("_")[0] : txnRef;
@@ -63,71 +53,58 @@ public class VNPayReturnController extends HttpServlet {
         String transactionNo = req.getParameter("vnp_TransactionNo");
 
         // 4. KIỂM TRA BẢO MẬT
-        if (signValue.equals(vnp_SecureHash)) {
+        if (signValue != null && signValue.equals(vnp_SecureHash)) {
             // ---- CHỮ KÝ HỢP LỆ ----
 
             if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
 
-                // 1. Lấy số tiền khách đã trả (Chia 100 để ra tiền thật)
                 long amountPaid = Long.parseLong(req.getParameter("vnp_Amount")) / 100;
-
-                // 2. Gọi Database lấy Hóa đơn ra kiểm tra
                 Invoice invoice = invoiceService.getInvoiceByCode(invoiceCode);
 
                 if (invoice != null) {
-                    // 1. KIỂM TRA: Nếu hóa đơn ĐÃ THANH TOÁN rồi thì không làm gì cả
                     if ("PAID".equals(invoice.getPaymentStatus())) {
+                        // Trường hợp 1: Đã thanh toán (F5 lại)
                         req.setAttribute("status", "paid");
-                        req.setAttribute("message", "Hóa đơn này đã được thanh toán trước đó.");
-                        // Chuyển hướng luôn, không chạy xuống lệnh update phía dưới nữa
-                        req.getRequestDispatcher("/views/vnpay/vnpay-result.jsp").forward(req, resp);
-                        return;
-                    }
+                        req.setAttribute("message", "Hóa đơn này đã được thanh toán từ trước.");
+                        req.setAttribute("transactionNo", transactionNo);
 
-                    // 2. Nếu vẫn là UNPAID thì mới kiểm tra tiền và update
-                    if (invoice.getTotalAmount().longValue() == amountPaid) {
+                    } else if (invoice.getTotalAmount().longValue() == amountPaid) {
+                        // Trường hợp 2: Đúng tiền -> CẬP NHẬT DATABASE
                         invoiceService.updatePaymentStatusByCode(invoiceCode, "PAID", "VNPay", transactionNo);
-
-                        req.setAttribute("status", "success");
-                        req.setAttribute("message", "Thanh toán thành công hóa đơn " + invoiceCode);
-                    }
-
-                if (invoice != null) {
-                    // 3. SO SÁNH TIỀN
-                    if (invoice.getTotalAmount().longValue() == amountPaid) {
-
-                        // ĐÚNG TIỀN -> Cập nhật trạng thái PAID
-                        invoiceService.updatePaymentStatusByCode(invoiceCode, "PAID", "VNPay", transactionNo);
-
-                        // TRẢ VỀ THÔNG BÁO THÀNH CÔNG (Chỉ đặt ở trong đây thôi)
                         req.setAttribute("status", "success");
                         req.setAttribute("message", "Thanh toán thành công hóa đơn " + invoiceCode);
                         req.setAttribute("transactionNo", transactionNo);
 
                     } else {
-                        // SAI TIỀN
+                        // Trường hợp 3: Sai số tiền
                         req.setAttribute("status", "error");
                         req.setAttribute("message", "Thanh toán thành công nhưng SỐ TIỀN KHÔNG KHỚP. Vui lòng đối soát lại!");
                     }
                 } else {
-                    // KHÔNG TÌM THẤY HÓA ĐƠN
                     req.setAttribute("status", "error");
                     req.setAttribute("message", "Không tìm thấy hóa đơn trên hệ thống!");
                 }
 
             } else {
-                // THANH TOÁN THẤT BẠI (Hoặc khách bấm Hủy)
+                // Khách hủy giao dịch hoặc lỗi thẻ
                 req.setAttribute("status", "failed");
-                req.setAttribute("message", "Giao dịch không thành công hoặc khách hàng đã hủy thanh toán.");
+                req.setAttribute("message", "Giao dịch không thành công hoặc khách hàng đã hủy.");
             }
 
         } else {
-            // ---- CHỮ KÝ KHÔNG HỢP LỆ (Bị sửa URL) ----
+            // ---- CHỮ KÝ KHÔNG HỢP LỆ (Hacker can thiệp) ----
             req.setAttribute("status", "error");
-            req.setAttribute("message", "Cảnh báo: Dữ liệu giao dịch không hợp lệ. Vui lòng liên hệ quản trị viên!");
+            req.setAttribute("message", "Cảnh báo: Dữ liệu giao dịch không hợp lệ.");
         }
 
-        // Chuyển hướng sang trang giao diện thông báo cho khách hàng
+        // 5. Chuyển hướng ra giao diện (Tạm thời vẫn dùng forward)
         req.getRequestDispatcher("/views/vnpay/vnpay-result.jsp").forward(req, resp);
+    } catch (Exception e) {
+        // Bắt mọi lỗi và in thẳng ra màn hình trắng để xem
+        resp.setContentType("text/html;charset=UTF-8");
+        resp.getWriter().print("<h2 style='color:red;'>Hệ thống bị sập do lỗi Code (Exception):</h2><pre>");
+        e.printStackTrace(resp.getWriter());
+        resp.getWriter().print("</pre>");
     }
-}}
+    }
+}
