@@ -65,7 +65,12 @@ public class AdminRequestController extends HttpServlet {
         }
 
         List<SystemRequest> pendingRequests = requestDAO.findByReceiverRole("ADMIN", "PENDING");
+        Map<Long, Map<String, Object>> requestPayloads = new HashMap<>();
+        for (SystemRequest pendingRequest : pendingRequests) {
+            requestPayloads.put(pendingRequest.getId(), parseRequestData(pendingRequest));
+        }
         req.setAttribute("requests", pendingRequests);
+        req.setAttribute("requestPayloads", requestPayloads);
         req.getRequestDispatcher("/views/admin/request/request-list.jsp").forward(req, resp);
     }
 

@@ -105,6 +105,22 @@ public class TechnicianCapabilityManagementService {
         return technicianCapabilityDAO.updateSkillCatalog(item);
     }
 
+    public boolean deleteSkillCatalog(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            return false;
+        }
+        String normalizedCode = code.trim().toUpperCase();
+        SkillCatalog existing = technicianCapabilityDAO.findSkillCatalogByCode(normalizedCode);
+        if (existing == null) {
+            return false;
+        }
+        if (technicianCapabilityDAO.hasSkillAssignmentsByCode(normalizedCode)) {
+            existing.setActiveStatus(false);
+            return technicianCapabilityDAO.updateSkillCatalog(existing);
+        }
+        return technicianCapabilityDAO.deleteSkillCatalog(normalizedCode);
+    }
+
     public List<TechnicianUnavailability> getUnavailability(int technicianId) {
         if (technicianId <= 0) {
             return Collections.emptyList();
