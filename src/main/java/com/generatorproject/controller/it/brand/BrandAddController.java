@@ -14,7 +14,7 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.UUID;
 
-@WebServlet("/it/brands/create.jsp")
+@WebServlet("/it/brands/create")
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024,      // 1MB
         maxFileSize = 10 * 1024 * 1024,       // 10MB
@@ -28,7 +28,7 @@ public class BrandAddController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
-        req.getRequestDispatcher("/views/it/brand/create.jsp.jsp").forward(req, resp);
+        req.getRequestDispatcher("/views/it/brand/create.jsp").forward(req, resp);
     }
 
     @Override
@@ -41,12 +41,12 @@ public class BrandAddController extends HttpServlet {
         String logoUrlInput = trim(req.getParameter("logoUrl")); // link (optional)
 
         if (name == null) {
-            resp.sendRedirect(req.getContextPath() + "/it/brands/create.jsp?msg=name_required");
+            resp.sendRedirect(req.getContextPath() + "/it/brands/create?msg=name_required");
             return;
         }
 
         if (brandDAO.findByName(name) != null) {
-            resp.sendRedirect(req.getContextPath() + "/it/brands/create.jsp?msg=exists");
+            resp.sendRedirect(req.getContextPath() + "/it/brands/create?msg=exists");
             return;
         }
 
@@ -64,7 +64,7 @@ public class BrandAddController extends HttpServlet {
             String ext = getFileExt(submitted);
 
             if (!isAllowedImageExt(ext)) {
-                resp.sendRedirect(req.getContextPath() + "/it/brands/create.jsp?msg=invalid_image");
+                resp.sendRedirect(req.getContextPath() + "/it/brands/create?msg=invalid_image");
                 return;
             }
 
@@ -94,7 +94,7 @@ public class BrandAddController extends HttpServlet {
 
         int newId = brandDAO.insert(b);
         if (newId <= 0) {
-            resp.sendRedirect(req.getContextPath() + "/it/brands/create.jsp?msg=failed");
+            resp.sendRedirect(req.getContextPath() + "/it/brands/create?msg=failed");
             return;
         }
 
