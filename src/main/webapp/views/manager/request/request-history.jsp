@@ -135,6 +135,12 @@
                 grid-template-columns: 1fr;
             }
         }
+        .request-pagination-wrap {
+            border-top: 1px solid #e9ecef;
+        }
+        .request-pagination-wrap .pagination {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 
@@ -211,9 +217,9 @@
                 </tr>
                 </thead>
 
-                <tbody>
+                <tbody id="requestTableBody">
                 <c:forEach var="r" items="${requests}">
-                    <tr>
+                    <tr class="request-row">
                         <td>#${r.id}</td>
 
                         <c:if test="${box == 'inbox'}">
@@ -336,7 +342,7 @@
                 </c:forEach>
 
                 <c:if test="${empty requests}">
-                    <tr>
+                    <tr id="requestEmptyRow">
                         <td colspan="${box == 'sent' ? 7 : 8}" class="text-center text-muted py-4">
                             <c:choose>
                                 <c:when test="${box == 'inbox'}">Bạn chưa nhận yêu cầu nào.</c:when>
@@ -347,6 +353,13 @@
                 </c:if>
                 </tbody>
             </table>
+        </div>
+        <div id="requestPaginationWrap"
+             class="request-pagination-wrap d-none px-3 py-2 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+            <div class="small text-muted" id="requestPaginationInfo"></div>
+            <nav aria-label="Phân trang danh sách yêu cầu">
+                <ul class="pagination pagination-sm mb-0" id="requestPagination"></ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -648,6 +661,58 @@
             + '</div>';
     }
 
+    function toNumber(value) {
+        if (value === null || value === undefined || value === "") return null;
+        const n = Number(value);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    function formatCurrency(value) {
+        const n = toNumber(value);
+        if (n === null) return valueOrDash(value);
+        return n.toLocaleString("vi-VN") + " VNĐ";
+    }
+
+    function normalizeMaterials(rawMaterials) {
+        if (!rawMaterials) return [];
+        if (Array.isArray(rawMaterials)) return rawMaterials;
+        if (typeof rawMaterials === "string") {
+            const parsed = safeParseJson(rawMaterials);
+            return Array.isArray(parsed) ? parsed : [];
+        }
+        return [];
+    }
+
+    function renderMaterialsSection(rawMaterials) {
+        const materials = normalizeMaterials(rawMaterials);
+        if (!materials.length) {
+            return '<div class="mb-3">'
+                + '<div class="detail-section-title">Vật tư / Linh kiện</div>'
+                + '<div class="detail-note">-</div>'
+                + '</div>';
+        }
+
+        const rows = materials.map(function (mat, index) {
+            return '<tr>'
+                + '<td>' + (index + 1) + '</td>'
+                + '<td>' + escapeHtml(valueOrDash(mat.partName || mat.sparePartName || ("ID #" + valueOrDash(mat.sparePartId)))) + '</td>'
+                + '<td>' + escapeHtml(valueOrDash(mat.quantityUsed)) + '</td>'
+                + '<td>' + escapeHtml(formatCurrency(mat.unitPrice)) + '</td>'
+                + '<td>' + escapeHtml(formatCurrency(mat.costAtTime)) + '</td>'
+                + '</tr>';
+        }).join("");
+
+        return '<div class="mb-3">'
+            + '<div class="detail-section-title">Vật tư / Linh kiện</div>'
+            + '<div class="table-responsive">'
+            + '<table class="table table-sm table-bordered align-middle mb-0">'
+            + '<thead class="table-light"><tr><th>#</th><th>Tên linh kiện</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>'
+            + '<tbody>' + rows + '</tbody>'
+            + '</table>'
+            + '</div>'
+            + '</div>';
+    }
+
     function renderStructuredDetail(reqType, obj, requestId) {
         const common = renderSection("Thông tin chung", [
             { label: "Mã request", value: "#" + requestId },
@@ -711,6 +776,25 @@
                     { label: "Tên file", value: obj.excelFileName },
                     { label: "Kích thước", value: obj.fileSize }
                 ])
+                + '</div>'
+                + '</div>';
+        }
+
+        if (reqType === "REPAIR_QUOTE") {
+            return '<div class="request-detail-wrap is-animated">'
+                + '<div class="request-detail-head">'
+                + '<span class="badge bg-success">Báo giá sửa chữa</span>'
+                + '</div>'
+                + '<div class="request-detail-body">'
+                + common
+                + renderSection("Dữ liệu", [
+                    { label: "maintenanceId", value: obj.maintenanceId },
+                    { label: "technicianId", value: obj.technicianId },
+                    { label: "actualDescription", value: obj.actualDescription },
+                    { label: "partsTotal", value: formatCurrency(obj.partsTotal) },
+                    { label: "grandTotal", value: formatCurrency(obj.grandTotal) }
+                ])
+                + renderMaterialsSection(obj.materials)
                 + '</div>'
                 + '</div>';
         }
@@ -841,6 +925,66 @@
             document.getElementById("rejectId").value = id;
         });
     }
+
+    (function initRequestPagination() {
+        const PAGE_SIZE = 7;
+        const tableBody = document.getElementById("requestTableBody");
+        const paginationWrap = document.getElementById("requestPaginationWrap");
+        const paginationEl = document.getElementById("requestPagination");
+        const paginationInfoEl = document.getElementById("requestPaginationInfo");
+
+        if (!tableBody || !paginationWrap || !paginationEl || !paginationInfoEl) return;
+
+        const rows = Array.from(tableBody.querySelectorAll("tr.request-row"));
+        if (!rows.length) {
+            paginationWrap.classList.add("d-none");
+            return;
+        }
+
+        let currentPage = 1;
+        const totalItems = rows.length;
+        const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+
+        function renderPage(page) {
+            currentPage = Math.max(1, Math.min(page, totalPages));
+            const startIndex = (currentPage - 1) * PAGE_SIZE;
+            const endIndex = startIndex + PAGE_SIZE;
+
+            rows.forEach(function (row, index) {
+                row.classList.toggle("d-none", index < startIndex || index >= endIndex);
+            });
+
+            paginationInfoEl.textContent = "Hiển thị " + (startIndex + 1) + "-" + Math.min(endIndex, totalItems)
+                + " / " + totalItems + " yêu cầu";
+
+            const hasPrev = currentPage > 1;
+            const hasNext = currentPage < totalPages;
+
+            let pageItemsHtml = '';
+            for (let i = 1; i <= totalPages; i++) {
+                pageItemsHtml += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '">'
+                    + '<button type="button" class="page-link" data-page="' + i + '">' + i + '</button></li>';
+            }
+
+            paginationEl.innerHTML = ''
+                + '<li class="page-item ' + (hasPrev ? '' : 'disabled') + '">'
+                + '<button type="button" class="page-link" data-page="' + (currentPage - 1) + '">Trước</button></li>'
+                + pageItemsHtml
+                + '<li class="page-item ' + (hasNext ? '' : 'disabled') + '">'
+                + '<button type="button" class="page-link" data-page="' + (currentPage + 1) + '">Sau</button></li>';
+        }
+
+        paginationEl.addEventListener("click", function (event) {
+            const button = event.target.closest("button[data-page]");
+            if (!button) return;
+            const targetPage = Number(button.getAttribute("data-page"));
+            if (!Number.isFinite(targetPage)) return;
+            renderPage(targetPage);
+        });
+
+        paginationWrap.classList.toggle("d-none", totalPages <= 1);
+        renderPage(1);
+    })();
 })();
 </script>
 
