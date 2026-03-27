@@ -80,7 +80,8 @@ public class IncidentPlanRecommendationService {
                     1,
                     referenceStart,
                     referenceEnd,
-                    seed.recommendedServiceLocation
+                    seed.recommendedServiceLocation,
+                    1
             );
 
             results.add(new IncidentPlanRecommendationView(
@@ -112,7 +113,8 @@ public class IncidentPlanRecommendationService {
                                                                   int recommendedTechnicianCount,
                                                                   Timestamp referenceStart,
                                                                   Timestamp referenceEnd,
-                                                                  String serviceLocation) {
+                                                                  String serviceLocation,
+                                                                  int maxSuggestions) {
         List<TechnicianSuggestion> suggestions = new ArrayList<>();
         Set<String> requiredSkillCodes = new HashSet<String>();
         for (RequiredSkillSuggestion skill : requiredSkills) {
@@ -170,7 +172,54 @@ public class IncidentPlanRecommendationService {
         }
 
         suggestions.sort(Comparator.comparingInt(TechnicianSuggestion::getMatchScore).reversed());
-        return suggestions.isEmpty() ? suggestions : new ArrayList<TechnicianSuggestion>(suggestions.subList(0, 1));
+        if (maxSuggestions > 0 && suggestions.size() > maxSuggestions) {
+            return new ArrayList<TechnicianSuggestion>(suggestions.subList(0, maxSuggestions));
+        }
+        return suggestions;
+    }
+
+    public List<TechnicianSuggestion> buildTechnicianRanking(Incident incident,
+                                                             Product product,
+                                                             Timestamp referenceStart,
+                                                             Timestamp referenceEnd) {
+        if (incident == null) {
+            return Collections.emptyList();
+        }
+
+        List<RecommendationSeed> seeds = createSeeds(incident, product);
+        if (seeds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        RecommendationSeed seed = seeds.get(0);
+        List<Users> technicians = userServices.findUserByRoleId(4);
+        List<Integer> technicianIds = new ArrayList<>();
+        for (Users technician : technicians) {
+            technicianIds.add(technician.getId());
+        }
+
+        Timestamp rankingStart = referenceStart == null ? resolveReferenceStart(incident) : referenceStart;
+        Timestamp rankingEnd = referenceEnd == null ? resolveReferenceEnd(incident, rankingStart) : referenceEnd;
+        java.sql.Date referenceDate = new java.sql.Date(rankingStart.getTime());
+
+        Map<Integer, TechnicianCapabilityDAO.TechnicianProfileSnapshot> profiles = technicianCapabilityDAO.findProfiles(technicianIds);
+        Map<Integer, Set<String>> skillsByTechnician = technicianCapabilityDAO.findTechnicianSkillCodes(technicianIds);
+        Map<Integer, Boolean> unavailableByTechnician = technicianCapabilityDAO.findUnavailability(technicianIds, rankingStart, rankingEnd);
+        Map<Integer, Integer> taskCounts = technicianCapabilityDAO.countTasksPerDay(technicianIds, referenceDate);
+
+        return buildTechnicianSuggestions(
+                technicians,
+                profiles,
+                skillsByTechnician,
+                unavailableByTechnician,
+                taskCounts,
+                seed.requiredSkills,
+                1,
+                rankingStart,
+                rankingEnd,
+                seed.recommendedServiceLocation,
+                0
+        );
     }
 
     private boolean isOutOfWorkingHours(TechnicianCapabilityDAO.TechnicianProfileSnapshot profile, Timestamp referenceStart, Timestamp referenceEnd) {

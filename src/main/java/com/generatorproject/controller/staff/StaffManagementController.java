@@ -714,6 +714,8 @@ public class StaffManagementController extends HttpServlet {
             List<AlternativeTechnicianView> alternativeTechnicianViews = new ArrayList<>();
             List<TimeSuggestionView> alternativeTimeSuggestions = new ArrayList<>();
             if ("conflict_schedule".equalsIgnoreCase(scheduleError) && selectedStart != null && selectedEnd != null) {
+                Map<Integer, TechnicianSuggestion> suggestionByTechnicianId =
+                        buildTechnicianSuggestionMap(incident, product, selectedStart, selectedEnd);
                 List<Integer> technicianIds = new ArrayList<>();
                 for (Users technician : listTechnicians) {
                     if (technician != null) {
@@ -732,6 +734,10 @@ public class StaffManagementController extends HttpServlet {
                         continue;
                     }
                     if (!maintenanceAssignmentDAO.hasScheduleConflict(technician.getId(), selectedStart, selectedEnd)) {
+                        TechnicianSuggestion suggestion = suggestionByTechnicianId.get(technician.getId());
+                        if (suggestion != null && suggestion.isMissingRequiredSkill()) {
+                            continue;
+                        }
                         alternativeTechnicians.add(technician);
                         TechnicianCapabilityDAO.TechnicianProfileSnapshot profile = profiles.get(technician.getId());
                         alternativeTechnicianViews.add(new AlternativeTechnicianView(
@@ -740,7 +746,9 @@ public class StaffManagementController extends HttpServlet {
                                 profile == null ? null : profile.getMaxTasksPerDay(),
                                 profile != null && profile.isActive(),
                                 recommendedTechnicianId != null
-                                        && recommendedTechnicianId.intValue() == technician.getId()
+                                        && recommendedTechnicianId.intValue() == technician.getId(),
+                                suggestion == null ? null : suggestion.getMatchScore(),
+                                suggestion == null ? null : suggestion.getSummary()
                         ));
                     }
                 }
@@ -876,6 +884,23 @@ public class StaffManagementController extends HttpServlet {
         }
     }
 
+    private Map<Integer, TechnicianSuggestion> buildTechnicianSuggestionMap(Incident incident,
+                                                                             Product product,
+                                                                             Timestamp selectedStart,
+                                                                             Timestamp selectedEnd) {
+        Map<Integer, TechnicianSuggestion> result = new HashMap<>();
+        try {
+            List<TechnicianSuggestion> suggestions = incidentPlanRecommendationService
+                    .buildTechnicianRanking(incident, product, selectedStart, selectedEnd);
+            for (TechnicianSuggestion suggestion : suggestions) {
+                result.put(suggestion.getTechnicianId(), suggestion);
+            }
+        } catch (Exception ignored) {
+            // fallback: nếu có lỗi dữ liệu gợi ý thì vẫn trả danh sách kỹ thuật viên rảnh theo lịch trống
+        }
+        return result;
+    }
+
     private List<TimeSuggestionView> buildAlternativeTimeSuggestions(int technicianId,
                                                                      Timestamp selectedStart,
                                                                      Timestamp selectedEnd,
@@ -953,12 +978,16 @@ public class StaffManagementController extends HttpServlet {
         private final Integer maxTasksPerDay;
         private final boolean activeProfile;
         private final boolean recommended;
+        private final Integer matchScore;
+        private final String recommendationSummary;
 
         public AlternativeTechnicianView(Users technician,
                                          int currentTaskCount,
                                          Integer maxTasksPerDay,
                                          boolean activeProfile,
-                                         boolean recommended) {
+                                         boolean recommended,
+                                         Integer matchScore,
+                                         String recommendationSummary) {
             this.technicianId = technician.getId();
             this.technicianName = technician.getFullName() == null
                     ? "Kỹ thuật viên #" + technician.getId()
@@ -968,6 +997,8 @@ public class StaffManagementController extends HttpServlet {
             this.maxTasksPerDay = maxTasksPerDay;
             this.activeProfile = activeProfile;
             this.recommended = recommended;
+            this.matchScore = matchScore;
+            this.recommendationSummary = recommendationSummary;
         }
 
         public int getTechnicianId() {
@@ -996,6 +1027,14 @@ public class StaffManagementController extends HttpServlet {
 
         public boolean isRecommended() {
             return recommended;
+        }
+
+        public Integer getMatchScore() {
+            return matchScore;
+        }
+
+        public String getRecommendationSummary() {
+            return recommendationSummary;
         }
     }
 

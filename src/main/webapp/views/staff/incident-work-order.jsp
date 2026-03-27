@@ -21,7 +21,8 @@
                 </div>
                 <c:if test="${not empty alternativeTechnicianViews}">
                     <div class="alert alert-info">
-                        <div class="fw-bold mb-2"><i class="fas fa-user-check me-2"></i>Gợi ý kỹ thuật viên rảnh đúng khung giờ (ưu tiên theo tải công việc)</div>
+                        <div class="fw-bold mb-2"><i class="fas fa-user-check me-2"></i>Gợi ý kỹ thuật viên rảnh đúng khung giờ (đã lọc kỹ năng phù hợp)</div>
+                        <div class="small text-muted mb-2">Staff không cần nhớ skill từng kỹ thuật viên: hệ thống tự lọc người đạt yêu cầu và ưu tiên theo mức độ phù hợp.</div>
                         <div class="d-grid gap-2">
                             <c:forEach items="${alternativeTechnicianViews}" var="altTech">
                                 <button type="button"
@@ -45,6 +46,16 @@
                                         task hôm nay
                                     </span>
                                 </button>
+                                <c:if test="${not empty altTech.matchScore or not empty altTech.recommendationSummary}">
+                                    <div class="small text-muted ms-2 mb-2">
+                                        <c:if test="${not empty altTech.matchScore}">
+                                            Điểm phù hợp: <span class="fw-semibold">${altTech.matchScore}</span>.
+                                        </c:if>
+                                        <c:if test="${not empty altTech.recommendationSummary}">
+                                            ${altTech.recommendationSummary}
+                                        </c:if>
+                                    </div>
+                                </c:if>
                             </c:forEach>
                         </div>
                     </div>
