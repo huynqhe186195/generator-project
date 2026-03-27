@@ -26,10 +26,16 @@ public class RoleManagementController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
         String path = req.getPathInfo();
+        if (path == null || path.isEmpty() || "/".equals(path)) {
+            resp.sendRedirect(req.getContextPath() + "/admin/role/role-list");
+            return;
+        }
+
         switch (path) {
             case "/role-list":
                 handleRoleList(req, resp);
                 break;
+            case "/role-create":
             case "/role-create.jsp":
                 handleRoleAdd(req, resp);
                 break;
@@ -47,6 +53,9 @@ public class RoleManagementController extends HttpServlet {
                 break;
             case "/role-detail":
                 handleRoleDetail(req, resp);
+                break;
+            default:
+                resp.sendRedirect(req.getContextPath() + "/admin/role/role-list");
                 break;
         }
     }
@@ -70,7 +79,7 @@ public class RoleManagementController extends HttpServlet {
         resp.setContentType("text/html; charset=UTF-8");
         req.setCharacterEncoding("UTF-8");
 
-        req.getRequestDispatcher("/views/admin/role/Role-create.jsp.jsp")
+        req.getRequestDispatcher("/views/admin/role/Role-create.jsp")
                 .forward(req, resp);
     }
 
@@ -143,4 +152,3 @@ public class RoleManagementController extends HttpServlet {
         }
     }
 }
-
