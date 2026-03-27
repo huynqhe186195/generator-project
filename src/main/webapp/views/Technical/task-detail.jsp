@@ -187,20 +187,18 @@
               💾 Lưu báo cáo
             </button>
 
-            <c:if test="${task.type == 'REPAIR'}">
-              <a href="<c:url value='/technical/repair-report?id=${task.id}'/>"
-                 class="btn btn-warning ms-2">
-                🔧 Sang màn sửa chữa
-              </a>
-            </c:if>
+            <c:if test="${task.status == 'SCHEDULED'}">
+                <a href="<c:url value='/technical/repair-report?id=${task.id}'/>"
+                   class="btn btn-warning ms-2">
+                    🔧 Báo giá / chọn vật tư
+                </a>
 
-            <c:if test="${task.type != 'REPAIR'}">
-              <button type="submit"
-                      class="btn btn-success ms-2"
-                      formaction="<c:url value='/technical/task-complete'/>"
-                      onclick="return confirm('Xác nhận hoàn thành công việc?')">
-                ✅ Hoàn thành
-              </button>
+                <button type="submit"
+                        class="btn btn-success ms-2"
+                        formaction="<c:url value='/technical/task-complete'/>"
+                        onclick="return confirm('Xác nhận hoàn thành công việc?')">
+                    ✅ Hoàn thành
+                </button>
             </c:if>
           </div>
         </c:if>

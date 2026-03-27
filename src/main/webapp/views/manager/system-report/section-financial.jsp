@@ -10,7 +10,7 @@
 
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <div class="card chart-cart p-3 h-100">
+        <div class="card chart-card p-3 h-100">
             <div class="small text-muted">Ticket trung bình</div>
             <div class="fs-3 fw-bold">
                 <span id="finAvgTicket"></span>
@@ -110,8 +110,8 @@
 
 <script>
     (function () {
-        const avgTicket = ${finAvgTicket};
-        const totalRev = ${finTotalRevenue};
+        const avgTicket = ${finAvgTicketJson};
+        const totalRev = ${finTotalRevenueJson};
 
         const revenueByMonth = ${finRevenueByMonthJson};
         const topQty = ${finTopPartsByQtyJson};

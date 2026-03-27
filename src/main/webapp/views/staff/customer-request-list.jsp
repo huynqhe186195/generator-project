@@ -12,10 +12,10 @@
 <body class="bg-light">
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Inbox yêu cầu Customer</h4>
+        <h4 class="mb-0">Yêu cầu từ phía khách hàng</h4>
         <div class="d-flex gap-2">
             <a href="<c:url value='/staff/contracts'/>" class="btn btn-outline-primary btn-sm">Xem hợp đồng</a>
-            <a href="<c:url value='/staff/incident-list'/>" class="btn btn-outline-secondary btn-sm">Về dashboard Staff</a>
+            <a href="<c:url value='/staff/incident-list'/>" class="btn btn-outline-secondary btn-sm">Trang chủ</a>
         </div>
     </div>
 

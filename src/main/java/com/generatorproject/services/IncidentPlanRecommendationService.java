@@ -23,6 +23,7 @@ import java.util.Set;
 public class IncidentPlanRecommendationService {
     private final TechnicianCapabilityDAO technicianCapabilityDAO;
     private final IUserServices userServices;
+    private static final Map<String, Set<String>> REQUIRED_SKILL_ALIASES = createRequiredSkillAliases();
 
     public IncidentPlanRecommendationService() {
         this.technicianCapabilityDAO = new TechnicianCapabilityDAO();
@@ -80,7 +81,8 @@ public class IncidentPlanRecommendationService {
                     1,
                     referenceStart,
                     referenceEnd,
-                    seed.recommendedServiceLocation
+                    seed.recommendedServiceLocation,
+                    5
             );
 
             results.add(new IncidentPlanRecommendationView(
@@ -112,7 +114,8 @@ public class IncidentPlanRecommendationService {
                                                                   int recommendedTechnicianCount,
                                                                   Timestamp referenceStart,
                                                                   Timestamp referenceEnd,
-                                                                  String serviceLocation) {
+                                                                  String serviceLocation,
+                                                                  int maxSuggestions) {
         List<TechnicianSuggestion> suggestions = new ArrayList<>();
         Set<String> requiredSkillCodes = new HashSet<String>();
         for (RequiredSkillSuggestion skill : requiredSkills) {
@@ -125,16 +128,16 @@ public class IncidentPlanRecommendationService {
             TechnicianCapabilityDAO.TechnicianProfileSnapshot profile = profiles.get(technician.getId());
             Set<String> technicianSkills = skillsByTechnician.getOrDefault(technician.getId(), Collections.<String>emptySet());
             boolean unavailable = unavailableByTechnician.containsKey(technician.getId());
-            boolean missingRequiredSkill = !technicianSkills.containsAll(requiredSkillCodes);
+            boolean missingRequiredSkill = !hasAllRequiredSkills(technicianSkills, requiredSkillCodes);
+            if (missingRequiredSkill) {
+                continue;
+            }
             boolean outOfWorkingHours = isOutOfWorkingHours(profile, referenceStart, referenceEnd);
             boolean overloaded = isOverloaded(profile, taskCounts.get(technician.getId()));
 
             int score = 100;
             if (profile == null || !profile.isActive()) {
                 score -= 40;
-            }
-            if (missingRequiredSkill) {
-                score -= 35;
             }
             if (unavailable) {
                 score -= 30;
@@ -170,7 +173,106 @@ public class IncidentPlanRecommendationService {
         }
 
         suggestions.sort(Comparator.comparingInt(TechnicianSuggestion::getMatchScore).reversed());
-        return suggestions.isEmpty() ? suggestions : new ArrayList<TechnicianSuggestion>(suggestions.subList(0, 1));
+        if (maxSuggestions > 0 && suggestions.size() > maxSuggestions) {
+            return new ArrayList<TechnicianSuggestion>(suggestions.subList(0, maxSuggestions));
+        }
+        return suggestions;
+    }
+
+    private boolean hasAllRequiredSkills(Set<String> technicianSkills, Set<String> requiredSkillCodes) {
+        if (requiredSkillCodes == null || requiredSkillCodes.isEmpty()) {
+            return true;
+        }
+        Set<String> normalizedTechnicianSkills = new HashSet<String>();
+        if (technicianSkills != null) {
+            for (String skill : technicianSkills) {
+                if (skill != null) {
+                    normalizedTechnicianSkills.add(skill.trim().toUpperCase(Locale.ROOT));
+                }
+            }
+        }
+
+        for (String requiredSkill : requiredSkillCodes) {
+            if (requiredSkill == null) {
+                continue;
+            }
+            String normalizedRequired = requiredSkill.trim().toUpperCase(Locale.ROOT);
+            Set<String> aliases = REQUIRED_SKILL_ALIASES.getOrDefault(normalizedRequired, Collections.singleton(normalizedRequired));
+            boolean matched = false;
+            for (String alias : aliases) {
+                if (normalizedTechnicianSkills.contains(alias)) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static Map<String, Set<String>> createRequiredSkillAliases() {
+        Map<String, Set<String>> aliases = new HashMap<>();
+        aliases.put("CONSUMABLE_REPLACEMENT", new HashSet<String>(Arrays.asList(
+                "CONSUMABLE_REPLACEMENT",
+                "COMPONENTS_AND_SUPPLIES",
+                "SPARE_PART_REPLACEMENT"
+        )));
+        aliases.put("DIESEL_ENGINE_REPAIR", new HashSet<String>(Arrays.asList(
+                "DIESEL_ENGINE_REPAIR",
+                "ENGINE_SPECIALIST",
+                "ENGINE_MECHANICS_SPECIALIST"
+        )));
+        aliases.put("FIELD_INSPECTION", new HashSet<String>(Arrays.asList(
+                "FIELD_INSPECTION",
+                "SITE_SURVEY"
+        )));
+        return aliases;
+    }
+
+    public List<TechnicianSuggestion> buildTechnicianRanking(Incident incident,
+                                                             Product product,
+                                                             Timestamp referenceStart,
+                                                             Timestamp referenceEnd) {
+        if (incident == null) {
+            return Collections.emptyList();
+        }
+
+        List<RecommendationSeed> seeds = createSeeds(incident, product);
+        if (seeds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        RecommendationSeed seed = seeds.get(0);
+        List<Users> technicians = userServices.findUserByRoleId(4);
+        List<Integer> technicianIds = new ArrayList<>();
+        for (Users technician : technicians) {
+            technicianIds.add(technician.getId());
+        }
+
+        Timestamp rankingStart = referenceStart == null ? resolveReferenceStart(incident) : referenceStart;
+        Timestamp rankingEnd = referenceEnd == null ? resolveReferenceEnd(incident, rankingStart) : referenceEnd;
+        java.sql.Date referenceDate = new java.sql.Date(rankingStart.getTime());
+
+        Map<Integer, TechnicianCapabilityDAO.TechnicianProfileSnapshot> profiles = technicianCapabilityDAO.findProfiles(technicianIds);
+        Map<Integer, Set<String>> skillsByTechnician = technicianCapabilityDAO.findTechnicianSkillCodes(technicianIds);
+        Map<Integer, Boolean> unavailableByTechnician = technicianCapabilityDAO.findUnavailability(technicianIds, rankingStart, rankingEnd);
+        Map<Integer, Integer> taskCounts = technicianCapabilityDAO.countTasksPerDay(technicianIds, referenceDate);
+
+        return buildTechnicianSuggestions(
+                technicians,
+                profiles,
+                skillsByTechnician,
+                unavailableByTechnician,
+                taskCounts,
+                seed.requiredSkills,
+                1,
+                rankingStart,
+                rankingEnd,
+                seed.recommendedServiceLocation,
+                0
+        );
     }
 
     private boolean isOutOfWorkingHours(TechnicianCapabilityDAO.TechnicianProfileSnapshot profile, Timestamp referenceStart, Timestamp referenceEnd) {
@@ -247,10 +349,30 @@ public class IncidentPlanRecommendationService {
                 new RequiredSkillSuggestion("DIESEL_ENGINE_REPAIR", "Sửa chữa động cơ diesel", "REQUIRED", "Phù hợp cho lỗi hư hỏng / thay thế"),
                 new RequiredSkillSuggestion("SAFETY_LOCKOUT", "An toàn lockout", "PREFERRED", "Đảm bảo an toàn khi can thiệp thiết bị")
         );
+        List<RequiredSkillSuggestion> replacementSkills = Arrays.asList(
+                new RequiredSkillSuggestion("CONSUMABLE_REPLACEMENT", "Thay thế linh kiện / vật tư", "REQUIRED", "Ưu tiên cho case thay ắc quy, thay linh kiện hư hỏng"),
+                new RequiredSkillSuggestion("ELECTRICAL_DIAGNOSTICS", "Chẩn đoán điện", "PREFERRED", "Đánh giá mạch nạp/xả trước và sau thay thế"),
+                new RequiredSkillSuggestion("SAFETY_LOCKOUT", "An toàn lockout", "PREFERRED", "Đảm bảo cô lập nguồn trước khi thay linh kiện")
+        );
         List<RequiredSkillSuggestion> periodicSkills = Arrays.asList(
                 new RequiredSkillSuggestion("PREVENTIVE_MAINTENANCE", "Bảo trì định kỳ", "REQUIRED", "Phù hợp cho checklist bảo dưỡng"),
                 new RequiredSkillSuggestion("CONSUMABLE_REPLACEMENT", "Thay thế vật tư tiêu hao", "PREFERRED", "Chuẩn bị lọc, dầu, dây curoa")
         );
+
+        boolean replacementContext = issueType.contains("ẮC QUY")
+                || issueType.contains("BATTERY")
+                || issueType.contains("LINH KIỆN")
+                || issueType.contains("THAY THẾ")
+                || issueType.contains("REPLACEMENT")
+                || issueType.contains("PHỤ TÙNG");
+        String correctiveWorkType = replacementContext ? "REPLACEMENT" : "REPAIR";
+        List<RequiredSkillSuggestion> correctiveSkills = replacementContext ? replacementSkills : repairSkills;
+        String correctivePartsNote = replacementContext
+                ? "Chuẩn bị linh kiện thay thế (ví dụ ắc quy/phụ tùng), vật tư tiêu hao và kiểm tra tương thích trước khi lắp."
+                : "Chuẩn bị vật tư thay thế cơ bản và kỹ thuật viên có kinh nghiệm sửa chữa máy phát.";
+        String correctiveReasonSummary = replacementContext
+                ? "Phù hợp khi thiết bị cần thay thế linh kiện (ắc quy/phụ tùng) sau khi xác minh hư hỏng."
+                : "Phù hợp khi thiết bị có dấu hiệu hỏng rõ ràng hoặc cần thay thế linh kiện.";
 
         seeds.add(new RecommendationSeed(
                 "Khảo sát trước khi xử lý",
@@ -268,16 +390,16 @@ public class IncidentPlanRecommendationService {
 
         seeds.add(new RecommendationSeed(
                 "Phương án sửa chữa / thay thế",
-                "REPAIR",
+                correctiveWorkType,
                 upgradePriority(defaultPriority(incident.getUrgencyLevel())),
                 180,
                 1,
                 true,
                 location,
-                "Chuẩn bị vật tư thay thế cơ bản và kỹ thuật viên có kinh nghiệm sửa chữa máy phát.",
-                "Phù hợp khi thiết bị có dấu hiệu hỏng rõ ràng hoặc cần thay thế linh kiện.",
+                correctivePartsNote,
+                correctiveReasonSummary,
                 88,
-                repairSkills
+                correctiveSkills
         ));
 
         if (issueType.contains("BẢO") || issueType.contains("MAINTENANCE") || issueType.contains("ĐỊNH KỲ")) {
