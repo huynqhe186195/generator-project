@@ -71,35 +71,36 @@
             <td>${t.createdAt}</td>
 
             <!-- HÀNH ĐỘNG -->
-            <td>
-                <!-- CHI TIẾT -->
-
-
-                       <a class="btn btn-sm btn-primary"
-                             href="<c:url value='/technical/task-detail?id=${t.id}'/>">
-                                 Chi tiết
-                       </a>
 
 
                 <!-- REPAIR: BÁO CÁO -->
-                <c:if test="${t.type == 'REPAIR'
-                             && t.status != 'COMPLETED'
-                             && not empty t.actualDescription}">
-                    <a class="btn btn-sm btn-warning"
-                       href="<c:url value='/technical/repair-report?id=${t.id}'/>">
-                        Báo cáo sửa chữa
+                <td>
+                    <a class="btn btn-sm btn-primary"
+                       href="<c:url value='/technical/task-detail?id=${t.id}'/>">
+                        Chi tiết
                     </a>
-                </c:if>
 
-                <!-- PERIODIC / INSPECTION: HOÀN THÀNH -->
-                <c:if test="${t.type != 'REPAIR' && t.status != 'COMPLETED'}">
-                    <a class="btn btn-sm btn-success"
-                       href="<c:url value='/technical/task-complete?id=${t.id}'/>"
-                       onclick="return confirm('Xác nhận hoàn thành công việc?')">
-                        Hoàn thành
-                    </a>
-                </c:if>
-            </td>
+                    <c:if test="${t.status != 'COMPLETED' && t.status != 'CANCELLED'}">
+                        <a class="btn btn-sm btn-warning"
+                           href="<c:url value='/technical/repair-report?id=${t.id}'/>">
+                            Báo giá / vật tư
+                        </a>
+                    </c:if>
+
+                    <c:if test="${t.status == 'SCHEDULED'}">
+                        <form method="post"
+                              action="<c:url value='/technical/task-complete'/>"
+                              style="display:inline;">
+                            <input type="hidden" name="id" value="${t.id}" />
+                            <button type="submit"
+                                    class="btn btn-sm btn-success"
+                                    onclick="return confirm('Xác nhận hoàn thành công việc?')">
+                                Hoàn thành
+                            </button>
+                        </form>
+                    </c:if>
+                </td>
+
         </tr>
     </c:forEach>
 

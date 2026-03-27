@@ -157,7 +157,7 @@ public class TechnicalController extends HttpServlet {
 
                 if (task == null
                         || task.getTechnicianId() != currentUser.getId()
-                        || !"REPAIR".equals(task.getType())) {
+                        ) {
 
                     resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
                     return;
@@ -573,7 +573,7 @@ public class TechnicalController extends HttpServlet {
             if (task == null
                     || task.getTechnicianId() != currentUser.getId()
                     || !"SCHEDULED".equals(task.getStatus())
-                    || !"REPAIR".equals(task.getType())) {
+                    ) {
 
                 resp.sendRedirect(req.getContextPath() + "/technical/my-tasks");
                 return;
