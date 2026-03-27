@@ -648,6 +648,58 @@
             + '</div>';
     }
 
+    function toNumber(value) {
+        if (value === null || value === undefined || value === "") return null;
+        const n = Number(value);
+        return Number.isFinite(n) ? n : null;
+    }
+
+    function formatCurrency(value) {
+        const n = toNumber(value);
+        if (n === null) return valueOrDash(value);
+        return n.toLocaleString("vi-VN") + " VNĐ";
+    }
+
+    function normalizeMaterials(rawMaterials) {
+        if (!rawMaterials) return [];
+        if (Array.isArray(rawMaterials)) return rawMaterials;
+        if (typeof rawMaterials === "string") {
+            const parsed = safeParseJson(rawMaterials);
+            return Array.isArray(parsed) ? parsed : [];
+        }
+        return [];
+    }
+
+    function renderMaterialsSection(rawMaterials) {
+        const materials = normalizeMaterials(rawMaterials);
+        if (!materials.length) {
+            return '<div class="mb-3">'
+                + '<div class="detail-section-title">Vật tư / Linh kiện</div>'
+                + '<div class="detail-note">-</div>'
+                + '</div>';
+        }
+
+        const rows = materials.map(function (mat, index) {
+            return '<tr>'
+                + '<td>' + (index + 1) + '</td>'
+                + '<td>' + escapeHtml(valueOrDash(mat.partName || mat.sparePartName || ("ID #" + valueOrDash(mat.sparePartId)))) + '</td>'
+                + '<td>' + escapeHtml(valueOrDash(mat.quantityUsed)) + '</td>'
+                + '<td>' + escapeHtml(formatCurrency(mat.unitPrice)) + '</td>'
+                + '<td>' + escapeHtml(formatCurrency(mat.costAtTime)) + '</td>'
+                + '</tr>';
+        }).join("");
+
+        return '<div class="mb-3">'
+            + '<div class="detail-section-title">Vật tư / Linh kiện</div>'
+            + '<div class="table-responsive">'
+            + '<table class="table table-sm table-bordered align-middle mb-0">'
+            + '<thead class="table-light"><tr><th>#</th><th>Tên linh kiện</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>'
+            + '<tbody>' + rows + '</tbody>'
+            + '</table>'
+            + '</div>'
+            + '</div>';
+    }
+
     function renderStructuredDetail(reqType, obj, requestId) {
         const common = renderSection("Thông tin chung", [
             { label: "Mã request", value: "#" + requestId },
@@ -711,6 +763,25 @@
                     { label: "Tên file", value: obj.excelFileName },
                     { label: "Kích thước", value: obj.fileSize }
                 ])
+                + '</div>'
+                + '</div>';
+        }
+
+        if (reqType === "REPAIR_QUOTE") {
+            return '<div class="request-detail-wrap is-animated">'
+                + '<div class="request-detail-head">'
+                + '<span class="badge bg-success">Báo giá sửa chữa</span>'
+                + '</div>'
+                + '<div class="request-detail-body">'
+                + common
+                + renderSection("Dữ liệu", [
+                    { label: "maintenanceId", value: obj.maintenanceId },
+                    { label: "technicianId", value: obj.technicianId },
+                    { label: "actualDescription", value: obj.actualDescription },
+                    { label: "partsTotal", value: formatCurrency(obj.partsTotal) },
+                    { label: "grandTotal", value: formatCurrency(obj.grandTotal) }
+                ])
+                + renderMaterialsSection(obj.materials)
                 + '</div>'
                 + '</div>';
         }
