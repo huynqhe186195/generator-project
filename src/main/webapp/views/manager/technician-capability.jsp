@@ -384,13 +384,12 @@
                 <div class="section-head mb-3">
                     <div>
                         <h2 class="section-title">Quản lý danh sách kỹ năng</h2>
-                        <p class="section-copy">Tab độc lập dành riêng cho danh mục kỹ năng, không hiển thị dữ liệu kỹ thuật viên.</p>
                     </div>
                     <span class="badge-soft badge-soft-success">${fn:length(skillCatalog)} kỹ năng</span>
                 </div>
 
                 <div class="inner-card">
-                    <div class="inner-card-header"><div><h3 class="inner-title">Danh mục kỹ năng</h3><p class="inner-copy">Thêm kỹ năng mới và xem danh sách kỹ năng đang có trong hệ thống.</p></div></div>
+                    <div class="inner-card-header"><div><h3 class="inner-title">Danh mục kỹ năng</h3></div></div>
                     <div class="inner-card-body">
                         <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4 align-items-end">
                             <input type="hidden" name="action" value="save_catalog">

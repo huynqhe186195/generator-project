@@ -147,7 +147,6 @@
                             <option value="${tech.id}" ${selectedTechnicianId == tech.id ? 'selected' : ''}>${tech.fullName} - ${tech.email}</option>
                         </c:forEach>
                     </select>
-                    <div class="form-text">Manager chỉ duyệt plan. Ở bước này staff mới chốt kỹ thuật viên chính thức để tạo work order.</div>
                 </div>
 
                 <div class="col-md-3">
@@ -159,16 +158,6 @@
                     <label class="form-label fw-bold">Kết thúc</label>
                     <input type="datetime-local" name="scheduledEnd" id="scheduledEndInput" class="form-control" value="${preferredScheduledEnd}" required>
                 </div>
-
-                <div class="col-12">
-                    <div class="alert alert-info mb-0">
-                        Manager đã duyệt plan. Ở bước này staff mới chốt lịch thực tế và gán kỹ thuật viên để tạo work order.
-                        <c:if test="${not empty preferredScheduledStart and not empty preferredScheduledEnd}">
-                            <div class="mt-2">Khung giờ đã được prefill theo thời gian customer mong muốn tiếp nhận kỹ thuật viên.</div>
-                        </c:if>
-                    </div>
-                </div>
-
                 <div class="col-12 text-end">
                     <button type="submit" class="btn btn-success px-4">
                         <i class="fas fa-check-circle me-2"></i>Tạo work order
