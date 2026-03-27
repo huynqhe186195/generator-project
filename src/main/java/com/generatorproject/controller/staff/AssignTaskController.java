@@ -111,6 +111,7 @@ public class AssignTaskController extends HttpServlet {
             taskData.setScheduleStatus("MANAGER_APPROVED");
             taskData.setExecutionStatus("PENDING");
             taskData.setCreatedBy(user == null ? null : user.getId());
+            taskData.setApprovedBy(plan.getApprovedBy());
 
             Integer maintenanceId = maintenanceDAO.insertScheduledMaintenance(taskData);
             if (maintenanceId == null) {
