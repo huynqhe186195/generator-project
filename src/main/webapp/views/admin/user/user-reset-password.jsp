@@ -9,7 +9,7 @@
 <div class="container-fluid px-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="text-secondary">Password Reset Requests</h3>
+        <h3 class="text-secondary">Yêu cầu đặt lại mật khẩu</h3>
     </div>
 
     <c:if test="${not empty sessionScope.message}">
@@ -29,10 +29,10 @@
                 <thead class="table-secondary">
                 <tr>
                     <th style="width:5%">#</th>
-                    <th style="width:25%">Email Account</th>
-                    <th style="width:25%">Full Name</th>
-                    <th style="width:20%">Requested Time</th>
-                    <th style="width:25%">Action</th>
+                    <th style="width:25%">Tài khoản Email</th>
+                    <th style="width:25%">Họ tên</th>
+                    <th style="width:20%">Thời điểm yêu cầu</th>
+                    <th style="width:25%">Hành động</th>
                 </tr>
                 </thead>
 
