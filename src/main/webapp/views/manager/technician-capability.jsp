@@ -384,27 +384,84 @@
                 <div class="section-head mb-3">
                     <div>
                         <h2 class="section-title">Quản lý danh sách kỹ năng</h2>
-                        <p class="section-copy">Tab độc lập dành riêng cho danh mục kỹ năng, không hiển thị dữ liệu kỹ thuật viên.</p>
                     </div>
                     <span class="badge-soft badge-soft-success">${fn:length(skillCatalog)} kỹ năng</span>
                 </div>
 
                 <div class="inner-card">
-                    <div class="inner-card-header"><div><h3 class="inner-title">Danh mục kỹ năng</h3><p class="inner-copy">Thêm kỹ năng mới và xem danh sách kỹ năng đang có trong hệ thống.</p></div></div>
+                    <div class="inner-card-header"><div><h3 class="inner-title">Danh mục kỹ năng</h3></div></div>
                     <div class="inner-card-body">
                         <form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="row g-3 mb-4 align-items-end">
                             <input type="hidden" name="action" value="save_catalog">
                             <input type="hidden" name="technicianId" value="${selectedTechnicianId}">
                             <input type="hidden" name="section" value="catalog">
-                            <div class="col-md-3"><label class="form-label">Mã kỹ năng</label><input type="text" class="form-control" name="catalogCode" placeholder="FIELD_INSPECTION" required></div>
-                            <div class="col-md-5"><label class="form-label">Tên kỹ năng</label><input type="text" class="form-control" name="catalogName" placeholder="Khảo sát hiện trường" required></div>
+                            <input type="hidden" name="catalogPage" value="${catalogPage}">
+                            <div class="col-md-3"><label class="form-label">Mã kỹ năng</label><input type="text" class="form-control" name="catalogCode" id="catalogCodeInput" placeholder="FIELD_INSPECTION" required></div>
+                            <div class="col-md-5"><label class="form-label">Tên kỹ năng</label><input type="text" class="form-control" name="catalogName" id="catalogNameInput" placeholder="Khảo sát hiện trường" required></div>
                             <div class="col-md-2"><label class="form-label d-block">Trạng thái</label><div class="form-check form-switch m-0 pt-2"><input class="form-check-input" type="checkbox" role="switch" name="catalogActive" id="catalogActive" value="1" checked><label class="form-check-label ms-2" for="catalogActive">Kích hoạt</label></div></div>
-                            <div class="col-md-2 text-md-end"><button type="submit" class="btn btn-outline-success btn-round w-100"><i class="fa fa-save me-2"></i>Lưu</button></div>
+                            <div class="col-md-2 text-md-end"><button type="submit" class="btn btn-outline-success btn-round w-100" id="catalogSubmitButton"><i class="fa fa-save me-2"></i>Lưu</button></div>
+                            <div class="col-12 text-end d-none" id="catalogCancelWrap">
+                                <button type="button" class="btn btn-sm btn-outline-secondary btn-round" id="catalogCancelEdit"><i class="fa fa-times me-1"></i>Huỷ chỉnh sửa</button>
+                            </div>
                         </form>
-                        <div class="table-shell"><div class="table-responsive"><table class="table table-modern align-middle"><thead><tr><th>Mã</th><th>Tên kỹ năng</th><th>Trạng thái</th></tr></thead><tbody><c:forEach items="${skillCatalog}" var="item"><tr><td><span class="code-text">${item.code}</span></td><td>${item.name}</td><td><span class="badge-soft ${item.activeStatus ? 'badge-soft-success' : 'badge-soft-muted'}">${item.activeStatus ? 'Hoạt động' : 'Ngừng hoạt động'}</span></td></tr></c:forEach><c:if test="${empty skillCatalog}"><tr><td colspan="3" class="empty-state">Danh mục kỹ năng đang trống.</td></tr></c:if></tbody></table></div></div>
+                        <div class="table-shell"><div class="table-responsive"><table class="table table-modern align-middle"><thead><tr><th>Mã</th><th>Tên kỹ năng</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr></thead><tbody><c:forEach items="${skillCatalogPageItems}" var="item"><tr><td><span class="code-text">${item.code}</span></td><td>${item.name}</td><td><span class="badge-soft ${item.activeStatus ? 'badge-soft-success' : 'badge-soft-muted'}">${item.activeStatus ? 'Hoạt động' : 'Ngừng hoạt động'}</span></td><td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary btn-round js-edit-catalog" data-code="${item.code}" data-name="${fn:escapeXml(item.name)}" data-active="${item.activeStatus}"><i class="fa fa-pen me-1"></i>Sửa</button><form method="post" action="${pageContext.request.contextPath}/manager/technician-capability" class="d-inline ms-1"><input type="hidden" name="action" value="delete_catalog"><input type="hidden" name="technicianId" value="${selectedTechnicianId}"><input type="hidden" name="section" value="catalog"><input type="hidden" name="catalogPage" value="${catalogPage}"><input type="hidden" name="catalogCode" value="${item.code}"><button type="submit" class="btn btn-sm btn-outline-danger btn-round" onclick="return confirm('Xoá kỹ năng ${item.code}? Nếu kỹ năng đã được gán, hệ thống sẽ chuyển về trạng thái ngừng hoạt động.');"><i class="fa fa-trash me-1"></i>Xoá</button></form></td></tr></c:forEach><c:if test="${empty skillCatalogPageItems}"><tr><td colspan="4" class="empty-state">Danh mục kỹ năng đang trống.</td></tr></c:if></tbody></table></div></div>
+                        <c:if test="${catalogTotalPages > 1}">
+                            <nav class="mt-3" aria-label="Phân trang kỹ năng">
+                                <ul class="pagination pagination-sm justify-content-end mb-0">
+                                    <c:forEach begin="1" end="${catalogTotalPages}" var="pageNo">
+                                        <li class="page-item ${pageNo == catalogPage ? 'active' : ''}">
+                                            <a class="page-link"
+                                               href="<c:url value='/manager/technician-capability'><c:param name='section' value='catalog'/><c:param name='technicianId' value='${selectedTechnicianId}'/><c:param name='catalogPage' value='${pageNo}'/></c:url>">${pageNo}</a>
+                                        </li>
+                                    </c:forEach>
+                                </ul>
+                            </nav>
+                        </c:if>
                     </div>
                 </div>
             </div>
         </c:otherwise>
     </c:choose>
 </div>
+
+<script>
+    (function () {
+        const codeInput = document.getElementById('catalogCodeInput');
+        const nameInput = document.getElementById('catalogNameInput');
+        const activeInput = document.getElementById('catalogActive');
+        const submitButton = document.getElementById('catalogSubmitButton');
+        const cancelWrap = document.getElementById('catalogCancelWrap');
+        const cancelButton = document.getElementById('catalogCancelEdit');
+        if (!codeInput || !nameInput || !activeInput || !submitButton) {
+            return;
+        }
+
+        function resetForm() {
+            codeInput.removeAttribute('readonly');
+            codeInput.value = '';
+            nameInput.value = '';
+            activeInput.checked = true;
+            submitButton.innerHTML = '<i class="fa fa-save me-2"></i>Lưu';
+            if (cancelWrap) {
+                cancelWrap.classList.add('d-none');
+            }
+        }
+
+        document.querySelectorAll('.js-edit-catalog').forEach(function (button) {
+            button.addEventListener('click', function () {
+                codeInput.value = button.dataset.code || '';
+                codeInput.setAttribute('readonly', 'readonly');
+                nameInput.value = button.dataset.name || '';
+                activeInput.checked = (button.dataset.active || '').toLowerCase() === 'true';
+                submitButton.innerHTML = '<i class="fa fa-save me-2"></i>Cập nhật';
+                if (cancelWrap) {
+                    cancelWrap.classList.remove('d-none');
+                }
+            });
+        });
+
+        if (cancelButton) {
+            cancelButton.addEventListener('click', resetForm);
+        }
+    })();
+</script>

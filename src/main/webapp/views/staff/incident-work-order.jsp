@@ -19,16 +19,43 @@
                 <div class="alert alert-danger">
                     Kỹ thuật viên đã có lịch trùng trong khung giờ này. Vui lòng chọn kỹ thuật viên khác hoặc đổi thời gian.
                 </div>
-                <c:if test="${not empty alternativeTechnicians}">
+                <c:if test="${not empty alternativeTechnicianViews}">
                     <div class="alert alert-info">
-                        <div class="fw-bold mb-2"><i class="fas fa-user-check me-2"></i>Gợi ý kỹ thuật viên rảnh đúng khung giờ</div>
-                        <div class="d-flex flex-wrap gap-2">
-                            <c:forEach items="${alternativeTechnicians}" var="altTech">
+                        <div class="fw-bold mb-2"><i class="fas fa-user-check me-2"></i>Gợi ý kỹ thuật viên rảnh đúng khung giờ (đã lọc kỹ năng phù hợp)</div>
+                        <div class="small text-muted mb-2">Staff không cần nhớ skill từng kỹ thuật viên: hệ thống tự lọc người đạt yêu cầu và ưu tiên theo mức độ phù hợp.</div>
+                        <div class="d-grid gap-2">
+                            <c:forEach items="${alternativeTechnicianViews}" var="altTech">
                                 <button type="button"
-                                        class="btn btn-sm btn-outline-primary js-select-tech"
-                                        data-tech-id="${altTech.id}">
-                                        ${altTech.fullName}
+                                        class="btn btn-sm btn-outline-primary text-start js-select-tech d-flex justify-content-between align-items-center"
+                                        data-tech-id="${altTech.technicianId}">
+                                    <span>
+                                        <span class="fw-semibold">${altTech.technicianName}</span>
+                                        <span class="text-muted small">(${altTech.technicianEmail})</span>
+                                        <c:if test="${not altTech.activeProfile}">
+                                            <span class="badge bg-secondary ms-2">Profile chưa active</span>
+                                        </c:if>
+                                        <c:if test="${altTech.recommended}">
+                                            <span class="badge bg-success ms-2">Đề xuất ban đầu</span>
+                                        </c:if>
+                                    </span>
+                                    <span class="badge bg-light text-dark border">
+                                        ${altTech.currentTaskCount}
+                                        <c:if test="${not empty altTech.maxTasksPerDay}">
+                                            /${altTech.maxTasksPerDay}
+                                        </c:if>
+                                        task hôm nay
+                                    </span>
                                 </button>
+                                <c:if test="${not empty altTech.matchScore or not empty altTech.recommendationSummary}">
+                                    <div class="small text-muted ms-2 mb-2">
+                                        <c:if test="${not empty altTech.matchScore}">
+                                            Điểm phù hợp: <span class="fw-semibold">${altTech.matchScore}</span>.
+                                        </c:if>
+                                        <c:if test="${not empty altTech.recommendationSummary}">
+                                            ${altTech.recommendationSummary}
+                                        </c:if>
+                                    </div>
+                                </c:if>
                             </c:forEach>
                         </div>
                     </div>
@@ -120,7 +147,6 @@
                             <option value="${tech.id}" ${selectedTechnicianId == tech.id ? 'selected' : ''}>${tech.fullName} - ${tech.email}</option>
                         </c:forEach>
                     </select>
-                    <div class="form-text">Manager chỉ duyệt plan. Ở bước này staff mới chốt kỹ thuật viên chính thức để tạo work order.</div>
                 </div>
 
                 <div class="col-md-3">
@@ -132,16 +158,6 @@
                     <label class="form-label fw-bold">Kết thúc</label>
                     <input type="datetime-local" name="scheduledEnd" id="scheduledEndInput" class="form-control" value="${preferredScheduledEnd}" required>
                 </div>
-
-                <div class="col-12">
-                    <div class="alert alert-info mb-0">
-                        Manager đã duyệt plan. Ở bước này staff mới chốt lịch thực tế và gán kỹ thuật viên để tạo work order.
-                        <c:if test="${not empty preferredScheduledStart and not empty preferredScheduledEnd}">
-                            <div class="mt-2">Khung giờ đã được prefill theo thời gian customer mong muốn tiếp nhận kỹ thuật viên.</div>
-                        </c:if>
-                    </div>
-                </div>
-
                 <div class="col-12 text-end">
                     <button type="submit" class="btn btn-success px-4">
                         <i class="fas fa-check-circle me-2"></i>Tạo work order

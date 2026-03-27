@@ -191,7 +191,7 @@
                                                         <c:when test="${req.status == 'APPROVED'}">
                                                             <a href="<c:url value='/staff/incident/work-order?id=${req.id}'/>"
                                                                class="btn btn-sm btn-success">
-                                                                <i class="fas fa-tools me-1"></i> Tạo work order
+                                                                <i class="fas fa-tools me-1"></i> Tạo phiếu sửa chữa
                                                             </a>
                                                         </c:when>
                                                     </c:choose>
