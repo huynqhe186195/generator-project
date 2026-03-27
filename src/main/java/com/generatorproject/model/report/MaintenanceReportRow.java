@@ -1,4 +1,4 @@
-package com.generatorproject.model.reports;
+package com.generatorproject.model.report;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

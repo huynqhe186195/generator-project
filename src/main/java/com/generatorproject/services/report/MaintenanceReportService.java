@@ -1,9 +1,9 @@
 package com.generatorproject.services.report;
 
 import com.generatorproject.dao.report.MaintenanceReportDAO;
-import com.generatorproject.model.reports.MaintenanceKpi;
-import com.generatorproject.model.reports.MaintenanceReportFilter;
-import com.generatorproject.model.reports.MaintenanceReportRow;
+import com.generatorproject.model.report.MaintenanceKpi;
+import com.generatorproject.model.report.MaintenanceReportFilter;
+import com.generatorproject.model.report.MaintenanceReportRow;
 
 import java.util.List;
 import java.util.Map;

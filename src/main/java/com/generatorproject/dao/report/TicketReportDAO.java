@@ -1,9 +1,9 @@
 package com.generatorproject.dao.report;
 
 import com.generatorproject.dao.DbContext;
-import com.generatorproject.model.reports.IdNameOption;
-import com.generatorproject.model.reports.TicketReportFilter;
-import com.generatorproject.model.reports.TicketReportRow;
+import com.generatorproject.model.report.IdNameOption;
+import com.generatorproject.model.report.TicketReportFilter;
+import com.generatorproject.model.report.TicketReportRow;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -1,9 +1,9 @@
 package com.generatorproject.dao.report;
 
 import com.generatorproject.dao.DbContext;
-import com.generatorproject.model.reports.MaintenanceKpi;
-import com.generatorproject.model.reports.MaintenanceReportFilter;
-import com.generatorproject.model.reports.MaintenanceReportRow;
+import com.generatorproject.model.report.MaintenanceKpi;
+import com.generatorproject.model.report.MaintenanceReportFilter;
+import com.generatorproject.model.report.MaintenanceReportRow;
 
 import java.sql.*;
 import java.util.*;

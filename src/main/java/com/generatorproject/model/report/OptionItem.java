@@ -1,14 +1,12 @@
-package com.generatorproject.model.reports;
+package com.generatorproject.model.report;
 
-/// Thêm DTO cho dropdown filters (simple option)
-
-public class IdNameOption {
+public class OptionItem {
     private int id;
     private String name;
 
-    public IdNameOption() {}
+    public OptionItem() {}
 
-    public IdNameOption(int id, String name) {
+    public OptionItem(int id, String name) {
         this.id = id;
         this.name = name;
     }

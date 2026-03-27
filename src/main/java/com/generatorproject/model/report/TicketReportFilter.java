@@ -1,4 +1,4 @@
-package com.generatorproject.model.reports;
+package com.generatorproject.model.report;
 
 public class TicketReportFilter {
     private String from;     // yyyy-MM-dd

@@ -1,9 +1,9 @@
 package com.generatorproject.services.report;
 
 import com.generatorproject.dao.report.TicketReportDAO;
-import com.generatorproject.model.reports.IdNameOption;
-import com.generatorproject.model.reports.TicketReportFilter;
-import com.generatorproject.model.reports.TicketReportRow;
+import com.generatorproject.model.report.IdNameOption;
+import com.generatorproject.model.report.TicketReportFilter;
+import com.generatorproject.model.report.TicketReportRow;
 
 import java.util.List;
 import java.util.Map;

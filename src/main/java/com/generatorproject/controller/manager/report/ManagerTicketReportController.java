@@ -1,7 +1,7 @@
 package com.generatorproject.controller.manager.report;
 
 import com.generatorproject.model.Users;
-import com.generatorproject.model.reports.TicketReportFilter;
+import com.generatorproject.model.report.TicketReportFilter;
 import com.generatorproject.services.report.TicketReportService;
 
 import javax.servlet.ServletException;

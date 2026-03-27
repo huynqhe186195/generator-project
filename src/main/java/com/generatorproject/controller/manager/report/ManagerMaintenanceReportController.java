@@ -1,7 +1,7 @@
 package com.generatorproject.controller.manager.report;
 
 import com.generatorproject.model.Users;
-import com.generatorproject.model.reports.MaintenanceReportFilter;
+import com.generatorproject.model.report.MaintenanceReportFilter;
 import com.generatorproject.services.report.MaintenanceReportService;
 import com.generatorproject.services.report.TicketReportService; // reuse dropdown option lists
 
