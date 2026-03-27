@@ -359,9 +359,15 @@ public class ManagerRequestController extends HttpServlet {
 
             switch (requestType) {
                 case "CREATE_USER":
+                    String createUserPhone = req.getParameter("phone");
+                    if (!isValidCreateUserPhone(createUserPhone)) {
+                        resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=invalid_phone");
+                        return;
+                    }
                     data.put("email", req.getParameter("email"));
                     data.put("fullName", req.getParameter("fullName"));
-                    data.put("phone", req.getParameter("phone"));
+                    data.put("phone", createUserPhone);
+                    data.put("role", req.getParameter("role"));
 
                     // nếu bạn vẫn muốn check duplicate theo email
                     if (requestService.isRequestPending((String) data.get("email"))) {
@@ -486,6 +492,12 @@ public class ManagerRequestController extends HttpServlet {
             String email = req.getParameter("email");
             String fullName = req.getParameter("fullName");
             String phone = req.getParameter("phone");
+            String role = req.getParameter("role");
+
+            if (!isValidCreateUserPhone(phone)) {
+                resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=invalid_phone");
+                return;
+            }
 
             // Check trùng request đang chờ
             if (requestService.isRequestPending(email)) {
@@ -498,6 +510,7 @@ public class ManagerRequestController extends HttpServlet {
             data.put("email", email);
             data.put("fullName", fullName);
             data.put("phone", phone);
+            data.put("role", role);
 
             String jsonData = new Gson().toJson(data);
 
@@ -516,5 +529,12 @@ public class ManagerRequestController extends HttpServlet {
             e.printStackTrace();
             resp.sendRedirect(req.getContextPath() + "/manager/requests?msg=error");
         }
+    }
+
+    private boolean isValidCreateUserPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return true;
+        }
+        return phone.trim().matches("\\d{10}");
     }
 }

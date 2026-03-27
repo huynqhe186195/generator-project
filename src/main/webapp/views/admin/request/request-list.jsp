@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <head>
     <title>Duyệt yêu cầu hệ thống</title>
@@ -40,7 +41,7 @@
                             <th class="text-center">ID</th>
                             <th>Người gửi</th>
                             <th>Loại yêu cầu</th>
-                            <th>Chi tiết (JSON Data)</th>
+                            <th>Chi tiết yêu cầu</th>
                             <th>Ngày gửi</th>
                             <th class="text-center" style="width: 200px;">Hành động</th>
                         </tr>
@@ -77,8 +78,37 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td class="font-monospace text-muted small">
-                                    ${req.requestData}
+                                <td>
+                                    <c:set var="payload" value="${requestPayloads[req.id]}" />
+                                    <c:choose>
+                                        <c:when test="${req.requestType == 'CREATE_USER'}">
+                                            <div class="small">
+                                                <div><span class="text-muted">Họ tên:</span> <strong>${payload['fullName']}</strong></div>
+                                                <div><span class="text-muted">Email:</span> <strong>${payload['email']}</strong></div>
+                                                <div><span class="text-muted">SĐT:</span> <strong>${payload['phone']}</strong></div>
+                                            </div>
+                                        </c:when>
+                                        <c:when test="${req.requestType == 'NEW_USER'}">
+                                            <div class="small">
+                                                <div><span class="text-muted">File Excel:</span>
+                                                    <c:choose>
+                                                        <c:when test="${not empty payload['excelFileUrl']}">
+                                                            <code>${payload['excelFileUrl']}</code>
+                                                        </c:when>
+                                                        <c:otherwise>Không có dữ liệu</c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                                <c:if test="${not empty payload['uploadedAt']}">
+                                                    <div><span class="text-muted">Uploaded:</span> ${payload['uploadedAt']}</div>
+                                                </c:if>
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="small text-muted" style="max-width: 460px; white-space: pre-wrap; word-break: break-word;">
+                                                ${fn:escapeXml(req.requestData)}
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <td>
                                     <i class="far fa-clock me-1"></i> ${req.createdAt}
@@ -98,7 +128,7 @@
                                         <c:choose>
                                             <c:when test="${req.requestType == 'NEW_USER'}">
                                                 <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Xác nhận import user từ file Excel và duyệt request?')">
-                                                    <i class="fas fa-check"></i> Import &amp; Duyệt
+                                                    <i class="fas fa-check"></i> Import &amp; Hoàn thành
                                                 </button>
                                             </c:when>
                                             <c:otherwise>

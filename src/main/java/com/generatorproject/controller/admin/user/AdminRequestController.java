@@ -1,9 +1,12 @@
 package com.generatorproject.controller.admin.user;
 
 import com.generatorproject.dao.RequestDAO;
+import com.generatorproject.model.Role;
 import com.generatorproject.model.SystemRequest;
 import com.generatorproject.model.Users;
+import com.generatorproject.services.IRoleServices;
 import com.generatorproject.services.IUserServices;
+import com.generatorproject.services.RoleServices;
 import com.generatorproject.services.UserServices;
 import com.generatorproject.utils.EmailServices;
 import com.google.gson.Gson;
@@ -38,11 +41,13 @@ import java.util.UUID;
 public class AdminRequestController extends HttpServlet {
 
     private final IUserServices userServices;
+    private final IRoleServices roleServices;
     private final RequestDAO requestDAO;
     private final Gson gson;
 
     public AdminRequestController() {
         this.userServices = new UserServices();
+        this.roleServices = new RoleServices();
         this.requestDAO = new RequestDAO();
         this.gson = new Gson();
     }
@@ -65,7 +70,12 @@ public class AdminRequestController extends HttpServlet {
         }
 
         List<SystemRequest> pendingRequests = requestDAO.findByReceiverRole("ADMIN", "PENDING");
+        Map<Long, Map<String, Object>> requestPayloads = new HashMap<>();
+        for (SystemRequest pendingRequest : pendingRequests) {
+            requestPayloads.put(pendingRequest.getId(), parseRequestData(pendingRequest));
+        }
         req.setAttribute("requests", pendingRequests);
+        req.setAttribute("requestPayloads", requestPayloads);
         req.getRequestDispatcher("/views/admin/request/request-list.jsp").forward(req, resp);
     }
 
@@ -76,7 +86,7 @@ public class AdminRequestController extends HttpServlet {
         try {
             String action = req.getParameter("action");
             Long requestId = parseLong(req.getParameter("requestId"));
-            String adminNote = req.getParameter("adminNote");
+            String adminNote = firstNonBlank(req.getParameter("responseMessage"), req.getParameter("adminNote"));
 
             if (requestId == null) {
                 resp.sendRedirect(req.getContextPath() + "/admin/requests?msg=not_found");
@@ -90,7 +100,7 @@ public class AdminRequestController extends HttpServlet {
             }
 
             if ("approve".equals(action)) {
-                String responseMessage = handleApprove(request);
+                String responseMessage = appendManagerResponse(handleApprove(request), adminNote);
                 request.setStatus("APPROVED");
                 request.setResponseMessage(responseMessage);
             } else if ("reject".equals(action)) {
@@ -133,6 +143,7 @@ public class AdminRequestController extends HttpServlet {
         String email = data.get("email");
         String fullName = data.get("fullName");
         String phone = data.get("phone");
+        int roleId = resolveRoleId(data);
 
         if (email == null || email.trim().isEmpty() || fullName == null || fullName.trim().isEmpty()) {
             return "Duyệt yêu cầu nhưng dữ liệu email/họ tên không hợp lệ.";
@@ -149,7 +160,7 @@ public class AdminRequestController extends HttpServlet {
         newUser.setEmail(email.trim());
         newUser.setFullName(fullName.trim());
         newUser.setPassword(hashedPassword);
-        newUser.setRoleId(5);
+        newUser.setRoleId(roleId);
         newUser.setStatus(1);
         newUser.setPhone(phone);
 
@@ -325,11 +336,64 @@ public class AdminRequestController extends HttpServlet {
         return e.getMessage().trim();
     }
 
+    private String appendManagerResponse(String systemMessage, String adminNote) {
+        if (adminNote == null || adminNote.trim().isEmpty()) {
+            return systemMessage;
+        }
+        if (systemMessage == null || systemMessage.trim().isEmpty()) {
+            return adminNote.trim();
+        }
+        return systemMessage + " | Phản hồi Admin: " + adminNote.trim();
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
     private int parseIntegerOrDefault(String value, int defaultValue) {
         try {
             return value == null || value.trim().isEmpty() ? defaultValue : Integer.parseInt(value.trim());
         } catch (Exception e) {
             return defaultValue;
         }
+    }
+
+    private int resolveRoleId(Map<String, String> data) {
+        int defaultRoleId = 5;
+        if (data == null) {
+            return defaultRoleId;
+        }
+
+        int roleIdFromRequest = parseIntegerOrDefault(data.get("roleId"), -1);
+        if (roleIdFromRequest > 0) {
+            return roleIdFromRequest;
+        }
+
+        String requestedRoleName = data.get("role");
+        if (requestedRoleName == null || requestedRoleName.trim().isEmpty()) {
+            return defaultRoleId;
+        }
+
+        List<Role> roles = roleServices.getAllRoles();
+        if (roles == null || roles.isEmpty()) {
+            return defaultRoleId;
+        }
+
+        String normalizedRequestedRoleName = requestedRoleName.trim();
+        for (Role role : roles) {
+            if (role != null && role.getName() != null
+                    && role.getName().trim().equalsIgnoreCase(normalizedRequestedRoleName)) {
+                return role.getId();
+            }
+        }
+        return defaultRoleId;
     }
 }
