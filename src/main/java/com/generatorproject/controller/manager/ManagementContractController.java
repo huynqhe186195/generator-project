@@ -473,6 +473,13 @@ public class ManagementContractController extends HttpServlet {
             Date signedDate = Date.valueOf(signedDateStr);
             Date startDate = Date.valueOf(startDateStr);
             Date endDate = Date.valueOf(endDateStr);
+            Date today = new Date(System.currentTimeMillis());
+
+            if (signedDate.before(today) || startDate.before(today) || endDate.before(today)) {
+                req.setAttribute("errorMessage", "Không được chọn ngày trong quá khứ cho các mốc hợp đồng!");
+                showCreateForm(req, resp);
+                return;
+            }
 
             if (startDate.before(signedDate)) {
                 req.setAttribute("errorMessage", "Ngày có hiệu lực phải lớn hơn hoặc bằng Ngày ký!");
