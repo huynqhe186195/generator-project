@@ -23,6 +23,7 @@ import java.util.Set;
 public class IncidentPlanRecommendationService {
     private final TechnicianCapabilityDAO technicianCapabilityDAO;
     private final IUserServices userServices;
+    private static final Map<String, Set<String>> REQUIRED_SKILL_ALIASES = createRequiredSkillAliases();
 
     public IncidentPlanRecommendationService() {
         this.technicianCapabilityDAO = new TechnicianCapabilityDAO();
@@ -127,7 +128,7 @@ public class IncidentPlanRecommendationService {
             TechnicianCapabilityDAO.TechnicianProfileSnapshot profile = profiles.get(technician.getId());
             Set<String> technicianSkills = skillsByTechnician.getOrDefault(technician.getId(), Collections.<String>emptySet());
             boolean unavailable = unavailableByTechnician.containsKey(technician.getId());
-            boolean missingRequiredSkill = !technicianSkills.containsAll(requiredSkillCodes);
+            boolean missingRequiredSkill = !hasAllRequiredSkills(technicianSkills, requiredSkillCodes);
             if (missingRequiredSkill) {
                 continue;
             }
@@ -176,6 +177,58 @@ public class IncidentPlanRecommendationService {
             return new ArrayList<TechnicianSuggestion>(suggestions.subList(0, maxSuggestions));
         }
         return suggestions;
+    }
+
+    private boolean hasAllRequiredSkills(Set<String> technicianSkills, Set<String> requiredSkillCodes) {
+        if (requiredSkillCodes == null || requiredSkillCodes.isEmpty()) {
+            return true;
+        }
+        Set<String> normalizedTechnicianSkills = new HashSet<String>();
+        if (technicianSkills != null) {
+            for (String skill : technicianSkills) {
+                if (skill != null) {
+                    normalizedTechnicianSkills.add(skill.trim().toUpperCase(Locale.ROOT));
+                }
+            }
+        }
+
+        for (String requiredSkill : requiredSkillCodes) {
+            if (requiredSkill == null) {
+                continue;
+            }
+            String normalizedRequired = requiredSkill.trim().toUpperCase(Locale.ROOT);
+            Set<String> aliases = REQUIRED_SKILL_ALIASES.getOrDefault(normalizedRequired, Collections.singleton(normalizedRequired));
+            boolean matched = false;
+            for (String alias : aliases) {
+                if (normalizedTechnicianSkills.contains(alias)) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static Map<String, Set<String>> createRequiredSkillAliases() {
+        Map<String, Set<String>> aliases = new HashMap<>();
+        aliases.put("CONSUMABLE_REPLACEMENT", new HashSet<String>(Arrays.asList(
+                "CONSUMABLE_REPLACEMENT",
+                "COMPONENTS_AND_SUPPLIES",
+                "SPARE_PART_REPLACEMENT"
+        )));
+        aliases.put("DIESEL_ENGINE_REPAIR", new HashSet<String>(Arrays.asList(
+                "DIESEL_ENGINE_REPAIR",
+                "ENGINE_SPECIALIST",
+                "ENGINE_MECHANICS_SPECIALIST"
+        )));
+        aliases.put("FIELD_INSPECTION", new HashSet<String>(Arrays.asList(
+                "FIELD_INSPECTION",
+                "SITE_SURVEY"
+        )));
+        return aliases;
     }
 
     public List<TechnicianSuggestion> buildTechnicianRanking(Incident incident,
