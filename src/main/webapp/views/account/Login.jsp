@@ -137,17 +137,25 @@
                 <div class="signin-form">
                     <h2 class="form-title">Sign In</h2>
 
+                    <%-- 1. Hiển thị thông báo gửi từ Servlet qua biến request (setAttribute) --%>
                     <c:if test="${not empty message}">
                         <div class="alert-box ${alert == 'success' ? 'alert-success' : 'alert-danger'}">
                                 ${message}
                         </div>
                     </c:if>
 
+                    <%-- 2. Hiển thị thông báo gửi từ URL Parameter (?message=...) --%>
                     <c:if test="${not empty param.message}">
-                        <div class="alert-box alert-success">
+                        <%-- Đặt mặc định là màu xanh (success), trừ khi message có chứa chữ 'invalid' hoặc 'error' --%>
+                        <c:set var="alertType" value="${(param.message == 'token_invalid' || param.message == 'error') ? 'alert-danger' : 'alert-success'}" />
+
+                        <div class="alert-box ${alertType}">
                             <c:choose>
-                                <c:when test="${param.message == 'reset_success'}">Cập nhật mật khẩu thành công!</c:when>
-                                <c:when test="${param.message == 'token_invalid'}">Link đã hết hạn hoặc không hợp lệ!</c:when>
+                                <c:when test="${param.message == 'reset_success'}">Cập nhật mật khẩu thành công! Vui lòng đăng nhập lại.</c:when>
+                                <c:when test="${param.message == 'token_invalid'}">Link khôi phục đã hết hạn hoặc không hợp lệ!</c:when>
+                                <c:when test="${param.message == 'logout'}">Bạn đã đăng xuất thành công.</c:when>
+                                <%-- Bổ sung otherwise để bắt trọn mọi tin nhắn khác, tránh hiện hộp rỗng --%>
+                                <c:otherwise>${param.message}</c:otherwise>
                             </c:choose>
                         </div>
                     </c:if>
