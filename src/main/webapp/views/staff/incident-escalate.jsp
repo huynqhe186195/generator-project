@@ -91,14 +91,24 @@
                                                             <div class="small fw-bold text-secondary mb-1">Danh sách kỹ thuật viên phù hợp</div>
                                                             <c:choose>
                                                                 <c:when test="${not empty recommendation.technicianSuggestions}">
-                                                                    <c:forEach items="${recommendation.technicianSuggestions}" var="tech">
-                                                                        <div class="border rounded p-2 mb-2 bg-white">
+                                                                    <c:forEach items="${recommendation.technicianSuggestions}" var="tech" varStatus="techLoop">
+                                                                        <div class="border rounded p-2 mb-2 bg-white technician-suggestion-item ${techLoop.first ? 'border-primary' : ''}"
+                                                                             data-tech-id="${tech.technicianId}"
+                                                                             data-tech-name="${fn:escapeXml(tech.technicianName)}">
                                                                             <div class="d-flex justify-content-between align-items-start gap-2">
                                                                                 <div>
                                                                                     <div class="fw-semibold">${tech.technicianName}</div>
                                                                                     <div class="small text-muted">${tech.summary}</div>
                                                                                 </div>
-                                                                                <span class="badge ${tech.matchScore >= 80 ? 'bg-success' : tech.matchScore >= 60 ? 'bg-warning text-dark' : 'bg-secondary'}">${tech.matchScore} điểm</span>
+                                                                                <div class="text-end">
+                                                                                    <span class="badge ${tech.matchScore >= 80 ? 'bg-success' : tech.matchScore >= 60 ? 'bg-warning text-dark' : 'bg-secondary'}">${tech.matchScore} điểm</span>
+                                                                                    <button type="button"
+                                                                                            class="btn btn-link btn-sm text-decoration-none p-0 ms-2 select-tech-btn"
+                                                                                            data-tech-id="${tech.technicianId}"
+                                                                                            data-tech-name="${fn:escapeXml(tech.technicianName)}">
+                                                                                        Chọn người này
+                                                                                    </button>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </c:forEach>
@@ -213,11 +223,31 @@
         const selectedSuggestedTechnicianName = document.getElementById('selectedSuggestedTechnicianName');
         const selectedRequiredSkillCodes = document.getElementById('selectedRequiredSkillCodes');
 
-        function applyRecommendation(button) {
-            const card = button.closest('.recommendation-card');
+        function highlightSelectedTechnician(card, technicianId) {
+            const suggestionItems = card.querySelectorAll('.technician-suggestion-item');
+            suggestionItems.forEach(function (item) {
+                const isSelected = (item.dataset.techId || '') === String(technicianId || '');
+                item.classList.toggle('border-primary', isSelected);
+                item.classList.toggle('shadow-sm', isSelected);
+            });
+        }
+
+        function syncSelectedTechnician(card) {
+            const selectedSuggestion = card.querySelector('.technician-suggestion-item.border-primary') || card.querySelector('.technician-suggestion-item');
+            if (!selectedSuggestion) {
+                card.dataset.suggestedTechnicianId = '';
+                card.dataset.suggestedTechnicianName = '';
+                return;
+            }
+            card.dataset.suggestedTechnicianId = selectedSuggestion.dataset.techId || '';
+            card.dataset.suggestedTechnicianName = selectedSuggestion.dataset.techName || '';
+        }
+
+        function applyRecommendationFromCard(card) {
             if (!card) {
                 return;
             }
+            syncSelectedTechnician(card);
             recommendationCards.forEach(function (item) {
                 item.classList.remove('border-primary', 'shadow');
             });
@@ -243,12 +273,27 @@
 
         recommendationButtons.forEach(function (button) {
             button.addEventListener('click', function () {
-                applyRecommendation(button);
+                applyRecommendationFromCard(button.closest('.recommendation-card'));
+            });
+        });
+
+        document.querySelectorAll('.select-tech-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const card = button.closest('.recommendation-card');
+                if (!card) {
+                    return;
+                }
+                const technicianId = button.dataset.techId || '';
+                const technicianName = button.dataset.techName || '';
+                card.dataset.suggestedTechnicianId = technicianId;
+                card.dataset.suggestedTechnicianName = technicianName;
+                highlightSelectedTechnician(card, technicianId);
+                applyRecommendationFromCard(card);
             });
         });
 
         if (recommendationButtons.length) {
-            applyRecommendation(recommendationButtons[0]);
+            applyRecommendationFromCard(recommendationButtons[0].closest('.recommendation-card'));
         }
     })();
 </script>
