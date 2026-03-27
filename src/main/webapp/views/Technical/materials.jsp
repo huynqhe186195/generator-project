@@ -2,7 +2,17 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <h4 class="mb-4">📦 Kho vật tư</h4>
+<c:if test="${param.error == 'duplicate_code'}">
+    <script>
+        alert("❌ Mã vật tư đã tồn tại! Vui lòng nhập mã khác.");
+    </script>
+</c:if>
 
+<c:if test="${param.msg == 'created'}">
+    <script>
+        alert("✅ Thêm vật tư thành công!");
+    </script>
+</c:if>
 <form method="get"
       action="<c:url value='/technical/materials'/>"
       class="row g-2 mb-3">
