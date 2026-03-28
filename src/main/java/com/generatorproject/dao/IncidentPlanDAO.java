@@ -147,12 +147,22 @@ public class IncidentPlanDAO extends DbContext {
         plan.setPriorityOverride(rs.getString("priority_override"));
         plan.setStaffNote(rs.getString("staff_note"));
         plan.setManagerReviewStatus(rs.getString("manager_review_status"));
-        Object approvedBy = rs.getObject("approved_by");
-        plan.setApprovedBy(approvedBy == null ? null : rs.getInt("approved_by"));
-        plan.setApprovedAt(rs.getTimestamp("approved_at"));
-        plan.setRejectionReason(rs.getString("rejection_reason"));
-        plan.setCreatedAt(rs.getTimestamp("created_at"));
-        plan.setUpdatedAt(rs.getTimestamp("updated_at"));
+        if (hasColumn(rs, "approved_by")) {
+            Object approvedBy = rs.getObject("approved_by");
+            plan.setApprovedBy(approvedBy == null ? null : rs.getInt("approved_by"));
+        }
+        if (hasColumn(rs, "approved_at")) {
+            plan.setApprovedAt(rs.getTimestamp("approved_at"));
+        }
+        if (hasColumn(rs, "rejection_reason")) {
+            plan.setRejectionReason(rs.getString("rejection_reason"));
+        }
+        if (hasColumn(rs, "created_at")) {
+            plan.setCreatedAt(rs.getTimestamp("created_at"));
+        }
+        if (hasColumn(rs, "updated_at")) {
+            plan.setUpdatedAt(rs.getTimestamp("updated_at"));
+        }
         return plan;
     }
 
