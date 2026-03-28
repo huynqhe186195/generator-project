@@ -35,7 +35,9 @@ public class LoginController extends HttpServlet {
             String destUrl = userInDb.getRoleUrl();
 
             if (destUrl == null || destUrl.trim().isEmpty()) {
-                destUrl = "/home";
+                destUrl = resolveFallbackUrl(userInDb);
+            } else if (!canAccessUrl(userInDb, destUrl)) {
+                destUrl = resolveFallbackUrl(userInDb);
             }
 
             resp.sendRedirect(req.getContextPath() + destUrl);
@@ -45,5 +47,58 @@ public class LoginController extends HttpServlet {
             req.setAttribute("alert", "danger");
             req.getRequestDispatcher("/views/account/login.jsp").forward(req, resp);
         }
+    }
+
+    private boolean canAccessUrl(Users user, String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return false;
+        }
+
+        if (!url.startsWith("/")) {
+            return false;
+        }
+
+        if (url.startsWith("/admin")) {
+            return user.getRoleId() == 1 || user.hasPermission("USER_VIEW") || user.hasPermission("USER_MANAGE");
+        }
+        if (url.startsWith("/manager")) {
+            return user.getRoleId() == 1 || user.getRoleId() == 2;
+        }
+        if (url.startsWith("/technical")) {
+            return user.getRoleId() == 1 || user.getRoleId() == 4;
+        }
+        if (url.startsWith("/staff")) {
+            return user.getRoleId() == 1 || user.getRoleId() == 2 || user.getRoleId() == 3;
+        }
+        if (url.startsWith("/it")) {
+            return user.getRoleId() == 1 || user.getRoleId() == 6;
+        }
+
+        return true;
+    }
+
+    private String resolveFallbackUrl(Users user) {
+        if (user == null) {
+            return "/home";
+        }
+
+        int roleId = user.getRoleId();
+        if (roleId == 1) {
+            return "/admin/user/user-list";
+        }
+        if (roleId == 2) {
+            return "/manager";
+        }
+        if (roleId == 3) {
+            return "/staff/incident-list";
+        }
+        if (roleId == 4) {
+            return "/technical/home";
+        }
+        if (roleId == 6) {
+            return "/it/home";
+        }
+
+        return "/home";
     }
 }
