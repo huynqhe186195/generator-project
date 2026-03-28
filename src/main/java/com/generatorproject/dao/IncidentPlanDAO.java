@@ -3,38 +3,43 @@ package com.generatorproject.dao;
 import com.generatorproject.model.IncidentPlan;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 
 public class IncidentPlanDAO extends DbContext {
 
     public Long insert(IncidentPlan plan) {
-        String sql = """
-                INSERT INTO incident_plans (
-                    incident_id, planned_by, previous_plan_id, plan_version, is_current,
-                    work_type, estimated_duration_minutes, required_technician_count,
-                    requires_parts_preparation, parts_note, service_location,
-                    priority_override, staff_note, manager_review_status
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """;
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(buildInsertSql(hasPreviousPlanColumn(conn)), PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            boolean usePreviousPlanColumn = hasPreviousPlanColumn(conn);
             ps.setInt(1, plan.getIncidentId());
             ps.setInt(2, plan.getPlannedBy());
-            if (plan.getPreviousPlanId() != null) ps.setLong(3, plan.getPreviousPlanId()); else ps.setNull(3, java.sql.Types.BIGINT);
-            ps.setInt(4, plan.getPlanVersion());
-            ps.setBoolean(5, plan.isCurrent());
-            ps.setString(6, plan.getWorkType());
-            ps.setInt(7, plan.getEstimatedDurationMinutes());
-            ps.setInt(8, plan.getRequiredTechnicianCount());
-            ps.setBoolean(9, plan.isRequiresPartsPreparation());
-            ps.setString(10, plan.getPartsNote());
-            ps.setString(11, plan.getServiceLocation());
-            ps.setString(12, plan.getPriorityOverride());
-            ps.setString(13, plan.getStaffNote());
-            ps.setString(14, plan.getManagerReviewStatus());
+
+            int index = 3;
+            if (usePreviousPlanColumn) {
+                if (plan.getPreviousPlanId() != null) {
+                    ps.setLong(index, plan.getPreviousPlanId());
+                } else {
+                    ps.setNull(index, java.sql.Types.BIGINT);
+                }
+                index++;
+            }
+
+            ps.setInt(index++, plan.getPlanVersion());
+            ps.setBoolean(index++, plan.isCurrent());
+            ps.setString(index++, plan.getWorkType());
+            ps.setInt(index++, plan.getEstimatedDurationMinutes());
+            ps.setInt(index++, plan.getRequiredTechnicianCount());
+            ps.setBoolean(index++, plan.isRequiresPartsPreparation());
+            ps.setString(index++, plan.getPartsNote());
+            ps.setString(index++, plan.getServiceLocation());
+            ps.setString(index++, plan.getPriorityOverride());
+            ps.setString(index++, plan.getStaffNote());
+            ps.setString(index, plan.getManagerReviewStatus());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) return rs.getLong(1);
@@ -125,8 +130,12 @@ public class IncidentPlanDAO extends DbContext {
         plan.setId(rs.getLong("id"));
         plan.setIncidentId(rs.getInt("incident_id"));
         plan.setPlannedBy(rs.getInt("planned_by"));
-        Object previousPlanId = rs.getObject("previous_plan_id");
-        plan.setPreviousPlanId(previousPlanId == null ? null : rs.getLong("previous_plan_id"));
+        if (hasColumn(rs, "previous_plan_id")) {
+            Object previousPlanId = rs.getObject("previous_plan_id");
+            plan.setPreviousPlanId(previousPlanId == null ? null : rs.getLong("previous_plan_id"));
+        } else {
+            plan.setPreviousPlanId(null);
+        }
         plan.setPlanVersion(rs.getInt("plan_version"));
         plan.setCurrent(rs.getBoolean("is_current"));
         plan.setWorkType(rs.getString("work_type"));
@@ -145,5 +154,60 @@ public class IncidentPlanDAO extends DbContext {
         plan.setCreatedAt(rs.getTimestamp("created_at"));
         plan.setUpdatedAt(rs.getTimestamp("updated_at"));
         return plan;
+    }
+
+    private String buildInsertSql(boolean usePreviousPlanColumn) {
+        if (usePreviousPlanColumn) {
+            return """
+                    INSERT INTO incident_plans (
+                        incident_id, planned_by, previous_plan_id, plan_version, is_current,
+                        work_type, estimated_duration_minutes, required_technician_count,
+                        requires_parts_preparation, parts_note, service_location,
+                        priority_override, staff_note, manager_review_status
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """;
+        }
+        return """
+                INSERT INTO incident_plans (
+                    incident_id, planned_by, plan_version, is_current,
+                    work_type, estimated_duration_minutes, required_technician_count,
+                    requires_parts_preparation, parts_note, service_location,
+                    priority_override, staff_note, manager_review_status
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+    }
+
+    private boolean hasPreviousPlanColumn(Connection conn) {
+        try {
+            DatabaseMetaData metaData = conn.getMetaData();
+            try (ResultSet columns = metaData.getColumns(conn.getCatalog(), null, "incident_plans", "previous_plan_id")) {
+                if (columns.next()) {
+                    return true;
+                }
+            }
+            try (ResultSet columns = metaData.getColumns(conn.getCatalog(), null, "INCIDENT_PLANS", "PREVIOUS_PLAN_ID")) {
+                return columns.next();
+            }
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private boolean hasColumn(ResultSet rs, String columnName) {
+        try {
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
+                if (columnName.equalsIgnoreCase(metaData.getColumnLabel(i))
+                        || columnName.equalsIgnoreCase(metaData.getColumnName(i))) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {
+            return false;
+        }
+        return false;
     }
 }
