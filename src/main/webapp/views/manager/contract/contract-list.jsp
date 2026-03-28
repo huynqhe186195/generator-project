@@ -142,9 +142,6 @@
                 </div>
 
                 <div class="col-md-4 text-end">
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importModal">
-                        <i class="fa fa-file-word"></i> Import từ File
-                    </button>
                     <a href="${pageContext.request.contextPath}/manager/contracts?action=create_view" class="btn btn-outline-primary">
                         <i class="fa fa-plus"></i> Tạo mới
                     </a>
