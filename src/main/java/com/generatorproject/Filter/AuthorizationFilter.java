@@ -89,10 +89,25 @@ public class AuthorizationFilter implements Filter {
                 return;
             }
 
-            boolean hasUserRight = user.hasPermission("USER_VIEW") ||
-                    user.hasPermission("USER_MANAGE");
+            String adminPath = url.substring((contextPath + "/admin").length());
+            boolean canAccessAdmin = false;
 
-            if (!hasUserRight) {
+            if (adminPath.startsWith("/role") || adminPath.startsWith("/hanldePermissonRole")) {
+                canAccessAdmin = user.hasPermission("ROLE_VIEW") || user.hasPermission("ROLE_MANAGE");
+            } else if (adminPath.startsWith("/user")
+                    || adminPath.startsWith("/user-list")
+                    || adminPath.startsWith("/user-status")
+                    || adminPath.startsWith("/handleAddUser")
+                    || adminPath.startsWith("/handleEditUser")) {
+                canAccessAdmin = user.hasPermission("USER_VIEW") || user.hasPermission("USER_MANAGE");
+            } else if (adminPath.startsWith("/requests") || adminPath.startsWith("/user/approve-reset")) {
+                canAccessAdmin = user.hasPermission("ROLE_VIEW")
+                        || user.hasPermission("ROLE_MANAGE")
+                        || user.hasPermission("USER_VIEW")
+                        || user.hasPermission("USER_MANAGE");
+            }
+
+            if (!canAccessAdmin) {
                 req.getRequestDispatcher("/views/error/403.jsp").forward(req, resp);
                 return;
             }
