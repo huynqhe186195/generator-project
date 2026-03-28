@@ -432,24 +432,32 @@ public class MaintenanceDAO extends DbContext {
     }
 
     public Integer insertScheduledMaintenance(Maintenance req) {
+        // Đã xóa cột 'location' ra khỏi danh sách INSERT và xóa 1 dấu '?' tương ứng
         String sql = """
-                INSERT INTO maintenances
-                (product_id, technician_id, incident_id, incident_plan_id, maintenance_date,
-                 scheduled_start, scheduled_end, estimated_duration_minutes, type, description,
-                 status, schedule_status, execution_status, required_technician_count,
-                 requires_parts_preparation, location, created_by, approved_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?, ?, ?, ?)
-                """;
+            INSERT INTO maintenances
+            (product_id, technician_id, incident_id, incident_plan_id, maintenance_date,
+             scheduled_start, scheduled_end, estimated_duration_minutes, type, description,
+             status, schedule_status, execution_status, required_technician_count,
+             requires_parts_preparation, created_by, approved_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?, ?, ?)
+            """;
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
             ps.setInt(1, req.getProductId());
             ps.setInt(2, req.getTechnicianId());
-            if (req.getIncidentId() != null) ps.setInt(3, req.getIncidentId()); else ps.setNull(3, Types.INTEGER);
-            if (req.getIncidentPlanId() != null) ps.setInt(4, req.getIncidentPlanId()); else ps.setNull(4, Types.INTEGER);
+
+            if (req.getIncidentId() != null) ps.setInt(3, req.getIncidentId());
+            else ps.setNull(3, Types.INTEGER);
+
+            if (req.getIncidentPlanId() != null) ps.setInt(4, req.getIncidentPlanId());
+            else ps.setNull(4, Types.INTEGER);
+
             ps.setDate(5, req.getMaintenanceDate());
             ps.setTimestamp(6, req.getScheduledStart());
             ps.setTimestamp(7, req.getScheduledEnd());
+
             int durationMinutes = 120;
             if (req.getScheduledStart() != null && req.getScheduledEnd() != null) {
                 long diffMs = req.getScheduledEnd().getTime() - req.getScheduledStart().getTime();
@@ -458,13 +466,20 @@ public class MaintenanceDAO extends DbContext {
             ps.setInt(8, durationMinutes);
             ps.setString(9, req.getType());
             ps.setString(10, req.getDescription());
+
             ps.setString(11, req.getScheduleStatus() == null ? "MANAGER_APPROVED" : req.getScheduleStatus());
             ps.setString(12, req.getExecutionStatus() == null ? "PENDING" : req.getExecutionStatus());
             ps.setInt(13, 1);
             ps.setBoolean(14, false);
-            ps.setString(15, req.getProductSerialNumber());
-            if (req.getCreatedBy() != null) ps.setInt(16, req.getCreatedBy()); else ps.setNull(16, Types.INTEGER);
-            if (req.getApprovedBy() != null) ps.setInt(17, req.getApprovedBy()); else ps.setNull(17, Types.INTEGER);
+
+            // Đã xóa dòng ps.setString(15, req.getProductSerialNumber());
+
+            // Cập nhật lại số thứ tự (index) cho 2 trường cuối cùng thành 15 và 16
+            if (req.getCreatedBy() != null) ps.setInt(15, req.getCreatedBy());
+            else ps.setNull(15, Types.INTEGER);
+
+            if (req.getApprovedBy() != null) ps.setInt(16, req.getApprovedBy());
+            else ps.setNull(16, Types.INTEGER);
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
