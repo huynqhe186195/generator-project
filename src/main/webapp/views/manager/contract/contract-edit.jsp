@@ -28,15 +28,6 @@
                             <input type="text" name="contractNumber" class="form-control" required
                                    value="${contract.contractNumber}">
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Trạng thái</label>
-                            <select name="status" class="form-select">
-                                <option value="ACTIVE" ${contract.status == 'ACTIVE' ? 'selected' : ''}>Hiệu lực (Active)</option>
-                                <option value="EXPIRED" ${contract.status == 'EXPIRED' ? 'selected' : ''}>Hết hạn (Expired)</option>
-                                <option value="TERMINATED" ${contract.status == 'TERMINATED' ? 'selected' : ''}>Đã hủy (Terminated)</option>
-                            </select>
-                        </div>
                     </div>
 
                     <h6 class="text-muted border-bottom pb-2 mb-3 mt-4"><i class="fa fa-server"></i> Máy phát điện & Chủ sở hữu</h6>
