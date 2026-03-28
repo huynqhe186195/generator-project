@@ -432,17 +432,12 @@ public class MaintenanceDAO extends DbContext {
     }
 
     public Integer insertScheduledMaintenance(Maintenance req) {
-        String sql = """
-                INSERT INTO maintenances
-                (product_id, technician_id, incident_id, incident_plan_id, maintenance_date,
-                 scheduled_start, scheduled_end, estimated_duration_minutes, type, description,
-                 status, schedule_status, execution_status, required_technician_count,
-                 requires_parts_preparation, location, created_by, approved_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?, ?, ?, ?)
-                """;
-
         try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(
+                     buildScheduledInsertSql(hasTableColumn(conn, "maintenances", "location")),
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            boolean useLocationColumn = hasTableColumn(conn, "maintenances", "location");
             ps.setInt(1, req.getProductId());
             ps.setInt(2, req.getTechnicianId());
             if (req.getIncidentId() != null) ps.setInt(3, req.getIncidentId()); else ps.setNull(3, Types.INTEGER);
@@ -462,9 +457,13 @@ public class MaintenanceDAO extends DbContext {
             ps.setString(12, req.getExecutionStatus() == null ? "PENDING" : req.getExecutionStatus());
             ps.setInt(13, 1);
             ps.setBoolean(14, false);
-            ps.setString(15, req.getProductSerialNumber());
-            if (req.getCreatedBy() != null) ps.setInt(16, req.getCreatedBy()); else ps.setNull(16, Types.INTEGER);
-            if (req.getApprovedBy() != null) ps.setInt(17, req.getApprovedBy()); else ps.setNull(17, Types.INTEGER);
+
+            int index = 15;
+            if (useLocationColumn) {
+                ps.setString(index++, req.getProductSerialNumber());
+            }
+            if (req.getCreatedBy() != null) ps.setInt(index++, req.getCreatedBy()); else ps.setNull(index++, Types.INTEGER);
+            if (req.getApprovedBy() != null) ps.setInt(index, req.getApprovedBy()); else ps.setNull(index, Types.INTEGER);
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -475,6 +474,43 @@ public class MaintenanceDAO extends DbContext {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private String buildScheduledInsertSql(boolean useLocationColumn) {
+        if (useLocationColumn) {
+            return """
+                    INSERT INTO maintenances
+                    (product_id, technician_id, incident_id, incident_plan_id, maintenance_date,
+                     scheduled_start, scheduled_end, estimated_duration_minutes, type, description,
+                     status, schedule_status, execution_status, required_technician_count,
+                     requires_parts_preparation, location, created_by, approved_by)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?, ?, ?, ?)
+                    """;
+        }
+        return """
+                INSERT INTO maintenances
+                (product_id, technician_id, incident_id, incident_plan_id, maintenance_date,
+                 scheduled_start, scheduled_end, estimated_duration_minutes, type, description,
+                 status, schedule_status, execution_status, required_technician_count,
+                 requires_parts_preparation, created_by, approved_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'SCHEDULED', ?, ?, ?, ?, ?, ?)
+                """;
+    }
+
+    private boolean hasTableColumn(Connection conn, String tableName, String columnName) {
+        try {
+            java.sql.DatabaseMetaData metaData = conn.getMetaData();
+            try (ResultSet columns = metaData.getColumns(conn.getCatalog(), null, tableName, columnName)) {
+                if (columns.next()) {
+                    return true;
+                }
+            }
+            try (ResultSet columns = metaData.getColumns(conn.getCatalog(), null, tableName.toUpperCase(), columnName.toUpperCase())) {
+                return columns.next();
+            }
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     public List<Maintenance> getHistoryCompletedPaging(
