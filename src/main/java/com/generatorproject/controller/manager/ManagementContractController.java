@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -539,7 +540,18 @@ public class ManagementContractController extends HttpServlet {
             Long customerId = Long.parseLong(req.getParameter("customerId"));
             Date startDate = Date.valueOf(req.getParameter("startDate"));
             Date endDate = Date.valueOf(req.getParameter("endDate"));
-            String status = req.getParameter("status");
+
+            Date today = Date.valueOf(LocalDate.now());
+            if (startDate.before(today) || endDate.before(today)) {
+                req.setAttribute("errorMessage", "Ngày bắt đầu và ngày kết thúc không được ở trong quá khứ!");
+                showEditForm(req, resp);
+                return;
+            }
+            if (endDate.before(startDate)) {
+                req.setAttribute("errorMessage", "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!");
+                showEditForm(req, resp);
+                return;
+            }
 
             int mainProductId = 0;
 
@@ -680,6 +692,13 @@ public class ManagementContractController extends HttpServlet {
                 }
             }
 
+            Contract existingContract = contractService.findContractById(contractId);
+            if (existingContract == null) {
+                req.setAttribute("errorMessage", "Không tìm thấy hợp đồng để cập nhật!");
+                showEditForm(req, resp);
+                return;
+            }
+
             Contract c = Contract.builder()
                     .id(contractId)
                     .contractNumber(contractNumber)
@@ -687,7 +706,7 @@ public class ManagementContractController extends HttpServlet {
                     .productId(mainProductId)
                     .startDate(startDate)
                     .endDate(endDate)
-                    .status(status)
+                    .status(existingContract.getStatus())
                     .managerId(((Users) req.getSession().getAttribute("USERMODEL")).getId())
                     .build();
 
