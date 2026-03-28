@@ -54,14 +54,15 @@
 
                             <c:if test="${r.id != 1}">
 
-                                <c:if test="${currentUser.hasPermission('ROLE_UPDATE') || currentUser.roleId == 1}">
-
+                                <c:if test="${currentUser.hasPermission('ROLE_MANAGE') || currentUser.roleId == 1}">
                                     <a href="<c:url value='/admin/role/role-permission?id=${r.id}'/>"
                                        class="btn btn-dark btn-sm me-1"
                                        title="Phân quyền chức năng">
-                                       <i class="fa-solid fa-shield-halved"></i> Perms
+                                        <i class="fa-solid fa-shield-halved"></i> Perms
                                     </a>
+                                </c:if>
 
+                                <c:if test="${currentUser.hasPermission('ROLE_UPDATE') || currentUser.roleId == 1}">
                                     <a href="<c:url value='/admin/role/role-update?id=${r.id}'/>"
                                        class="btn btn-warning btn-sm me-1" title="Sửa thông tin">
                                         <i class="fa-solid fa-pen"></i>
